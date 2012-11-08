@@ -1,0 +1,149 @@
+<html>
+	<head>
+		<title>SuMPF: Config</title>
+		<link rel="stylesheet" type="text/css" href="style.css" />
+		<script type="text/javascript">
+			dont_go_back = true;	// This is needed for the header script at the beginning of the body tag
+		</script>
+	</head>
+	<body>
+		<script src="header.js" type="text/javascript"></script>
+		<table class="maintable">
+			<tr>
+				<th colspan="2" class="headline">Config</th>
+			</tr>
+			<tr>
+				<td class="text">
+					The config is used to configure the behaviour of SuMPF.
+					It can also be used as a configuration for projects that use
+					SuMPF as a framework.<br />
+					<br />
+					All config related functionalities can be found in the submodule
+					<a href="moduledoc/sumpf.config.htm">sumpf.config</a>
+				</td>
+				<td class="overview">
+					<ul>
+						<li><nobr><a href="#general">A general description</a></nobr></li>
+						<li><nobr><a href="#further">Further information</a></nobr></li>
+						<li><nobr><a href="#files">Config files</a></nobr></li>
+					</ul>
+				</td>
+			</tr>
+			<tr>
+				<th colspan="2" class="section">
+					<a name="general">A general description</a>
+					<a href="#top" class="toplink">Top&uarr;</a>
+				</th>
+			</tr>
+			<tr>
+				<td colspan="2" class="text">
+					SuMPF's configuration system implements a hierarchical configuration
+					in two ways:
+					<ul>
+						<li>
+							The configuration variables of SuMPF are also accessable
+							in programs that use SuMPF as a framework. These programs
+							set these variables to other values, to set up SuMPF
+							for their individual needs. These changed SuMPF variables
+							and the config variables of the program are stored in
+							the program's configuration file, so that it does not
+							affect other programs, that use SuMPF.
+						</li>
+						<li>
+							The configuration system provides an easy way to
+							implement a hierarchical structure for default values
+							for configuration variables. Everyone in this hierary
+							can define his config variables, while the values for
+							variables, that he did not define, are taken from the
+							hierarchy level above. This is the common structure
+							of hard coded defaults, system wide config and user
+							config.
+						</li>
+					</ul>
+					This hierarchy is implemented by configuration objects that
+					can have another configuration object as a parent. If an object
+					does not find a requested variable in its own dictionary, it
+					asks its parent config for it.<br />
+					To implement the hierarchy for the default values, the user
+					configuration has the system configuration as default value
+					and the system config has the hardcoded default values as its
+					dictionary.<br />
+					The program hierarchy can be implemented by giving the program's
+					configuration the user configuration for SuMPF as a parent.<br />
+					<br />
+					To simplify the use of the config system, SuMPF has abstained
+					from using the sections feature of the Python config parsers.
+					All configuration variables are stored in the same section
+					and the section is not shown to the user.
+				</td>
+			</tr>
+			<tr>
+				<th colspan="2" class="section">
+					<a name="further">Further information</a>
+					<a href="#top" class="toplink">Top&uarr;</a>
+				</th>
+			</tr>
+			<tr>
+				<td colspan="2" class="text">
+					A good general description of the mechanism behind SuMPF's
+					configs can be found in the documentation of the Config
+					class. The doxygen page can be found
+					<a href="doxygen/html/class__sumpf_1_1__base_1_1__config_1_1config_1_1Config.html">
+					here</a>.<br />
+					<br />
+					To avoid accidental setting of variables in SuMPF's config,
+					the top level config is only temporal. It will be reset after
+					restarting Python.<br />
+					If you use SuMPF as a framework and want to have a persistent
+					config, you should create a config for your project by using
+					sumpf.config.create_config(...).<br />
+					If you want to configure SuMPF on your system, you can get
+					the Config objects with the one of the following functions:
+					<ul>
+						<li class="code">sumpf.config.get_sumpf_user_config()</li>
+						<li class="code">sumpf.config.get_sumpf_system_config()</li>
+					</ul>
+				</td>
+			</tr>
+			<tr>
+				<th colspan="2" class="section">
+					<a name="files">Config files</a>
+					<a href="#top" class="toplink">Top&uarr;</a>
+				</th>
+			</tr>
+			<tr>
+				<td colspan="2" class="text">
+					SuMPF uses the following files for its configuration:
+					<ul>
+						<li>
+							The system wide configuration can be found in
+							<span class="code">/etc/sumpf/config</span>.
+						</li>
+						<li>
+							The user config can be found in 
+							<span class="code">~/.sumpf/config</span>.
+					</ul>
+					If these files do not exist, they can be created and SuMPF
+					will start using them. If you have the required rights on the
+					computer system, you can also retrieve a configuration instance
+					with the <span class="code">sumpf.config.get_sumpf_..._config()</span>
+					functions and modify the desired variables. The configuration
+					file will then be created if necessary.<br />
+					<br />
+					Please note that these paths are very Unix-like and will most
+					likely not work on different Systems like Microsoft Windows.
+					Since I do not know where Windows stores configuration files,
+					I haven't programmed an operating system check, that sets the
+					paths to the files accordingly. Never the less, it should be
+					very easy to implement one, as soon as I know where to put the
+					files. Information is very appreciated.<br />
+					This does not mean, that programs, which use SuMPF as a framework,
+					are not configurable. Since they can choose freely, where to
+					put their configuration files, they should not be affected by
+					this shortcoming of SuMPF.
+				</td>
+			</tr>
+		</table>
+	</body>
+</html>
+

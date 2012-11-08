@@ -1,0 +1,8 @@
+import inspect
+class ExampleClass(object):
+	def __init__(self):
+		pass
+
+	def ExampleMethod(self, parameter):
+		return parameter
+

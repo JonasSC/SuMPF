@@ -1,0 +1,17 @@
+class ExampleClass1(object):
+	def __init__(self):
+		pass
+
+	def ExampleMethod1(self, parameter):
+		return parameter
+
+
+
+
+class ExampleClass2(object):
+	def __init__(self):
+		pass
+
+	def ExampleMethod2(self, parameter):
+		return parameter
+

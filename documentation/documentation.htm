@@ -1,0 +1,125 @@
+<html>
+	<head>
+		<title>SuMPF: Documentation</title>
+		<link rel="stylesheet" type="text/css" href="style.css" />
+		<script type="text/javascript">
+			dont_go_back = true;	// This is needed for the header script at the beginning of the body tag
+		</script>
+	</head>
+	<body>
+		<script src="header.js" type="text/javascript"></script>
+		<table class="maintable">
+			<tr>
+				<th colspan="2" class="headline">Documentation</th>
+			</tr>
+			<tr>
+				<td colspan="2" class="text">
+					There are currently three types of documentation for SuMPF.
+					This is due to the fact, that it has been tried to generate
+					most of the documentation automatically from the docstrings.
+					And none of the tools has been perfect for everything.
+				</td>
+			</tr>
+			<tr>
+				<td class="subsection">Doxygen</td>
+				<td class="text">
+					The documentation for the classes has been created with
+					Doxygen.<br />
+					The class index can be found <a href="doxygen/html/classes.html">here</a>.<br />
+					If the documentation is not there yet, it might need to be
+					built with Doxygen. This can be done with the provided
+					<a href="installation.htm#Makefile">Makefile</a>.
+				</td>
+			</tr>
+			<tr>
+				<td class="subsection">ModuleDoc</td>
+				<td class="text">
+					While doxygen is great for documenting classes, I have not
+					got it working for the functions and python submodules of
+					SuMPF. So their docstrings have been extracted by the self
+					written script ModuleDoc.<br />
+					ModuleDoc only documents accessable components of a module.
+					For example, it does not show abstract base classes that
+					cannot be accessed by importing the module.<br />
+					The documentation can be found <a href="moduledoc/sumpf.htm">here</a>.
+					If the documentation is not there yet, it might need to be
+					built with ModuleDoc. This can be done with the provided
+					<a href="installation.htm#Makefile">Makefile</a>.
+				</td>
+			</tr>
+			<tr>
+				<td class="subsection">Manually written</td>
+				<td class="text">
+					Here is a list of manually written examples and explanations.
+					<ul>
+						<li><a href="connectors.htm">The connector decorators in SuMPF</a></li>
+						<li><a href="config.htm">The config of SuMPF and how to use it for your own project</a></li>
+						<li><a href="gui.htm">The GUI functionalities of SuMPF and how they differ from plain wxPython</a></li>
+					</ul>
+				</td>
+			</tr>
+			<tr>
+				<td class="subsection">Code examples</td>
+				<td class="text">
+					There are almost no code examples in the documentation, but
+					there are some interesting places in the source code to look
+					for examples.
+					<ul>
+						<li>
+							There is an "_examples" folder in the sources for SuMPF,
+							which some examples programs are given. These examples
+							are meant to give code examples, show some features
+							of SuMPF and to provide some potentially useful
+							functionalities.
+						</li>
+						<li>
+							Shorter and more simple examples can be found in the
+							unit tests.
+						</li>
+						<li>
+							There is one example for the connectors in the
+							<a href="connectors.htm#Example">documentation for
+							the connector decorators</a>. This example might be
+							easier than the unit tests.
+						</li>
+					</ul>
+				</td>
+			</tr>
+			<tr>
+				<td class="subsection">Developers</td>
+				<td class="text">
+					The documentation for developers can be found <a href="developers.htm">here</a>.
+				</td>
+			</tr>
+			<tr>
+				<td class="subsection">Statistics</td>
+				<td class="text">
+					Some statistics about the source code of SuMPF can be found
+					<a href="statistics.htm">here</a>.<br />
+					If the file cannot be found, it might need to be built with
+					the <a href="installation.htm#Makefile">Makefile</a>.
+				</td>
+			</tr>
+			<tr>
+				<td class="subsection">What's Monkeyforest?</td>
+				<td class="text">
+					Monkeyforest is a cool measurement system from
+					<a href="http://www.four-audio.com">Four Audio</a>. I had
+					the honour to use it in a lab at the university and was so
+					impressed by the possibilities of acoustical measurements,
+					that I wanted to have such a system as well.<br />
+					Monkeyforest has two significant drawbacks though:
+					<ul>
+						<li>It is not free software, which, in my opinion, disqualifies it for productive work.</li>
+						<li>And it is DOS based. This somewhat limits the possibilities of user interaction. And the support for modern audio hardware might be poor.</li>
+					</ul>
+					That's why I started SuMPF.<br />
+					Never the less, besides the immense capabilities of Monkeyforest,
+					the DOS look-and-feel only adds to the great style of this
+					software.
+				</td>
+			</tr>
+		</table>
+	</body>
+</html>
+

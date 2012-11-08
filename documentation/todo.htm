@@ -1,0 +1,265 @@
+<html>
+	<head>
+		<title>SuMPF: To do's</title>
+		<link rel="stylesheet" type="text/css" href="style.css" />
+		<script type="text/javascript">
+			dont_go_back = true;	// This is needed for the header script at the beginning of the body tag
+		</script>
+	</head>
+	<body>
+		<script src="header.js" type="text/javascript"></script>
+		<table class="maintable">
+			<tr>
+				<th colspan="3" class="headline">To do's</th>
+			</tr>
+			<tr>
+				<td colspan="2" class="text">
+					Here is a list of milestones and the tasks that have to be
+					completed to reach the respective milestone.
+				</td>
+				<td class="overview">
+					<ul>
+						<li><nobr><a href="#nearfuture">To be done in near future</a></nobr></li>
+						<li><nobr><a href="#versionone">Until Version 1.0</a></nobr></li>
+						<li><nobr><a href="#nicetohave">Nice to have stuff for future releases</a></nobr></li>
+						<li><nobr><a href="#weirdideas">Weird ideas that might be working some day</a></nobr></li>
+					</ul>
+				</td>
+			</tr>
+			<tr>
+				<td colspan="3" class="section">
+					<a name="nearfuture">To be done in near future</a>
+					<a href="#top" class="toplink">Top&uarr;</a>
+				</td>
+			</tr>
+			<tr>
+				<td class="subsection">OS dependend default config paths</td>
+				<td colspan="2" class="text">
+					The default paths for the configuration files are currently
+					very Unix-like. They work on Debian GNU/Linux, they will most
+					likely work on MacOS, but they will certainly fail on Microsoft
+					Windows.<br />
+					There has to be an operating system check in the configuration
+					defaults that sets the paths accordingly.
+				</td>
+			</tr>
+			<tr>
+				<td class="subsection">Threading issues in the GUI</td>
+				<td colspan="2" class="text">
+					There seems to be something wrong with the threads in the GUI.
+					Normal applications like the RecordTransferFunction example
+					run fine, but when the GUI is updated very often in a short
+					period of time, like in the unit tests, it runs very undependable.
+				</td>
+			</tr>
+			<tr>
+				<td class="subsection">Unittests for the connections of modules</td>
+				<td colspan="2" class="text">
+					For some of the modules there is no test method that tests
+					if the getter and setter methods of that module are decorated
+					as connectors correctly.<br />
+					There is already some testing functionality in the "_common"-module
+					in the tests directory.
+				</td>
+			</tr>
+			<tr>
+				<td class="subsection">Mute error output when JACK is not running</td>
+				<td colspan="2" class="text">
+					When a sound card interface is created with
+					<span class="code">sumpf.modules.audioio.factory()</span>
+					and PyJack is available, the factory method tries to initialize
+					a sound card interface that uses JACK. If the JACK server is
+					not running, this initialization fails, the factory method
+					creates another interface and all is well. But PyJack never
+					the less outputs an error message, which is unfortunate because
+					everything is in a legal state.<br />
+					So far I have not found a solution to mute this error message.
+					It might be necessary, to patch PyJack by either removing the
+					error message or (which would be better) by providing a
+					"Check-if-JACK-is-running"-method.
+				</td>
+			</tr>
+			<tr>
+				<td class="subsection">JACK latency API</td>
+				<td colspan="2" class="text">
+					The sound card interface that uses JACK currently uses a very
+					crude (and often false) method to compensate the latency from
+					the sound card buffers in a recorded Signal.<br />
+					It is necessary to extend PyJack with the functionalities of
+					the JACK latency API and then make use of that in the respective
+					sound card interface.
+				</td>
+			</tr>
+			<tr>
+				<td colspan="3" class="section">
+					<a name="versionone">Until Version 1.0</a>
+					<a href="#top" class="toplink">Top&uarr;</a>
+				</td>
+			</tr>
+			<tr>
+				<td class="subsection">Make cursors in plots interactive</td>
+				<td colspan="2" class="text">
+					The cursors in the plots should be dragable with the mouse.
+					This way it should be possible to interactively enter a
+					value or an interval from the x-Axis.<br />
+					This can be useful for example to specify the fade out interval
+					of a window function.
+				</td>
+			</tr>
+			<tr>
+				<td class="subsection">Reverberation time</td>
+				<td colspan="2" class="text">
+					It should be possible to record and calculate the reverberation
+					time. A module that recognizes a steady fall of the RMS sound
+					pressure and then calculates the reverberation time from that
+					is needed.
+				</td>
+			</tr>
+			<tr>
+				<td class="subsection">FFT vs. Time</td>
+				<td colspan="2" class="text">
+					It should be possible to create and plot a series of short time
+					spectrums over time.<br />
+					For that a data container and a plot is needed as well.<br />
+					Maybe it is possible to create a very general containter that
+					could also store data like "spectrum vs. rotation speed".
+				</td>
+			</tr>
+			<tr>
+				<td colspan="3" class="section">
+					<a name="nicetohave">Nice to have stuff for future releases</a>
+					<a href="#top" class="toplink">Top&uarr;</a>
+				</td>
+			</tr>
+			<tr>
+				<td class="subsection">Debian Package</td>
+				<td colspan="2" class="text">
+					It would be nice to have an easy to install package for Debian.
+				</td>
+			</tr>
+			<tr>
+				<td class="subsection">Quantisation</td>
+				<td colspan="2" class="text">
+					It would be nice to be able to reduce the resolution of a
+					Signal to a given number of steps. It should also be possible
+					to specify a function for the quantisation like "linear",
+					"a-Law" or "u-Law"
+				</td>
+			</tr>
+			<tr>
+				<td class="subsection">Parallel Calculations</td>
+				<td colspan="2" class="text">
+					It should be possible to parallelize the calculations, so they
+					run faster on multicore computers.<br />
+					This could be implemented in the (Output-)Connector classes.
+				</td>
+			</tr>
+			<tr>
+				<td class="subsection">Jack Transport</td>
+				<td colspan="2" class="text">
+					Wouldn't it be cool if sumpf could react on Jack Transport events?
+				</td>
+			</tr>
+			<tr>
+				<td class="subsection">An interface to an electronic circuit simulator</td>
+				<td colspan="2" class="text">
+					It should be possible to write a Signal to a file which could
+					be taken as an input value table for an electronic circuit
+					simulation. The output of the simulation could also be written
+					to a file which can then be plotted or even auralized in SuMPF.
+					Maybe pipes or stdin/stdout can be used instead of files.
+				</td>
+			</tr>
+			<tr>
+				<td class="subsection">Filter-Input for sweeps</td>
+				<td colspan="2" class="text">
+					It would be useful to be able to connect a filter to a sweep.
+					The sweep will then sweep slower through frequencies that have
+					a high value in the filter, while it sweeps faster through
+					frequencies that have a small value in the filter.
+					The start- and stop-frequencies and the sweep length should
+					not be altered.
+				</td>
+			</tr>
+			<tr>
+				<td class="subsection">GUI</td>
+				<td colspan="2" class="text">
+					A Graphical user interface is needed that gives the user
+					a patchbay to plug the modules into each other.
+					As a start a simple GUI similar to QjackCtl could be implemented.
+					But a full blown GUI like the one of Alsa Modular Synth would
+					be better
+				</td>
+			</tr>
+			<tr>
+				<td class="subsection">Psychoacoustics</td>
+				<td colspan="2" class="text">
+					It would be nice to be able to calculate the parameters
+					"loudness", "sharpness" and "harshness" for a given Signal.
+				</td>
+			</tr>
+			<tr>
+				<td class="subsection">Find resonance peaks</td>
+				<td colspan="2" class="text">
+					It would be nice to be able to find resonace peaks in a given
+					spectrum and get their Q-factor.
+				</td>
+			</tr>
+			<tr>
+				<td colspan="3" class="section">
+					<a name="weirdideas">Weird ideas that might be working some day</a>
+					<a href="#top" class="toplink">Top&uarr;</a>
+				</td>
+			</tr>
+			<tr>
+				<td class="subsection">Progress indicator for connections</td>
+				<td colspan="2" class="text">
+					When a set of calculations is triggered by changing a parameter
+					in a processing chain, it could be possible to implement a
+					progress indicator class that tracks the progress of the
+					calculations. This indicator could then for example update a
+					wx.Gauge<br />
+					This could be implemented like the following:
+					<ol>
+						<li>Provide a good API to initialize a progress indicator and how notify a setter-methoud about it.</li>
+						<li>Count the number of influenced connections during the look ahead. Also tell the getter-methods to which progress indicator their finished calculation shall be reported.</li>
+						<li>Then each time a getter-method has calculated its value, inform the progress indicator about it</li>
+						<li>The progress indicator could then be connected to a modified wx.Gauge or some other progress visualization.</li>
+					</ol>
+				</td>
+			</tr>
+			<tr>
+				<td class="subsection">A feedback loop</td>
+				<td colspan="2" class="text">
+					A module that implements a feedback loop for processing chains.
+					This could be similar to Simulink.
+				</td>
+			</tr>
+			<tr>
+				<td class="subsection">Loudspeaker calculations</td>
+				<td colspan="2" class="text">
+					Maybe some of the following stuff might be possible with SuMPF
+					one day:
+					<ul>
+						<li>Record and calculate the Thiele-Small-Parameters of a loudspeaker</li>
+						<li>Calculate the optimal crossover frequency</li>
+						<li>Calculate the measurements of an optimal bass reflex port</li>
+					<ul>
+				</td>
+			</tr>
+			<tr>
+				<td class="subsection">Plugin from Spectrum</td>
+				<td colspan="2" class="text">
+					Maybe it is possible to generate a LADSPAA or LV2 plugin from
+					a Spectrum.
+				</td>
+			</tr>
+			<tr>
+				<td></td>
+				<td width="100%"></td>
+				<td></td>
+			</tr>
+		</table>
+	</body>
+</html>
+
