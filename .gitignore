@@ -1,0 +1,9 @@
+# ignore Python bytecode
+*.pyc
+__pycache__
+
+# ignore automatically created documentation
+/documentation/doxygen/
+/documentation/moduledoc/
+/documentation/statistics.htm
+
