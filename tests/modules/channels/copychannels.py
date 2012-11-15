@@ -16,6 +16,7 @@
 
 import unittest
 import sumpf
+import _common as common
 
 
 class TestCopyChannels(unittest.TestCase):
@@ -60,4 +61,27 @@ class TestCopyChannels(unittest.TestCase):
 		self.assertRaises(ValueError, copysignal.SetChannelCount, 0)	# a channel count of 0 should be forbidden
 		copyspectrum = sumpf.modules.CopySpectrumChannels()
 		self.assertRaises(ValueError, copyspectrum.SetChannelCount, -1)	# a negative channel count should be forbidden
+
+	def test_connectors(self):
+		"""
+		Tests if the connectors are properly decorated.
+		"""
+		# CopySignalChannels
+		copysignal = sumpf.modules.CopySignalChannels()
+		self.assertEqual(copysignal.SetInput.GetType(), sumpf.Signal)
+		self.assertEqual(copysignal.SetChannelCount.GetType(), int)
+		self.assertEqual(copysignal.GetOutput.GetType(), sumpf.Signal)
+		common.test_connection_observers(testcase=self,
+		                                 inputs=[copysignal.SetInput, copysignal.SetChannelCount],
+		                                 noinputs=[],
+		                                 output=copysignal.GetOutput)
+		# CopySpectrumChannels
+		copyspectrum = sumpf.modules.CopySpectrumChannels()
+		self.assertEqual(copyspectrum.SetInput.GetType(), sumpf.Spectrum)
+		self.assertEqual(copyspectrum.SetChannelCount.GetType(), int)
+		self.assertEqual(copyspectrum.GetOutput.GetType(), sumpf.Spectrum)
+		common.test_connection_observers(testcase=self,
+		                                 inputs=[copyspectrum.SetInput, copyspectrum.SetChannelCount],
+		                                 noinputs=[],
+		                                 output=copyspectrum.GetOutput)
 

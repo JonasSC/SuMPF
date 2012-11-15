@@ -15,7 +15,9 @@
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 import unittest
+
 import sumpf
+import _common as common
 
 try:
 	import numpy
@@ -62,4 +64,17 @@ class TestNormalizeSignal(unittest.TestCase):
 		self.assertEqual(norm.GetOutput(), insignal)		# as specified in the constructor call, the channels should be normalized individually
 		norm.SetIndividual(False)
 		self.assertEqual(norm.GetOutput(), gnsignal)		# as specified in the setter method call, the channels should no longer be normalized individually
+
+	def test_connectors(self):
+		"""
+		Tests if the connectors are properly decorated.
+		"""
+		norm = sumpf.modules.NormalizeSignal()
+		self.assertEqual(norm.SetInput.GetType(), sumpf.Signal)
+		self.assertEqual(norm.SetIndividual.GetType(), bool)
+		self.assertEqual(norm.GetOutput.GetType(), sumpf.Signal)
+		common.test_connection_observers(testcase=self,
+		                                 inputs=[norm.SetInput, norm.SetIndividual],
+		                                 noinputs=[],
+		                                 output=norm.GetOutput)
 

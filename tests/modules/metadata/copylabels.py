@@ -113,7 +113,7 @@ class TestCopyLabels(unittest.TestCase):
 		clts.SetLabelInput(label_spectrum2)
 		self.assertEqual(clts.GetOutput().GetLabels(), label_spectrum2.GetLabels())				# the label signal has not to be compatible to the data signal
 		clts.SetLabelInput(label_spectrum3)
-		self.assertEqual(clts.GetOutput().GetLabels(), label_spectrum3.GetLabels()[0:2])			# if the label signal has more labels than the data signal has channels, only the first labels shall be taken
+		self.assertEqual(clts.GetOutput().GetLabels(), label_spectrum3.GetLabels()[0:2])		# if the label signal has more labels than the data signal has channels, only the first labels shall be taken
 		clts.SetLabelInput(label_spectrum4)
 		self.assertEqual(clts.GetOutput().GetLabels(), (label_spectrum4.GetLabels()[0], None))	# if the label signal less labels than the data signal has channels, only the first channels of the relabeled signal shall be labeled. The other channel's labels shall not be labeled by the data signal's label
 		clts.SetLabelInput(label_spectrum5)

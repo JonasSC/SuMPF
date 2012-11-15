@@ -16,6 +16,7 @@
 
 import unittest
 import sumpf
+import _common as common
 
 
 class TestSelect(unittest.TestCase):
@@ -69,4 +70,29 @@ class TestSelect(unittest.TestCase):
 		self.assertEqual(sls.GetOutput().GetChannels(), spectrum2.GetChannels())		# setting the selection by constructor parameter should also be possible
 		self.assertRaises(ValueError, sls.SetSelection, 3)								# setting an invalid selection via SetSelection should raise an error
 		self.assertRaises(ValueError, sumpf.modules.SelectSpectrum, spectrum1, spectrum2, 3)	# setting an invalid selection via the constructor should raise an error
+
+	def test_connectors(self):
+		"""
+		Tests if the connectors are properly decorated.
+		"""
+		# SelectSignal
+		sls = sumpf.modules.SelectSignal()
+		self.assertEqual(sls.SetInput1.GetType(), sumpf.Signal)
+		self.assertEqual(sls.SetInput2.GetType(), sumpf.Signal)
+		self.assertEqual(sls.SetSelection.GetType(), int)
+		self.assertEqual(sls.GetOutput.GetType(), sumpf.Signal)
+		common.test_connection_observers(testcase=self,
+		                                 inputs=[sls.SetInput1, sls.SetInput2, sls.SetSelection],
+		                                 noinputs=[],
+		                                 output=sls.GetOutput)
+		# SelectSpectrum
+		sls = sumpf.modules.SelectSpectrum()
+		self.assertEqual(sls.SetInput1.GetType(), sumpf.Spectrum)
+		self.assertEqual(sls.SetInput2.GetType(), sumpf.Spectrum)
+		self.assertEqual(sls.SetSelection.GetType(), int)
+		self.assertEqual(sls.GetOutput.GetType(), sumpf.Spectrum)
+		common.test_connection_observers(testcase=self,
+		                                 inputs=[sls.SetInput1, sls.SetInput2, sls.SetSelection],
+		                                 noinputs=[],
+		                                 output=sls.GetOutput)
 

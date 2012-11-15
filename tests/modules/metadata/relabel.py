@@ -14,8 +14,11 @@
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 
+import collections
 import unittest
+
 import sumpf
+import _common as common
 
 
 class TestRelabel(unittest.TestCase):
@@ -83,4 +86,27 @@ class TestRelabel(unittest.TestCase):
 		self.assertEqual(rel.GetOutput().GetChannels(), spectrum2.GetChannels())
 		self.assertEqual(rel.GetOutput().GetResolution(), spectrum2.GetResolution())
 		self.assertEqual(rel.GetOutput().GetLabels(), ("labels 5",))
+
+	def test_connectors(self):
+		"""
+		Tests if the connectors are properly decorated.
+		"""
+		# SelectSpectrum
+		rel = sumpf.modules.RelabelSignal()
+		self.assertEqual(rel.SetInput.GetType(), sumpf.Signal)
+		self.assertEqual(rel.SetLabels.GetType(), collections.Iterable)
+		self.assertEqual(rel.GetOutput.GetType(), sumpf.Signal)
+		common.test_connection_observers(testcase=self,
+		                                 inputs=[rel.SetInput, rel.SetLabels],
+		                                 noinputs=[],
+		                                 output=rel.GetOutput)
+		# SelectSpectrum
+		rel = sumpf.modules.RelabelSpectrum()
+		self.assertEqual(rel.SetInput.GetType(), sumpf.Spectrum)
+		self.assertEqual(rel.SetLabels.GetType(), collections.Iterable)
+		self.assertEqual(rel.GetOutput.GetType(), sumpf.Spectrum)
+		common.test_connection_observers(testcase=self,
+		                                 inputs=[rel.SetInput, rel.SetLabels],
+		                                 noinputs=[],
+		                                 output=rel.GetOutput)
 

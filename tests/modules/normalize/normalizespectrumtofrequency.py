@@ -18,6 +18,7 @@ import unittest
 import sumpf
 import _common as common
 
+
 class TestNormalizeSpectrumToFrequency(unittest.TestCase):
 	"""
 	A TestCase for the NormalizeSpectrumToFrequency module.
