@@ -27,33 +27,46 @@ def test_connection_observers(testcase, inputs, noinputs, output):
 	@param output: the output that shall be affected
 	"""
 	try:
+		# deep testing of connector dependencies
 		class ConnectionTester(object):
 			def __init__(self):
 				self.triggered = False
+
 			@sumpf.Trigger()
 			def Trigger(self):
 				self.triggered = True
+
 			def Untrigger(self):
 				result = self.triggered
 				self.triggered = False
 				return result
+
+		def call_input_connector(connector):
+			if isinstance(connector, sumpf.internal.TypedConnector):
+				if connector.GetType() in [int, float, complex]:
+					connector(connector.GetType()(2.0))				# pass an even, non-zero value to avoid raising errors
+				elif issubclass(i.GetType(), collections.Iterable):
+					try:
+						connector(connector.GetType()([1, 2]))		# pass an iterable with two integers with ascending value to avoid raising errors
+					except IndexError:
+						connector(connector.GetType()([0]))			# if an IndexError is raised, pass an iterable with the index that most likely exists
+				else:
+					connector(connector.GetType()())
+			else:
+				i()
+
 		ct = ConnectionTester()
 		sumpf.connect(output, ct.Trigger)
 		for i in inputs:
-			if isinstance(i, sumpf.internal.TypedConnector):
-				if i.GetType() in [int, float, complex]:
-					i(i.GetType()(2.0))			# pass an even, non-zero value to avoid raising errors
-				elif issubclass(i.GetType(), collections.Iterable):
-					i(i.GetType()([1, 2]))		# pass an iterable with two integers with ascending value to avoid raising errors
-				else:
-					i(i.GetType()())
-			else:
-				i()
+			call_input_connector(i)
 			testcase.assertTrue(ct.Untrigger())
 		for i in noinputs:
-			i(i.GetType()())
+			call_input_connector(i)
 			testcase.assertFalse(ct.Untrigger())
+
 	except TypeError:
+		# shallow testing of connector dependencies, when automatic creation of
+		# test parameters fails
 		for i in inputs:
 			testcase.assertIn(output, i.GetObservers())
 		for i in noinputs:
