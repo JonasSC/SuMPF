@@ -16,6 +16,7 @@
 
 import unittest
 import sumpf
+import _common as common
 
 
 class TestSplitSignal(unittest.TestCase):
@@ -37,7 +38,7 @@ class TestSplitSignal(unittest.TestCase):
 		self.assertEqual(spl.GetOutput().GetSamplingRate(), self.long.GetSamplingRate())		# when an input has been set, the sampling rate should have been taken from the input
 		self.assertEqual(spl.GetOutput().GetChannels(), self.empty.GetChannels())				# when no channels have been picked, the output's channels should be the same as those of an empty Signal
 		spl = sumpf.modules.SplitSignal(data=self.long, channels=2)
-		self.assertEqual(spl.GetOutput().GetChannels(), (self.channels[2],))						# selecting the channels via an integer should be possible
+		self.assertEqual(spl.GetOutput().GetChannels(), (self.channels[2],))					# selecting the channels via an integer should be possible
 		spl = sumpf.modules.SplitSignal(data=self.long, channels=[1, 4])
 		self.assertEqual(spl.GetOutput().GetChannels(), (self.channels[1], self.channels[4]))	# selecting the channels via a list should be possible
 		spl = sumpf.modules.SplitSignal(data=self.long, channels=list(range(5))[2:4])
@@ -88,4 +89,21 @@ class TestSplitSignal(unittest.TestCase):
 		self.assertRaises(IndexError, self.splitter.SetOutputChannels, -1)		# selecting a channel with a negative index should raise an error
 		self.assertRaises(IndexError, self.splitter.SetOutputChannels, 5)		# selecting a channel that is not in the Input should raise an error
 		self.assertRaises(IndexError, self.splitter.SetOutputChannels, [3, 5])	# selecting a channel through a list that is not in the Input should raise an error
+
+	def test_connectors(self):
+		"""
+		Tests if the connectors are properly decorated.
+		"""
+		self.assertEqual(self.splitter.SetInput.GetType(), sumpf.Signal)
+		self.assertEqual(self.splitter.SetOutputChannels.GetType(), tuple)
+		self.assertEqual(self.splitter.GetOutput.GetType(), sumpf.Signal)
+		self.assertEqual(self.splitter.GetNumberOfOutputChannels.GetType(), int)
+		common.test_connection_observers(testcase=self,
+		                                 inputs=[self.splitter.SetInput, self.splitter.SetOutputChannels],
+		                                 noinputs=[],
+		                                 output=self.splitter.GetOutput)
+		common.test_connection_observers(testcase=self,
+		                                 inputs=[self.splitter.SetInput, self.splitter.SetOutputChannels],
+		                                 noinputs=[],
+		                                 output=self.splitter.GetNumberOfOutputChannels)
 

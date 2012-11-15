@@ -16,6 +16,8 @@
 
 import unittest
 import sumpf
+import _common as common
+
 
 class TestSplitSpectrum(unittest.TestCase):
 	"""
@@ -87,4 +89,21 @@ class TestSplitSpectrum(unittest.TestCase):
 		self.assertRaises(IndexError, self.splitter.SetOutputChannels, -1)		# Selecting a channel with a negative index should raise an error
 		self.assertRaises(IndexError, self.splitter.SetOutputChannels, 5)		# Selecting a channel that is not in the Input should raise an error
 		self.assertRaises(IndexError, self.splitter.SetOutputChannels, [3, 5])	# Selecting a channel through a list that is not in the Input should raise an error
+
+	def test_connectors(self):
+		"""
+		Tests if the connectors are properly decorated.
+		"""
+		self.assertEqual(self.splitter.SetInput.GetType(), sumpf.Spectrum)
+		self.assertEqual(self.splitter.SetOutputChannels.GetType(), tuple)
+		self.assertEqual(self.splitter.GetOutput.GetType(), sumpf.Spectrum)
+		self.assertEqual(self.splitter.GetNumberOfOutputChannels.GetType(), int)
+		common.test_connection_observers(testcase=self,
+		                                 inputs=[self.splitter.SetInput, self.splitter.SetOutputChannels],
+		                                 noinputs=[],
+		                                 output=self.splitter.GetOutput)
+		common.test_connection_observers(testcase=self,
+		                                 inputs=[self.splitter.SetInput, self.splitter.SetOutputChannels],
+		                                 noinputs=[],
+		                                 output=self.splitter.GetNumberOfOutputChannels)
 

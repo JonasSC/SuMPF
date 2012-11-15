@@ -64,18 +64,18 @@ class SplitChannelData(object):
 		"""
 		return len(self.__channels)
 
-	@sumpf.Input(list, "GetOutput")
+	@sumpf.Input(tuple, ["GetOutput", "GetNumberOfOutputChannels"])
 	def SetOutputChannels(self, channels):
 		"""
 		Sets the channels of the input data set that shall be copied to the output.
-		@param channels: a flag like type(self).ALL or an integer or a list of integers that are the indexes of the selected input data set's channels
+		@param channels: a flag like type(self).ALL or an integer or a tuple of integers that are the indexes of the selected input data set's channels
 		"""
 		if channels == SplitChannelData.ALL:
 			self.__all = True
 		else:
 			self.__all = False
 			if isinstance(channels, int):
-				channels = [channels]
+				channels = (channels,)
 			length = len(self._input.GetChannels())
 			for i in channels:
 				if i < 0:
@@ -127,7 +127,7 @@ class SplitSignal(SplitChannelData):
 			data = sumpf.Signal()
 		SplitChannelData.__init__(self, data, channels)
 
-	@sumpf.Input(sumpf.Signal, "GetOutput")
+	@sumpf.Input(sumpf.Signal, ["GetOutput", "GetNumberOfOutputChannels"])
 	def SetInput(self, data):
 		"""
 		Sets the Signal from which the channels are taken.
@@ -175,7 +175,7 @@ class SplitSpectrum(SplitChannelData):
 			data = sumpf.Spectrum()
 		SplitChannelData.__init__(self, data, channels)
 
-	@sumpf.Input(sumpf.Spectrum, "GetOutput")
+	@sumpf.Input(sumpf.Spectrum, ["GetOutput", "GetNumberOfOutputChannels"])
 	def SetInput(self, data):
 		"""
 		Sets the Spectrum from which the channels are taken.
