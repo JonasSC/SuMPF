@@ -19,5 +19,6 @@ from ._channels.copychannels import CopySignalChannels, CopySpectrumChannels
 from ._channels.cutsignal import CutSignal
 from ._channels.merge import MergeSignals, MergeSpectrums
 from ._channels.select import SelectSignal, SelectSpectrum
+from ._channels.shiftsignal import ShiftSignal
 from ._channels.split import SplitSignal, SplitSpectrum
 
