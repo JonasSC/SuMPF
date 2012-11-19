@@ -20,3 +20,6 @@ from ._plotting.spectrumplotwindow import SpectrumPlotWindow
 from ._plotting.signalplotpanel import SignalPlotPanel
 from ._plotting.spectrumplotpanel import SpectrumPlotPanel
 
+from ._plotting.tiledsignalplotpanel import TiledSignalPlotPanel
+from ._plotting.tiledspectrumplotpanel import TiledSpectrumPlotPanel
+

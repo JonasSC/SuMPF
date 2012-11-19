@@ -131,11 +131,11 @@ class GuiWindow(sumpf.gui.Window):
 		self.__controlsizer.Add(self.__clear, 0, wx.ALIGN_BOTTOM | wx.EXPAND)
 		# plots
 		self.__plotnotebook = wx.Notebook(parent=self, size=(800, 600))
-		self.__recordedtransferfunctionpage = sumpf.modules.SpectrumPlotPanel(parent=self.__plotnotebook, hidden_plots=set(["Phase", "GroupDelay"]))
+		self.__recordedtransferfunctionpage = sumpf.modules.SpectrumPlotPanel(parent=self.__plotnotebook, hidden_components=set(["Phase", "GroupDelay"]))
 		self.__plotnotebook.AddPage(self.__recordedtransferfunctionpage, "Recorded Transfer Function")
 		self.__recordedimpulseresponsepage = sumpf.modules.SignalPlotPanel(parent=self.__plotnotebook)
 		self.__plotnotebook.AddPage(self.__recordedimpulseresponsepage, "Recorded Impulse Response")
-		self.__processedtransferfunctionpage = sumpf.modules.SpectrumPlotPanel(parent=self.__plotnotebook, hidden_plots=set(["Phase", "GroupDelay"]))
+		self.__processedtransferfunctionpage = sumpf.modules.SpectrumPlotPanel(parent=self.__plotnotebook, hidden_components=set(["Phase", "GroupDelay"]))
 		self.__plotnotebook.AddPage(self.__processedtransferfunctionpage, "Processed Transfer Function")
 		self.__processedimpulseresponsepage = sumpf.modules.SignalPlotPanel(parent=self.__plotnotebook)
 		self.__plotnotebook.AddPage(self.__processedimpulseresponsepage, "Processed Impulse Response")

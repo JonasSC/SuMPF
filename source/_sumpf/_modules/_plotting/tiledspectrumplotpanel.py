@@ -15,16 +15,18 @@
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 import sumpf
-from .lineplotpanel import LinePlotPanel
+from .tiledlineplotpanel import TiledLinePlotPanel
 
 
-class SpectrumPlotPanel(LinePlotPanel):
+class TiledSpectrumPlotPanel(TiledLinePlotPanel):
 	"""
-	A wx Panel that contains a plot of a Spectrum and the corresponding toolbar.
+	A wx Panel that contains a separate plot for each channel of a Spectrum and
+	the toolbar for the plots.
 	This panel is meant to be integrated into a GUI. If you want a simple plot
-	consider using SpectrumPlotWindow.
+	window, consider using SpectrumPlotWindow, although that will plot all channels
+	in one plot.
 	"""
-	def __init__(self, parent, x_interval=(20, 20000), margin=0.1, show_legend=True, show_grid=None, show_cursors=True, cursor_positions=[], log_x=True, log_y=set(["Magnitude"]), hidden_components=set(["GroupDelay"])):
+	def __init__(self, parent, orientation=TiledLinePlotPanel.HORIZONTAL, x_interval=(20, 20000), margin=0.07, show_legend=False, show_grid=None, show_cursors=True, cursor_positions=[], log_x=True, log_y=set(["Magnitude"]), hidden_components=set(["Phase", "GroupDelay"])):
 		"""
 		@param parent: the parent wx.Window of this panel
 		@param margin: the margin between the plots and the window border
@@ -36,19 +38,20 @@ class SpectrumPlotPanel(LinePlotPanel):
 		@param log_y: a set of plot names whose plots shall be plotted with logarithmic y axis rather than linear
 		@param hidden_components: a set of component names whose plots shall be hidden
 		"""
-		LinePlotPanel.__init__(self,
-		                       parent=parent,
-		                       components=["Magnitude", "Phase", "GroupDelay"],
-		                       x_caption="Frequency [Hz]",
-		                       x_interval=x_interval,
-		                       margin=margin,
-		                       show_legend=show_legend,
-		                       show_grid=show_grid,
-		                       show_cursors=show_cursors,
-		                       cursor_positions=cursor_positions,
-		                       log_x=log_x,
-		                       log_y=log_y,
-		                       hidden_components=hidden_components)
+		TiledLinePlotPanel.__init__(self,
+		                            parent=parent,
+		                            components=["Magnitude", "Phase", "GroupDelay"],
+		                            orientation=orientation,
+		                            x_caption="Frequency [Hz]",
+		                            x_interval=x_interval,
+		                            margin=margin,
+		                            show_legend=show_legend,
+		                            show_grid=show_grid,
+		                            show_cursors=show_cursors,
+		                            cursor_positions=cursor_positions,
+		                            log_x=log_x,
+		                            log_y=log_y,
+		                            hidden_components=hidden_components)
 
 	@sumpf.Input(sumpf.Spectrum)
 	def SetSpectrum(self, spectrum):

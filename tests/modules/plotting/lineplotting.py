@@ -55,7 +55,7 @@ class TestLinePlotting(unittest.TestCase):
 			time.sleep(0.01)
 		# change Data
 		self.gen1.SetFrequency(5.0)
-		self.assertEqual(len(list(plt1._panel._LinePlotPanel__plots.values())[0].lines), 2)	# The number of lines has to be the same as the number of channels in the input signal
+		self.assertEqual(len(plt1._panel._plots.values()[0].values()[0].lines), 2)	# The number of lines has to be the same as the number of channels in the input signal
 		# change plots
 		plt1.HideLegend()
 		plt2.HideGrid()
@@ -113,4 +113,34 @@ class TestLinePlotting(unittest.TestCase):
 		gc.collect()
 		self.assertEqual(gc.garbage, [])						# The plot should not leave any dead objects behind
 		sumpf.gui.join_mainloop()
+
+	def test_tiled_plots(self):
+		"""
+		Tests the TiledSignalPlotPanel and TiledSpectrumPlotPanel classes.
+		"""
+		import wx
+		signal = sumpf.Signal(channels=((1.0, 2.0, 3.0), (2.0, 1.0, 0.0), (0.5, 0.5, 0.5), (3.0, 0.0, 3.0), (1.0, 2.0, 1.0)))
+		spectrum = sumpf.modules.FourierTransform(signal=signal).GetSpectrum()
+		# TiledSignalPlotPanel
+		twindow = sumpf.gui.Window(parent=None, size=(800, 600))
+		tsizer = wx.BoxSizer(wx.VERTICAL)
+		twindow.SetSizer(tsizer)
+		tpanel = sumpf.modules.TiledSignalPlotPanel(parent=twindow)
+		tpanel.SetSignal(signal)
+		tsizer.Add(tpanel, 1, wx.EXPAND)
+		twindow.Layout()
+		twindow.Show()
+		tpanel.SetMargin(0.2)
+		twindow.Close()
+		# TiledSpectrumPlotPanel
+		fwindow = sumpf.gui.Window(parent=None, size=(800, 600))
+		fsizer = wx.BoxSizer(wx.VERTICAL)
+		fwindow.SetSizer(fsizer)
+		fpanel = sumpf.modules.TiledSpectrumPlotPanel(parent=fwindow)
+		fpanel.SetSpectrum(spectrum)
+		fsizer.Add(fpanel, 1, wx.EXPAND)
+		fwindow.Layout()
+		fwindow.Show()
+		fpanel.ShowGroupDelay()
+		fwindow.Close()
 

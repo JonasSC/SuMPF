@@ -15,16 +15,18 @@
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 import sumpf
-from .lineplotpanel import LinePlotPanel
+from .tiledlineplotpanel import TiledLinePlotPanel
 
 
-class SignalPlotPanel(LinePlotPanel):
+class TiledSignalPlotPanel(TiledLinePlotPanel):
 	"""
-	A wx Panel that contains a plot of a Signal and the corresponding toolbar.
+	A wx Panel that contains a separate plot for each channel of a Signal and the
+	toolbar for the plots.
 	This panel is meant to be integrated into a GUI. If you want a simple plot
-	consider using SignalPlotWindow.
+	window, consider using SignalPlotWindow, although that will plot all channels
+	in one plot.
 	"""
-	def __init__(self, parent, x_interval=None, margin=0.1, show_legend=True, show_grid=None, show_cursors=True, cursor_positions=[], log_x=False, log_y=False):
+	def __init__(self, parent, orientation=TiledLinePlotPanel.HORIZONTAL, x_interval=None, margin=0.07, show_legend=False, show_grid=None, show_cursors=True, cursor_positions=[], log_x=False, log_y=False):
 		"""
 		@param parent: the parent wx.Window of this panel
 		@param x_interval: a tuple (min, max) of the visible interval on the x axis, or None to set interval automatically
@@ -37,19 +39,20 @@ class SignalPlotPanel(LinePlotPanel):
 		log_plots = set()
 		if log_y:
 			log_plots = set(["Signal"])
-		LinePlotPanel.__init__(self,
-		                       parent,
-		                       components=["Signal"],
-		                       x_caption="Time [s]",
-		                       x_interval=x_interval,
-		                       margin=margin,
-		                       show_legend=show_legend,
-		                       show_grid=show_grid,
-		                       show_cursors=show_cursors,
-		                       cursor_positions=cursor_positions,
-		                       log_x=log_x,
-		                       log_y=log_plots,
-		                       hidden_components=set())
+		TiledLinePlotPanel.__init__(self,
+		                            parent,
+		                            components=["Signal"],
+		                            orientation=orientation,
+		                            x_caption="Time [s]",
+		                            x_interval=x_interval,
+		                            margin=margin,
+		                            show_legend=show_legend,
+		                            show_grid=show_grid,
+		                            show_cursors=show_cursors,
+		                            cursor_positions=cursor_positions,
+		                            log_x=log_x,
+		                            log_y=log_plots,
+		                            hidden_components=set())
 
 	@sumpf.Input(sumpf.Signal)
 	def SetSignal(self, signal):
@@ -69,12 +72,12 @@ class SignalPlotPanel(LinePlotPanel):
 		"""
 		Shows the y axis linearly.
 		"""
-		LinePlotPanel.LogarithmicY(self, component="Signal", log=False)
+		TiledLinePlotPanel.LogarithmicY(self, component="Signal", log=False)
 
 	@sumpf.Trigger()
 	def LogarithmicY(self, component="Signal", log=True):
 		"""
 		Shows the y axis logarithmically.
 		"""
-		LinePlotPanel.LogarithmicY(self, component=component, log=log)
+		TiledLinePlotPanel.LogarithmicY(self, component=component, log=log)
 

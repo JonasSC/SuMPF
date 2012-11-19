@@ -24,11 +24,11 @@ class Toolbar(wx.Panel):
 	"""
 	A toolbar for plots
 	"""
-	def __init__(self, parent, canvas, plots):
+	def __init__(self, parent, canvas, components):
 		"""
 		@param parent: the parent wx Window of this toolbar
 		@param canvas: the matplotlib canvas to which this toolbar belongs
-		@param plots: a list of names of the available plots
+		@param components: a list of names of the plotted data's components
 		"""
 		wx.Panel.__init__(self, parent=parent)
 		self.__parent = parent
@@ -49,13 +49,13 @@ class Toolbar(wx.Panel):
 		self.__cursors = self.__AddCheckbox(caption=" cursors ", onclick=self.__OnCursors, description="Shows/Hides the cursors")
 		self.__AddSeparator()
 		self.__logx = self.__AddCheckbox(caption=" log x ", onclick=self.__OnLogX, description="Shows the x axis logarithmicly")
-		self.__plots = {}
-		for p in plots:
-			self.__plots[p] = {}
-		self.__AddMenu(label="log y", entries=plots, function=self.__OnLogY)
-		if len(plots) > 1:
+		self.__components = {}
+		for c in components:
+			self.__components[c] = {}
+		self.__AddMenu(label="log y", entries=components, function=self.__OnLogY)
+		if len(components) > 1:
 			self.__AddSeparator()
-			self.__AddMenu(label="hide", entries=plots, function=self.__OnHide)
+			self.__AddMenu(label="hide", entries=components, function=self.__OnHide)
 		self.__AddSeparator()
 		# finish
 		self.Layout()
@@ -74,16 +74,16 @@ class Toolbar(wx.Panel):
 				self.__grid.Set3StateValue(wx.CHK_UNCHECKED)
 			self.__cursors.SetValue(cursors)
 			self.__logx.SetValue(logx)
-			if len(self.__plots) > 1:
-				for p in self.__plots:
+			if len(self.__components) > 1:
+				for p in self.__components:
 					if p in logy:
-						self.__plots[p]["log y"].Check()
-					self.__plots[p]["log y"].Enable(p in shown)
+						self.__components[p]["log y"].Check()
+					self.__components[p]["log y"].Enable(p in shown)
 					if p not in shown:
-						self.__plots[p]["hide"].Check()
-					self.__plots[p]["hide"].Enable()
+						self.__components[p]["hide"].Check()
+					self.__components[p]["hide"].Enable()
 				if len(shown) == 1:
-					self.__plots[list(shown)[0]]["hide"].Enable(False)
+					self.__components[list(shown)[0]]["hide"].Enable(False)
 		sumpf.gui.run_in_mainloop(update)
 
 	def __AddCheckbox(self, caption, onclick, threestate=False, description=""):
@@ -122,7 +122,7 @@ class Toolbar(wx.Panel):
 		for e in entries:
 			item = menu.AppendCheckItem(id=wx.ID_ANY, text=e)
 			self.Bind(event=wx.EVT_MENU, handler=function, source=item)
-			self.__plots[e][label] = item
+			self.__components[e][label] = item
 		sizer = wx.BoxSizer(wx.VERTICAL)
 		sizer.Add(button, 1, wx.EXPAND)
 		self.__sizer.Add(sizer, 0, wx.EXPAND)
@@ -171,15 +171,15 @@ class Toolbar(wx.Panel):
 		"""
 		Event handler for when a "log y"-checkbox is clicked.
 		"""
-		for p in self.__plots:
-			if event.GetId() == self.__plots[p]["log y"].GetId():
-				self.__parent.LogarithmicY(plot=p, log=self.__plots[p]["log y"].IsChecked())
+		for c in self.__components:
+			if event.GetId() == self.__components[c]["log y"].GetId():
+				self.__parent.LogarithmicY(component=c, log=self.__components[c]["log y"].IsChecked())
 
 	def __OnHide(self, event):
 		"""
 		Event handler for when a "hide"-checkbox is clicked.
 		"""
-		for p in self.__plots:
-			if event.GetId() == self.__plots[p]["hide"].GetId():
-				self.__parent.ShowPlot(plot=p, show=not self.__plots[p]["hide"].IsChecked())
+		for c in self.__components:
+			if event.GetId() == self.__components[c]["hide"].GetId():
+				self.__parent.ShowComponent(component=c, show=not self.__components[c]["hide"].IsChecked())
 
