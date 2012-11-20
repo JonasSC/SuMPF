@@ -45,13 +45,16 @@ def test_connection_observers(testcase, inputs, noinputs, output):
 			if isinstance(connector, sumpf.internal.TypedConnector):
 				if connector.GetType() in [int, float, complex]:
 					connector(connector.GetType()(2.0))				# pass an even, non-zero value to avoid raising errors
-				elif issubclass(i.GetType(), collections.Iterable):
+				elif not issubclass(i.GetType(), str) and issubclass(i.GetType(), collections.Iterable):
 					try:
 						connector(connector.GetType()([1, 2]))		# pass an iterable with two integers with ascending value to avoid raising errors
 					except IndexError:
 						connector(connector.GetType()([0]))			# if an IndexError is raised, pass an iterable with the index that most likely exists
 				else:
-					connector(connector.GetType()())
+					try:
+						connector(connector.GetType()())
+					except ValueError:
+						raise TypeError("Skip to shallow testing")
 			else:
 				i()
 

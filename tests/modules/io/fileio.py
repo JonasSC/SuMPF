@@ -22,12 +22,12 @@ import unittest
 import sumpf
 import _common as common
 
-@unittest.skipUnless(sumpf.config.get("write_to_disk"), "Tests that write to disk are skipped")
 @unittest.skipIf(sumpf.config.get("unload_numpy"), "Testing modules that require the full featured numpy are skipped")
 class TestFileIO(unittest.TestCase):
 	"""
 	A TestCase for the SignalFile and SpectrumFile modules.
 	"""
+	@unittest.skipUnless(sumpf.config.get("write_to_disk"), "Tests that write to disk are skipped")
 	def test_signal_file(self):
 		"""
 		Tests if the SignalFile module works as expected.
@@ -60,7 +60,7 @@ class TestFileIO(unittest.TestCase):
 				fileio = sumpf.modules.SignalFile(filename=filename1, signal=signal1, format=f)
 				fileio = sumpf.modules.SignalFile(filename=filename1, format=f)
 				output = fileio.GetSignal()
-				self.__CompareSignals(output, signal1, format_info, "TestFileIO1")			# the existent file should be overridden when a data set is provided
+				self.__CompareSignals(output, signal1, format_info, "TestFileIO1")			# the existent file should be overwritten when a data set is provided
 				fileio.SetSignal(signal2)													# changing the data set should have triggered a rewrite of the file
 				fileio = sumpf.modules.SignalFile()
 				fileio.SetFilename(filename1)
@@ -95,6 +95,7 @@ class TestFileIO(unittest.TestCase):
 			for l in signal1.GetLabels():
 				self.assertTrue(l.startswith(filename))
 
+	@unittest.skipUnless(sumpf.config.get("write_to_disk"), "Tests that write to disk are skipped")
 	def test_spectrum_file(self):
 		"""
 		Tests if the SpectrumFile module works as expected.
@@ -121,8 +122,8 @@ class TestFileIO(unittest.TestCase):
 				fileio = sumpf.modules.SpectrumFile(filename=filename1, spectrum=spectrum1, format=f)
 				fileio = sumpf.modules.SpectrumFile(filename=filename1, format=f)
 				output = fileio.GetSpectrum()
-				self.assertEqual(output.GetChannels(), spectrum1.GetChannels())					# the existent file should be overridden when a data set is provided
-				self.assertEqual(output.GetResolution(), spectrum1.GetResolution())				# ...and then loaded when no data set, but a filename have benn provided
+				self.assertEqual(output.GetChannels(), spectrum1.GetChannels())					# the existent file should be overwritten when a data set is provided
+				self.assertEqual(output.GetResolution(), spectrum1.GetResolution())				# ...and then loaded when no data set, but a filename has been provided
 				self.assertEqual(output.GetLabels(), spectrum1.GetLabels())						#
 				fileio.SetSpectrum(spectrum2)
 				fileio = sumpf.modules.SpectrumFile()
@@ -146,4 +147,28 @@ class TestFileIO(unittest.TestCase):
 				os.remove(filename2e)
 		finally:
 			shutil.rmtree(tempdir)
+
+	def test_connectors(self):
+		"""
+		Tests if the connectors are properly decorated.
+		This is only a shallow test, so it does not write to the disk.
+		"""
+		# SignalFile
+		sf = sumpf.modules.SignalFile()
+		self.assertEqual(sf.SetSignal.GetType(), sumpf.Signal)
+		self.assertEqual(sf.SetFilename.GetType(), str)
+#		self.assertEqual(sf.SetFormat.GetType(), type(sumpf.modules.SignalFile.GetFormats()[0]))
+		self.assertEqual(sf.GetSignal.GetType(), sumpf.Signal)
+		self.assertEqual(sf.SetSignal.GetObservers(), [sf.GetSignal])
+		self.assertEqual(sf.SetFilename.GetObservers(), [sf.GetSignal])
+		self.assertEqual(sf.SetFormat.GetObservers(), [sf.GetSignal])
+		# SignalFile
+		sf = sumpf.modules.SpectrumFile()
+		self.assertEqual(sf.SetSpectrum.GetType(), sumpf.Spectrum)
+		self.assertEqual(sf.SetFilename.GetType(), str)
+#		self.assertEqual(sf.SetFormat.GetType(), type(sumpf.modules.SpectrumFile.GetFormats()[0]))
+		self.assertEqual(sf.GetSpectrum.GetType(), sumpf.Spectrum)
+		self.assertEqual(sf.SetSpectrum.GetObservers(), [sf.GetSpectrum])
+		self.assertEqual(sf.SetFilename.GetObservers(), [sf.GetSpectrum])
+		self.assertEqual(sf.SetFormat.GetObservers(), [sf.GetSpectrum])
 

@@ -16,6 +16,8 @@
 
 import unittest
 import sumpf
+import _common as common
+
 
 @unittest.skipIf(sumpf.config.get("unload_numpy"), "Testing modules that require the full featured numpy are skipped")
 class TestConvolveSignals(unittest.TestCase):
@@ -53,4 +55,18 @@ class TestConvolveSignals(unittest.TestCase):
 		self.assertRaises(ValueError, cnv.GetOutput)																# shall fail because input Signals do not have the same sampling rate
 		cnv.SetInput2(sumpf.Signal(channels=((1.0, 0.0), (5.0, 5.0)), samplingrate=48000))						# adding a Signal with different channel count or different length shall not fail
 		self.assertEqual(cnv.GetOutput().GetChannels(), ((0.0, 0.5, 0.0),))
+
+	def test_connectors(self):
+		"""
+		Tests if the connectors are properly decorated.
+		"""
+		cnv = sumpf.modules.ConvolveSignals()
+		self.assertEqual(cnv.SetInput1.GetType(), sumpf.Signal)
+		self.assertEqual(cnv.SetInput2.GetType(), sumpf.Signal)
+		self.assertEqual(cnv.SetConvolutionMode.GetType(), type(sumpf.modules.ConvolveSignals.FULL))
+		self.assertEqual(cnv.GetOutput.GetType(), sumpf.Signal)
+		common.test_connection_observers(testcase=self,
+		                                 inputs=[cnv.SetInput1, cnv.SetInput2, cnv.SetConvolutionMode],
+		                                 noinputs=[],
+		                                 output=cnv.GetOutput)
 

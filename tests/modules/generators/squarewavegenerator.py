@@ -17,6 +17,7 @@
 import unittest
 import math
 import sumpf
+import _common as common
 
 
 class TestSquareWaveGenerator(unittest.TestCase):
@@ -63,4 +64,19 @@ class TestSquareWaveGenerator(unittest.TestCase):
 		samples = self.gen.GetSignal().GetChannels()[0]
 		self.assertEqual(samples[0], -1.0)				# Check if the square wave with phase of 180 degrees starts with -1.0...
 		self.assertLess(samples[4], samples[5])			#  ... and raises after half a period
+
+	def test_connectors(self):
+		"""
+		Tests if the connectors are properly decorated.
+		"""
+		gen = sumpf.modules.SquareWaveGenerator()
+		self.assertEqual(gen.SetLength.GetType(), int)
+		self.assertEqual(gen.SetSamplingRate.GetType(), float)
+		self.assertEqual(gen.SetFrequency.GetType(), float)
+		self.assertEqual(gen.SetPhase.GetType(), float)
+		self.assertEqual(gen.GetSignal.GetType(), sumpf.Signal)
+		common.test_connection_observers(testcase=self,
+		                                 inputs=[gen.SetLength, gen.SetSamplingRate, gen.SetFrequency, gen.SetPhase],
+		                                 noinputs=[],
+		                                 output=gen.GetSignal)
 

@@ -17,6 +17,7 @@
 import unittest
 import math
 import sumpf
+import _common as common
 
 
 class TestFilterGenerator(unittest.TestCase):
@@ -56,4 +57,21 @@ class TestFilterGenerator(unittest.TestCase):
 		self.assertAlmostEqual(channel[50], 1.0)							# gain at resonant frequency should be 1
 		self.assertAlmostEqual(channel[45], 1.0 / math.sqrt(2.0), 1)		# gain at lower cutoff frequency should be sqrt(2)
 		self.assertAlmostEqual(channel[55], 1.0 / math.sqrt(2.0), 1)		# gain at upper cutoff frequency should be sqrt(2)
+
+	def test_connectors(self):
+		"""
+		Tests if the connectors are properly decorated.
+		"""
+		gen = sumpf.modules.FilterGenerator()
+		self.assertEqual(gen.SetLength.GetType(), int)
+		self.assertEqual(gen.SetResolution.GetType(), float)
+		self.assertEqual(gen.SetMaximumFrequency.GetType(), float)
+		self.assertEqual(gen.SetCoefficients.GetType(), list)
+		self.assertEqual(gen.SetFrequency.GetType(), float)
+		self.assertEqual(gen.SetLowpassToHighpassTransform.GetType(), bool)
+		self.assertEqual(gen.GetSpectrum.GetType(), sumpf.Spectrum)
+		common.test_connection_observers(testcase=self,
+		                                 inputs=[gen.SetLength, gen.SetResolution, gen.SetMaximumFrequency, gen.SetCoefficients, gen.SetFrequency, gen.SetLowpassToHighpassTransform],
+		                                 noinputs=[],
+		                                 output=gen.GetSpectrum)
 

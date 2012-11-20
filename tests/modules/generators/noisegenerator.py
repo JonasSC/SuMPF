@@ -16,6 +16,7 @@
 
 import unittest
 import sumpf
+import _common as common
 
 try:
 	import numpy
@@ -195,4 +196,18 @@ class TestNoiseGenerator(unittest.TestCase):
 		gen.Seed(42)
 		channel = gen.GetSignal().GetChannels()[0]
 		self.assertEqual(channel, (-0.14409032957792836, -0.1729036003315193, -0.11131586156766246, 0.7019837250988631, -0.12758828378288709))
+
+	def test_connectors(self):
+		"""
+		Tests if the connectors are properly decorated.
+		"""
+		gen = sumpf.modules.NoiseGenerator()
+		self.assertEqual(gen.SetLength.GetType(), int)
+		self.assertEqual(gen.SetSamplingRate.GetType(), float)
+		self.assertEqual(gen.SetDistribution.GetType(), sumpf.internal.Distribution)
+		self.assertEqual(gen.GetSignal.GetType(), sumpf.Signal)
+		common.test_connection_observers(testcase=self,
+		                                 inputs=[gen.SetLength, gen.SetSamplingRate, gen.SetDistribution],
+		                                 noinputs=[],
+		                                 output=gen.GetSignal)
 

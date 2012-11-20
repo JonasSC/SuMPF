@@ -16,6 +16,7 @@
 
 import unittest
 import sumpf
+import _common as common
 
 
 class TestSignalAlgebra(unittest.TestCase):
@@ -96,4 +97,17 @@ class TestSignalAlgebra(unittest.TestCase):
 		self.assertRaises(ValueError, alg.GetOutput)									# shall fail if Signals do not have the same sampling rate
 		alg.SetInput2(sumpf.Signal(channels=((6.0, 4.0),), samplingrate=48000))		# adding a Signal with different channel count shall not fail. Surplus channels shall simply be cropped.
 		self.assertEqual(alg.GetOutput().GetChannels(), ((10.0, 10.0),))
+
+	def test_connectors(self):
+		"""
+		Tests if the connectors are properly decorated.
+		"""
+		for m in [sumpf.modules.AddSignals(), sumpf.modules.SubtractSignals(), sumpf.modules.MultiplySignals(), sumpf.modules.DivideSignals()]:
+			self.assertEqual(m.SetInput1.GetType(), sumpf.Signal)
+			self.assertEqual(m.SetInput2.GetType(), sumpf.Signal)
+			self.assertEqual(m.GetOutput.GetType(), sumpf.Signal)
+			common.test_connection_observers(testcase=self,
+			                                 inputs=[m.SetInput1, m.SetInput2],
+			                                 noinputs=[],
+			                                 output=m.GetOutput)
 

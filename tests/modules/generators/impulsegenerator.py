@@ -16,6 +16,7 @@
 
 import unittest
 import sumpf
+import _common as common
 
 
 class TestImpulseGenerator(unittest.TestCase):
@@ -81,4 +82,19 @@ class TestImpulseGenerator(unittest.TestCase):
 		"""
 		self.gen.SetDelay((self.len / self.smr) + 1)
 		self.assertRaises(ValueError, self.gen.GetSignal)		# generating a Signal with a greater initial delay than the length of the Signal shall raise an error
+
+	def test_connectors(self):
+		"""
+		Tests if the connectors are properly decorated.
+		"""
+		gen = sumpf.modules.ImpulseGenerator()
+		self.assertEqual(gen.SetLength.GetType(), int)
+		self.assertEqual(gen.SetSamplingRate.GetType(), float)
+		self.assertEqual(gen.SetDelay.GetType(), float)
+		self.assertEqual(gen.SetFrequency.GetType(), float)
+		self.assertEqual(gen.GetSignal.GetType(), sumpf.Signal)
+		common.test_connection_observers(testcase=self,
+		                                 inputs=[gen.SetLength, gen.SetSamplingRate, gen.SetDelay, gen.SetFrequency],
+		                                 noinputs=[],
+		                                 output=gen.GetSignal)
 

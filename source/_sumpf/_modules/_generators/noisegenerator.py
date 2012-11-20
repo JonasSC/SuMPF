@@ -26,6 +26,8 @@ from .signalgenerator import SignalGenerator
 class Distribution(object):
 	"""
 	An abstract base class to define probability distributions for the NoiseGenerator.
+	Derived classes have to implement the GetSamples method. Implementing a constructor
+	is optional to store parameters for the probability distribution.
 	"""
 	def SetRandom(self, random_instance):
 		"""

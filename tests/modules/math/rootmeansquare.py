@@ -16,6 +16,7 @@
 
 import unittest
 import sumpf
+import _common as common
 
 try:
 	import numpy
@@ -72,4 +73,17 @@ class TestRootMeanSquare(unittest.TestCase):
 		self.assertEqual(rms.GetOutput(), output)												# sumpf.RootMeanSquare.SLOW should be the same as an integration time of 1.0s
 		rms.SetIntegrationTime(5.0)
 		self.assertEqual(len(rms.GetOutput()), len(signal))										# the length of the output Signal should be the same as the length of the input Signal
+
+	def test_connectors(self):
+		"""
+		Tests if the connectors are properly decorated.
+		"""
+		rms = sumpf.modules.RootMeanSquare()
+		self.assertEqual(rms.SetInput.GetType(), sumpf.Signal)
+		self.assertEqual(rms.SetIntegrationTime.GetType(), float)
+		self.assertEqual(rms.GetOutput.GetType(), sumpf.Signal)
+		common.test_connection_observers(testcase=self,
+		                                 inputs=[rms.SetInput, rms.SetIntegrationTime],
+		                                 noinputs=[],
+		                                 output=rms.GetOutput)
 

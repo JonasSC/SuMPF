@@ -17,6 +17,7 @@
 import unittest
 import math
 import sumpf
+import _common as common
 
 
 class TestSineWaveGenerator(unittest.TestCase):
@@ -59,4 +60,19 @@ class TestSineWaveGenerator(unittest.TestCase):
 		samples = self.gen.GetSignal().GetChannels()[0]
 		self.assertAlmostEqual(samples[0], 0.0)			# Check if the sine with phase of 180 degrees starts with 0...
 		self.assertLess(samples[1], samples[0])			#  ... and falls from that point on
+
+	def test_connectors(self):
+		"""
+		Tests if the connectors are properly decorated.
+		"""
+		gen = sumpf.modules.SineWaveGenerator()
+		self.assertEqual(gen.SetLength.GetType(), int)
+		self.assertEqual(gen.SetSamplingRate.GetType(), float)
+		self.assertEqual(gen.SetFrequency.GetType(), float)
+		self.assertEqual(gen.SetPhase.GetType(), float)
+		self.assertEqual(gen.GetSignal.GetType(), sumpf.Signal)
+		common.test_connection_observers(testcase=self,
+		                                 inputs=[gen.SetLength, gen.SetSamplingRate, gen.SetFrequency, gen.SetPhase],
+		                                 noinputs=[],
+		                                 output=gen.GetSignal)
 

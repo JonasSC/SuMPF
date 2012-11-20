@@ -57,3 +57,24 @@ class TestFourierTransform(unittest.TestCase):
 		outsignal = ifft.GetSignal()
 		common.compare_signals_almost_equal(testcase=self, signal1=insignal, signal2=outsignal)
 
+	def test_connectors(self):
+		"""
+		Tests if the connectors are properly decorated.
+		"""
+		# FourierTransform
+		fft = sumpf.modules.FourierTransform()
+		self.assertEqual(fft.SetSignal.GetType(), sumpf.Signal)
+		self.assertEqual(fft.GetSpectrum.GetType(), sumpf.Spectrum)
+		common.test_connection_observers(testcase=self,
+		                                 inputs=[fft.SetSignal],
+		                                 noinputs=[],
+		                                 output=fft.GetSpectrum)
+		# InverseFourierTransform
+		ifft = sumpf.modules.InverseFourierTransform()
+		self.assertEqual(ifft.SetSpectrum.GetType(), sumpf.Spectrum)
+		self.assertEqual(ifft.GetSignal.GetType(), sumpf.Signal)
+		common.test_connection_observers(testcase=self,
+		                                 inputs=[ifft.SetSpectrum],
+		                                 noinputs=[],
+		                                 output=ifft.GetSignal)
+

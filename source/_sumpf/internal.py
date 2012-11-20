@@ -27,3 +27,6 @@ from _sumpf._data.channeldata import ChannelData
 from _sumpf._modules._generators.signalgenerator import SignalGenerator
 from _sumpf._modules._generators.spectrumgenerator import SpectrumGenerator
 
+from _sumpf._modules._generators.noisegenerator import Distribution
+from _sumpf._modules._generators.windowgenerator import WindowFunction
+

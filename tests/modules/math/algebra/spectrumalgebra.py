@@ -16,6 +16,7 @@
 
 import unittest
 import sumpf
+import _common as common
 
 
 class TestSpectrumAlgebra(unittest.TestCase):
@@ -96,4 +97,17 @@ class TestSpectrumAlgebra(unittest.TestCase):
 		self.assertRaises(ValueError, alg.GetOutput)									# shall fail if Spectrums do not have the same resolution
 		alg.SetInput2(sumpf.Spectrum(channels=((6.0, 4.0),), resolution=24000.0))		# adding a Spectrum with different channel count shall not fail. Surplus channels shall be cropped
 		self.assertEqual(alg.GetOutput().GetChannels(), ((10.0, 10.0),))
+
+	def test_connectors(self):
+		"""
+		Tests if the connectors are properly decorated.
+		"""
+		for m in [sumpf.modules.AddSpectrums(), sumpf.modules.SubtractSpectrums(), sumpf.modules.MultiplySpectrums(), sumpf.modules.DivideSpectrums()]:
+			self.assertEqual(m.SetInput1.GetType(), sumpf.Spectrum)
+			self.assertEqual(m.SetInput2.GetType(), sumpf.Spectrum)
+			self.assertEqual(m.GetOutput.GetType(), sumpf.Spectrum)
+			common.test_connection_observers(testcase=self,
+			                                 inputs=[m.SetInput1, m.SetInput2],
+			                                 noinputs=[],
+			                                 output=m.GetOutput)
 

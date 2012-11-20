@@ -17,6 +17,7 @@
 import unittest
 import math
 import sumpf
+import _common as common
 
 
 class TestSweepGenerator(unittest.TestCase):
@@ -81,4 +82,19 @@ class TestSweepGenerator(unittest.TestCase):
 #		d2 = math.cos(math.asin(s2) * 2 * math.pi * fT) * 2 * math.pi * fT
 #		d = (d1 + d2) / (2 * self.sr)
 #		self.assertAlmostEqual(s, d, 1)				# compare the stop frequency when frequency increases linearly
+
+	def test_connectors(self):
+		"""
+		Tests if the connectors are properly decorated.
+		"""
+		gen = sumpf.modules.SweepGenerator()
+		self.assertEqual(gen.SetLength.GetType(), int)
+		self.assertEqual(gen.SetSamplingRate.GetType(), float)
+		self.assertEqual(gen.SetStartFrequency.GetType(), float)
+		self.assertEqual(gen.SetStopFrequency.GetType(), float)
+		self.assertEqual(gen.GetSignal.GetType(), sumpf.Signal)
+		common.test_connection_observers(testcase=self,
+		                                 inputs=[gen.SetLength, gen.SetSamplingRate, gen.SetStartFrequency, gen.SetStopFrequency],
+		                                 noinputs=[],
+		                                 output=gen.GetSignal)
 

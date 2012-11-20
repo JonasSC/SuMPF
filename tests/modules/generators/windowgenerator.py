@@ -16,6 +16,7 @@
 
 import unittest
 import sumpf
+import _common as common
 
 
 @unittest.skipIf(sumpf.config.get("unload_numpy"), "Testing modules that require the full featured numpy are skipped")
@@ -78,4 +79,20 @@ class TestWindowGenerator(unittest.TestCase):
 				self.assertNotEqual(s, 0.0)											# neither can they be 0.0
 			if limit == -2:
 				self.assertEqual(self.gen.GetSignal().GetChannels()[0][0], 0.0)		# if the window starts with 0.0 check that first sample
+
+	def test_connectors(self):
+		"""
+		Tests if the connectors are properly decorated.
+		"""
+		gen = sumpf.modules.WindowGenerator()
+		self.assertEqual(gen.SetLength.GetType(), int)
+		self.assertEqual(gen.SetSamplingRate.GetType(), float)
+		self.assertEqual(gen.SetInterval.GetType(), tuple)
+		self.assertEqual(gen.SetRaising.GetType(), bool)
+		self.assertEqual(gen.SetFunction.GetType(), sumpf.internal.WindowFunction)
+		self.assertEqual(gen.GetSignal.GetType(), sumpf.Signal)
+		common.test_connection_observers(testcase=self,
+		                                 inputs=[gen.SetLength, gen.SetSamplingRate, gen.SetInterval, gen.SetRaising, gen.SetFunction],
+		                                 noinputs=[],
+		                                 output=gen.GetSignal)
 
