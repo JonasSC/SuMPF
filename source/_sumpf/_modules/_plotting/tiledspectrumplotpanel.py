@@ -23,8 +23,8 @@ class TiledSpectrumPlotPanel(TiledLinePlotPanel):
 	A wx Panel that contains a separate plot for each channel of a Spectrum and
 	the toolbar for the plots.
 	This panel is meant to be integrated into a GUI. If you want a simple plot
-	window, consider using SpectrumPlotWindow, although that will plot all channels
-	in one plot.
+	window, consider using SpectrumPlotWindow and give this class as panel_class
+	parameter to the constructor.
 	"""
 	def __init__(self, parent, orientation=TiledLinePlotPanel.HORIZONTAL, x_interval=(20, 20000), margin=0.07, show_legend=False, show_grid=None, show_cursors=True, cursor_positions=[], log_x=True, log_y=set(["Magnitude"]), hidden_components=set(["Phase", "GroupDelay"])):
 		"""

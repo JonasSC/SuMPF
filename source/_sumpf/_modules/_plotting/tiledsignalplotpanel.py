@@ -23,8 +23,8 @@ class TiledSignalPlotPanel(TiledLinePlotPanel):
 	A wx Panel that contains a separate plot for each channel of a Signal and the
 	toolbar for the plots.
 	This panel is meant to be integrated into a GUI. If you want a simple plot
-	window, consider using SignalPlotWindow, although that will plot all channels
-	in one plot.
+	window, consider using SignalPlotWindow and give this class as panel_class
+	parameter to the constructor.
 	"""
 	def __init__(self, parent, orientation=TiledLinePlotPanel.HORIZONTAL, x_interval=None, margin=0.07, show_legend=False, show_grid=None, show_cursors=True, cursor_positions=[], log_x=False, log_y=False):
 		"""

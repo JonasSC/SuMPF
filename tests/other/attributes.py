@@ -38,7 +38,6 @@ class TestAttributes(unittest.TestCase):
 		fails = []
 		short_is_enough = ["AverageSpectrums",
 		                   "RelabelSignal", "RelabelSpectrum",
-		                   "SignalPlotWindow", "SpectrumPlotWindow",
 		                   "DifferentiateSignal", "LogarithmSignal"]
 		for p, m, c, f, v in sumpf.helper.walk_module(sumpf):
 			for cls in c:

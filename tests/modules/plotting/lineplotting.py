@@ -81,7 +81,7 @@ class TestLinePlotting(unittest.TestCase):
 		plt2.Join()
 		# collect garbage
 		gc.collect()
-		self.assertEqual(gc.garbage, [])												# The plot should not leave any dead objects behind
+		self.assertEqual(gc.garbage, [])											# The plot should not leave any dead objects behind
 		sumpf.gui.join_mainloop()
 
 	def test_spectrum_plot(self):
@@ -119,8 +119,8 @@ class TestLinePlotting(unittest.TestCase):
 		Tests the TiledSignalPlotPanel and TiledSpectrumPlotPanel classes.
 		"""
 		import wx
-		signal = sumpf.Signal(channels=((1.0, 2.0, 3.0), (2.0, 1.0, 0.0), (0.5, 0.5, 0.5), (3.0, 0.0, 3.0), (1.0, 2.0, 1.0)))
-		spectrum = sumpf.modules.FourierTransform(signal=signal).GetSpectrum()
+		signal = sumpf.Signal(channels=((1.0, 2.0, 3.0, 4.0), (2.0, 1.0, 0.0, -1.0), (0.5, 0.5, 0.5, 0.5), (3.0, 0.0, 3.0, 1.0), (1.0, 2.0, 1.0, 3.0)), samplingrate=4.0)
+		fft = sumpf.modules.FourierTransform(signal=signal)
 		# TiledSignalPlotPanel
 		twindow = sumpf.gui.Window(parent=None, size=(800, 600))
 		tsizer = wx.BoxSizer(wx.VERTICAL)
@@ -132,15 +132,15 @@ class TestLinePlotting(unittest.TestCase):
 		twindow.Show()
 		tpanel.SetMargin(0.2)
 		twindow.Close()
-		# TiledSpectrumPlotPanel
-		fwindow = sumpf.gui.Window(parent=None, size=(800, 600))
-		fsizer = wx.BoxSizer(wx.VERTICAL)
-		fwindow.SetSizer(fsizer)
-		fpanel = sumpf.modules.TiledSpectrumPlotPanel(parent=fwindow)
-		fpanel.SetSpectrum(spectrum)
-		fsizer.Add(fpanel, 1, wx.EXPAND)
-		fwindow.Layout()
+		# TiledSpectrumPlotPanel in a SpectrumPlotWindow
+		fwindow = sumpf.modules.SpectrumPlotWindow(panel_class=sumpf.modules.TiledSpectrumPlotPanel)
+		sumpf.connect(fft.GetSpectrum, fwindow.SetSpectrum)
 		fwindow.Show()
-		fpanel.ShowGroupDelay()
+		fwindow.SetCursors([0.25, 0.5, 0.75])
+		fwindow.ShowPhase()
 		fwindow.Close()
+		# collect garbage
+		gc.collect()
+		self.assertEqual(gc.garbage, [])	# The plot should not leave any dead objects behind
+		sumpf.gui.join_mainloop()
 
