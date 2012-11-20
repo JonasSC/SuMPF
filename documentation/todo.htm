@@ -202,23 +202,6 @@
 				</td>
 			</tr>
 			<tr>
-				<td class="subsection">Progress indicator for connections</td>
-				<td colspan="2" class="text">
-					When a set of calculations is triggered by changing a parameter
-					in a processing chain, it could be possible to implement a
-					progress indicator class that tracks the progress of the
-					calculations. This indicator could then for example update a
-					wx.Gauge<br />
-					This could be implemented like the following:
-					<ol>
-						<li>Provide a good API to initialize a progress indicator and how notify a setter-methoud about it.</li>
-						<li>Count the number of influenced connections during the look ahead. Also tell the getter-methods to which progress indicator their finished calculation shall be reported.</li>
-						<li>Then each time a getter-method has calculated its value, inform the progress indicator about it</li>
-						<li>The progress indicator could then be connected to a modified wx.Gauge or some other progress visualization.</li>
-					</ol>
-				</td>
-			</tr>
-			<tr>
 				<td class="subsection">A feedback loop</td>
 				<td colspan="2" class="text">
 					A module that implements a feedback loop for processing chains.
