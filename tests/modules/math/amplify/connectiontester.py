@@ -33,3 +33,11 @@ class ConnectionTester(object):
 	def GetSpectrum(self):
 		return sumpf.Spectrum(channels=((1.0, 2.0, 3.0),), resolution=42.0)
 
+	@sumpf.Output(float)
+	def GetScalarFactor(self):
+		return 2.0
+
+	@sumpf.Output(tuple)
+	def GetVectorialFactor(self):
+		return (1.0, 2.0, 3.0)
+

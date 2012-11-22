@@ -58,9 +58,26 @@ class TestAmplifySignal(unittest.TestCase):
 		sumpf.connect(con.GetSignal, amp.SetInput)
 		self.assertTrue(con.triggered)	# setting the input should have triggered the trigger
 		con.triggered = False
-		amp.SetAmplificationFactor(10)
+		sumpf.connect(con.GetScalarFactor, amp.SetAmplificationFactor)
 		self.assertTrue(con.triggered)	# setting the amplification should have triggered the trigger
 		output = amp.GetOutput()
 		self.assertEqual(output.GetSamplingRate(), 42)
-		self.assertEqual(output.GetChannels(), ((10.0, 20.0, 30.0),))
+		self.assertEqual(output.GetChannels(), ((2.0, 4.0, 6.0),))
+
+	def test_vectorial_factor(self):
+		"""
+		tests if a vectorial amplification factor works as expected.
+		"""
+		con = ConnectionTester()
+		amp = sumpf.modules.AmplifySignal()
+		channels = len(con.GetVectorialFactor())
+		cpy = sumpf.modules.CopySignalChannels(channelcount=channels)
+		sumpf.connect(con.GetSignal, cpy.SetInput)
+		sumpf.connect(cpy.GetOutput, amp.SetInput)
+		sumpf.connect(con.GetVectorialFactor, amp.SetAmplificationFactor)
+		self.assertEqual(amp.GetOutput().GetChannels(), ((1.0, 2.0, 3.0), (2.0, 4.0, 6.0), (3.0, 6.0, 9.0)))
+		cpy.SetChannelCount(channels - 1)
+		self.assertEqual(amp.GetOutput().GetChannels(), ((1.0, 2.0, 3.0), (2.0, 4.0, 6.0)))
+		cpy.SetChannelCount(channels + 1)
+		self.assertEqual(amp.GetOutput().GetChannels(), ((1.0, 2.0, 3.0), (1.0, 2.0, 3.0), (1.0, 2.0, 3.0), (1.0, 2.0, 3.0)))
 

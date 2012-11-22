@@ -15,6 +15,7 @@
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 import sumpf
+import collections
 
 try:
 	import numpy
@@ -35,13 +36,21 @@ class AmplifyChannelData(object):
 		self._input = input
 		self.__factor = factor
 
-	@sumpf.Input(float, "GetOutput")
+	@sumpf.Input((float, tuple), "GetOutput")
 	def SetAmplificationFactor(self, factor):
 		"""
-		Sets the amplification factor.
-		@param factor: the amplification factor
+		Sets the amplification factor(s).
+		The amplification factor can either be a float or a tuple of floats.
+		If one float is given, all channels will be amplified by the same factor,
+		while a tuple can define a separate factor for each channel.
+		If the tuple has less entries than the input data set has channels, the
+		first entry in the tuple will be taken as only amplification factor.
+		@param factor: the amplification factor as a float or a tuple of floats.
 		"""
-		self.__factor = float(factor)
+		if not isinstance(factor, collections.Iterable):
+			self.__factor = float(factor)
+		else:
+			self.__factor = factor
 
 	def SetInput(self, input):
 		"""
@@ -64,14 +73,25 @@ class AmplifyChannelData(object):
 		Calculates the amplified channels and returns them.
 		@retval : a tuple of channels which themselves are a tuple of samples
 		"""
-		if self._input is None:
-			return []
-		else:
+		def scalar(dataset, factor):
 			result = []
-			for c in self._input.GetChannels():
-				channel = tuple(numpy.multiply(c, self.__factor))
+			for c in dataset.GetChannels():
+				channel = tuple(numpy.multiply(c, factor))
 				result.append(channel)
 			return result
+		def vectorial(dataset, factors):
+			result = []
+			for i in range(len(dataset.GetChannels())):
+				channel = tuple(numpy.multiply(dataset.GetChannels()[i], factors[i]))
+				result.append(channel)
+			return result
+		if isinstance(self.__factor, collections.Iterable):
+			if len(self.__factor) >= len(self._input.GetChannels()):
+				return vectorial(dataset=self._input, factors=self.__factor)
+			else:
+				return scalar(dataset=self._input, factor=self.__factor[0])
+		else:
+			return scalar(dataset=self._input, factor=self.__factor)
 
 
 
