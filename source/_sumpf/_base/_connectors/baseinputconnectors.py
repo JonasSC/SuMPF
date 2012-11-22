@@ -126,7 +126,7 @@ class TypedInputConnector(InputConnector, TypedConnector):
 	def __init__(self, instance, data_type, method, observers):
 		"""
 		@param instance: The instance in which the method is replaced by this connector
-		@param data_type: The type of the data that is passed through this connection
+		@param data_type: The type of the data that is passed through this connection. This can also be a tuple of valid types
 		@param method: The method that is replaced by this connector
 		@param observers: The names of output methods that are affected by calling this object
 		"""
@@ -144,6 +144,10 @@ class TypedInputConnector(InputConnector, TypedConnector):
 		"""
 		InputConnector.CheckConnection(self, connector)
 		# Check for incompatible data types
-		if not issubclass(connector.GetType(), self._data_type):
-			raise TypeError("The input expects a different data type than the output delivers")
+		if isinstance(self.GetType(), tuple):
+			if connector.GetType() not in self.GetType():
+				raise TypeError("The input expects a different data type than the output delivers")
+		else:
+			if not issubclass(connector.GetType(), self.GetType()):
+				raise TypeError("The input expects a different data type than the output delivers")
 

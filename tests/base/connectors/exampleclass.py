@@ -59,7 +59,7 @@ class ExampleClass(object):
 		self.value = value
 		self.order.append("SetValue")
 
-	@sumpf.Input(int, ["GetValue", "GetValue2"])
+	@sumpf.Input((int, float), ["GetValue", "GetValue2"])
 	def SetValue2(self, value):
 		"""
 		Input with data_type int and two observers
@@ -74,6 +74,13 @@ class ExampleClass(object):
 		"""
 		self.value = value
 		self.order.append("SetValueNoUpdate")
+
+	@sumpf.Output(float)
+	def GetFloat(self):
+		"""
+		An Output with data_type float
+		"""
+		return 13.37
 
 	@sumpf.Output(str, caching=False)
 	def GetText(self):

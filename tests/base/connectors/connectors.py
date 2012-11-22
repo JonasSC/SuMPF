@@ -71,8 +71,11 @@ class TestConnectors(unittest.TestCase):
 		sumpf.connect(self.obj1.GetValue, self.obj2.Trigger)	# multiple connections to a Trigger should be possible
 		self.assertFalse(self.obj2.triggered)					# Triggers should not be triggered on connection
 		self.obj1.SetValue(9)
-		self.assertTrue(self.obj2.triggered)					# Triggers should work aswell
+		self.assertTrue(self.obj2.triggered)					# Triggers should work as well
 		self.obj1.SetText(text="Hallo Welt")					# Keyword arguments should be possible
+		sumpf.connect(self.obj1.GetFloat, self.obj2.SetValue2)	# This Input shall be connectable to both floats...
+		sumpf.disconnect(self.obj1.GetFloat, self.obj2.SetValue2)
+		sumpf.connect(self.obj1.GetValue, self.obj2.SetValue2)	# ... and integers.
 
 	def test_multi_input(self):
 		"""
@@ -102,7 +105,7 @@ class TestConnectors(unittest.TestCase):
 		"""
 		Tries to make and brake some invalid connections and tests if the mistakes are correctly detected.
 		"""
-		self.assertRaises(TypeError, sumpf.connect, *(self.obj1.GetText, self.obj2.SetValue))				# connecting should fail if the types of the connectors are different
+		self.assertRaises(TypeError, sumpf.connect, *(self.obj1.GetText, self.obj2.SetValue2))				# connecting should fail if the types of the connectors are different
 		self.assertRaises(TypeError, sumpf.connect, *(self.obj1.GetValue, self.obj2.GetValue))				# connecting should fail if both connectors are outputs
 		self.assertRaises(TypeError, sumpf.connect, *(self.obj1.SetValue, self.obj2.SetValue))				# connecting should fail if both connectors are inputs
 		self.assertRaises(ValueError, sumpf.connect, *(self.obj1.GetValue, self.obj1.SetValue))				# connecting should fail if the output is connected to an input that updates the output automatically, because that would cause an infinite loop

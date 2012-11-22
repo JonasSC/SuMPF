@@ -111,12 +111,12 @@ class TypedConnector(object):
 		"""
 		@param data_type: the type of the data which is passed through this connector
 		"""
-		self._data_type = data_type
+		self.__data_type = data_type
 
 	def GetType(self):
 		"""
 		Returns the type of the data which is passed through this connector
 		@retval : the type of this connector's data
 		"""
-		return self._data_type
+		return self.__data_type
 
