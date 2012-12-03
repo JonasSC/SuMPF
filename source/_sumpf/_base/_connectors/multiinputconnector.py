@@ -25,7 +25,7 @@ class MultiInputConnector(TypedInputConnector):
 	def __init__(self, instance, data_type, method, remove_method, observers):
 		"""
 		@param instance: The instance in which the method is replaced by this connector
-		@param data_type: The type of the data that is passed through this connection
+		@param data_type: The type of the data that is passed through this connection. This can either be a single type or a tuple of valid types
 		@param method: The method that is replaced by this connector
 		@param remove_method: The name of the remove method
 		@param observers: The names of output methods that are affected by calling this object
