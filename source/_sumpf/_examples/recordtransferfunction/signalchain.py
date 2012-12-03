@@ -173,10 +173,6 @@ class SignalChain(object):
 		sumpf.connect(self.__merge_ptf.GetOutput, self.__last_ifft.SetSpectrum)
 		self.__merge_pir = sumpf.modules.MergeSignals()
 		sumpf.connect(self.__last_ifft.GetSignal, self.__merge_pir.AddInput)
-		#
-		# file handlers
-		self.__signal_file = sumpf.modules.SignalFile()
-		self.__spectrum_file = sumpf.modules.SpectrumFile()
 		# make outputs publicly available
 		self.GetUnprocessedTransferFunction = self.__merge_utf.GetOutput
 		self.GetUnprocessedImpulseResponse = self.__merge_uir.GetOutput
@@ -259,13 +255,13 @@ class SignalChain(object):
 	def __Save(self, merger, filename, format):
 		data = merger.GetOutput()
 		if isinstance(data, sumpf.Signal):
-			self.__signal_file.SetFormat(format)
-			self.__signal_file.SetFilename(filename)
-			self.__signal_file.SetSignal(data)
+			filehandler = sumpf.modules.SignalFile()
+			filehandler.SetSignal(data)
 		else:
-			self.__spectrum_file.SetFormat(format)
-			self.__spectrum_file.SetFilename(filename)
-			self.__spectrum_file.SetSpectrum(data)
+			filehandler = sumpf.modules.SpectrumFile()
+			filehandler.SetSpectrum(data)
+		filehandler.SetFormat(format)
+		filehandler.SetFilename(filename)
 
 	def __Load(self, merger, id_dict, filename):
 		def prepare_for_loading():
@@ -282,28 +278,30 @@ class SignalChain(object):
 		loaded = None
 		ending = filename.split(".")[-1]
 		if merger in [self.__merge_uir, self.__merge_pir]:
+			filehandler = sumpf.modules.SignalFile()
 			format = sumpf.modules.SignalFile.GetFormats()[0]
 			for f in sumpf.modules.SignalFile.GetFormats():
 				if f.ending == ending:
 					format = f
 					break
-			self.__signal_file.SetFormat(format)
-			self.__signal_file.SetFilename(filename)
-			loaded = self.__signal_file.GetSignal()
+			filehandler.SetFormat(format)
+			filehandler.SetFilename(filename)
+			loaded = filehandler.GetSignal()
 			if not self.__has_data:
 				sumpf.deactivate_output(self.__properties)
 				self.__properties.SetSignalLength(len(loaded))
 				self.__properties.SetSamplingRate(loaded.GetSamplingRate())
 				prepare_for_loading()
 		else:
+			filehandler = sumpf.modules.SpectrumFile()
 			format = sumpf.modules.SpectrumFile.GetFormats()[0]
 			for f in sumpf.modules.SpectrumFile.GetFormats():
 				if f.ending == ending:
 					format = f
 					break
-			self.__spectrum_file.SetFormat(format)
-			self.__spectrum_file.SetFilename(filename)
-			loaded = self.__spectrum_file.GetSpectrum()
+			filehandler.SetFormat(format)
+			filehandler.SetFilename(filename)
+			loaded = filehandler.GetSpectrum()
 			if not self.__has_data:
 				sumpf.deactivate_output(self.__properties)
 				self.__properties.SetSpectrumLength(len(loaded))
