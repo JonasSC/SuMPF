@@ -76,7 +76,7 @@ if audiolab_available:
 				channels = (channels,)
 			labels = []
 			for c in range(file.channels):
-				labels.append(" ".join([name, str(c + 1)]))
+				labels.append(str(" ".join([name, str(c + 1)])))
 			return sumpf.Signal(channels=channels, samplingrate=file.samplerate, labels=labels)
 
 		@classmethod
