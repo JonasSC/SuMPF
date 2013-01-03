@@ -67,8 +67,9 @@ class GuiWindow(sumpf.gui.Window):
 		# jack
 		self.__jack_sizer = self.__AddStaticBoxSizer(parent=self.__record_panel, sizer=self.__record_sizer, label="JACK Properties")
 		self.__jack_update = self.__AddButton(parent=self.__record_panel, sizer=self.__jack_sizer, label="Update port lists", buttontext="Update", function=self.__UpdatePortlists)
-		self.__jack_capture = self.__AddChoice(parent=self.__record_panel, sizer=self.__jack_sizer, label="Playback to", choices=self.__signalchain.GetCapturePorts())
-		self.__jack_playback = self.__AddChoice(parent=self.__record_panel, sizer=self.__jack_sizer, label="Record from", choices=self.__signalchain.GetPlaybackPorts())
+		self.__jack_capture = self.__AddChoice(parent=self.__record_panel, sizer=self.__jack_sizer, label="Playback to", choices=[])
+		self.__jack_playback = self.__AddChoice(parent=self.__record_panel, sizer=self.__jack_sizer, label="Record from", choices=[])
+		self.__UpdatePortlists()
 		# sweep
 		self.__sweep_sizer = self.__AddStaticBoxSizer(parent=self.__record_panel, sizer=self.__record_sizer, label="Sweep Properties")
 		self.__sweep_duration = self.__AddFloatField(parent=self.__record_panel, sizer=self.__sweep_sizer, label="Duration [s]", value=2.0)
@@ -169,7 +170,13 @@ class GuiWindow(sumpf.gui.Window):
 		self.__signalchain.SetAverages(self.__sweep_average.GetValue())
 		# run the record
 		self.__statusbar.SetStatusText("Recording transfer function")
-		self.__signalchain.Start(capture_port=self.__jack_capture.GetStringSelection(), playback_port=self.__jack_playback.GetStringSelection())
+		capture_port = None
+		if self.__jack_capture.GetSelection() < self.__jack_capture.GetCount() - 1:
+			capture_port = self.__jack_capture.GetStringSelection()
+		playback_port = None
+		if self.__jack_playback.GetSelection() < self.__jack_playback.GetCount() - 1:
+			playback_port = self.__jack_playback.GetStringSelection()
+		self.__signalchain.Start(capture_port=capture_port, playback_port=playback_port)
 		# other stuff
 		self.__statusbar.SetStatusText("Updating GUI")
 		self.__keep.Enable()
@@ -209,7 +216,9 @@ class GuiWindow(sumpf.gui.Window):
 		selected_capture_port = self.__jack_capture.GetStringSelection()
 		selected_playback_port = self.__jack_playback.GetStringSelection()
 		available_capture_ports = self.__signalchain.GetCapturePorts()
+		available_capture_ports.append("Select manually")
 		available_playback_ports = self.__signalchain.GetPlaybackPorts()
+		available_playback_ports.append("Select manually")
 		self.__jack_capture.SetItems(available_capture_ports)
 		self.__jack_playback.SetItems(available_playback_ports)
 		if selected_capture_port in available_capture_ports:

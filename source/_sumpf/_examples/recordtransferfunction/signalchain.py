@@ -71,7 +71,7 @@ class SignalChain(object):
 		#          \      /
 		#           SELECT                            self.__bypass_normalize
 		#           MERGE ----------------> Plot      self.__merge_ptf
-		#             |  \+---------------> Save      self.__file_ptf
+		#             |  \+---------------> Save
 		#             |   +<--------------- Load
 		#            IFFT                             self.__last_ifft
 		#           MERGE ----------------> Plot      self.__merge_pir
@@ -214,13 +214,17 @@ class SignalChain(object):
 		# connect to jack
 		input = self.__audio_io.GetInputs()[0]
 		output = self.__audio_io.GetOutputs()[0]
-		self.__audio_io.Connect(output, capture_port)
-		self.__audio_io.Connect(playback_port, input)
+		if capture_port is not None:
+			self.__audio_io.Connect(output, capture_port)
+		if playback_port is not None:
+			self.__audio_io.Connect(playback_port, input)
 		# run the recording
 		self.__average.Start()
 		# disconnect from jack
-		self.__audio_io.Disconnect(playback_port, input)
-		self.__audio_io.Disconnect(output, capture_port)
+		if capture_port is not None:
+			self.__audio_io.Disconnect(playback_port, input)
+		if playback_port is not None:
+			self.__audio_io.Disconnect(output, capture_port)
 
 	def Keep(self, label=None):
 		"""
