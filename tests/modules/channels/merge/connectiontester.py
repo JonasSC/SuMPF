@@ -21,18 +21,25 @@ class ConnectionTester(object):
 	def __init__(self):
 		self.triggered = False
 		self.samplingrate = 48000
+		self.channels = [((1.0, 1.0, 1.0), (2.0, 2.0, 2.0)),
+		                 ((3.0, 3.0, 3.0), (4.0, 4.0, 4.0))]
+		self.index = 0
 
 	@sumpf.Trigger()
 	def Trigger(self):
 		self.triggered = True
 
+	@sumpf.Trigger(["GetSignal", "GetSpectrum"])
+	def ChangeChannels(self):
+		self.index = 1 - self.index
+
 	@sumpf.Output(sumpf.Signal)
 	def GetSignal(self):
-		return sumpf.Signal(samplingrate=self.samplingrate)
+		return sumpf.Signal(channels=self.channels[self.index], samplingrate=self.samplingrate)
 
 	@sumpf.Output(sumpf.Spectrum)
 	def GetSpectrum(self):
-		return sumpf.Spectrum(resolution=1.0 / self.samplingrate)
+		return sumpf.Spectrum(channels=self.channels[self.index], resolution=1.0 / self.samplingrate)
 
 	@sumpf.Input(float, ["GetSignal", "GetSpectrum"])
 	def SetSamplingRate(self, samplingrate):

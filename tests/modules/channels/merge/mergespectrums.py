@@ -40,18 +40,18 @@ class TestMergeSpectrums(unittest.TestCase):
 		self.assertEqual(self.merger.GetOutput().GetChannels(), sumpf.Spectrum().GetChannels())		# this must not raise an error, instead it should return an empty Spectrum
 		self.merger.SetMergeStrategy(sumpf.modules.MergeSpectrums.FIRST_SPECTRUM_FIRST)
 		id1 = self.merger.AddInput(self.spectrum1)
-		self.assertEqual(self.merger.GetOutput().GetResolution(), self.spectrum1.GetResolution())	# resolution should have been taken from the first spectrum
+		self.assertEqual(self.merger.GetOutput().GetResolution(), self.spectrum1.GetResolution())	# the resolution should have been taken from the first spectrum
 		self.assertEqual(self.merger.GetOutput().GetChannels(), self.spectrum1.GetChannels())		# channel data should have been taken from the first spectrum
 		id2 = self.merger.AddInput(self.spectrum2)
 		self.assertEqual(self.merger.GetOutput().GetResolution(), self.spectrum1.GetResolution())	# resolution should not have changed
 		channels = ((11.1, 11.2, 11.3), (12.1, 12.2, 12.3), (13.1, 13.2, 13.3), (21.1, 21.2, 21.3), (22.1, 22.2, 22.3))
-		self.assertEqual(self.merger.GetOutput().GetChannels(), channels)							# channel data should be the channels from the first spectrum with the second spectrum's channels appended
+		self.assertEqual(self.merger.GetOutput().GetChannels(), channels)							# the channel data should be the channels from the first spectrum with the second spectrum's channels appended
 		self.assertEqual(self.merger.GetOutput().GetLabels(), ("1.1", "1.2", "1.3", "2.1", "2.2"))	# the labels should have been taken from the input Spectrums
 		self.merger.RemoveInput(id1)
-		self.assertEqual(self.merger.GetOutput().GetResolution(), self.spectrum2.GetResolution())	# resolution should not have changed
+		self.assertEqual(self.merger.GetOutput().GetResolution(), self.spectrum2.GetResolution())	# the resolution should not have changed
 		self.assertEqual(self.merger.GetOutput().GetChannels(), self.spectrum2.GetChannels())		# the channel data from the first spectrum should have been removed
 		id1 = self.merger.AddInput(self.spectrum1)
-		self.assertEqual(self.merger.GetOutput().GetResolution(), self.spectrum1.GetResolution())	# resolution should not have changed
+		self.assertEqual(self.merger.GetOutput().GetResolution(), self.spectrum1.GetResolution())	# the resolution should not have changed
 		channels = ((21.1, 21.2, 21.3), (22.1, 22.2, 22.3), (11.1, 11.2, 11.3), (12.1, 12.2, 12.3), (13.1, 13.2, 13.3))
 		self.assertEqual(self.merger.GetOutput().GetChannels(), channels)							# now the second Spectrum should come before the first Spectrum
 		self.merger.SetMergeStrategy(sumpf.modules.MergeSpectrums.FIRST_CHANNEL_FIRST)
@@ -71,13 +71,13 @@ class TestMergeSpectrums(unittest.TestCase):
 		"""
 		self.merger.SetLengthConflictStrategy(sumpf.modules.MergeSpectrums.RAISE_ERROR)
 		id1 = self.merger.AddInput(self.spectrum1)
-		self.assertRaises(ValueError, self.merger.RemoveInput, id1 + 42)			# this should fail because id does not exist
-		self.assertRaises(ValueError, self.merger.AddInput, self.spectrum3)			# this should fail because channels do not have the same length
-		self.assertRaises(ValueError, self.merger.AddInput, self.spectrum4)			# this should fail because sampling rate is not equal
+		self.assertRaises(ValueError, self.merger.RemoveInput, id1 + 42)					# this should fail because the id does not exist
+		self.assertRaises(ValueError, self.merger.AddInput, self.spectrum3)					# this should fail because the channels do not have the same length
+		self.assertRaises(ValueError, self.merger.AddInput, self.spectrum4)					# this should fail because the resolution is not equal
 		self.merger.SetLengthConflictStrategy(sumpf.modules.MergeSpectrums.FILL_WITH_ZEROS)
 		self.merger.AddInput(self.spectrum3)
 		self.merger.SetLengthConflictStrategy(sumpf.modules.MergeSpectrums.RAISE_ERROR)
-		self.assertRaises(RuntimeError, self.merger.GetOutput)						# this should fail because channels do not have the same length
+		self.assertRaises(RuntimeError, self.merger.GetOutput)								# this should fail because the channels do not have the same length
 
 	def test_length_conflict_resolution(self):
 		"""
@@ -118,15 +118,17 @@ class TestMergeSpectrums(unittest.TestCase):
 		tester2 = ConnectionTester()
 		sumpf.connect(self.merger.GetOutput, tester1.Trigger)
 		sumpf.connect(tester1.GetSpectrum, self.merger.AddInput)
-		self.assertTrue(tester1.triggered)										# connecting to input should work and it should trigger the output
-		self.assertEqual(len(self.merger.GetOutput().GetChannels()), 1)			# after adding one connection there should be one channel in the output spectrum
-		tester1.SetSamplingRate(44100)
-		self.assertEqual(self.merger.GetOutput().GetResolution(), 1.0 / 44100)	# changing the resolution of the only spectrum in the merger should be possible
+		self.assertTrue(tester1.triggered)																	# connecting to input should work and it should trigger the output
+		self.assertEqual(len(self.merger.GetOutput().GetChannels()), 2)										# after adding one connection there should be the two channels from result of the connected output in the output spectrum
+		tester1.SetSamplingRate(22050)
+		self.assertEqual(self.merger.GetOutput().GetResolution(), 1.0 / 22050)								# changing the resolution of the only spectrum in the merger should be possible
 		tester1.SetSamplingRate(48000)
 		sumpf.connect(tester2.GetSpectrum, self.merger.AddInput)
-		self.assertEqual(len(self.merger.GetOutput().GetChannels()), 2)			# after adding a second connection there should be two channels in the output spectrum
+		self.assertEqual(len(self.merger.GetOutput().GetChannels()), 4)										# after adding a second connection there should be four channels in the output spectrum
+		tester1.ChangeChannels()
+		self.assertEqual(self.merger.GetOutput().GetChannels()[0:2], tester1.GetSpectrum().GetChannels())	# the order of the channels should remain, even if the output of tester1 has changed
 		tester1.triggered = False
 		sumpf.disconnect(tester1.GetSpectrum, self.merger.AddInput)
-		self.assertTrue(tester1.triggered)												# disconnecting from input should should trigger the output as well
-		self.assertEqual(len(self.merger.GetOutput().GetChannels()), 1)			# after removing one connection there should be one channel left in the output spectrum
+		self.assertTrue(tester1.triggered)																	# disconnecting from input should should trigger the output as well
+		self.assertEqual(len(self.merger.GetOutput().GetChannels()), 2)										# after removing one connection there should be one channel left in the output spectrum
 

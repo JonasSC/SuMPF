@@ -118,15 +118,17 @@ class TestMergeSignals(unittest.TestCase):
 		tester2 = ConnectionTester()
 		sumpf.connect(self.merger.GetOutput, tester1.Trigger)
 		sumpf.connect(tester1.GetSignal, self.merger.AddInput)
-		self.assertTrue(tester1.triggered)									# connecting to input should work and it should trigger the output
-		self.assertEqual(len(self.merger.GetOutput().GetChannels()), 1)		# after adding one connection there should be one channel in the output signal
+		self.assertTrue(tester1.triggered)																# connecting to input should work and it should trigger the output
+		self.assertEqual(len(self.merger.GetOutput().GetChannels()), 2)									# after adding one connection there should be one channel in the output signal
 		tester1.SetSamplingRate(44100)
-		self.assertEqual(self.merger.GetOutput().GetSamplingRate(), 44100)	# changing the sampling rate of the only signal in the merger should be possible
+		self.assertEqual(self.merger.GetOutput().GetSamplingRate(), 44100)								# changing the sampling rate of the only signal in the merger should be possible
 		tester1.SetSamplingRate(48000)
 		sumpf.connect(tester2.GetSignal, self.merger.AddInput)
-		self.assertEqual(len(self.merger.GetOutput().GetChannels()), 2)		# after adding a second connection there should be two channels in the output signal
+		self.assertEqual(len(self.merger.GetOutput().GetChannels()), 4)									# after adding a second connection there should be two channels in the output signal
+		tester1.ChangeChannels()
+		self.assertEqual(self.merger.GetOutput().GetChannels()[0:2], tester1.GetSignal().GetChannels())	# the order of the channels should remain, even if the output of tester1 has changed
 		tester1.triggered = False
 		sumpf.disconnect(tester1.GetSignal, self.merger.AddInput)
-		self.assertTrue(tester1.triggered)									# disconnecting from input should should trigger the output aswell
-		self.assertEqual(len(self.merger.GetOutput().GetChannels()), 1)		# after removing one connection there should be one channel left in the output signal
+		self.assertTrue(tester1.triggered)																# disconnecting from input should should trigger the output aswell
+		self.assertEqual(len(self.merger.GetOutput().GetChannels()), 2)									# after removing one connection there should be one channel left in the output signal
 

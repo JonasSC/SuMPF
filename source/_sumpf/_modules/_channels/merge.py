@@ -29,26 +29,37 @@ class MergeChannelData(object):
 
 	def __init__(self):
 		self.__strategy = MergeChannelData._FIRST_DATASET_FIRST
-		self.__ids = []
-		self.__datasets = []
 		self._on_length_conflict = MergeChannelData.RAISE_ERROR_EXCEPT_EMPTY
+		self._data = sumpf.helper.MultiInputData()
 
-	def AddInput(self, input):
+	def AddInput(self, data):
 		"""
 		Abstract method whose overrides shall add an input data set to the merger.
-		@param input: a data set that shall be merged into the output data set
-		@retval : an id under which the data set is stored
+		This method has to be overridden, so it can be decorated to be an Input
+		with the correct type. The overrides must also implement sanity checks
+		for the input data.
+		@param data: a data set that shall be merged into the output data set
+		@retval : the id under which the data set is stored
 		"""
 		raise NotImplementedError("This method should have been overridden in a derived class")
 
-	def RemoveInput(self, input_id):
+	def RemoveInput(self, data_id):
 		"""
-		Removes a data set from the merger
-		@param input_id: the id under which the data set is stored, which shall be removed
+		Removes a data set from the merger.
+		@param data_id: the id under which the data set is stored, which shall be removed
 		"""
-		index = self.__ids.index(input_id)
-		self.__ids.pop(index)
-		self.__datasets.pop(index)
+		self._data.Remove(data_id)
+
+	def ReplaceInput(self, data_id, data):
+		"""
+		Abstract method whose overrides shall replace the data set, which is stored
+		under the given id with the new data.
+		This method has to be overridden, so the derived classes can check the
+		new data for compatibility with the other data in the merger.
+		@param data_id: the id under which the data set is stored, which shall be replaced
+		@param data: the new data that shall be stored under that id
+		"""
+		raise NotImplementedError("This method should have been overridden in a derived class")
 
 	def GetOutput(self):
 		"""
@@ -64,7 +75,7 @@ class MergeChannelData(object):
 		@retval : the number of channels of the output data set as an integer
 		"""
 		result = 0
-		for d in self.__datasets:
+		for d in self._data.GetData():
 			result += len(d.GetChannels())
 		return max(1, result)
 
@@ -94,18 +105,16 @@ class MergeChannelData(object):
 		"""
 		self._on_length_conflict = strategy
 
-	def _AddInput(self, input_data):
+	def _AddInput(self, data):
 		"""
-		Base method for adding input data.
-		@param input_data: a ChannelData instance
-		@retval : the id under which the new data is stored
+		A protected method that can be called from the overrides of AddInput, after
+		they have checked the given input data.
+		It adds the given data to the merger and returns the id under which it is
+		stored.
+		@param data: a data set that shall be merged into the output data set
+		@retval : the id under which the data set is stored
 		"""
-		data_id = 0
-		while data_id in self.__ids:
-			data_id += 1
-		self.__ids.append(data_id)
-		self.__datasets.append(input_data)
-		return data_id
+		return self._data.Add(data)
 
 	def _GetChannelsAndLabels(self):
 		"""
@@ -120,7 +129,7 @@ class MergeChannelData(object):
 				for i in range(len(c), length):
 					c.append(0.0)
 			return chs
-		channels, labels = self.__strategy(self.__datasets)
+		channels, labels = self.__strategy(self._data.GetData())
 		if channels != []:
 			if self._on_length_conflict == MergeChannelData.RAISE_ERROR:
 				for c in channels[1:]:
@@ -150,10 +159,10 @@ class MergeChannelData(object):
 		empty if only empty data sets have been added.
 		@retval : True if the merger is empty, False otherwise
 		"""
-		if self.__datasets == []:
+		if self._data.GetData() == []:
 			return True
 		elif self._on_length_conflict == MergeChannelData.RAISE_ERROR_EXCEPT_EMPTY:
-			for d in self.__datasets:
+			for d in self._data.GetData():
 				if not d.IsEmpty():
 					return False
 			return True
@@ -165,20 +174,26 @@ class MergeChannelData(object):
 		Returns the number of data sets that are about to be merged.
 		@retval : the number of data sets as an integer
 		"""
-		return len(self.__datasets)
+		return len(self._data.GetData())
 
 	def _GetLength(self):
 		"""
 		Returns the length of the resulting data set.
 		@retval : the length as an integer
 		"""
-		if self.__datasets == []:
+		if self._data.GetData() == []:
 			return 2
-		else:
-			for d in self.__datasets:
+		elif self._on_length_conflict == MergeChannelData.RAISE_ERROR_EXCEPT_EMPTY:
+			for d in self._data.GetData():
 				if not d.IsEmpty():
 					return len(d)
-			return len(self.__datasets[0])
+		elif self._on_length_conflict == MergeChannelData.RAISE_ERROR:
+			return len(self._data.GetData()[0])
+		elif self._on_length_conflict == MergeChannelData.FILL_WITH_ZEROS:
+			length = 2
+			for d in self._data.GetData():
+				length = max(length, len(d))
+			return length
 
 	@staticmethod
 	def _FIRST_DATASET_FIRST(datasets):
@@ -256,24 +271,45 @@ class MergeSignals(MergeChannelData):
 			signal = sumpf.Signal(samplingrate=self.__samplingrate)
 		return signal
 
-	@sumpf.MultiInput(sumpf.Signal, "RemoveInput", ["GetOutput", "GetNumberOfOutputChannels"])
-	def AddInput(self, input):
+	@sumpf.MultiInput(data_type=sumpf.Signal, remove_method="RemoveInput", observers=["GetOutput", "GetNumberOfOutputChannels"], replace_method="ReplaceInput")
+	def AddInput(self, signal):
 		"""
 		Adds a Signal to the merger
-		@param input: a Signal that shall be merged into the output Signal
+		@param signal: a Signal that shall be merged into the output Signal
 		@retval : an id under which the Signal is stored
 		"""
 		if self._IsEmpty():
-			self.__samplingrate = input.GetSamplingRate()
-		elif not self.AddInput.GetNumberOfExpectedInputs() == self._GetNumberOfDataSets():
-			if input.GetSamplingRate() != self.__samplingrate:
-				if self._on_length_conflict != MergeSignals.RAISE_ERROR_EXCEPT_EMPTY or not input.IsEmpty():
+			self.__samplingrate = signal.GetSamplingRate()
+		else:
+			self.__CheckInput(signal)
+		return self._AddInput(signal)
+
+	def ReplaceInput(self, data_id, data):
+		"""
+		Replaces the Signal, which is stored under the given id with the new data.
+		@param data_id: the id under which the Signal is stored, which shall be replaced
+		@param data: the new Signal that shall be stored under that id
+		"""
+		if self._GetNumberOfDataSets() == 1:
+			self.__samplingrate = data.GetSamplingRate()
+		else:
+			self.__CheckInput(data)
+		self._data.Replace(data_id=data_id, data=data)
+
+	def __CheckInput(self, signal):
+		"""
+		This method checks, if the given Signal is compatible to the other
+		Signals in the merger. It raises an error, if it is not compatible.
+		@param signal: the Signal that shall be checked
+		"""
+		if not self.AddInput.GetNumberOfExpectedInputs() == self._GetNumberOfDataSets():
+			if signal.GetSamplingRate() != self.__samplingrate:
+				if self._on_length_conflict != MergeSignals.RAISE_ERROR_EXCEPT_EMPTY or not signal.IsEmpty():
 					raise ValueError("The Signal has a different sampling rate than the other Signals in the merger")
-			if len(input) != self._GetLength():
+			if len(signal) != self._GetLength():
 				if self._on_length_conflict == MergeSignals.RAISE_ERROR or \
-				  (self._on_length_conflict == MergeSignals.RAISE_ERROR_EXCEPT_EMPTY and not input.IsEmpty()):
+				  (self._on_length_conflict == MergeSignals.RAISE_ERROR_EXCEPT_EMPTY and not signal.IsEmpty()):
 					raise ValueError("The Signal has a different length than the other Signals in the merger")
-		return self._AddInput(input)
 
 	@staticmethod
 	def FIRST_SIGNAL_FIRST(datasets):
@@ -321,24 +357,45 @@ class MergeSpectrums(MergeChannelData):
 			spectrum = sumpf.Spectrum(resolution=self.__resolution)
 		return spectrum
 
-	@sumpf.MultiInput(sumpf.Spectrum, "RemoveInput", ["GetOutput", "GetNumberOfOutputChannels"])
-	def AddInput(self, input):
+	@sumpf.MultiInput(data_type=sumpf.Spectrum, remove_method="RemoveInput", observers=["GetOutput", "GetNumberOfOutputChannels"], replace_method="ReplaceInput")
+	def AddInput(self, spectrum):
 		"""
 		Adds a Spectrum to the merger
-		@param input: a Spectrum that shall be merged into the output Spectrum
+		@param spectrum: a Spectrum that shall be merged into the output Spectrum
 		@retval : an id under which the Spectrum is stored
 		"""
 		if self._IsEmpty():
-			self.__resolution = input.GetResolution()
-		elif not self.AddInput.GetNumberOfExpectedInputs() == self._GetNumberOfDataSets():
-			if input.GetResolution() != self.__resolution:
-				if self._on_length_conflict != MergeSpectrums.RAISE_ERROR_EXCEPT_EMPTY or not input.IsEmpty():
+			self.__resolution = spectrum.GetResolution()
+		else:
+			self.__CheckInput(spectrum)
+		return self._AddInput(spectrum)
+
+	def ReplaceInput(self, data_id, data):
+		"""
+		Replaces the Spectrum, which is stored under the given id with the new data.
+		@param data_id: the id under which the Spectrum is stored, which shall be replaced
+		@param data: the new Spectrum that shall be stored under that id
+		"""
+		if self._GetNumberOfDataSets() == 1:
+			self.__resolution = data.GetResolution()
+		else:
+			self.__CheckInput(data)
+		self._data.Replace(data_id=data_id, data=data)
+
+	def __CheckInput(self, spectrum):
+		"""
+		This method checks, if the given Spectrum is compatible to the other
+		Spectrums in the merger. It raises an error, if it is not compatible.
+		@param spectrum: the Spectrum that shall be checked
+		"""
+		if not self.AddInput.GetNumberOfExpectedInputs() == self._GetNumberOfDataSets():
+			if spectrum.GetResolution() != self.__resolution:
+				if self._on_length_conflict != MergeSpectrums.RAISE_ERROR_EXCEPT_EMPTY or not spectrum.IsEmpty():
 					raise ValueError("The Spectrum has a different resolution than the other Spectrums in the merger")
-			if len(input) != self._GetLength():
+			if len(spectrum) != self._GetLength():
 				if self._on_length_conflict == MergeSpectrums.RAISE_ERROR or \
-				  (self._on_length_conflict == MergeSpectrums.RAISE_ERROR_EXCEPT_EMPTY and not input.IsEmpty()):
+				  (self._on_length_conflict == MergeSpectrums.RAISE_ERROR_EXCEPT_EMPTY and not spectrum.IsEmpty()):
 					raise ValueError("The Spectrums has a different length than the other Spectrums in the merger")
-		return self._AddInput(input)
 
 	@staticmethod
 	def FIRST_SPECTRUM_FIRST(datasets):
