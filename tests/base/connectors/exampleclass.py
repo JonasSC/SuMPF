@@ -28,8 +28,8 @@ class ExampleClass(object):
 		self.value = 0
 		self.text = ""
 		self.triggered = False
-		self.items = {}
 		self.order = []
+		self.items = sumpf.helper.MultiInputData()
 		self.history = []
 		ExampleClass.instance_count += 1
 
@@ -113,25 +113,32 @@ class ExampleClass(object):
 
 	@sumpf.Output(list)
 	def GetItems(self):
-		self.history.append(list(self.items.values()))
-		return list(self.items.values())
+		result = self.items.GetData()
+		self.history.append(result)
+		return result
 
 	@sumpf.MultiInput(int, "RemoveItem", "GetItems")
-	def AddItem(self, item):
+	def AddItemNoReplace(self, item):
 		"""
 		A MultiInput
 		"""
-		item_id = 0
-		while item_id in self.items:
-			item_id += 1
-		self.items[item_id] = item
-		return item_id
+		return self.items.Add(item)
+
+	@sumpf.MultiInput(int, "RemoveItem", "GetItems", replace_method="ReplaceItem")
+	def AddItemReplace(self, item):
+		"""
+		A MultiInput
+		"""
+		return self.items.Add(item)
 
 	def RemoveItem(self, item_id):
 		"""
 		Every MultiInput needs a remove-method
 		"""
-		del self.items[item_id]
+		self.items.Remove(item_id)
+
+	def ReplaceItem(self, item_id, item):
+		self.items.Replace(item_id, item)
 
 	@sumpf.Input(list)
 	def TakeList(self, itemlist):

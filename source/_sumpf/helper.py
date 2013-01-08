@@ -21,6 +21,7 @@ inside SuMPF and maybe elsewhere as well.
 """
 
 from ._helper.differentiate import differentiate
+from ._helper.multiinputdata import MultiInputData
 from ._helper.normalizepath import normalize_path
 from ._helper.walkmodule import walk_module
 

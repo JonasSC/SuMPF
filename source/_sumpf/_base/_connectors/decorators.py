@@ -18,7 +18,7 @@ import sumpf
 from .basedecorators import ConnectorDecorator, TypedDecorator, ObservedDecorator
 from .singleinputconnector import SingleInputConnector
 from .triggerinputconnector import TriggerInputConnector
-from .multiinputconnector import MultiInputConnector
+from .multiinputconnector import NonReplacingMultiInputConnector, ReplacingMultiInputConnector
 from .outputconnectors import CachingOutputConnector, NotCachingOutputConnector
 
 
@@ -31,8 +31,8 @@ class Input(ConnectorDecorator, TypedDecorator, ObservedDecorator):
 	"""
 	def __init__(self, data_type, observers=[]):
 		"""
-		@param data_type: The type of the data that is passed through this connection
-		@param observers: The names of output methods that are affected by calling this setter
+		@param data_type: the type of the data that is passed through this connection
+		@param observers: the names of output methods that are affected by calling this setter
 		"""
 		ConnectorDecorator.__init__(self)
 		TypedDecorator.__init__(self, data_type=data_type)
@@ -55,7 +55,7 @@ class Trigger(ConnectorDecorator, ObservedDecorator):
 	"""
 	def __init__(self, observers=[]):
 		"""
-		@param observers: The names of output methods that are affected by calling this setter
+		@param observers: the names of output methods that are affected by calling this setter
 		"""
 		ConnectorDecorator.__init__(self)
 		ObservedDecorator.__init__(self, observers=observers)
@@ -73,27 +73,42 @@ class MultiInput(ConnectorDecorator, TypedDecorator, ObservedDecorator):
 	These connections can be used to automatically update a processing chain
 	when a value has changed.
 	The decorated method must take exactly one argument and return a unique id.
-	For every MultiInput-method a remove-method has to be provided. This method has to take the id
-	which has been returned by the decorated method and remove the data that has been added by the
-	method call which has produced that id.
+	For every MultiInput-method a remove-method has to be provided. This method
+	has to take the id, which has been returned by the decorated method and remove
+	the data, that has been added by the method call which has produced that id.
+	A replace-method can be provided optionally. This method is called, when the
+	value of a connected output has changed, rather than removing the old data and
+	adding the new. A replace-method has to take the id under which the old data
+	is stored as first parameter and the new data as second parameter. It must
+	store the new data under the same id as the old data.
 	"""
-	def __init__(self, data_type, remove_method, observers):
+	def __init__(self, data_type, remove_method, observers=[], replace_method=None):
 		"""
-		@param data_type: The type of the data that is passed through this connection
-		@param remove_method: The name of the remove method
-		@param observers: The names of output methods that are affected by calling this setter
+		@param data_type: the type of the data that is passed through this connection
+		@param remove_method: the name of the remove method
+		@param observers: the names of output methods that are affected by calling this setter
+		@param replace_method: an optional name of a method that will be used, to replace data, when the value of a connected output has changed
 		"""
 		ConnectorDecorator.__init__(self)
 		TypedDecorator.__init__(self, data_type=data_type)
 		ObservedDecorator.__init__(self, observers=observers)
 		self.__remove_method = remove_method
+		self.__replace_method = replace_method
 
 	def _GetConnector(self, instance):
-		return MultiInputConnector(instance=instance,
-		                           data_type=self._data_type,
-		                           method=self._method,
-		                           remove_method=self.__remove_method,
-		                           observers=self._observers)
+		if self.__replace_method is not None:
+			return ReplacingMultiInputConnector(instance=instance,
+			                                    data_type=self._data_type,
+			                                    method=self._method,
+			                                    remove_method=self.__remove_method,
+			                                    replace_method=self.__replace_method,
+			                                    observers=self._observers)
+		else:
+			return NonReplacingMultiInputConnector(instance=instance,
+			                                       data_type=self._data_type,
+			                                       method=self._method,
+			                                       remove_method=self.__remove_method,
+			                                       observers=self._observers)
 
 
 
@@ -110,8 +125,8 @@ class Output(ConnectorDecorator, TypedDecorator):
 	"""
 	def __init__(self, data_type, caching=None):
 		"""
-		@param data_type: The type of the data that is passed through this connection
-		@param caching: If True caching will be enabled, if false caching will be disabled, if None the use of caching will depend on the config
+		@param data_type: the type of the data that is passed through this connection
+		@param caching: if True caching will be enabled, if false caching will be disabled, if None the use of caching will depend on the config
 		"""
 		ConnectorDecorator.__init__(self)
 		TypedDecorator.__init__(self, data_type=data_type)

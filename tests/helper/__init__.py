@@ -16,6 +16,7 @@
 
 from .average import TestAverage
 from .differentiate import TestDifferentiate
+from .multiinputdata import TestMultiInputData
 from .normalizepath import TestNormalizePath
 from .numpydummy import TestNumpyDummy
 

@@ -155,6 +155,8 @@
 					This remove method does not need to be decorated, never the
 					less it will also be replaced by an object, just like the
 					decorated methods.<br />
+					Optionally, a replace method can be specified. This method is
+					called, when a connected output changes his value.<br />
 					A method which is decorated with MultiInput must take exactly
 					one parameter. It must return an id with which the remove
 					method can be called to remove the data given as parameter.<br />
@@ -175,6 +177,11 @@
 							is called. The class must have all methods whose name
 							is given here and all of them have to be decorated
 							with "Output".
+						</li>
+						<li>
+							<b>replace_method:</b> The optional name of a method
+							that will be used, to replace data, when the value of
+							a connected output has changed.
 						</li>
 					</ol>
 				</td>

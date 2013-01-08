@@ -77,29 +77,62 @@ class TestConnectors(unittest.TestCase):
 		sumpf.disconnect(self.obj1.GetFloat, self.obj2.SetValue2)
 		sumpf.connect(self.obj1.GetValue, self.obj2.SetValue2)	# ... and integers.
 
-	def test_multi_input(self):
+	def test_non_replacing_multi_input(self):
 		"""
-		Testing every aspect of a MultiInput is more complex, so it is done in this separate method.
+		Testing every aspect of a MultiInput is more complex, so it is done in
+		separately in this and the next method.
+		This method tests the MultiInput that replaces updated data by removing
+		the old data and adding the new one. This will destroy the order of the
+		output data.
 		"""
-		id0 = self.obj2.AddItem(0)
-		id1 = self.obj2.AddItem(1)
-		self.assertEqual(set(self.obj2.GetItems()), set([0, 1]))		# adding items manually should work
+		id0 = self.obj2.AddItemNoReplace(0)
+		id1 = self.obj2.AddItemNoReplace(1)
+		self.assertEqual(self.obj2.GetItems(), [0, 1])					# adding items manually should work
 		self.obj1.SetValue(2)
-		sumpf.connect(self.obj1.GetValue, self.obj2.AddItem)
-		self.assertEqual(set(self.obj2.GetItems()), set([0, 1, 2]))		# adding items through connections should work
+		sumpf.connect(self.obj1.GetValue, self.obj2.AddItemNoReplace)
+		self.assertEqual(self.obj2.GetItems(), [0, 1, 2])				# adding items through connections should work
 		self.obj1.SetValue(3)
-		self.assertEqual(set(self.obj2.GetItems()), set([0, 1, 3]))		# a connection should only update its own value
-		sumpf.connect(self.obj1.GetValue2, self.obj2.AddItem)
-		self.assertEqual(set(self.obj2.GetItems()), set([0, 1, 3, 6]))	# multiple connections must be possible
+		self.assertEqual(self.obj2.GetItems(), [0, 1, 3])				# a connection should only update its own value
+		sumpf.connect(self.obj1.GetValue2, self.obj2.AddItemNoReplace)
+		self.assertEqual(self.obj2.GetItems(), [0, 1, 3, 6])			# multiple connections must be possible
 		sumpf.connect(self.obj2.GetItems, self.obj1.Trigger)
 		self.obj1.triggered = False
-		sumpf.disconnect(self.obj1.GetValue, self.obj2.AddItem)
+		sumpf.disconnect(self.obj1.GetValue, self.obj2.AddItemNoReplace)
 		self.assertTrue(self.obj1.triggered)							# disconnecting should have triggered the Trigger
-		self.assertEqual(set(self.obj2.GetItems()), set([0, 1, 6]))		# disconnecting should remove the item from the list
+		self.assertEqual(self.obj2.GetItems(), [0, 1, 6])				# disconnecting should remove the item from the list
 		self.obj2.RemoveItem(id1)
-		self.assertEqual(set(self.obj2.GetItems()), set([0, 6]))		# removing items manually should work as well
+		self.assertEqual(self.obj2.GetItems(), [0, 6])					# removing items manually should work as well
+		self.obj2.AddItemNoReplace(7)
 		self.obj1.SetValue2(2)
-		self.assertEqual(set(self.obj2.GetItems()), set([0, 4]))		# the connection should still work, even after many changes
+		self.assertEqual(self.obj2.GetItems(), [0, 7, 4])				# the connection should still work, even after many changes
+
+	def test_replacing_multi_input(self):
+		"""
+		Testing every aspect of a MultiInput is more complex, so it is done in
+		separately in this and the next method.
+		This method tests the MultiInput that replace updated data with a proper
+		replacing method. This should maintain the order of the output data.
+		"""
+		id0 = self.obj2.AddItemReplace(0)
+		id1 = self.obj2.AddItemReplace(1)
+		self.assertEqual(self.obj2.GetItems(), [0, 1])					# adding items manually should work
+		self.obj1.SetValue(2)
+		sumpf.connect(self.obj1.GetValue, self.obj2.AddItemReplace)
+		self.assertEqual(self.obj2.GetItems(), [0, 1, 2])				# adding items through connections should work
+		self.obj1.SetValue(3)
+		self.assertEqual(self.obj2.GetItems(), [0, 1, 3])				# a connection should only update its own value
+		sumpf.connect(self.obj1.GetValue2, self.obj2.AddItemReplace)
+		self.assertEqual(self.obj2.GetItems(), [0, 1, 3, 6])			# multiple connections must be possible
+		sumpf.connect(self.obj2.GetItems, self.obj1.Trigger)
+		self.obj1.triggered = False
+		sumpf.disconnect(self.obj1.GetValue, self.obj2.AddItemReplace)
+		self.assertTrue(self.obj1.triggered)							# disconnecting should have triggered the Trigger
+		self.assertEqual(self.obj2.GetItems(), [0, 1, 6])				# disconnecting should remove the item from the list
+		self.obj2.RemoveItem(id1)
+		self.assertEqual(self.obj2.GetItems(), [0, 6])					# removing items manually should work as well
+		self.obj2.AddItemReplace(7)
+		self.obj1.SetValue2(2)
+		self.assertEqual(self.obj2.GetItems(), [0, 4, 7])				# the connection should still work, even after many changes
 
 	def test_make_invalid_connections(self):
 		"""
@@ -159,8 +192,8 @@ class TestConnectors(unittest.TestCase):
 		sumpf.connect(self.obj1.GetValue, self.obj2.SetValue)
 		sumpf.connect(self.obj1.GetValue2, self.obj2.SetValueNoUpdate)
 		sumpf.connect(self.obj2.GetValue, self.obj1.SetValueNoUpdate)
-		sumpf.connect(self.obj1.GetValue, self.obj2.AddItem)
-		sumpf.connect(self.obj1.GetValue2, self.obj2.AddItem)
+		sumpf.connect(self.obj1.GetValue, self.obj2.AddItemNoReplace)
+		sumpf.connect(self.obj1.GetValue2, self.obj2.AddItemNoReplace)
 		sumpf.disconnect_all(self.obj2)
 		self.obj2.SetValue(3)
 		self.assertEqual(self.obj1.GetValue(), 2)						# disconnect_all should have removed the connection from obj2.GetValue to obj1.SetValueNoUpdate
@@ -211,8 +244,8 @@ class TestConnectors(unittest.TestCase):
 		sumpf.activate_output(self.obj1)
 		self.assertEqual(self.obj2.history, [2])						# the value should have been calculated only once after reactivating outputs
 		sumpf.disconnect_all(self.obj1)
-		sumpf.connect(self.obj1.GetValue, self.obj2.AddItem)
-		sumpf.connect(self.obj1.GetValue2, self.obj2.AddItem)
+		sumpf.connect(self.obj1.GetValue, self.obj2.AddItemNoReplace)
+		sumpf.connect(self.obj1.GetValue2, self.obj2.AddItemNoReplace)
 		sumpf.connect(self.obj2.GetItems, self.obj1.TakeList)
 		self.obj2.history = []
 		self.obj1.SetValue2(3)
@@ -225,7 +258,7 @@ class TestConnectors(unittest.TestCase):
 		self.assertEqual(self.obj1.GetValue.__doc__, "\n\t\tOutput with data_type int\n\t\t")					# The Output decorator should not modify the docstring of the method
 		self.assertEqual(self.obj1.SetValue.__doc__, "\n\t\tInput with data_type int and one observer\n\t\t")	# The Input decorator should not modify the docstring of the method
 		self.assertEqual(self.obj1.Trigger.__doc__, "\n\t\tA trigger with observer\n\t\t")						# The Trigger decorator should not modify the docstring of the method
-		self.assertEqual(self.obj1.AddItem.__doc__, "\n\t\tA MultiInput\n\t\t")									# The MultiInput decorator should not modify the docstring of the method
+		self.assertEqual(self.obj1.AddItemNoReplace.__doc__, "\n\t\tA MultiInput\n\t\t")									# The MultiInput decorator should not modify the docstring of the method
 		self.assertEqual(self.obj1.RemoveItem.__doc__, "\n\t\tEvery MultiInput needs a remove-method\n\t\t")	# The MultiInput decorator should not modify the docstring of its remove method
 
 	def test_object_deletion(self):
