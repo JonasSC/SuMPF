@@ -137,6 +137,7 @@ class SignalChain(object):
 		self.__last_fft = sumpf.modules.FourierTransform()
 		sumpf.connect(self.__bypass_window.GetOutput, self.__last_fft.SetSignal)
 		self.__filter = sumpf.modules.FilterGenerator()
+		self.__filter_id = self.__filter.AddFilter(sumpf.modules.FilterGenerator.BUTTERWORTH_LOWPASS(frequency=20000, order=16))
 		sumpf.connect(self.__properties.GetSpectrumLength, self.__filter.SetLength)
 		sumpf.connect(self.__properties.GetResolution, self.__filter.SetResolution)
 		self.__copy_filter = sumpf.modules.CopySpectrumChannels()
@@ -414,14 +415,11 @@ class SignalChain(object):
 	# Postprocessing parameters #
 	#############################
 
-	def SetLowpass(self, frequency, order=4):
+	def SetLowpass(self, frequency, order=16):
 		if frequency is not None:
 			sumpf.deactivate_output(self.__bypass_filter.GetOutput)
-			sumpf.deactivate_output(self.__filter.GetSpectrum)
-			self.__filter.SetFrequency(frequency)
-			self.__filter.SetCoefficients(sumpf.modules.FilterGenerator.Butterworth(order=order))
+			self.__filter.ReplaceFilter(self.__filter_id, sumpf.modules.FilterGenerator.BUTTERWORTH_LOWPASS(frequency=frequency, order=order))
 			self.__bypass_filter.SetSelection(self.__FILTER)
-			sumpf.activate_output(self.__filter.GetSpectrum)
 			sumpf.activate_output(self.__bypass_filter)
 		else:
 			self.__bypass_filter.SetSelection(self.__BYPASS)

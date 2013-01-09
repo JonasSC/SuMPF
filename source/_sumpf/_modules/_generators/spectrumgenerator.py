@@ -24,13 +24,19 @@ class SpectrumGenerator(object):
 	Every derived generator must implement either the _GetSample or the
 	_GetSamples method.
 	"""
-	def __init__(self, resolution=48000 / float(2 ** 16), length=2 ** 15):
+	def __init__(self, resolution, length):
 		"""
 		@param resolution: the resolution of the created spectrum in Hz
 		@param length: the number of samples of the spectrum
 		"""
-		self._resolution = resolution
-		self._length = int(length)
+		if resolution is None:
+			self._resolution = sumpf.modules.ChannelDataProperties().GetResolution()
+		else:
+			self._resolution = resolution
+		if length is None:
+			self._length = sumpf.modules.ChannelDataProperties().GetSpectrumLength()
+		else:
+			self._length = int(length)
 
 	@sumpf.Output(sumpf.Spectrum)
 	def GetSpectrum(self):
@@ -38,7 +44,7 @@ class SpectrumGenerator(object):
 		Generates a Spectrum instance and returns it.
 		@retval : the generated Spectrum
 		"""
-		return sumpf.Spectrum(channels=[self._GetSamples()], resolution=self._resolution, labels=(self._GetLabel(),))
+		return sumpf.Spectrum(channels=(self._GetSamples(),), resolution=self._resolution, labels=(self._GetLabel(),))
 
 	def _GetSamples(self):
 		"""
