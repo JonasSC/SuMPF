@@ -15,6 +15,7 @@
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 from .generators import *
+from .interpretations import *
 from .io import *
 from .math import *
 from .metadata import *
