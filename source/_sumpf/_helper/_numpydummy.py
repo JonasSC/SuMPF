@@ -142,6 +142,24 @@ def angle(x):
 	else:
 		return cmath.phase(x)
 
+def conjugate(x):
+	"""
+	an alternative for numpy.conjugate
+	"""
+	if isinstance(x, collections.Iterable):
+		result = []
+		for i in x:
+			if isinstance(i, complex):
+				result.append(i.conjugate())
+			else:
+				result.append(i)
+		return result
+	else:
+		if isinstance(x, complex):
+			return x.conjugate()
+		else:
+			return x
+
 def zeros(shape, dtype=float):
 	"""
 	an alternative for numpy.zeros

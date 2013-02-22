@@ -18,6 +18,7 @@ from .amplify import *
 from .algebra import *
 from .average import *
 
+from .conjugatespectrum import TestConjugateSpectrum
 from .convolvesignals import TestConvolveSignals
 from .differentiatesignal import TestDifferentiateSignal
 from .fouriertransform import TestFourierTransform

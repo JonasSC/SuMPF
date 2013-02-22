@@ -108,6 +108,16 @@ class TestNumpyDummy(unittest.TestCase):
 			r2 = sumpf.helper.numpydummy.angle(self.arrayvalues[a][0])
 			self.__Compare(r1, r2, a, None)
 
+	def test_conjugate(self):
+		for i in range(len(self.complexvalues)):
+			r1 = numpy.conjugate(self.complexvalues[i])
+			r2 = sumpf.helper.numpydummy.conjugate(self.complexvalues[i])
+			self.__Compare(r1, r2, i, None)
+		for a in range(len(self.arrayvalues)):
+			r1 = numpy.conjugate(self.arrayvalues[a][0])
+			r2 = sumpf.helper.numpydummy.conjugate(self.arrayvalues[a][0])
+			self.__Compare(r1, r2, a, None)
+
 	def test_zeros(self):
 		self.assertEqual(sumpf.helper.numpydummy.zeros(shape=()), 0.0)
 		for s in range(1, 5):

@@ -36,7 +36,7 @@ class TestAttributes(unittest.TestCase):
 		Tests if every class is sufficiently documented
 		"""
 		fails = []
-		short_is_enough = ["AverageSpectrums",
+		short_is_enough = ["AverageSpectrums", "ConjugateSpectrum",
 		                   "RelabelSignal", "RelabelSpectrum",
 		                   "DifferentiateSignal", "LogarithmSignal"]
 		for p, m, c, f, v in sumpf.helper.walk_module(sumpf):
