@@ -43,14 +43,13 @@ class OutputConnector(Connector, TypedConnector):
 		unnecessary computations in forked connection chains can be avoided.
 		@param connector: the observed input connector
 		"""
-		if not self.__is_deactivated:
-			for c in self._connections:
-				c.SetProgressIndicator(connector.GetProgressIndicator())	# propagate progress indicator
-				# The announcement of a value change of this connector will be
-				# done in the connected input connectors. This way, an output
-				# that is not connected to any input will not contribute to the
-				# progress estimation.
-				c.NoticeAnnouncement(self)
+		for c in self._connections:
+			c.SetProgressIndicator(connector.GetProgressIndicator())	# propagate progress indicator
+			# The announcement of a value change of this connector will be
+			# done in the connected input connectors. This way, an output
+			# that is not connected to any input will not contribute to the
+			# progress estimation.
+			c.NoticeAnnouncement(self)
 		self.__announcements.add(connector)
 
 	def NoticeValueChange(self, connector):
