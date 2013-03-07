@@ -39,7 +39,7 @@ class TestEnergyDecayCurveFromImpulseResponse(unittest.TestCase):
 		lng = 100
 		# setup a processing chain that generates example data
 		sin = sumpf.modules.SineWaveGenerator(length=lng)
-		win = sumpf.modules.WindowGenerator(interval=(0, lng // 2), length=lng)
+		win = sumpf.modules.WindowGenerator(fall_interval=(0, lng // 2), length=lng)
 		mul = sumpf.modules.MultiplySignals()
 		rms = sumpf.modules.RootMeanSquare(integration_time=sumpf.modules.RootMeanSquare.FULL)
 		edc = sumpf.modules.EnergyDecayCurveFromImpulseResponse()
