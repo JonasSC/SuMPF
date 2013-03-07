@@ -16,3 +16,8 @@
 
 from ._interpretations.energydecaycurvefromimpulseresponse import EnergyDecayCurveFromImpulseResponse
 
+try:
+	from ._interpretations.regularizedspectruminversion import RegularizedSpectrumInversion
+except ImportError:
+	pass
+
