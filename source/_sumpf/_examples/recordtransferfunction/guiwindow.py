@@ -71,14 +71,23 @@ class GuiWindow(sumpf.gui.Window):
 		self.__jack_playback = self.__AddChoice(parent=self.__record_panel, sizer=self.__jack_sizer, label="Record from", choices=[])
 		self.__UpdatePortlists()
 		# sweep
-		self.__sweep_sizer = self.__AddStaticBoxSizer(parent=self.__record_panel, sizer=self.__record_sizer, label="Sweep Properties")
+		self.__sweep_sizer = self.__AddStaticBoxSizer(parent=self.__record_panel, sizer=self.__record_sizer, label="Sweep properties")
 		self.__sweep_duration = self.__AddFloatField(parent=self.__record_panel, sizer=self.__sweep_sizer, label="Duration [s]", value=2.0)
 		self.__sweep_silenceduration = self.__AddFloatField(parent=self.__record_panel, sizer=self.__sweep_sizer, label="Silence [s]", value=0.06)
-		self.__sweep_start = self.__AddFloatField(parent=self.__record_panel, sizer=self.__sweep_sizer, label="Start Frequency [Hz]", value=20, minimum=0.0001, maximum=self.__signalchain.GetSamplingRate() / 2)
-		self.__sweep_stop = self.__AddFloatField(parent=self.__record_panel, sizer=self.__sweep_sizer, label="Stop Frequency [Hz]", value=20000, minimum=0.0001, maximum=self.__signalchain.GetSamplingRate() / 2)
+		self.__sweep_start = self.__AddFloatField(parent=self.__record_panel, sizer=self.__sweep_sizer, label="Start frequency [Hz]", value=20, minimum=0.0001, maximum=self.__signalchain.GetSamplingRate() / 2)
+		self.__sweep_stop = self.__AddFloatField(parent=self.__record_panel, sizer=self.__sweep_sizer, label="Stop frequency [Hz]", value=20000, minimum=0.0001, maximum=self.__signalchain.GetSamplingRate() / 2)
 		self.__sweep_scale = self.__AddRadioButtons(parent=self.__record_panel, sizer=self.__sweep_sizer, labels=["Linear", "Exponential"], selected="Exponential")
+		self.__sweep_fade = self.__AddFloatField(parent=self.__record_panel, sizer=self.__sweep_sizer, label="Fade in/out", value=0.02, minimum=0.0)
 		self.__sweep_amplitude = self.__AddFloatField(parent=self.__record_panel, sizer=self.__sweep_sizer, label="Amplitude", value=0.9, minimum=0.0, maximum=1.0)
 		self.__sweep_average = self.__AddIntegerField(parent=self.__record_panel, sizer=self.__sweep_sizer, label="Averages", value=1, minimum=1)
+		# regularization
+		self.__regularization_sizer = self.__AddStaticBoxSizer(parent=self.__record_panel, sizer=self.__record_sizer, label="Regularization properties")
+		self.__regularization_checkbox = self.__AddCheckbox(parent=self.__record_panel, sizer=self.__regularization_sizer, label="Apply regularization", checked=True, function=self.__OnUpdateRegularization)
+		self.__regularization_start = self.__AddFloatField(parent=self.__record_panel, sizer=self.__regularization_sizer, label="Start frequency [Hz]", value=20, minimum=0.0001, maximum=self.__signalchain.GetSamplingRate() / 2)
+		self.__regularization_stop = self.__AddFloatField(parent=self.__record_panel, sizer=self.__regularization_sizer, label="Stop frequency [Hz]", value=20000, minimum=0.0001, maximum=self.__signalchain.GetSamplingRate() / 2)
+		self.__regularization_transition = self.__AddFloatField(parent=self.__record_panel, sizer=self.__regularization_sizer, label="Transition width [Hz]", value=20, minimum=0.0001, maximum=self.__signalchain.GetSamplingRate() / 2)
+		self.__regularization_epsilon_max = self.__AddFloatField(parent=self.__record_panel, sizer=self.__regularization_sizer, label="Epsilon max", value=0.1)
+		self.__regularization_update = self.__AddButton(parent=self.__record_panel, sizer=self.__regularization_sizer, label="Update regularization", buttontext="Update", function=self.__OnUpdateRegularization)
 		# lowpass filter
 		self.__lowpass_sizer = self.__AddStaticBoxSizer(parent=self.__postprocessing_panel, sizer=self.__postprocessing_sizer, label="Lowpass")
 		self.__lowpass_checkbox = self.__AddCheckbox(parent=self.__postprocessing_panel, sizer=self.__lowpass_sizer, label="Lowpass filter", checked=False, function=self.__OnUpdateLowpass)
@@ -141,8 +150,10 @@ class GuiWindow(sumpf.gui.Window):
 		self.__processedimpulseresponsepage = sumpf.modules.SignalPlotPanel(parent=self.__plotnotebook)
 		self.__plotnotebook.AddPage(self.__processedimpulseresponsepage, "Processed Impulse Response")
 		self.__mainsizer.Add(self.__plotnotebook, 1, wx.EXPAND)
+		# status bar
+		self.__statusbar = self.CreateStatusBar(3)
+		self.__statusbar.SetStatusWidths([-7, -2, -1])
 		# finish gui initialization
-		self.__statusbar = self.CreateStatusBar()
 		self.Fit()
 		self.Layout()
 		# make the connections between signal chain and plots
@@ -158,25 +169,29 @@ class GuiWindow(sumpf.gui.Window):
 		sumpf.gui.Window.Destroy(self)
 
 	def __Start(self, event=None):
-		# setup
-		self.__statusbar.SetStatusText("Setting up signal chain")
-		if self.__sweep_duration.IsEnabled():
-			self.__signalchain.SetSweepDuration(self.__sweep_duration.GetValue())
-			self.__signalchain.SetSilenceDuration(self.__sweep_silenceduration.GetValue())
-		self.__signalchain.SetStartFrequency(self.__sweep_start.GetValue())
-		self.__signalchain.SetStopFrequency(self.__sweep_stop.GetValue())
-		self.__signalchain.SetExponential(self.__sweep_scale["Exponential"].GetValue())
-		self.__signalchain.SetAmplitude(self.__sweep_amplitude.GetValue())
-		self.__signalchain.SetAverages(self.__sweep_average.GetValue())
 		# run the record
 		self.__statusbar.SetStatusText("Recording transfer function")
+		sweep_duration = None
+		silence_duration = None
+		if self.__sweep_duration.IsEnabled():
+			sweep_duration = self.__sweep_duration.GetValue()
+			silence_duration = self.__sweep_silenceduration.GetValue()
 		capture_port = None
 		if self.__jack_capture.GetSelection() < self.__jack_capture.GetCount() - 1:
 			capture_port = self.__jack_capture.GetStringSelection()
 		playback_port = None
 		if self.__jack_playback.GetSelection() < self.__jack_playback.GetCount() - 1:
 			playback_port = self.__jack_playback.GetStringSelection()
-		self.__signalchain.Start(capture_port=capture_port, playback_port=playback_port)
+		self.__signalchain.Start(amplitude=self.__sweep_amplitude.GetValue(),
+		                         sweep_duration=sweep_duration,
+		                         silence_duration=silence_duration,
+		                         start_frequency=self.__sweep_start.GetValue(),
+		                         stop_frequency=self.__sweep_stop.GetValue(),
+		                         exponential=self.__sweep_scale["Exponential"].GetValue(),
+		                         fade=self.__sweep_fade.GetValue(),
+		                         averages=self.__sweep_average.GetValue(),
+		                         capture_port=capture_port,
+		                         playback_port=playback_port)
 		# other stuff
 		self.__statusbar.SetStatusText("Updating GUI")
 		self.__keep.Enable()
@@ -229,6 +244,26 @@ class GuiWindow(sumpf.gui.Window):
 			self.__jack_playback.SetStringSelection(selected_playback_port)
 		else:
 			self.__jack_playback.SetSelection(0)
+
+	def __OnUpdateRegularization(self, event=None):
+		epsilon_max = 0.0
+		if self.__regularization_checkbox.GetValue():
+			epsilon_max = self.__regularization_epsilon_max.GetValue()
+			self.__regularization_start.Enable()
+			self.__regularization_stop.Enable()
+			self.__regularization_transition.Enable()
+			self.__regularization_epsilon_max.Enable()
+			self.__regularization_update.Enable()
+		else:
+			self.__regularization_start.Disable()
+			self.__regularization_stop.Disable()
+			self.__regularization_transition.Disable()
+			self.__regularization_epsilon_max.Disable()
+			self.__regularization_update.Disable()
+		self.__signalchain.SetRegularization(start_frequency=self.__regularization_start.GetValue(),
+		                                     stop_frequency=self.__regularization_stop.GetValue(),
+		                                     transition_width=self.__regularization_transition.GetValue(),
+		                                     epsilon_max=epsilon_max)
 
 	def __OnUpdateLowpass(self, event=None):
 		if self.__lowpass_checkbox.GetValue():
