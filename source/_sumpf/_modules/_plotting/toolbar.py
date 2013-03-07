@@ -76,11 +76,9 @@ class Toolbar(wx.Panel):
 			self.__logx.SetValue(logx)
 			if len(self.__components) > 1:
 				for p in self.__components:
-					if p in logy:
-						self.__components[p]["log y"].Check()
+					self.__components[p]["log y"].Check(check=p in logy)
 					self.__components[p]["log y"].Enable(p in shown)
-					if p not in shown:
-						self.__components[p]["hide"].Check()
+					self.__components[p]["hide"].Check(check=p not in shown)
 					self.__components[p]["hide"].Enable()
 				if len(shown) == 1:
 					self.__components[list(shown)[0]]["hide"].Enable(False)
