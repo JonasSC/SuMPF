@@ -14,6 +14,8 @@
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 
+import copy
+
 from .base import AverageBase
 
 try:
@@ -49,10 +51,15 @@ class SumAndDivide(AverageBase):
 		Calculates the average and returns it.
 		@retval : the average all added values
 		"""
-		self._values.sort()
-		sum = self._values[0]
-		for v in self._values[1:]:
-			sum = numpy.add(sum, v)
-		result = numpy.divide(sum, float(len(self._values)))
+		values = None
+		if isinstance(self._values, list):
+			values = copy.copy(self._values)
+		else:
+			values = list(self._values)
+		values.sort()
+		summed = values[0]
+		for v in values[1:]:
+			summed = numpy.add(summed, v)
+		result = numpy.divide(summed, float(len(values)))
 		return result
 
