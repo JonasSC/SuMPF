@@ -15,6 +15,7 @@
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 import collections
+import copy
 
 
 class AverageBase(object):
@@ -26,7 +27,10 @@ class AverageBase(object):
 		All parameters are optional.
 		@param values: a list of values of which the average shall be calculated.
 		"""
-		self._values = values
+		if isinstance(values, list):
+			self._values = copy.copy(values)
+		else:
+			self._values = list(values)
 
 	def Add(self, value):
 		"""

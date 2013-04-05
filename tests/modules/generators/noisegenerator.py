@@ -47,7 +47,7 @@ class TestNoiseGenerator(unittest.TestCase):
 		sumpf.connect(gen.GetSignal, fft.SetSignal)
 		rms = sumpf.modules.RootMeanSquare(integration_time=sumpf.modules.RootMeanSquare.FULL)
 		sumpf.connect(gen.GetSignal, rms.SetInput)
-		avg = sumpf.helper.average.factory([])
+		avg = sumpf.helper.average.factory()
 		rmss = []
 		for i in range(6, 10):
 			length = 2 ** i
@@ -77,7 +77,7 @@ class TestNoiseGenerator(unittest.TestCase):
 		sumpf.connect(gen.GetSignal, fft.SetSignal)
 		rms = sumpf.modules.RootMeanSquare(integration_time=sumpf.modules.RootMeanSquare.FULL)
 		sumpf.connect(gen.GetSignal, rms.SetInput)
-		avg = sumpf.helper.average.factory([])
+		avg = sumpf.helper.average.factory()
 		rmss = []
 		for i in range(6, 10):
 			length = 2 ** i
@@ -109,7 +109,7 @@ class TestNoiseGenerator(unittest.TestCase):
 		sumpf.connect(gen.GetSignal, fft.SetSignal)
 		rms = sumpf.modules.RootMeanSquare(integration_time=sumpf.modules.RootMeanSquare.FULL)
 		sumpf.connect(gen.GetSignal, rms.SetInput)
-		avg = sumpf.helper.average.factory([])
+		avg = sumpf.helper.average.factory()
 		rmss = []
 		for i in range(6, 10):
 			length = 2 ** i
