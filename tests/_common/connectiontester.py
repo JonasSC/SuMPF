@@ -44,7 +44,10 @@ def test_connection_observers(testcase, inputs, noinputs, output):
 		def call_input_connector(connector):
 			if isinstance(connector, sumpf.internal.TypedConnector):
 				if connector.GetType() in [int, float, complex]:
-					connector(connector.GetType()(2.0))				# pass an even, non-zero value to avoid raising errors
+					try:
+						connector(connector.GetType()(2.0))				# try passing an even, non-zero value
+					except ValueError:
+						connector(connector.GetType()(0.7))				# try passing a value between 0.0 and 1.0
 				elif not issubclass(i.GetType(), str) and issubclass(i.GetType(), collections.Iterable):
 					try:
 						connector(connector.GetType()([1, 2]))		# pass an iterable with two integers with ascending value to avoid raising errors
