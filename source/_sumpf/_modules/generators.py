@@ -19,6 +19,7 @@ from ._generators.silencegenerator import SilenceGenerator
 from ._generators.sinewavegenerator import SineWaveGenerator
 from ._generators.squarewavegenerator import SquareWaveGenerator
 from ._generators.sweepgenerator import SweepGenerator
+from ._generators.trianglewavegenerator import TriangleWaveGenerator
 
 from ._generators.filtergenerator import FilterGenerator
 

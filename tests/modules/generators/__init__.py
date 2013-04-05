@@ -21,6 +21,7 @@ from .silencegenerator import TestSilenceGenerator
 from .sinewavegenerator import TestSineWaveGenerator
 from .squarewavegenerator import TestSquareWaveGenerator
 from .sweepgenerator import TestSweepGenerator
+from .trianglewavegenerator import TestTriangleWaveGenerator
 from .windowgenerator import TestWindowGenerator
 
 from .spectrumgenerator import TestSpectrumGenerator
