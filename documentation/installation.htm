@@ -206,7 +206,10 @@
 					Use <nobr>"(sudo )easy_install scikits.audiolab"</nobr> to install it for every
 					user on the system. To install it in your home directory to
 					somewhere like "~/.local/lib/python..." use the command
-					<nobr>"easy_install --home scikits.audiolab"</nobr>
+					<nobr>"easy_install --home scikits.audiolab"</nobr><br />
+					<br />
+					On Windows make sure to get an audiolab-version that is compatible
+					with Python 2.7.
 				</td>
 			</tr>
 			<tr>
@@ -216,16 +219,71 @@
 				</th>
 			</tr>
 			<tr>
+				<td class="subsection">GNU/Linux</td>
 				<td colspan="3" class="text">
 					SuMPF is being developed under Debian GNU/Linux. So far it
-					has only been tested there. But it is very likely that it
-					runs on other GNU/Linux operating systems just as well.<br />
+					has only been thoroughly tested there. But it is very likely
+					that it runs on other GNU/Linux operating systems just as well
+				</td>
+			</tr>
+			<tr>
+				<td class="subsection">Other UNIX-based Systems</td>
+				<td colspan="3" class="text">
 					SuMPF itself does not use any operating system specific
 					functions, even the libraries have been picked with portability
 					in mind. So it should run on other operating systems like 
-					the BSDs, Solaris or MacOS. Even non-POSIX systems like
-					Microsoft Windows should work. But as mentioned before, they
-					are not tested.
+					the BSDs, Solaris or MacOS X. But so far, they are not tested.
+				</td>
+				</td>
+			</tr>
+			<tr>
+				<td class="subsection">Windows</td>
+				<td colspan="3" class="text">
+					SuMPF has not been tested extensively on Windows, but some
+					features have worked on a Windows XP machine with Python 2.7.
+					They will most likely work with other windows versions as well.
+					<br />
+					The following stuff worked:
+					<ul>
+						<li>
+							The normal unit tests without GUI, long tests, writing
+							to disk or time variant tests. This covers most features
+							except the file- and soundcard-IO, the noise generator
+							and the GUI.
+						</li>
+						<li>
+							Reading a wav-file. This means that interacting with
+							audiolab worked, so that the other file-IO will most
+							likely work aswell.
+						</li>
+						<li>
+							Generating white noise. Although the noise generator
+							has not been tested through a unit test on windows,
+							this suggests that it will work.
+						</li>
+					</ul>
+					The following stuff did not work:
+					<ul>
+						<li>
+							Showing a PlotWindow. This does not rais any error,
+							it just hangs, probably forever. This can have something
+							to do with the threading issues in SuMPF's GUI. On
+							their own, both wx and matplotlib have worked.
+						</li>
+						<li>
+							Loading the config from a file. This has not been tested,
+							but currently it seems to be defective by design. SuMPF
+							looks for a root config file at common UNIX paths,
+							that are not valid on Windows. Derrived projects, that
+							use SuMPF just as a library can set their own config
+							paths and therefore avoid this problem, but standalone
+							SuMPF can currently not be configured via a file on
+							Windows.
+						</li>
+					</ul>
+					Soundcard IO was not tested, although JACK seems to be available
+					for Windows now.
+				</td>
 				</td>
 			</tr>
 			<tr>

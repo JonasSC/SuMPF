@@ -81,6 +81,14 @@
 				</td>
 			</tr>
 			<tr>
+				<td class="subsection">Fix Group Delay</td>
+				<td colspan="2" class="text">
+					The group delay calculation of the spectrum class does not
+					work perfectly well. Sometimes there still are jumps in the
+					group delay, when the jumps in the phase are too big.
+				</td>
+			</tr>
+			<tr>
 				<td colspan="3" class="section">
 					<a name="versionone">Until Version 1.0</a>
 					<a href="#top" class="toplink">Top&uarr;</a>
@@ -113,6 +121,22 @@
 					For that a data container and a plot is needed as well.<br />
 					Maybe it is possible to create a very general containter that
 					could also store data like "spectrum vs. rotation speed".
+				</td>
+			</tr>
+			<tr>
+				<td class="subsection">Commandline parameters for unittests</td>
+				<td colspan="2" class="text">
+					It should be possible to select the set of tests that shall
+					be run via command line parameters. Currently this is done by
+					modifying the config in the <span class="code">run_tests.py</span>
+					file.
+				</td>
+			</tr>
+			<tr>
+				<td class="subsection">Config for examples</td>
+				<td colspan="2" class="text">
+					The example programs like RecordTransferFunction should get
+					a configuration file, so they remember their setups.
 				</td>
 			</tr>
 			<tr>
@@ -178,7 +202,10 @@
 					a patchbay to plug the modules into each other.
 					As a start a simple GUI similar to QjackCtl could be implemented.
 					But a full blown GUI like the one of Alsa Modular Synth would
-					be better
+					be better.<br />
+					Maybe libraries like <a href="http://drobilla.net/software/ganv">Ganv</a>
+					or <a href="http://www.graphviz.org/">GraphViz</a> can be helpful
+					here.
 				</td>
 			</tr>
 			<tr>
