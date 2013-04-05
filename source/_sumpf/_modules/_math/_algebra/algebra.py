@@ -73,3 +73,23 @@ class Divide:
 	def _GetLabel(self):
 		return "Quotient"
 
+
+
+class Compare:
+	"""
+	Abstract base class that can be used in conjunction with ChannelDataAlgebra.
+	"""
+	def _Calculate(self, a, b):
+		result = []
+		for i in range(len(a)):
+			if a[i] < b[i]:
+				result.append(-1.0)
+			elif a[i] == b[i]:
+				result.append(0.0)
+			else:
+				result.append(1.0)
+		return tuple(result)
+
+	def _GetLabel(self):
+		return "Comparison"
+

@@ -63,6 +63,15 @@ class TestSignalAlgebra(unittest.TestCase):
 		self.assertEqual(res.GetChannels(), ((2.0, 6.0), (1.0, (5.0 / 7.0))))
 		self.assertEqual(res.GetLabels(), ("Quotient 1", "Quotient 2"))
 
+	def test_compare(self):
+		"""
+		Tests the comparison of Signals.
+		"""
+		alg = sumpf.modules.CompareSignals(signal1=self.signal1, signal2=self.signal2)
+		res = alg.GetOutput()
+		self.assertEqual(res.GetChannels(), ((1.0, 1.0), (0.0, -1.0)))
+		self.assertEqual(res.GetLabels(), ("Comparison 1", "Comparison 2"))
+
 	def test_emptysignal(self):
 		"""
 		Tests if empty Signals are processed as expected.
@@ -92,9 +101,9 @@ class TestSignalAlgebra(unittest.TestCase):
 		"""
 		alg = sumpf.modules.AddSignals(signal1=self.signal1)
 		alg.SetInput2(sumpf.Signal(channels=((0.0, 1.0, 0.0),), samplingrate=48000))
-		self.assertRaises(ValueError, alg.GetOutput)									# shall fail because Signals do not have the same length
+		self.assertRaises(ValueError, alg.GetOutput)								# shall fail because Signals do not have the same length
 		alg.SetInput2(sumpf.Signal(channels=((0.0, 1.0),), samplingrate=44100))
-		self.assertRaises(ValueError, alg.GetOutput)									# shall fail if Signals do not have the same sampling rate
+		self.assertRaises(ValueError, alg.GetOutput)								# shall fail if Signals do not have the same sampling rate
 		alg.SetInput2(sumpf.Signal(channels=((6.0, 4.0),), samplingrate=48000))		# adding a Signal with different channel count shall not fail. Surplus channels shall simply be cropped.
 		self.assertEqual(alg.GetOutput().GetChannels(), ((10.0, 10.0),))
 
@@ -102,7 +111,7 @@ class TestSignalAlgebra(unittest.TestCase):
 		"""
 		Tests if the connectors are properly decorated.
 		"""
-		for m in [sumpf.modules.AddSignals(), sumpf.modules.SubtractSignals(), sumpf.modules.MultiplySignals(), sumpf.modules.DivideSignals()]:
+		for m in [sumpf.modules.AddSignals(), sumpf.modules.SubtractSignals(), sumpf.modules.MultiplySignals(), sumpf.modules.DivideSignals(), sumpf.modules.CompareSignals()]:
 			self.assertEqual(m.SetInput1.GetType(), sumpf.Signal)
 			self.assertEqual(m.SetInput2.GetType(), sumpf.Signal)
 			self.assertEqual(m.GetOutput.GetType(), sumpf.Signal)

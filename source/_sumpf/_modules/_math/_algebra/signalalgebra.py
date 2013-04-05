@@ -93,3 +93,25 @@ class DivideSignals(signalalgebrabase.SignalAlgebra, algebra.Divide):
 	"""
 	pass
 
+
+
+class CompareSignals(signalalgebrabase.SignalAlgebra, algebra.Compare):
+	"""
+	A comparator for two Signals.
+	This works a bit like an open loop operational amplifier with the first Signal
+	being connected to the +input and the second Signal to the -input. If the
+	first input Signal is greater than the second Signal, the respective sample
+	of the output Signal will be 1.0. If it is smaller, the sample will be -1.0.
+	And wherever both input Signals have an equal value, the output will be 0.0.
+
+	The input Signals must have the same length and sampling rate.
+	If one Signal has more channels than the other, the surplus channels will be
+	left out of the resulting Signal.
+
+	The two input Signals will be compared channel per channel and sample per sample:
+		signal1 = sumpf.Signal(channels = ((0, 2), (3, 4)))
+		signal2 = sumpf.Signal(channels = ((1, 2), (2, 5)))
+		compare(signal1, signal2) == sumpf.Signal(channels=((-1, 0), (1, -1)))
+	"""
+	pass
+

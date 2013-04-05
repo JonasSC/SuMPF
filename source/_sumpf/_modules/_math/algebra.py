@@ -14,6 +14,6 @@
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 
-from ._algebra.signalalgebra import AddSignals, SubtractSignals, MultiplySignals, DivideSignals
+from ._algebra.signalalgebra import AddSignals, SubtractSignals, MultiplySignals, DivideSignals, CompareSignals
 from ._algebra.spectrumalgebra import AddSpectrums, SubtractSpectrums, MultiplySpectrums, DivideSpectrums
 
