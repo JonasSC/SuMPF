@@ -14,12 +14,15 @@
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 
-from ._plotting.signalplotwindow import SignalPlotWindow
-from ._plotting.spectrumplotwindow import SpectrumPlotWindow
-
 from ._plotting.signalplotpanel import SignalPlotPanel
+from ._plotting.sequenceplotpanel import SequencePlotPanel
 from ._plotting.spectrumplotpanel import SpectrumPlotPanel
 
 from ._plotting.tiledsignalplotpanel import TiledSignalPlotPanel
+from ._plotting.tiledsequenceplotpanel import TiledSequencePlotPanel
 from ._plotting.tiledspectrumplotpanel import TiledSpectrumPlotPanel
+
+from ._plotting.signalplotwindow import SignalPlotWindow
+from ._plotting.sequenceplotwindow import SequencePlotWindow
+from ._plotting.spectrumplotwindow import SpectrumPlotWindow
 
