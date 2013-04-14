@@ -63,18 +63,33 @@ class Spectrum(ChannelData):
 		@retval : a tuple of channels which are a tuple of samples which represent the group delay of the spectrum
 		"""
 		result = []
-		for c in self.GetPhase():
-			continous_phase = [c[0]]
-			offset = 0
-			for i in range(1, len(c)):
-				if c[i] - c[i - 1] > math.pi:
-					offset -= 2 * math.pi
-				elif c[i] - c[i - 1] < -math.pi:
-					offset += 2 * math.pi
-				continous_phase.append(c[i] + offset)
-			derivative = sumpf.helper.differentiate(continous_phase)
+		for c in self.GetContinuousPhase():
+			derivative = sumpf.helper.differentiate(c)
 			group_delay = tuple(numpy.multiply(derivative, -0.5 / math.pi))
 			result.append(group_delay)
+		return result
+
+	def GetContinuousPhase(self):
+		"""
+		This method tries to calculate the samples for a continuous phase that
+		does not oscillate between -pi and pi.
+		For random phase spectrums like those of noise, the algorithm may not be
+		able to calculate reasonable values.
+		@retval : a tuple of channels which are a tuple of samples which represent the continuous phase of the spectrum
+		"""
+		result = []
+		for c in self.GetPhase():
+			continuous_phase = [c[0]]
+			offset = 0.0
+			diff = 0.0
+			for i in range(1, len(c)):
+				if c[i] - (c[i - 1] + diff) > math.pi:
+					offset -= 2.0 * math.pi
+				elif c[i] - (c[i - 1] + diff) < -math.pi:
+					offset += 2.0 * math.pi
+				continuous_phase.append(c[i] + offset)
+				diff = continuous_phase[-1] - continuous_phase[-2]
+			result.append(continuous_phase)
 		return result
 
 	def GetResolution(self):

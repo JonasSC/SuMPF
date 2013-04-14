@@ -26,7 +26,7 @@ class TiledSpectrumPlotPanel(TiledLinePlotPanel):
 	window, consider using SpectrumPlotWindow and give this class as panel_class
 	parameter to the constructor.
 	"""
-	def __init__(self, parent, orientation=TiledLinePlotPanel.HORIZONTAL, x_interval=(20, 20000), margin=0.07, show_legend=False, show_grid=None, show_cursors=True, cursor_positions=[], log_x=True, log_y=set(["Magnitude"]), hidden_components=set(["Phase", "GroupDelay"])):
+	def __init__(self, parent, orientation=TiledLinePlotPanel.HORIZONTAL, x_interval=(20, 20000), margin=0.07, show_legend=False, show_grid=None, show_cursors=True, cursor_positions=[], log_x=True, log_y=set(["Magnitude"]), hidden_components=set(["Phase", "ContinuousPhase", "GroupDelay"])):
 		"""
 		@param parent: the parent wx.Window of this panel
 		@param margin: the margin between the plots and the window border
@@ -40,7 +40,7 @@ class TiledSpectrumPlotPanel(TiledLinePlotPanel):
 		"""
 		TiledLinePlotPanel.__init__(self,
 		                            parent=parent,
-		                            components=["Magnitude", "Phase", "GroupDelay"],
+		                            components=["Magnitude", "Phase", "ContinuousPhase", "GroupDelay"],
 		                            orientation=orientation,
 		                            x_caption="Frequency [Hz]",
 		                            x_interval=x_interval,
@@ -65,6 +65,7 @@ class TiledSpectrumPlotPanel(TiledLinePlotPanel):
 		y_data = {}
 		y_data["Magnitude"] = spectrum.GetMagnitude()
 		y_data["Phase"] = spectrum.GetPhase()
+		y_data["ContinuousPhase"] = spectrum.GetContinuousPhase()
 		y_data["GroupDelay"] = spectrum.GetGroupDelay()
 		self._SetData(x_data=x_data, y_data=y_data, labels=spectrum.GetLabels())
 
@@ -95,6 +96,20 @@ class TiledSpectrumPlotPanel(TiledLinePlotPanel):
 		Shows the phase logarithmically.
 		"""
 		self.LogarithmicY(component="Phase", log=True)
+
+	@sumpf.Trigger()
+	def LinearContinuousPhase(self):
+		"""
+		Shows the continuous phase linearly.
+		"""
+		self.LogarithmicY(component="ContinuousPhase", log=False)
+
+	@sumpf.Trigger()
+	def LogarithmicContinuousPhase(self):
+		"""
+		Shows the continuous phase logarithmically.
+		"""
+		self.LogarithmicY(component="ContinuousPhase", log=True)
 
 	@sumpf.Trigger()
 	def LinearGroupDelay(self):
@@ -137,6 +152,20 @@ class TiledSpectrumPlotPanel(TiledLinePlotPanel):
 		Hides the phase plot.
 		"""
 		self.ShowComponent(component="Phase", show=False)
+
+	@sumpf.Trigger()
+	def ShowContinuousPhase(self):
+		"""
+		Shows the continuous phase plot.
+		"""
+		self.ShowComponent(component="ContinuousPhase", show=True)
+
+	@sumpf.Trigger()
+	def HideContinuousPhase(self):
+		"""
+		Hides the continuous phase plot.
+		"""
+		self.ShowComponent(component="ContinuousPhase", show=False)
 
 	@sumpf.Trigger()
 	def ShowGroupDelay(self):

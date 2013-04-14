@@ -106,6 +106,7 @@ class TestLinePlotting(unittest.TestCase):
 		plt.LinearMagnitude()
 		plt.HidePhase()
 		plt.LogarithmicGroupDelay()
+		plt.ShowContinuousPhase()
 		plt.SetXInterval((10, 22050))
 		# close Window
 		plt.Close()

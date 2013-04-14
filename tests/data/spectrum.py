@@ -14,6 +14,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 
+import math
 import unittest
 import sumpf
 
@@ -112,6 +113,23 @@ class TestSpectrum(unittest.TestCase):
 		spk = fft.GetSpectrum()
 		self.assertAlmostEqual(min(spk.GetGroupDelay()[0]), max(spk.GetGroupDelay()[0]))	# the group delay should be constant
 		self.assertAlmostEqual(min(spk.GetGroupDelay()[0]), 0.03)							# the group delay should be the same as the delay for the impulse
+
+	@unittest.skipIf(sumpf.config.get("unload_numpy"), "Testing modules that require the full featured numpy are skipped")
+	def test_continuous_phase(self):
+		"""
+		Tests the calculation of the continuous phase of a spectrum.
+		"""
+		swp = sumpf.modules.SweepGenerator(length=1000).GetSignal()
+		spk = sumpf.modules.FourierTransform(signal=swp).GetSpectrum()
+		continuous_phase = spk.GetContinuousPhase()[0]
+		group_delay = spk.GetGroupDelay()[0]
+		self.assertEqual(continuous_phase[0], 0.0)
+		integral = group_delay[0]
+		for i in range(1, len(continuous_phase)):
+			self.assertLess(continuous_phase[i], continuous_phase[i - 1])
+			integral -= 2.0 * math.pi * group_delay[i]
+			error = ((continuous_phase[i] - integral) / continuous_phase[i]) ** 2
+			self.assertLess(error, 0.006)
 
 	def test_overloaded_operators(self):
 		"""
