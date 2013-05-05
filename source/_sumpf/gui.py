@@ -18,7 +18,7 @@
 This name space contains functions and classes that help building a GUI with wx.
 """
 
-from ._gui.functions import start_mainloop, is_mainloop_running, join_mainloop, run_in_mainloop
+from ._gui.functions import bump_mainloop, run_in_mainloop
 
 from ._gui.window import Window
 

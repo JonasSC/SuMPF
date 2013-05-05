@@ -14,6 +14,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 
+import sumpf
 from .baselineplotpanel import BaseLinePlotPanel
 
 
@@ -37,7 +38,7 @@ class LinePlotPanel(BaseLinePlotPanel):
 				left = self._margin
 				bottom = self._margin + (number_of_shown_components - 1.0) * (height + self._margin / 2.0)
 				number_of_shown_components -= 1
-				plot = self._figure.add_axes([left, bottom, width, height])
+				plot = sumpf.gui.run_in_mainloop(self._figure.add_axes, [left, bottom, width, height])
 				self._plots["main"][c] = plot
 				self._y_plotdata["main"][c] = []
 				for i in range(len(self._y_data[c])):

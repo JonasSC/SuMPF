@@ -44,7 +44,7 @@ class ProgressDialog(Window):
 		self.__sizer.AddStretchSpacer()
 		self.Layout()
 		self.Fit()
-		self.Center()
+		self.__shown = False
 
 	@sumpf.Input(tuple)
 	def SetProgress(self, progress):
@@ -56,10 +56,14 @@ class ProgressDialog(Window):
 		"""
 		try:
 			self.__gauge.SetProgress(progress)
-			self.Show()
+			if not self.__shown:
+				self.Show()
+				self.Center()
+				self.__shown = True
 			if progress[0] > 0:
 				if progress[0] <= progress[1]:
 					self.Close()
+					self.__shown = False
 		except wx.PyDeadObjectError:
 			pass
 

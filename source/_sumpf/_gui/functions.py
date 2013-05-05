@@ -16,55 +16,69 @@
 
 import threading
 import wx
-from . import objects
+from .mainloopthread import mainloop_thread_object
 
 
-def start_mainloop():
+def bump_mainloop():
 	"""
-	Starts the wx MainLoop.
+	Makes sure that the wx MainLoop is running.
+	If the MainLoop has finished running, it will be started again.
 	"""
-	objects.start_mainloop_lock.acquire()
-	if not is_mainloop_running():
-		objects.mainloop_thread = threading.Thread(target=objects.app.MainLoop)
-		objects.mainloop_thread.start()
-	objects.start_mainloop_lock.release()
+	mainloop_thread_object.Bump()
 
-def is_mainloop_running():
-	"""
-	Returns if the wx Mainloop is running.
-	@retval : True, if the wx Mainloop is running, False otherwise
-	"""
-	return objects.app.IsMainLoopRunning()
-
-def join_mainloop():
-	"""
-	Blocks until the mainloop has finished.
-	Starts the mainloop if necessary.
-	"""
-	if not is_mainloop_running():
-		start_mainloop()
-	objects.mainloop_thread.join()
 
 def run_in_mainloop(function, *args, **kwargs):
 	"""
-	Some GUI methods need to be run in the GUI MainLoop. This method ensures that
-	and blocks until these methods have run.
+	Runs a given function in the wx MainLoop.
+	Some GUI methods need to be run in the GUI MainLoop to avoid crashes. This
+	method ensures that and blocks until the given method has run.
 	@param function: the function that shall be run
 	@param args: the non-keyword arguments for the function
 	@param kwargs: the keyword arguments for the function
+	@retval : the return value of the function
 	"""
-	if not is_mainloop_running():
-		start_mainloop()
-	if objects.mainloop_thread.ident == threading.currentThread().ident:
-		function(*args, **kwargs)
+	if threading.currentThread().ident == mainloop_thread_object.ident:
+		return function(*args, **kwargs)
 	else:
-		wait_for_mainloop_lock = threading.Lock()
-		wait_for_mainloop_lock.acquire()
-		def run():
-			function(*args, **kwargs)
-			wait_for_mainloop_lock.release()
-		wx.CallAfter(run)
-		start_mainloop()
-		wait_for_mainloop_lock.acquire()
-		wait_for_mainloop_lock.release()
+		done_event = threading.Event()
+		f = FunctionForMainLoop(event=done_event, function=function, args=args, kwargs=kwargs)
+		wx.CallAfter(f.Run)
+		mainloop_thread_object.Bump()
+		done_event.wait()
+		return f.GetResult()
+
+
+
+class FunctionForMainLoop(object):
+	"""
+	A wrapper for a function that shall be run in the wx MainLoop. It stores the
+	arguments for the function call and its return value.
+	"""
+	def __init__(self, event, function, args, kwargs):
+		"""
+		@param event: a threading.Event instance whose set method shall be called when the function has finished running
+		@param function: the function that shall be run
+		@param args: the non-keyword arguments for the function call
+		@param kwargs: the keyword arguments for the function call
+		"""
+		self.__event = event
+		self.__function = function
+		self.__args = args
+		self.__kwargs = kwargs
+		self.__result = None
+
+	def Run(self):
+		"""
+		This method is passed to the wx.CallAfter function. It runs the given
+		function, stores its return value and calls the event's set method.
+		"""
+		self.__result = self.__function(*self.__args, **self.__kwargs)
+		self.__event.set()
+
+	def GetResult(self):
+		"""
+		Returns the return value of the called function.
+		@retval : the return value of the called function
+		"""
+		return self.__result
 

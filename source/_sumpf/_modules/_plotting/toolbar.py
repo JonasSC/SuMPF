@@ -37,7 +37,7 @@ class Toolbar(wx.Panel):
 		self.__sizer = wx.BoxSizer(wx.HORIZONTAL)
 		self.SetSizer(self.__sizer)
 		# matplotlib toolbar
-		self.__mpl_toolbar = NavigationToolbar2Wx(self.__canvas)
+		self.__mpl_toolbar = sumpf.gui.run_in_mainloop(NavigationToolbar2Wx, self.__canvas)
 		self.__mpl_toolbar.Realize()
 		self.__mpl_toolbar.Reparent(self)
 		self.__sizer.Add(self.__mpl_toolbar)
@@ -58,7 +58,7 @@ class Toolbar(wx.Panel):
 			self.__AddMenu(label="hide", entries=components, function=self.__OnHide)
 		self.__AddSeparator()
 		# finish
-		self.Layout()
+		sumpf.gui.run_in_mainloop(self.Layout)
 
 	def UpdateToolbar(self, legend, grid, cursors, logx, logy, shown):
 		"""

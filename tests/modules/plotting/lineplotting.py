@@ -82,7 +82,6 @@ class TestLinePlotting(unittest.TestCase):
 		# collect garbage
 		gc.collect()
 		self.assertEqual(gc.garbage, [])											# The plot should not leave any dead objects behind
-		sumpf.gui.join_mainloop()
 
 	def test_spectrum_plot(self):
 		"""
@@ -113,7 +112,6 @@ class TestLinePlotting(unittest.TestCase):
 		# collect garbage
 		gc.collect()
 		self.assertEqual(gc.garbage, [])						# The plot should not leave any dead objects behind
-		sumpf.gui.join_mainloop()
 
 	def test_tiled_plots(self):
 		"""
@@ -143,5 +141,4 @@ class TestLinePlotting(unittest.TestCase):
 		# collect garbage
 		gc.collect()
 		self.assertEqual(gc.garbage, [])	# The plot should not leave any dead objects behind
-		sumpf.gui.join_mainloop()
 

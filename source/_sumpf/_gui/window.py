@@ -15,8 +15,9 @@
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 import threading
+import time
 import wx
-from .functions import run_in_mainloop, start_mainloop, is_mainloop_running
+from .functions import run_in_mainloop, bump_mainloop
 
 
 class Window(wx.Frame):
@@ -28,7 +29,8 @@ class Window(wx.Frame):
 	"""
 	def __init__(self, *args, **kwargs):
 		wx.Frame.__init__(self, *args, **kwargs)
-		self.__frame_is_shown_lock = threading.Lock()
+		self.__frame_close_event = threading.Event()
+		self.__frame_close_event.set()
 		self.__on_close_observers = []
 
 	def Show(self):
@@ -36,8 +38,8 @@ class Window(wx.Frame):
 		Override for wx.Frame.Show for thread safety and to enable the Join
 		capability.
 		"""
-		if not self.__frame_is_shown_lock.locked():
-			self.__frame_is_shown_lock.acquire()
+		if self.__frame_close_event.is_set():
+			self.__frame_close_event.clear()
 			run_in_mainloop(wx.Frame.Show, self)
 			self.Bind(wx.EVT_CLOSE, self.__OnClose)
 
@@ -52,12 +54,12 @@ class Window(wx.Frame):
 		"""
 		Blocks as long as the window is shown.
 		"""
-		start_mainloop()
-		self.__frame_is_shown_lock.acquire()
-		self.__frame_is_shown_lock.release()
-		wx.YieldIfNeeded()
+		bump_mainloop()
+		self.__frame_close_event.wait()
+#		wx.YieldIfNeeded()		# somehow this call can cause crashes
 		while not isinstance(self, wx._core._wxPyDeadObject):
-			wx.YieldIfNeeded()
+#			wx.YieldIfNeeded()	# somehow this call can cause crashes, so it is replaced by time.sleep(...)
+			time.sleep(0.002)
 
 	def AddObserverOnClose(self, function, *args, **kwargs):
 		"""
@@ -92,6 +94,26 @@ class Window(wx.Frame):
 			function, args, kwargs = self.__on_close_observers.pop(0)
 			function(*args, **kwargs)
 		self.Destroy()
-		if self.__frame_is_shown_lock.locked():
-			self.__frame_is_shown_lock.release()
+		self.__frame_close_event.set()
+
+	def Layout(self):
+		"""
+		An override for the wx Frame's Layout method that makes sure that the
+		Layout call is processed in the wx MainLoop.
+		"""
+		run_in_mainloop(wx.Frame.Layout, self)
+
+	def Fit(self):
+		"""
+		An override for the wx Frame's Fit method that makes sure that the
+		Fit call is processed in the wx MainLoop.
+		"""
+		run_in_mainloop(wx.Frame.Fit, self)
+
+	def Center(self):
+		"""
+		An override for the wx Frame's Center method that makes sure that the
+		Center call is processed in the wx MainLoop.
+		"""
+		run_in_mainloop(wx.Frame.Center, self)
 

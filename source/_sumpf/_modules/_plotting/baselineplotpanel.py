@@ -78,8 +78,8 @@ class BaseLinePlotPanel(wx.Panel):
 		self.__sizer = wx.BoxSizer(wx.VERTICAL)
 		self.SetSizer(self.__sizer)
 		# matplotlib stuff
-		self._figure = Figure()
-		self.__canvas = FigureCanvas(parent=self, id=wx.ID_ANY, figure=self._figure)
+		self._figure = sumpf.gui.run_in_mainloop(Figure)
+		self.__canvas = sumpf.gui.run_in_mainloop(FigureCanvas, parent=self, id=wx.ID_ANY, figure=self._figure)
 		self.__toolbar = Toolbar(parent=self, canvas=self.__canvas, components=components)
 		self.__sizer.Add(self.__toolbar, 0, wx.LEFT | wx.EXPAND)
 		self.__sizer.Add(self.__canvas, 1, wx.EXPAND)
@@ -93,7 +93,7 @@ class BaseLinePlotPanel(wx.Panel):
 		"""
 		Runs the layout algorithm and draws the plots.
 		"""
-		wx.Panel.Layout(self)
+		sumpf.gui.run_in_mainloop(wx.Panel.Layout, self)
 		self._UpdateGUI()
 
 	def _SetData(self, x_data, y_data, labels):
@@ -111,8 +111,8 @@ class BaseLinePlotPanel(wx.Panel):
 		for g in list(self._plots.values()):
 			for p in g.values():
 				del p.lines[:]
-				self._figure.delaxes(p)
-		self._figure.clear()
+				sumpf.gui.run_in_mainloop(self._figure.delaxes, p)
+		sumpf.gui.run_in_mainloop(self._figure.clear)
 		self._plots = {}
 		self._y_plotdata = {}
 		# create new plots
