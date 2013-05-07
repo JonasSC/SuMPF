@@ -23,7 +23,7 @@ class TestSpectrum(unittest.TestCase):
 		samples1 = []
 		samples2 = []
 		for i in range(1, 11):
-			samples1.append(i)
+			samples1.append(i + 1.0j * i)
 			samples2.append(2 * i)
 		self.samples1 = tuple(samples1)
 		self.samples2 = tuple(samples2)
@@ -37,9 +37,10 @@ class TestSpectrum(unittest.TestCase):
 		self.assertEqual(self.spectrum.GetChannels(), self.channels)	# test if channels are set correctly
 		self.assertEqual(self.spectrum.GetResolution(), 4800.0)			# test if resolution is set correctly
 		self.assertEqual(len(self.spectrum), len(self.samples1))		# test if length is computed correctly
-		self.assertEqual(self.spectrum.GetMagnitude(), self.channels)	# test if magnitude is computed correctly for floating point input
-		zeros = ((0.0,) * len(self.spectrum),) * len(self.channels)
-		self.assertEqual(self.spectrum.GetPhase(), zeros)				# test if phase is computed correctly for floating point input
+		magnitude = (tuple([abs(i) for i in self.samples1]), self.samples2)
+		self.assertEqual(self.spectrum.GetMagnitude(), magnitude)	# test if magnitude is computed correctly
+		phase = ((math.pi / 4.0,) * len(self.spectrum), (0.0,) * len(self.spectrum))
+		self.assertEqual(self.spectrum.GetPhase(), phase)				# test if phase is computed correctly
 		self.assertEqual(self.spectrum.GetLabels(), ("1", "2"))			# test if labels are set correctly
 		spk = sumpf.Spectrum(channels=self.channels, resolution=4800.0, labels=("1",))
 		self.assertEqual(spk.GetLabels(), ("1", None))					# test if labels are set correctly, if the given tuple of labels is shorter than the tuple of channels
@@ -100,7 +101,7 @@ class TestSpectrum(unittest.TestCase):
 		self.assertIsInstance(spectrum.GetChannels()[0], tuple)		# the channels should be tuples
 		self.assertIsInstance(spectrum.GetResolution(), float)		# the resolution should be a float
 		self.assertIsInstance(spectrum.GetLabels(), tuple)			# the labels should be stored in a tuple
-		self.assertIsInstance(spectrum.GetLabels()[0], str)	# the labels can be either ascii or unicode strings
+		self.assertIsInstance(spectrum.GetLabels()[0], str)			# the labels can be either ascii or unicode strings
 
 	@unittest.skipIf(sumpf.config.get("unload_numpy"), "Testing modules that require the full featured numpy are skipped")
 	def test_group_delay(self):
@@ -145,8 +146,8 @@ class TestSpectrum(unittest.TestCase):
 		self.assertEqual(str(self.spectrum), "<_sumpf._data.spectrum.Spectrum object (length: 10, resolution: 4800.00, channel count: 2) at 0x%x>" % id(self.spectrum))
 		# algebra
 		spectrum2 = sumpf.Spectrum(channels=(self.samples1,), resolution=4800.0, labels=("3", "4"))
-		spectrum3 = sumpf.Spectrum(channels=((1.0,) * 12, (2.0,) * 12), resolution=4800.0, labels=("5", "6"))
-		spectrum4 = sumpf.Spectrum(channels=((1.0,) * 10, (2.0,) * 10), resolution=4410.0, labels=("7", "8"))
+		spectrum3 = sumpf.Spectrum(channels=((1.0 + 4.2j,) * 12, (2.0,) * 12), resolution=4800.0, labels=("5", "6"))
+		spectrum4 = sumpf.Spectrum(channels=((1.0,) * 10, (2.0 + 2.3j,) * 10), resolution=4410.0, labels=("7", "8"))
 		spectrum5 = sumpf.Spectrum(channels=((0.0,) * 10, (0.0,) * 10), resolution=4800.0, labels=("9", "0"))
 		# __add__
 		self.assertEqual(self.spectrum + spectrum2, sumpf.modules.AddSpectrums(spectrum1=self.spectrum, spectrum2=spectrum2).GetOutput())

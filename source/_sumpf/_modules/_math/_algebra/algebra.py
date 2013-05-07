@@ -63,8 +63,8 @@ class Divide:
 	Abstract base class that can be used in conjunction with ChannelDataAlgebra.
 	"""
 	def _Calculate(self, a, b):
-		if min(b) == 0.0 == max(b):
-			if min(a) == 0.0 == max(a):
+		if min(numpy.abs(b)) == 0.0 == max(numpy.abs(b)):
+			if min(numpy.abs(a)) == 0.0 == max(numpy.abs(a)):
 				return (1.0,) * len(a)
 			else:
 				raise ZeroDivisionError("A non zero data set may not be divided by a zero data set")

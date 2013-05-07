@@ -223,11 +223,12 @@ class Spectrum(ChannelData):
 		self.__CheckOtherSpectrum(other)
 		channels = []
 		labels = []
-		for i in range(min(len(self.GetChannels()), len(other.GetChannels()))):
-			otherchannel = other.GetChannels()[i]
-			if min(otherchannel) == 0.0 == max(otherchannel):
+		otherchannels = other.GetChannels()
+		othermagnitude = other.GetMagnitude()
+		for i in range(min(len(self.GetChannels()), len(otherchannels))):
+			if min(othermagnitude[i]) == 0.0 == max(othermagnitude[i]):
 				raise ZeroDivisionError("Spectrum division by a Spectrum with only 0.0-samples")
-			channels.append(tuple(numpy.divide(self.GetChannels()[i], otherchannel)))
+			channels.append(tuple(numpy.divide(self.GetChannels()[i], otherchannels[i])))
 			labels.append("Quotient %i" % (i + 1))
 		return Spectrum(channels=tuple(channels), resolution=self.GetResolution(), labels=tuple(labels))
 
