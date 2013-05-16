@@ -131,7 +131,7 @@ class NormalizeSpectrumToAverage(object):
 		@param channels: the list of channels for which the factor shall be calculated
 		@retval : the normalization factor as a float
 		"""
-		averager = sumpf.helper.average.factory()
+		averager = sumpf.helper.average.SortedSum()
 		for c in channels:
 			for s in c:
 				averager.Add(s ** self.__order)

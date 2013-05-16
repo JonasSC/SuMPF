@@ -27,10 +27,8 @@ class AverageBase(object):
 		All parameters are optional.
 		@param values: a list of values of which the average shall be calculated.
 		"""
-		if isinstance(values, list):
-			self._values = copy.copy(values)
-		else:
-			self._values = list(values)
+		for v in values:
+			self.Add(v)
 
 	def Add(self, value):
 		"""
@@ -38,7 +36,7 @@ class AverageBase(object):
 		The value can be either a scalar value or a list.
 		@param value: the value that shall be added
 		"""
-		self._values.append(value)
+		raise NotImplementedError("This method should have been overridden in a derived class")
 
 	def GetAverage(self):
 		"""
@@ -48,15 +46,11 @@ class AverageBase(object):
 		Returns a list if list values have been added.
 		@retval : the average all added values
 		"""
-		if self._values != []:
-			result = self._GetAverage()
-			if isinstance(result, collections.Iterable):
-				return list(result)
-			else:
-				return result
-			return sum / float(len(self._values))
+		result = self._GetAverage()
+		if isinstance(result, collections.Iterable):
+			return list(result)
 		else:
-			return 0.0
+			return result
 
 	def _GetAverage(self):
 		"""

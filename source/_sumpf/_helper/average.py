@@ -16,20 +16,22 @@
 
 """
 This name space contains some implementations of an averaging algorithm.
-It is recommended to get an averaging instance by calling the factory() method.
 Currently there are two implementations of an averaging algorithm available:
-  SumAndDivide is the classical approach of summing up all the elements and then
-    dividing by their number.
-  AverageList was an approach that tried to use less memory while still having
-    less errors through floating point calculations. This costs of course more
-    computational power.
-    Sadly AverageList is not yet fully functional and is less accurate than the
-    SumAndDivide algorithm. So use this only, if a low memory is a lot more
-    important than accuracy.
+  SumDirectly is the classical approach of summing up all the elements and then
+    dividing by their number. The summing of the elements is done directly, when
+    an element is added, so only one element (the sum) has to be stored in the
+    memory.
+  SortedSum tries to reduce errors that are caused by limited floating point
+    precision by storing all added values in a list and sorting the list before
+    adding the values up. This of course uses a lot of memory, to store each added
+    value. And sorting the list might not be a cheap operation.
+  SumList was an approach to uses less memory while still having less errors through
+    floating point calculations when all the values are in the same order of magnitude.
+    This approach needs more computational power both during the adding of values
+    to the averaging object and for calculating the final result.
 """
 
-from ._average.sumanddivide import SumAndDivide
-from ._average.averagelist import AverageList
-
-from ._average.factory import factory
+from ._average.sortedsum import SortedSum
+from ._average.sumdirectly import SumDirectly
+from ._average.sumlist import SumList
 

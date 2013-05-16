@@ -31,14 +31,14 @@ class TestAverageSignals(unittest.TestCase):
 		signal2 = sumpf.Signal(channels=((3.0, 1.0, 2.0),), samplingrate=17.0)
 		signal3 = sumpf.Signal(channels=((2.0, 3.0, 1.0),), samplingrate=17.0)
 		avg = sumpf.modules.AverageSignals()
-		self.assertIsNone(avg._lastdataset)							# object initialized without arguments should be empty
+		self.assertIsNone(avg._lastdataset)							# an object initialized without arguments should be empty
 		avg.AddInput(signal1)
 		avg.AddInput(signal2)
 		avg.AddInput(signal3)
 		output = avg.GetOutput()
-		self.assertEqual(output.GetSamplingRate(), 17.0)			# sampling rate should have been taken from input Signals
-		self.assertEqual(output.GetChannels(), ((2.0, 2.0, 2.0),))	# average should have been set correctly
-		self.assertEqual(output.GetLabels(), ("Average 1",))		# the label should have been set correctly
+		self.assertEqual(output.GetSamplingRate(), 17.0)			# the sampling rate should be taken from input Signals
+		self.assertEqual(output.GetChannels(), ((2.0, 2.0, 2.0),))	# the average should be calculated correctly
+		self.assertEqual(output.GetLabels(), ("Average 1",))		# the label should be set correctly
 
 	def test_constructor(self):
 		"""

@@ -27,30 +27,30 @@ class TestAverageSpectrums(unittest.TestCase):
 		"""
 		Tests if the getter and setter methods work as expected.
 		"""
-		spectrum1 = sumpf.Spectrum(channels=((1.0, 2.0, 3.0),), resolution=17.0)
-		spectrum2 = sumpf.Spectrum(channels=((3.0, 1.0, 2.0),), resolution=17.0)
-		spectrum3 = sumpf.Spectrum(channels=((2.0, 3.0, 1.0),), resolution=17.0)
+		spectrum1 = sumpf.Spectrum(channels=((1.0, 2.0, 3.0 + 3.0j),), resolution=17.0)
+		spectrum2 = sumpf.Spectrum(channels=((3.0, 1.0 + 6.0j, 2.0),), resolution=17.0)
+		spectrum3 = sumpf.Spectrum(channels=((2.0 + 9.0j, 3.0, 1.0),), resolution=17.0)
 		avg = sumpf.modules.AverageSpectrums()
-		self.assertIsNone(avg._lastdataset)							# object initialized without arguments should be empty
+		self.assertIsNone(avg._lastdataset)												# an object initialized without arguments should be empty
 		avg.AddInput(spectrum1)
 		avg.AddInput(spectrum2)
 		avg.AddInput(spectrum3)
 		output = avg.GetOutput()
-		self.assertEqual(output.GetResolution(), 17.0)				# resolution should have been taken from input Spectrums
-		self.assertEqual(output.GetChannels(), ((2.0, 2.0, 2.0),))	# average should have been set correctly
-		self.assertEqual(output.GetLabels(), ("Average 1",))		# the label should have been set correctly
+		self.assertEqual(output.GetResolution(), 17.0)									# the resolution should be taken from input Spectrums
+		self.assertEqual(output.GetChannels(), ((2.0 + 3.0j, 2.0 + 2.0j, 2.0 + 1.0j),))	# the average should be calculated correctly
+		self.assertEqual(output.GetLabels(), ("Average 1",))							# the label should be set correctly
 
 	def test_constructor(self):
 		"""
 		Tests if setting the data via the constructor works.
 		"""
-		spectrum1 = sumpf.Spectrum(channels=((1.0, 2.0, 3.0),), resolution=9.0)
-		spectrum2 = sumpf.Spectrum(channels=((3.0, 1.0, 2.0),), resolution=9.0)
-		spectrum3 = sumpf.Spectrum(channels=((2.0, 3.0, 1.0),), resolution=9.0)
+		spectrum1 = sumpf.Spectrum(channels=((1.0, 2.0, 3.0 + 3.0j),), resolution=9.0)
+		spectrum2 = sumpf.Spectrum(channels=((3.0, 1.0 + 6.0j, 2.0),), resolution=9.0)
+		spectrum3 = sumpf.Spectrum(channels=((2.0 + 9.0j, 3.0, 1.0),), resolution=9.0)
 		avg = sumpf.modules.AverageSpectrums(spectrums=[spectrum1, spectrum2, spectrum3])
 		output = avg.GetOutput()
 		self.assertEqual(output.GetResolution(), 9.0)
-		self.assertEqual(output.GetChannels(), ((2.0, 2.0, 2.0),))
+		self.assertEqual(output.GetChannels(), ((2.0 + 3.0j, 2.0 + 2.0j, 2.0 + 1.0j),))
 
 	def test_connections(self):
 		"""

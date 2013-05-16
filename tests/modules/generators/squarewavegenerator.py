@@ -43,7 +43,7 @@ class TestSquareWaveGenerator(unittest.TestCase):
 			self.assertSetEqual(set(samples), set([-1.0, 1.0]))	# all samples should either be 1.0 or -1.0
 			self.assertEqual(signal.GetLabels(), ("Square",))	# the label of the channel should be as expected
 			last = None
-			avg = sumpf.helper.average.factory()
+			avg = sumpf.helper.average.SortedSum()
 			for i in range(1, len(samples)):
 				if samples[i] > samples[i - 1]:
 					if last is not None:
@@ -80,7 +80,7 @@ class TestSquareWaveGenerator(unittest.TestCase):
 		for i in range(11):
 			duty_cycle = i / 10.0
 			self.gen.SetDutyCycle(duty_cycle)
-			average = sumpf.helper.average.factory(values=self.gen.GetSignal().GetChannels()[0]).GetAverage()
+			average = sumpf.helper.average.SortedSum(values=self.gen.GetSignal().GetChannels()[0]).GetAverage()
 			self.assertAlmostEqual(average, -1.0 + 2.0 * duty_cycle)
 
 	def test_connectors(self):

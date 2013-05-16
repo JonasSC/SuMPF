@@ -19,6 +19,8 @@ import collections
 
 python_abs = abs
 float32 = float
+float64 = float
+float128 = float
 
 def get_iterable_depth(container):
 	"""

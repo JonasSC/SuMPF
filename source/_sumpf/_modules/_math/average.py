@@ -28,7 +28,7 @@ class AverageChannelData(object):
 	A base class for calculating the average of ChannelData instances.
 	"""
 	def __init__(self):
-		self.__data = []
+		self.__channels = []
 		self.__index = 0
 		self.__number = 1
 		self._lastdataset = None	# used in the derived classes
@@ -39,12 +39,17 @@ class AverageChannelData(object):
 		Method that can be used from derived classes to add data to the set.
 		@param dataset: a data set over which shall also be averaged
 		"""
+		ds_channels = dataset.GetChannels()
 		if self._lastdataset is not None:
 			if len(dataset) != len(self._lastdataset):
 				raise ValueError("The given data set has a different length than the other data sets")
-			if len(dataset.GetChannels()) != len(self._lastdataset.GetChannels()):
+			if len(ds_channels) != len(self.__channels):
 				raise ValueError("The given data set has a different number of channels than the other data sets")
-		self.__data.append(dataset)
+			for i in range(len(ds_channels)):
+				self.__channels[i].Add(ds_channels[i])
+		else:
+			for c in ds_channels:
+				self.__channels.append(sumpf.helper.average.SumList(values=[c]))
 		self._lastdataset = dataset
 
 	@sumpf.Trigger()
@@ -53,7 +58,7 @@ class AverageChannelData(object):
 		Clears all data so next time the averaging process will start with
 		completely new data.
 		"""
-		self.__data = []
+		self.__channels = []
 		self.__index = 0
 		self._lastdataset = None
 
@@ -99,18 +104,14 @@ class AverageChannelData(object):
 		Calculates the averaged data set and returns its channels.
 		@retval : the averaged channels as a tuple
 		"""
-		if len(self.__data) > 0:
-			sum = numpy.zeros(shape=(len(self.__data[0].GetChannels()), len(self.__data[0])), dtype=numpy.float32)
-			for d in range(len(self.__data)):
-				for c in range(len(self.__data[d].GetChannels())):
-					for s in range(len(self.__data[d].GetChannels()[c])):
-						sum[c][s] += self.__data[d].GetChannels()[c][s]
+		if len(self.__channels) > 0:
 			result = []
-			for c in sum:
-				channel = tuple(numpy.divide(c, len(self.__data)))
+			for a in self.__channels:
+				channel = tuple(a.GetAverage())
 				result.append(channel)
 			return result
-		return ()
+		else:
+			return ()
 
 	def _GetLabels(self):
 		"""
