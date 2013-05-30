@@ -69,38 +69,27 @@ if audiolab_available:
 		@classmethod
 		def Load(cls, filename):
 			name = filename.split(os.sep)[-1]
-			file = audiolab.Sndfile(filename=filename + "." + cls.ending, mode="r")
-			frames = file.read_frames(nframes=file.nframes, dtype=numpy.float32)
+			soundfile = audiolab.Sndfile(filename=filename + "." + cls.ending, mode="r")
+			frames = soundfile.read_frames(nframes=soundfile.nframes, dtype=numpy.float64)
 			channels = tuple(frames.transpose())
-			if file.channels == 1:
+			if soundfile.channels == 1:
 				channels = (channels,)
 			labels = []
-			for c in range(file.channels):
+			for c in range(soundfile.channels):
 				labels.append(str(" ".join([name, str(c + 1)])))
-			return sumpf.Signal(channels=channels, samplingrate=file.samplerate, labels=labels)
+			return sumpf.Signal(channels=channels, samplingrate=soundfile.samplerate, labels=labels)
 
 		@classmethod
 		def Save(cls, filename, data):
 			channels = data.GetChannels()
-			# this somehow does not work...
-#				frames = numpy.array(channels).transpose()
-			# ... so we do it this way:
-			frames = []
-			frame = []
-			for c in range(len(channels)):
-				for s in range(len(channels[c])):
-					frame.append(channels[c][s])
-					if len(frame) == len(channels):
-						frames.append(frame)
-						frame = []
-			frames = numpy.array(frames)
-			format = audiolab.Format(type=cls.format, encoding=cls.encoding, endianness="file")
-			file = audiolab.Sndfile(filename=filename + "." + cls.ending,
+			frames = numpy.array(channels).transpose()
+			fileformat = audiolab.Format(type=cls.format, encoding=cls.encoding, endianness="file")
+			soundfile = audiolab.Sndfile(filename=filename + "." + cls.ending,
 			                        mode="w",
-			                        format=format,
+			                        format=fileformat,
 			                        channels=len(channels),
 			                        samplerate=int(round(data.GetSamplingRate())))
-			file.write_frames(frames)
+			soundfile.write_frames(frames)
 
 
 

@@ -41,15 +41,20 @@ class TestConvertFile(unittest.TestCase):
 			pathT = os.path.join(tempdir, filename) + "T"
 			pathF = os.path.join(tempdir, filename) + "F"
 			gen = sumpf.modules.SineWaveGenerator()
-			fft = sumpf.modules.FourierTransform(signal=gen.GetSignal())
+			amp = sumpf.modules.AmplifySignal(input=gen.GetSignal(), factor=0.6)
+			mrg = sumpf.modules.MergeSignals()
+			mrg.AddInput(gen.GetSignal())
+			mrg.AddInput(amp.GetOutput())
+			signal = mrg.GetOutput()
+			fft = sumpf.modules.FourierTransform(signal=signal)
 			ifft = sumpf.modules.InverseFourierTransform(spectrum=fft.GetSpectrum())
 			# create some test files and read their data
-			sumpf.modules.SignalFile(filename=pathT, signal=gen.GetSignal(), format=sumpf.modules.SignalFile.NUMPY_NPZ)
+			sumpf.modules.SignalFile(filename=pathT, signal=signal, format=sumpf.modules.SignalFile.NUMPY_NPZ)
 			npz_T = sumpf.modules.SignalFile(filename=pathT, format=sumpf.modules.SignalFile.NUMPY_NPZ).GetSignal()
-			sumpf.modules.SignalFile(filename=pathT, signal=gen.GetSignal(), format=sumpf.modules.SignalFile.WAV_FLOAT)
+			sumpf.modules.SignalFile(filename=pathT, signal=signal, format=sumpf.modules.SignalFile.WAV_FLOAT)
 			wav_f = sumpf.modules.SignalFile(filename=pathT, format=sumpf.modules.SignalFile.WAV_FLOAT).GetSignal()
 			os.remove(pathT + ".wav")
-			sumpf.modules.SignalFile(filename=pathT, signal=gen.GetSignal(), format=sumpf.modules.SignalFile.WAV_INT)
+			sumpf.modules.SignalFile(filename=pathT, signal=signal, format=sumpf.modules.SignalFile.WAV_INT)
 			wav_i = sumpf.modules.SignalFile(filename=pathT, format=sumpf.modules.SignalFile.WAV_INT).GetSignal()
 			os.remove(pathT + ".wav")
 			sumpf.modules.SpectrumFile(filename=pathF, spectrum=fft.GetSpectrum(), format=sumpf.modules.SpectrumFile.NUMPY_NPZ)
@@ -88,15 +93,15 @@ class TestConvertFile(unittest.TestCase):
 		try:
 			path1 = os.path.join(tempdir, "file1")
 			path2 = os.path.join(tempdir, "file2")
-			with open(path2 , "w") as f:
+			with open(path2, "w") as f:
 				f.write("test")
 			gen = sumpf.modules.SineWaveGenerator()
 			# create a test file
 			sumpf.modules.SignalFile(filename=path1, signal=gen.GetSignal(), format=sumpf.modules.SignalFile.NUMPY_NPZ)
-			self.assertRaises(IOError, sumpf.examples.ConvertFile, **{"input":path1 + "X.npz"})
-			self.assertRaises(IOError, sumpf.examples.ConvertFile, **{"input":path2})
-			self.assertRaises(IOError, sumpf.examples.ConvertFile, **{"input":path1 + ".npz", "output":"_GARBAGE_"})
-			self.assertRaises(IOError, sumpf.examples.ConvertFile, **{"input":path1 + ".npz", "format":"_GARBAGE_"})
+			self.assertRaises(IOError, sumpf.examples.ConvertFile, **{"input": path1 + "X.npz"})
+			self.assertRaises(IOError, sumpf.examples.ConvertFile, **{"input": path2})
+			self.assertRaises(IOError, sumpf.examples.ConvertFile, **{"input": path1 + ".npz", "output": "_GARBAGE_"})
+			self.assertRaises(IOError, sumpf.examples.ConvertFile, **{"input": path1 + ".npz", "format": "_GARBAGE_"})
 		finally:
 			shutil.rmtree(tempdir)
 
