@@ -44,7 +44,9 @@ cols = 4
 if not include_variables:
 	cols -= 1
 
-module_path = os.path.join(os.sep, *module.__file__.split(os.sep)[0:-1])
+module_path = os.sep.join(module.__file__.split(os.sep)[0:-1])
+if module.__file__.startswith(os.sep) and not module_path.startswith(os.sep):
+	module_path = os.sep + module_path
 output_path = sumpf.helper.normalize_path(args.output_dir)
 doxygen_path = sumpf.helper.normalize_path(args.doxygen_dir)
 if link_to_doxygen:
