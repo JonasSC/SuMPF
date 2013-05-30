@@ -60,7 +60,7 @@ class TestMissingLibs(unittest.TestCase):
 		libs["jack"] = None
 		libs["matplotlib"] = None
 		libs["numpy"] = "sumpf.helper.numpydummy"
-		libs["scikits"] = None
+		libs["scikits"] = None	# both scikits.audiolab and scikits.samplerate
 		libs["wx"] = None
 		def function(sumpf_module, classnames):
 			for r in sumpf_module.helper.walk_module(sumpf_module):
@@ -80,8 +80,8 @@ class TestMissingLibs(unittest.TestCase):
 				if not_unavailable == []:
 					self.fail(result + " is still available, when " + l + " is not available")
 				else:
-					print("%s could not be made unavailable for testing" % not_unavailable[0])
-					print("These attributes should have been unavailable: %s" % str(result))
+					print("%s could not be made unavailable for testing." % not_unavailable[0])
+					print("  These attributes should have been unavailable: %s" % str(result))
 
 	def __GetLibClasses(self, libname, replacement=None):
 		"""

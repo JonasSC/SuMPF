@@ -34,13 +34,13 @@ class MissingLibProcess(multiprocessing.Process):
 		multiprocessing.Process.__init__(self)
 
 	def run(self):
+		unload_sumpf()
 		for l in self.__libnames:
 			if not make_lib_unavailable(l):
 				nu = self.namespace.not_unavailable
 				nu.append(l)
 				self.namespace.not_unavailable = nu
 			unload_lib(l)
-		unload_sumpf()
 		import sumpf
 		self.namespace.result = self.__function(sumpf, **self.__kwargs)
 

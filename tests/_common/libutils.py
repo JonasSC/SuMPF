@@ -48,10 +48,13 @@ def make_lib_unavailable(libname):
 
 def __make_lib_unavailable(libname):
 	regex = re.compile("^" + libname + "\W*")
+	paths_to_remove = []
 	for p in sys.path:
 		folder = p.rstrip(os.sep).split(os.sep)[-1]
 		if regex.match(folder):
-			sys.path.remove(p)
+			paths_to_remove.append(p)
+	for p in paths_to_remove:
+		sys.path.remove(p)
 	if libname in sys.modules:
 		if hasattr(sys.modules[libname], "__file__"):
 			path = sys.modules[libname].__file__

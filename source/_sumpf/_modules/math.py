@@ -34,6 +34,11 @@ except ImportError:
 	pass
 
 try:
+	from ._math.resamplesignal import ResampleSignal
+except ImportError:
+	pass
+
+try:
 	from ._math.rootmeansquare import RootMeanSquare
 except ImportError:
 	pass
