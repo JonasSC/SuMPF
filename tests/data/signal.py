@@ -33,16 +33,17 @@ class TestSignal(unittest.TestCase):
 		"""
 		Tests if all data is stored in the Signal correctly
 		"""
-		self.assertEqual(self.signal.GetChannels(), self.channels)		# test if channels are set correctly
-		self.assertEqual(self.signal.GetSamplingRate(), 4410.0)			# test if sampling rate is set correctly
-		self.assertEqual(len(self.signal), len(self.samples1))			# test if length is computed correctly
+		self.assertEqual(self.signal.GetChannels(), self.channels)		# test if the channels are set correctly
+		self.assertEqual(self.signal.GetSamplingRate(), 4410.0)			# test if the sampling rate is set correctly
+		self.assertEqual(len(self.signal), len(self.samples1))			# test if the length is computed correctly
+		self.assertEqual(self.signal.GetDuration(), 10.0 / 4410.0)		# test if the duration is computed correctly
 		self.assertEqual(self.signal.GetLabels(), ("1", "2"))			# test if labels are set correctly
 		sig = sumpf.Signal(channels=self.channels, samplingrate=4410.0, labels=("1",))
-		self.assertEqual(sig.GetLabels(), ("1", None))					# test if labels are set correctly, if the given tuple of labels is shorter than the tuple of channels
+		self.assertEqual(sig.GetLabels(), ("1", None))					# test if the labels are set correctly, if the given tuple of labels is shorter than the tuple of channels
 		sig = sumpf.Signal(channels=self.channels, samplingrate=4410.0, labels=("1", "2", "3"))
-		self.assertEqual(sig.GetLabels(), ("1", "2"))					# test if labels are set correctly, if the given tuple of labels is longer than the tuple of channels
+		self.assertEqual(sig.GetLabels(), ("1", "2"))					# test if the labels are set correctly, if the given tuple of labels is longer than the tuple of channels
 		sig = sumpf.Signal(channels=self.channels, samplingrate=4410.0, labels=(None, "2"))
-		self.assertEqual(sig.GetLabels(), (None, "2"))					# test if labels are set correctly, if a label is None
+		self.assertEqual(sig.GetLabels(), (None, "2"))					# test if the labels are set correctly, if a label is None
 		sig = sumpf.Signal()
 		self.assertTrue(sig.IsEmpty())									# creating a Signal without passing constructor arguments should create an empty Signal
 		self.assertEqual(sig.GetChannels(), ((0.0, 0.0),))				# an empty Signal should have one channel with two 0.0 samples

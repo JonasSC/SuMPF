@@ -47,6 +47,13 @@ class Signal(ChannelData):
 		"""
 		return self.__samplingrate
 
+	def GetDuration(self):
+		"""
+		Returns the duration of the Signal in seconds.
+		@retval : a float that is the duration of the Signal in seconds
+		"""
+		return len(self) / self.GetSamplingRate()
+
 	def __repr__(self):
 		"""
 		This method returns a string that is a valid Python expression to instantiate
