@@ -310,6 +310,8 @@ class MergeSignals(MergeChannelData):
 				if self._on_length_conflict == MergeSignals.RAISE_ERROR or \
 				  (self._on_length_conflict == MergeSignals.RAISE_ERROR_EXCEPT_EMPTY and not signal.IsEmpty()):
 					raise ValueError("The Signal has a different length than the other Signals in the merger")
+		else:
+			self.__samplingrate = signal.GetSamplingRate()
 
 	@staticmethod
 	def FIRST_SIGNAL_FIRST(datasets):
@@ -396,6 +398,8 @@ class MergeSpectrums(MergeChannelData):
 				if self._on_length_conflict == MergeSpectrums.RAISE_ERROR or \
 				  (self._on_length_conflict == MergeSpectrums.RAISE_ERROR_EXCEPT_EMPTY and not spectrum.IsEmpty()):
 					raise ValueError("The Spectrums has a different length than the other Spectrums in the merger")
+		else:
+			self.__resolution = spectrum.GetResolution()
 
 	@staticmethod
 	def FIRST_SPECTRUM_FIRST(datasets):

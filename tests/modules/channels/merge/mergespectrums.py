@@ -65,6 +65,49 @@ class TestMergeSpectrums(unittest.TestCase):
 		self.assertEqual(self.merger.GetOutput().GetResolution(), self.spectrum4.GetResolution())	# the resolution should have been taken from the fourth spectrum
 		self.assertEqual(self.merger.GetNumberOfOutputChannels(), len(self.spectrum4.GetChannels()))# the GetNumberOfOutputChannels should also work as expected
 
+	def test_resolutionchanges(self):
+		"""
+		Tests if the errors are raised correctly when multiple input Spectrums
+		change their resolution.
+		"""
+		# in this scenario, all input Spectrums change their resolution to the
+		# same value, so no error should be raised.
+		prp = sumpf.modules.ChannelDataProperties(spectrum_length=100, resolution=42)
+		gen1 = sumpf.modules.FilterGenerator()
+		sumpf.connect(prp.GetSpectrumLength, gen1.SetLength)
+		sumpf.connect(prp.GetResolution, gen1.SetResolution)
+		gen2 = sumpf.modules.FilterGenerator()
+		sumpf.connect(prp.GetSpectrumLength, gen2.SetLength)
+		sumpf.connect(prp.GetResolution, gen2.SetResolution)
+		mrg = sumpf.modules.MergeSpectrums()
+		sumpf.connect(gen1.GetSpectrum, mrg.AddInput)
+		sumpf.connect(gen2.GetSpectrum, mrg.AddInput)
+		amp = sumpf.modules.AmplifySpectrum()
+		sumpf.connect(mrg.GetOutput, amp.SetInput)
+		prp.SetResolution(23)		# this command changes the resolution
+		# in this scenario, all input Spectrums are changed, but the resolution
+		# changes to different values, so this should raise an error.
+		prp = sumpf.modules.ChannelDataProperties(spectrum_length=100, resolution=42)
+		gen1 = sumpf.modules.FilterGenerator()
+		sumpf.connect(prp.GetSpectrumLength, gen1.SetLength)
+		sumpf.connect(prp.GetResolution, gen1.SetResolution)
+		gen2 = sumpf.modules.FilterGenerator()
+		sumpf.connect(prp.GetSpectrumLength, gen2.SetLength)
+		gen2.SetResolution(prp.GetResolution())
+		sel = sumpf.modules.SelectSpectrum(selection=1)
+		sumpf.connect(gen2.GetSpectrum, sel.SetInput1)
+		sumpf.connect(gen1.GetSpectrum, sel.SetInput2)
+		tst = ConnectionTester()
+		sumpf.connect(sel.GetOutput, tst.Trigger)
+		mrg = sumpf.modules.MergeSpectrums()
+		sumpf.connect(gen1.GetSpectrum, mrg.AddInput)
+		sumpf.connect(sel.GetOutput, mrg.AddInput)
+		amp = sumpf.modules.AmplifySpectrum()
+		sumpf.connect(mrg.GetOutput, amp.SetInput)
+		self.assertFalse(tst.triggered)
+		self.assertRaises(ValueError, prp.SetResolution, 23)	# this command changes the resolution
+		self.assertTrue(tst.triggered)							# make sure that all input Spectrums have changed
+
 	def test_errors(self):
 		"""
 		Tests if errors are raised correctly
