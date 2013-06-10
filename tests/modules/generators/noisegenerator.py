@@ -25,7 +25,7 @@ except ImportError:
 
 
 
-@unittest.skipIf(sumpf.config.get("unload_numpy"), "Testing modules that require the full featured numpy are skipped")
+@unittest.skipUnless(common.lib_available("numpy"), "These tests require the library 'numpy' to be available.")
 class TestNoiseGenerator(unittest.TestCase):
 	"""
 	A TestCase for the NoiseGenerator module.

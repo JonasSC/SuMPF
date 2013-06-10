@@ -47,6 +47,7 @@ def make_lib_unavailable(libname):
 	return not lib_available(libname)
 
 def __make_lib_unavailable(libname):
+	# remove the module from the path, so it cannot be found during importing
 	regex = re.compile("^" + libname + "\W*")
 	paths_to_remove = []
 	for p in sys.path:
@@ -55,6 +56,7 @@ def __make_lib_unavailable(libname):
 			paths_to_remove.append(p)
 	for p in paths_to_remove:
 		sys.path.remove(p)
+	# if the module has been imported already, look up the file and remove that from the path
 	if libname in sys.modules:
 		if hasattr(sys.modules[libname], "__file__"):
 			path = sys.modules[libname].__file__
@@ -62,4 +64,8 @@ def __make_lib_unavailable(libname):
 				if path in sys.path:
 					sys.path.remove(path)
 				path = os.sep.join(path.split(os.sep)[0:-1])
+	# add a new path that will lead to an import with the same name, which will raise an ImportError
+	unavailable_lib_path = os.path.abspath(os.path.join("_common", "unavailable_libs", libname))
+	if os.path.exists(unavailable_lib_path):
+		sys.path.insert(0, os.path.abspath(unavailable_lib_path))
 

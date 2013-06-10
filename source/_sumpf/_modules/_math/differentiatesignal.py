@@ -14,8 +14,13 @@
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 
-import numpy
 import sumpf
+
+try:
+	import numpy
+except ImportError:
+	numpy = sumpf.helper.numpydummy
+
 
 
 class DifferentiateSignal(object):

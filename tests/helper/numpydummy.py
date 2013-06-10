@@ -18,6 +18,7 @@ import collections
 import unittest
 
 import sumpf
+import _common as common
 
 try:
 	import numpy
@@ -25,7 +26,7 @@ except ImportError:
 	pass
 
 
-@unittest.skipIf(sumpf.config.get("unload_numpy"), "Testing modules that require the full featured numpy are skipped")
+@unittest.skipUnless(common.lib_available("numpy"), "These tests require the library 'numpy' to be available.")
 class TestNumpyDummy(unittest.TestCase):
 	"""
 	A TestCase for the numpydummy functions.

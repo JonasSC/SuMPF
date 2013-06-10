@@ -19,6 +19,7 @@ import sumpf
 import _common as common
 
 
+@unittest.skipUnless(common.lib_available("numpy"), "These tests require the library 'numpy' to be available.")
 class TestRegularizedSpectrumInversion(unittest.TestCase):
 	"""
 	A TestCase for the RegularizedSpectrumInversion module.

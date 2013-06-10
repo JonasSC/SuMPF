@@ -22,7 +22,7 @@ class TestChannelDataProperties(unittest.TestCase):
 	"""
 	A test case for the ChannelDataProperties module.
 	"""
-	@unittest.skipIf(sumpf.config.get("unload_numpy"), "Testing modules that require the full featured numpy are skipped")
+	@unittest.skipUnless(common.lib_available("numpy"), "This test requires the library 'numpy' to be available.")
 	def test_case(self):
 		prp = sumpf.modules.ChannelDataProperties(signal_length=2)
 		imp = sumpf.modules.ImpulseGenerator()

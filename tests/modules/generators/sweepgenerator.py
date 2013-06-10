@@ -60,6 +60,7 @@ class TestSweepGenerator(unittest.TestCase):
 #		s2 = self.gen.GetSignal().GetChannels()[0][1]
 #		self.assertAlmostEqual(s2 * self.sr, d, 2)	# compare the start frequency when frequency increases linearly
 
+	@unittest.skipUnless(common.lib_available("numpy"), "This test requires the library 'numpy' to be available.")
 	def test_interval(self):
 		"""
 		Tests if the interval feature works as expected.

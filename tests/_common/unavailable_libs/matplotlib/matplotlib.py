@@ -14,26 +14,5 @@
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 
-"""
-This name space contains classes that are used by SuMPF internally.
-These classes are mainly abstract base classes that are needed for type checks.
-Normally they should not be needed elsewhere.
-"""
-
-from _sumpf._base._connectors.baseconnectors import Connector, TypedConnector
-
-from _sumpf._data.channeldata import ChannelData
-
-from _sumpf._modules._generators.signalgenerator import SignalGenerator
-from _sumpf._modules._generators.spectrumgenerator import SpectrumGenerator
-
-try:
-	from _sumpf._modules._generators.noisegenerator import Distribution
-except ImportError:
-	pass
-
-try:
-	from _sumpf._modules._generators.windowgenerator import WindowFunction
-except ImportError:
-	pass
+raise ImportError("This library has been made unavailable")
 

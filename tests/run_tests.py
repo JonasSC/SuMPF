@@ -43,9 +43,10 @@ sumpf.config.create_config(variables=config)
 
 if sumpf.config.get("unload_numpy"):
 	common.make_lib_unavailable("numpy")
-	common.unload_lib("numpy")
 	common.unload_sumpf()
+	common.unload_lib("_common")
 	import sumpf
+	import _common as common
 	sumpf.config.create_config(variables=config)
 
 

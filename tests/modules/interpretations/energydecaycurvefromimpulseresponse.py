@@ -31,6 +31,7 @@ class TestEnergyDecayCurveFromImpulseResponse(unittest.TestCase):
 		edc = sumpf.modules.EnergyDecayCurveFromImpulseResponse(impulseresponse=imp).GetEnergyDecayCurve()
 		self.assertEqual(imp, edc)		# the energy decay curve of an impulse should be an impulse again
 
+	@unittest.skipUnless(common.lib_available("numpy"), "This test requires the library 'numpy' to be available.")
 	def test_windowed_sine(self):
 		"""
 		Emulates an impulse response by fading out a sine wave with a window

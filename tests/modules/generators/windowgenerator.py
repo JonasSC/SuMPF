@@ -19,7 +19,7 @@ import sumpf
 import _common as common
 
 
-@unittest.skipIf(sumpf.config.get("unload_numpy"), "Testing modules that require the full featured numpy are skipped")
+@unittest.skipUnless(common.lib_available("numpy"), "These tests require the library 'numpy' to be available.")
 class TestWindowGenerator(unittest.TestCase):
 	"""
 	A test case for the WindowGenerator module.

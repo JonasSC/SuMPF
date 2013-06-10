@@ -19,10 +19,11 @@ import time
 import unittest
 
 import sumpf
+import _common as common
 
 
 @unittest.skipUnless(sumpf.config.get("test_gui"), "The graphical user interface is not being tested")
-@unittest.skipIf(sumpf.config.get("unload_numpy"), "Testing modules that require the full featured numpy are skipped")
+@unittest.skipUnless(common.lib_available("numpy"), "These tests require the library 'numpy' to be available.")
 class TestLinePlotting(unittest.TestCase):
 	"""
 	A TestCase for the line plotting modules.

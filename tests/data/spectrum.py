@@ -17,6 +17,8 @@
 import math
 import unittest
 import sumpf
+import _common as common
+
 
 class TestSpectrum(unittest.TestCase):
 	def setUp(self):
@@ -103,7 +105,7 @@ class TestSpectrum(unittest.TestCase):
 		self.assertIsInstance(spectrum.GetLabels(), tuple)			# the labels should be stored in a tuple
 		self.assertIsInstance(spectrum.GetLabels()[0], str)			# the labels can be either ascii or unicode strings
 
-	@unittest.skipIf(sumpf.config.get("unload_numpy"), "Testing modules that require the full featured numpy are skipped")
+	@unittest.skipUnless(common.lib_available("numpy"), "This test requires the library 'numpy' to be available.")
 	def test_group_delay(self):
 		"""
 		Tests if the method for calculating the group delay works as expected
@@ -115,7 +117,7 @@ class TestSpectrum(unittest.TestCase):
 		self.assertAlmostEqual(min(spk.GetGroupDelay()[0]), max(spk.GetGroupDelay()[0]))	# the group delay should be constant
 		self.assertAlmostEqual(min(spk.GetGroupDelay()[0]), 0.03)							# the group delay should be the same as the delay for the impulse
 
-	@unittest.skipIf(sumpf.config.get("unload_numpy"), "Testing modules that require the full featured numpy are skipped")
+	@unittest.skipUnless(common.lib_available("numpy"), "This test requires the library 'numpy' to be available.")
 	def test_continuous_phase(self):
 		"""
 		Tests the calculation of the continuous phase of a spectrum.
