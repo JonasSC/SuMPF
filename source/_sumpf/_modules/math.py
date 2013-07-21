@@ -29,6 +29,11 @@ except ImportError:
 	pass
 
 try:
+	from ._math.correlatesignals import CorrelateSignals
+except ImportError:
+	pass
+
+try:
 	from ._math.fouriertransform import FourierTransform, InverseFourierTransform
 except ImportError:
 	pass

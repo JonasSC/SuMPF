@@ -20,6 +20,7 @@ from .average import *
 
 from .conjugatespectrum import TestConjugateSpectrum
 from .convolvesignals import TestConvolveSignals
+from .correlatesignals import TestCorrelateSignals
 from .differentiatesignal import TestDifferentiateSignal
 from .fouriertransform import TestFourierTransform
 from .logarithmsignal import TestLogarithmSignal
