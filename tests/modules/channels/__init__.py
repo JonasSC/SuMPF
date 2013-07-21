@@ -20,6 +20,7 @@ from .split import *
 from .concatenatesignals import TestConcatenateSignals
 from .copychannels import TestCopyChannels
 from .cutsignal import TestCutSignal
+from .reversesignal import TestReverseSignal
 from .select import TestSelect
 from .shiftsignal import TestShiftSignal
 

@@ -16,6 +16,7 @@
 
 import unittest
 
+
 class TestPythonAssumptions(unittest.TestCase):
 	"""
 	Tests if some assumptions, which are made about the interpretation by python,
@@ -52,4 +53,18 @@ class TestPythonAssumptions(unittest.TestCase):
 
 	def test_bool(self):
 		self.assertFalse(None)
+
+	def test_iterables(self):
+		# concatenation
+		self.assertEqual([1, 2] + [3], [1, 2, 3])
+		self.assertEqual((1, 2) + (3,), (1, 2, 3))
+		# tests if a list is copied, even when it is casted to a list again
+		a = [6, 4, 2, 0, 3]
+		b = list(a)
+		b.reverse()
+		self.assertEqual(a, [6, 4, 2, 0, 3])
+		self.assertEqual(b, [3, 0, 2, 4, 6])
+		a.sort()
+		self.assertEqual(a, [0, 2, 3, 4, 6])
+		self.assertEqual(b, [3, 0, 2, 4, 6])
 
