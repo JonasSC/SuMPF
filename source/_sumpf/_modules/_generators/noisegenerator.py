@@ -63,6 +63,14 @@ class NoiseGenerator(SignalGenerator):
 	Some subclasses may take constructor arguments to define their probability
 	distributions.
 
+	The GetSignal method of this class might cache the resulting noise Signal.
+	If caching is enabled, calling GetSignal multiple times will always return
+	the same Signal, because GetSignal calculates the Signal once and the only
+	returns the cached value. Call Recalculate or one of the setter methods to
+	trigger the calculation of a new noise Signal.
+	If caching is disabled, each call of GetSignal will return a newly calculated
+	noise Signal.
+
 	The resulting Signal will have one channel.
 	"""
 	def __init__(self, distribution=None, samplingrate=None, length=None):
@@ -89,12 +97,22 @@ class NoiseGenerator(SignalGenerator):
 		self.__distribution = distribution
 		self.__distribution.SetRandom(self.__random)
 
+	@sumpf.Input(None, "GetSignal")
 	def Seed(self, seed):
 		"""
 		Seeds the random number generator with a defined seed.
 		@param seed: the seed for the random number generator. This can be any hashable object
 		"""
 		self.__random.seed(seed)
+
+	@sumpf.Trigger("GetSignal")
+	def Recalculate(self):
+		"""
+		A Trigger, that triggers the recalculation of the random sequence, so that
+		a new Signal is created, even when the caching of the GetSignal-connector
+		is enabled.
+		"""
+		pass
 
 	def _GetSamples(self):
 		"""
@@ -158,7 +176,7 @@ class NoiseGenerator(SignalGenerator):
 		Generates samples that are uniformly distributed between the given
 		minimum and maximum.
 		"""
-		def __init__(self, minimum= -1.0, maximum=1.0):
+		def __init__(self, minimum=-1.0, maximum=1.0):
 			self.__minimum = float(minimum)
 			self.__maximum = float(maximum)
 		def GetSamples(self, length):

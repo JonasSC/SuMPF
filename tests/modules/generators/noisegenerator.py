@@ -140,7 +140,7 @@ class TestNoiseGenerator(unittest.TestCase):
 		length = 1000
 		gen = sumpf.modules.NoiseGenerator(distribution=sumpf.modules.NoiseGenerator.UniformDistribution(), samplingrate=48000, length=length)
 		minimum = -1.0	# the default interval should be (-1.0, 1.0)
-		maximum = 1.0	#	"
+		maximum = 1.0	# 	"
 		for r in range(0, 2):
 			intervals_count = 5
 			intervals = [0] * intervals_count
@@ -197,6 +197,23 @@ class TestNoiseGenerator(unittest.TestCase):
 		channel = gen.GetSignal().GetChannels()[0]
 		self.assertEqual(channel, (-0.14409032957792836, -0.1729036003315193, -0.11131586156766246, 0.7019837250988631, -0.12758828378288709))
 
+	def test_caching(self):
+		"""
+		Tests if the noise is recalculated according to the caching settings for
+		the output connector.
+		"""
+		gen = sumpf.modules.NoiseGenerator(distribution=sumpf.modules.NoiseGenerator.GaussianDistribution(), samplingrate=48000, length=10)
+		noise1 = gen.GetSignal()
+		noise2 = gen.GetSignal()
+		gen.Recalculate()
+		noise3 = gen.GetSignal()
+		if sumpf.config.get("caching"):
+			self.assertEqual(noise1, noise2)
+		else:
+			self.assertNotEqual(noise1, noise2)
+		self.assertNotEqual(noise1, noise3)
+		self.assertNotEqual(noise2, noise3)
+
 	def test_connectors(self):
 		"""
 		Tests if the connectors are properly decorated.
@@ -207,7 +224,7 @@ class TestNoiseGenerator(unittest.TestCase):
 		self.assertEqual(gen.SetDistribution.GetType(), sumpf.internal.Distribution)
 		self.assertEqual(gen.GetSignal.GetType(), sumpf.Signal)
 		common.test_connection_observers(testcase=self,
-		                                 inputs=[gen.SetLength, gen.SetSamplingRate, gen.SetDistribution],
+		                                 inputs=[gen.SetLength, gen.SetSamplingRate, gen.SetDistribution, gen.Recalculate],
 		                                 noinputs=[],
 		                                 output=gen.GetSignal)
 
