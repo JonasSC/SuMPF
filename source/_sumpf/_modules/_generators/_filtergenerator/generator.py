@@ -16,9 +16,10 @@
 
 import sumpf
 from ..spectrumgenerator import SpectrumGenerator
-from .filters import ButterworthLowpass, ButterworthHighpass, ChebyshevLowpass, \
-                     ChebyshevHighpass, Bandpass, Bandstop, PinkSlope, RedSlope, \
-                     AWeighting, CWeighting
+from .filters import ButterworthLowpass, ButterworthHighpass, BesselLowpass, \
+                     BesselHighpass, ChebyshevLowpass, ChebyshevHighpass, \
+                     Bandpass, Bandstop, PinkSlope, RedSlope, AWeighting, \
+                     CWeighting, ConstantGroupDelay
 from .filterbase import Filter
 
 
@@ -31,6 +32,8 @@ class FilterGenerator(SpectrumGenerator):
 	"""
 	BUTTERWORTH_LOWPASS = ButterworthLowpass
 	BUTTERWORTH_HIGHPASS = ButterworthHighpass
+	BESSEL_LOWPASS = BesselLowpass
+	BESSEL_HIGHPASS = BesselHighpass
 	CHEBYSHEV_LOWPASS = ChebyshevLowpass
 	CHEBYSHEV_HIGHPASS = ChebyshevHighpass
 	BANDPASS = Bandpass
@@ -39,6 +42,7 @@ class FilterGenerator(SpectrumGenerator):
 	RED_SLOPE = RedSlope
 	A_WEIGHTING = AWeighting
 	C_WEIGHTING = CWeighting
+	CONSTANT_GROUP_DELAY = ConstantGroupDelay
 
 	def __init__(self, resolution=None, length=None):
 		"""

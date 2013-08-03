@@ -15,7 +15,7 @@
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 import math
-from .filterbase import FilterWithCoefficients, FilterWithSlope, Weighting
+from .filterbase import Filter, FilterWithCoefficients, FilterWithSlope, Weighting
 
 
 class ButterworthLowpass(FilterWithCoefficients):
@@ -52,6 +52,38 @@ class ButterworthHighpass(ButterworthLowpass):
 		@param order: the order of the filter as an integer
 		"""
 		ButterworthLowpass.__init__(self, frequency=frequency, order=order)
+		self._transform = True
+
+
+
+class BesselLowpass(FilterWithCoefficients):
+	"""
+	Filter class for a Bessel lowpass.
+	"""
+	def __init__(self, frequency=1000.0, order=1):
+		"""
+		@param frequency: the corner frequency of the filter
+		@param order: the order of the filter as an integer
+		"""
+		coefficients = []
+		for k in range(order + 1):
+			numerator = math.factorial(2.0 * order - k)
+			denominator = (2.0 ** (order - k)) * math.factorial(k) * math.factorial(order - k)
+			coefficients.append(numerator / denominator)
+		FilterWithCoefficients.__init__(self, frequency=frequency, coefficients=[[[coefficients[0]], coefficients]], transform=False)
+
+
+
+class BesselHighpass(BesselLowpass):
+	"""
+	Filter class for a Bessel highpass.
+	"""
+	def __init__(self, frequency=1000.0, order=1):
+		"""
+		@param frequency: the corner frequency of the filter
+		@param order: the order of the filter as an integer
+		"""
+		BesselLowpass.__init__(self, frequency=frequency, order=order)
 		self._transform = True
 
 
@@ -211,4 +243,26 @@ class CWeighting(Weighting):
 		pole1 = (s - omega1) ** 2
 		pole2 = (s - omega2) ** 2
 		return s ** 2 / (pole1 * pole2)
+
+
+
+class ConstantGroupDelay(Filter):
+	"""
+	Filter class for a filter that adds a given group delay without affecting
+	the magnitude of the Spectrum.
+	"""
+	def __init__(self, delay=0.0):
+		"""
+		@param delay: the group delay in seconds
+		"""
+		self.__delay = delay
+
+	def GetFactor(self, frequency):
+		"""
+		This calculates the complex factor by which the frequency shall be scaled
+		and phase shifted.
+		@param frequency: the frequency for which the factor shall be calculated
+		@retval : the value of the filter's transfer function at the given frequency
+		"""
+		return math.e ** (-1.0j * self.__delay * 2.0 * math.pi * frequency)
 

@@ -23,7 +23,7 @@ class Filter(object):
 		"""
 		This calculates the complex factor by which the frequency shall be scaled
 		and phase shifted.
-		@param f: the frequency for which the factor shall be calculated
+		@param frequency: the frequency for which the factor shall be calculated
 		@retval : the value of the filter's transfer function at the given frequency
 		"""
 		raise NotImplementedError("This method should have been overridden in a derived class")
@@ -68,7 +68,7 @@ class FilterWithCoefficients(Filter):
 		"""
 		This calculates the complex factor by which the frequency shall be scaled
 		and phase shifted.
-		@param f: the frequency for which the factor shall be calculated
+		@param frequency: the frequency for which the factor shall be calculated
 		@retval : the value of the filter's transfer function at the given frequency
 		"""
 		s = 1.0j * frequency / self.__frequency
@@ -109,7 +109,7 @@ class FilterWithSlope(Filter):
 		"""
 		This calculates the complex factor by which the frequency shall be scaled
 		and phase shifted.
-		@param f: the frequency for which the factor shall be calculated
+		@param frequency: the frequency for which the factor shall be calculated
 		@retval : the value of the filter's transfer function at the given frequency
 		"""
 		if frequency <= self.__start:
@@ -133,7 +133,7 @@ class Weighting(Filter):
 		"""
 		This calculates the complex factor by which the frequency shall be scaled
 		and phase shifted.
-		@param f: the frequency for which the factor shall be calculated
+		@param frequency: the frequency for which the factor shall be calculated
 		@retval : the value of the filter's transfer function at the given frequency
 		"""
 		return self.__factor * self._GetWeighting(frequency=frequency)
