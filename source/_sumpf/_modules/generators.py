@@ -14,6 +14,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 
+from ._generators.constantsignalgenerator import ConstantSignalGenerator
 from ._generators.impulsegenerator import ImpulseGenerator
 from ._generators.silencegenerator import SilenceGenerator
 from ._generators.sinewavegenerator import SineWaveGenerator

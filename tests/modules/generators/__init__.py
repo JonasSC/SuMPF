@@ -14,6 +14,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 
+from .constantsignalgenerator import TestConstantSignalGenerator
 from .signalgenerator import TestSignalGenerator
 from .impulsegenerator import TestImpulseGenerator
 from .noisegenerator import TestNoiseGenerator
