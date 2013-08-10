@@ -21,3 +21,8 @@ try:
 except ImportError:
 	pass
 
+try:
+	from ._interpretations.signalenvelope import SignalEnvelope
+except ImportError:
+	pass
+

@@ -16,4 +16,5 @@
 
 from .energydecaycurvefromimpulseresponse import TestEnergyDecayCurveFromImpulseResponse
 from .regularizedspectruminversion import TestRegularizedSpectrumInversion
+from .signalenvelope import TestSignalEnvelope
 
