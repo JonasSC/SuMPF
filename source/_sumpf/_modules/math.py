@@ -27,24 +27,24 @@ try:
 	from ._math.convolvesignals import ConvolveSignals
 except ImportError:
 	pass
-
 try:
 	from ._math.correlatesignals import CorrelateSignals
 except ImportError:
 	pass
-
 try:
 	from ._math.fouriertransform import FourierTransform, InverseFourierTransform
 except ImportError:
 	pass
-
 try:
 	from ._math.resamplesignal import ResampleSignal
 except ImportError:
 	pass
-
 try:
 	from ._math.rootmeansquare import RootMeanSquare
+except ImportError:
+	pass
+try:
+	from ._math.shorttimefouriertransform import ShortTimeFourierTransform
 except ImportError:
 	pass
 
