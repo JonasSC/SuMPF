@@ -17,6 +17,7 @@
 from .amplify import *
 from .algebra import *
 from .average import *
+from .statistics import *
 
 from .conjugatespectrum import TestConjugateSpectrum
 from .convolvesignals import TestConvolveSignals

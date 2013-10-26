@@ -14,11 +14,11 @@
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 
-"""
-This name space contains functions that emulate some functions from the NumPy
-library. The functions are far slower than their NumPy equivalents. They are only used
-if NumPy is not available.
-"""
+from ._statistics.mean import SignalMean, SpectrumMean
+from ._statistics.signalvariance import SignalVariance
 
-from ._numpydummy import float32, add, subtract, multiply, divide, abs, angle, conjugate, zeros, mean, var
+try:
+	from ._statistics.spectrumvariance import SpectrumVariance
+except ImportError:
+	pass
 

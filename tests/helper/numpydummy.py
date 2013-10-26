@@ -129,3 +129,15 @@ class TestNumpyDummy(unittest.TestCase):
 			self.__Compare(r1, r2, s, None)
 			self.__Compare(r2, r3, s, None)
 
+	def test_mean(self):
+		values = (3.3, -4.7, -9.8, 15.3, 6.4)
+		from_dummy = sumpf.helper.numpydummy.mean(values)
+		from_numpy = numpy.mean(values)
+		self.assertEqual(from_dummy, from_numpy)
+
+	def test_var(self):
+		values = (3.3, -4.7, -9.8, 15.3, 6.4)
+		from_dummy = sumpf.helper.numpydummy.var(values)
+		from_numpy = numpy.var(values)
+		self.assertAlmostEqual(from_dummy, from_numpy)
+

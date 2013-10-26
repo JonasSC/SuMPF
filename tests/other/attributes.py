@@ -38,7 +38,9 @@ class TestAttributes(unittest.TestCase):
 		fails = []
 		short_is_enough = ["AverageSpectrums", "ConjugateSpectrum",
 		                   "RelabelSignal", "RelabelSpectrum",
-		                   "DifferentiateSignal", "LogarithmSignal"]
+		                   "DifferentiateSignal", "LogarithmSignal",
+		                   "SignalMean", "SpectrumMean",
+		                   "SignalVariance", "SpectrumVariance"]
 		for p, m, c, f, v in sumpf.helper.walk_module(sumpf):
 			for cls in c:
 				if cls.__doc__ is None:

@@ -174,3 +174,20 @@ def zeros(shape, dtype=float):
 			result.append(zeros(shape=shape[1:], dtype=dtype))
 		return result
 
+def mean(a):
+	"""
+	A simplified alternative to numpy.mean.
+	Other than numpy.mean, this function only takes one dimensional arrays.
+	"""
+	return sum(a) / float(len(a))
+
+def var(a):
+	"""
+	A simplified alternative to numpy.var.
+	Other than numpy.mean, this function only takes one dimensional arrays.
+	Furthermore, it does not calculate the variance of complex values correctly.
+	So please use it for real valued arrays only.
+	"""
+	squared = multiply(a, a)
+	return mean(squared) - mean(a) ** 2
+

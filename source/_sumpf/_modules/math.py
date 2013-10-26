@@ -15,6 +15,7 @@
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 from ._math.algebra import *
+from ._math.statistics import *
 
 from ._math.amplify import AmplifySignal, AmplifySpectrum
 from ._math.average import AverageSignals, AverageSpectrums
