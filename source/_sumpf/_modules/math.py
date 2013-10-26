@@ -45,7 +45,7 @@ try:
 except ImportError:
 	pass
 try:
-	from ._math.shorttimefouriertransform import ShortTimeFourierTransform
+	from ._math.shortfouriertransform import ShortFourierTransform
 except ImportError:
 	pass
 

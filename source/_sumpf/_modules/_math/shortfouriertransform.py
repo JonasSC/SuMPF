@@ -18,13 +18,22 @@ import numpy
 import sumpf
 
 
-class ShortTimeFourierTransform(object):
+class ShortFourierTransform(object):
 	"""
-	A class for a short time fourier transformation of a Signal.
+	A class for a short fourier transformation of a Signal.
 	This algorithm splits the input Signal into multiple blocks, which are fourier
 	transformed individually and then summed up. The blocks should be faded in and
 	out with a window function and they should have an overlap to avoid weird
 	artifacts in the frequency domain.
+	This algorithm is similar to the "short time fourier transform", which is used
+	to calculate spectrograms. But instead of using the short time spectra to get
+	a time dependent spectrum, they are summed up to get a spectrum with a length
+	that is independent of the length of the input signal. In most cases, this will
+	mean that the calculated spectrum is shorter, than the DFT-spectrum of the
+	input signal. Therefore the name "ShortFourierTransform". Nevertheless, it is
+	possible to create a Spectrum with this algorithm that is longer than the
+	respective DFT-spectrum, by choosing a window that is longer than the input
+	signal.
 	"""
 	def __init__(self, signal=None, window=None, overlap=0.5):
 		"""
@@ -95,7 +104,7 @@ class ShortTimeFourierTransform(object):
 		elif self.__signal.GetSamplingRate() != window.GetSamplingRate():
 			raise ValueError("The window has a different sampling rate than the input signal")
 		block_length = len(window)
-		fft_block_length = block_length / 2 + 1
+		fft_block_length = block_length // 2 + 1
 		resolution = self.__signal.GetSamplingRate() / len(window)
 		overlap = self.__overlap
 		if isinstance(overlap, float):

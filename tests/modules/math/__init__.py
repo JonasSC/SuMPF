@@ -28,5 +28,5 @@ from .logarithmsignal import TestLogarithmSignal
 from .rectifysignal import TestRectifySignal
 from .resamplesignal import TestResampleSignal
 from .rootmeansquare import TestRootMeanSquare
-from .shorttimefouriertransform import TestShortTimeFourierTransform
+from .shortfouriertransform import TestShortFourierTransform
 

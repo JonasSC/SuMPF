@@ -20,15 +20,15 @@ import sumpf
 import _common as common
 
 @unittest.skipUnless(common.lib_available("numpy"), "These tests require the library 'numpy' to be available.")
-class TestShortTimeFourierTransform(unittest.TestCase):
+class TestShortFourierTransform(unittest.TestCase):
 	"""
-	A test case for the ShortTimeFourierTransform.
+	A test case for the ShortFourierTransform.
 	"""
 	def test_default_values(self):
 		"""
 		Tests the default signal and default window length.
 		"""
-		fft = sumpf.modules.ShortTimeFourierTransform()
+		fft = sumpf.modules.ShortFourierTransform()
 		self.assertEqual(fft.GetSpectrum().GetChannels(), ((0.0j,) * 4097,))
 
 	@unittest.skipUnless(sumpf.config.get("run_long_tests"), "Long tests are skipped")
@@ -37,7 +37,7 @@ class TestShortTimeFourierTransform(unittest.TestCase):
 		Tests if downsampling an impulse works as expected.
 		"""
 		impulse = sumpf.modules.ImpulseGenerator().GetSignal()
-		spectrum = sumpf.modules.ShortTimeFourierTransform(signal=impulse).GetSpectrum()
+		spectrum = sumpf.modules.ShortFourierTransform(signal=impulse).GetSpectrum()
 		short_impulse = sumpf.modules.InverseFourierTransform(spectrum=spectrum).GetSignal()
 		reference = impulse[0:len(short_impulse)]
 		common.compare_signals_almost_equal(testcase=self, signal1=short_impulse, signal2=reference)
@@ -58,7 +58,7 @@ class TestShortTimeFourierTransform(unittest.TestCase):
 		merger.AddInput(sine2)
 		signal = merger.GetOutput()
 		window = sumpf.modules.WindowGenerator(raise_interval=(0, 2048), fall_interval=(2048, 4096), function=sumpf.modules.WindowGenerator.Hanning(), samplingrate=samplingrate, length=4096).GetSignal()
-		fft = sumpf.modules.ShortTimeFourierTransform()
+		fft = sumpf.modules.ShortFourierTransform()
 		fft.SetSignal(signal)
 		fft.SetWindow(window)
 		fft.SetOverlap(2048)
@@ -90,11 +90,11 @@ class TestShortTimeFourierTransform(unittest.TestCase):
 		"""
 		Tests if all errors are raised as expected.
 		"""
-		fft = sumpf.modules.ShortTimeFourierTransform()
+		fft = sumpf.modules.ShortFourierTransform()
 		# test wrong overlaps
 		self.assertRaises(ValueError, fft.SetOverlap, 1.1)
 		self.assertRaises(ValueError, fft.SetOverlap, -0.1)
-		self.assertRaises(ValueError, sumpf.modules.ShortTimeFourierTransform, overlap=1.1)
+		self.assertRaises(ValueError, sumpf.modules.ShortFourierTransform, overlap=1.1)
 		fft.SetOverlap(9000)
 		self.assertRaises(ValueError, fft.GetSpectrum)
 		fft.SetOverlap(0.5)
@@ -110,7 +110,7 @@ class TestShortTimeFourierTransform(unittest.TestCase):
 		"""
 		Tests if the connectors are properly decorated.
 		"""
-		fft = sumpf.modules.ShortTimeFourierTransform()
+		fft = sumpf.modules.ShortFourierTransform()
 		self.assertEqual(fft.SetSignal.GetType(), sumpf.Signal)
 		self.assertEqual(fft.SetWindow.GetType(), sumpf.Signal)
 		self.assertEqual(fft.SetOverlap.GetType(), (int, float))
