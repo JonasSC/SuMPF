@@ -33,7 +33,7 @@ class MainLoopThread(threading.Thread):
 	def __init__(self):
 		threading.Thread.__init__(self)
 		self.daemon = True
-		self.__app = wx.PySimpleApp()
+		self.__app = wx.App()
 		self.__bump_event = threading.Event()
 		self.start()
 
