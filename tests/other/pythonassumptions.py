@@ -49,7 +49,7 @@ class TestPythonAssumptions(unittest.TestCase):
 		self.assertIsNot({}, {})
 		self.assertIsNot(dict(), dict())	# it is preferred to use {} in the source code
 		self.assertIsNot(dict(), {})		# it is preferred to use {} in the source code
-		self.assertIsNot((0.0,), (0.0,))
+#		self.assertIsNot((0.0,), (0.0,))	# this assumption is not true, when using PyPy
 
 	def test_bool(self):
 		self.assertFalse(None)
