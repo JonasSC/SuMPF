@@ -57,10 +57,11 @@ class Toolbar(wx.Panel):
 			self.__AddSeparator()
 			self.__AddMenu(label="hide", entries=components, function=self.__OnHide)
 		self.__AddSeparator()
+		self.__move_plots_together = self.__AddCheckbox(caption="join moves", onclick=self.__OnMoveTogether, description="Sets if the plots shall be panned and\nzoomed together or independently")
 		# finish
 		sumpf.gui.run_in_mainloop(self.Layout)
 
-	def UpdateToolbar(self, legend, grid, cursors, logx, logy, shown):
+	def UpdateToolbar(self, legend, grid, cursors, logx, logy, shown, move_plots_together):
 		"""
 		Updates the checkboxes in the toolbar.
 		"""
@@ -82,6 +83,7 @@ class Toolbar(wx.Panel):
 					self.__components[p]["hide"].Enable()
 				if len(shown) == 1:
 					self.__components[list(shown)[0]]["hide"].Enable(False)
+			self.__move_plots_together.SetValue(move_plots_together)
 		sumpf.gui.run_in_mainloop(update)
 
 	def __AddCheckbox(self, caption, onclick, threestate=False, description=""):
@@ -112,6 +114,9 @@ class Toolbar(wx.Panel):
 #		self.__sizer.Add(wx.StaticText(parent=self, label=" "))
 
 	def __AddMenu(self, label, entries, function):
+		"""
+		Adds a button to the toolbar that shows a menu of checkboxes.
+		"""
 		button = wx.Button(parent=self, label=label, style=wx.BU_EXACTFIT)
 		menu = wx.Menu()
 		def popup_menu(event):
@@ -175,9 +180,18 @@ class Toolbar(wx.Panel):
 
 	def __OnHide(self, event):
 		"""
-		Event handler for when a "hide"-checkbox is clicked.
+		Event handler for when a "join moves"-checkbox is clicked.
 		"""
 		for c in self.__components:
 			if event.GetId() == self.__components[c]["hide"].GetId():
 				self.__parent.ShowComponent(component=c, show=not self.__components[c]["hide"].IsChecked())
+
+	def __OnMoveTogether(self, event):
+		"""
+		Event handler for when a "join moves"-checkbox is clicked.
+		"""
+		if self.__move_plots_together.IsChecked():
+			self.__parent.MovePlotsTogether()
+		else:
+			self.__parent.MovePlotsIndependently()
 

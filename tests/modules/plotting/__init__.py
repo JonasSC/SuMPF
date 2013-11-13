@@ -16,3 +16,7 @@
 
 from .lineplotting import TestLinePlotting
 
+from .sequenceplotpanel import TestSequencePlotPanel
+from .signalplotpanel import TestSignalPlotPanel
+from .spectrumplotpanel import TestSpectrumPlotPanel
+

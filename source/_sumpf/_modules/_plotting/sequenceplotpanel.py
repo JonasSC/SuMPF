@@ -25,15 +25,18 @@ class SequencePlotPanel(LinePlotPanel):
 	list.
 	It is also possible to plot multiple lines by giving a sequence of sequences.
 	"""
-	def __init__(self, parent, x_resolution=1.0, x_interval=None, margin=0.1, show_grid=None, show_cursors=True, cursor_positions=[], log_x=False, log_y=False):
+	def __init__(self, parent, x_resolution=1.0, layout=LinePlotPanel.LAYOUT_ONE_PLOT, linemanager=LinePlotPanel.NO_DOWNSAMPLING, x_interval=None, margin=0.1, show_grid=None, show_cursors=True, cursor_positions=[], log_x=False, log_y=False, move_plots_together=False):
 		"""
 		@param parent: the parent wx.Window of this panel
 		@param x_resolution: a float that gives the x axis gap between two samples of the given sequence
+		@param layout: one of the LAYOUT_... flags of the SequencePlotPanel class
+		@param linemanager: as there are no downsamplers implemented yet, just set it to SequencePlotPanel.NO_DOWNSAMPLING
 		@param x_interval: a tuple (min, max) of the visible interval on the x axis, or None to set interval automatically
 		@param margin: the margin between the plots and the window border
 		@param show_grid: True to show full grid behind plots, None to show major grid, False to hide grid
 		@param log_x: a boolean value whether to show the x axis logarithmically (True) or linearly (False)
 		@param log_y: True if the sequence shall be plotted with logarithmically scaled y axis, False otherwise
+		@param move_plots_together: True if panning or zooming in one plot shall cause the other plots to move accordingly, False if all plots shall be panned or zoomed independently
 		"""
 		self.__x_resolution = x_resolution
 		self.__sequence = [[0.0, 0.0]]
@@ -41,18 +44,21 @@ class SequencePlotPanel(LinePlotPanel):
 		if log_y:
 			log_plots = set(["Y"])
 		LinePlotPanel.__init__(self,
-		                       parent,
+		                       parent=parent,
+		                       layout=layout,
+		                       linemanager=linemanager,
 		                       components=["Y"],
+		                       margin=margin,
 		                       x_caption="X",
 		                       x_interval=x_interval,
-		                       margin=margin,
 		                       show_legend=False,
 		                       show_grid=show_grid,
 		                       show_cursors=show_cursors,
 		                       cursor_positions=cursor_positions,
 		                       log_x=log_x,
 		                       log_y=log_plots,
-		                       hidden_components=set())
+		                       hidden_components=set(),
+		                       move_plots_together=move_plots_together)
 
 	@sumpf.Input(collections.Iterable)
 	def SetSequence(self, sequence):
@@ -66,12 +72,9 @@ class SequencePlotPanel(LinePlotPanel):
 			self.__sequence = sequence
 		else:
 			self.__sequence = [sequence]
-		x_data = []
-		for i in range(len(self.__sequence[0])):
-			x_data.append(i * self.__x_resolution)
-		y_data = {}
-		y_data["Y"] = self.__sequence
-		self._SetData(x_data=x_data, y_data=y_data, labels=[None] * len(self.__sequence))
+		self._SetData(data={"Y": self.__sequence},
+		              interval=(0.0, self.__x_resolution * (len(self.__sequence[0]))),
+		              labels=[None] * len(self.__sequence))
 
 	@sumpf.Input(float)
 	def SetXResolution(self, resolution):
@@ -87,10 +90,10 @@ class SequencePlotPanel(LinePlotPanel):
 		"""
 		Shows the y axis linearly.
 		"""
-		LinePlotPanel.LogarithmicY(self, component="Signal", log=False)
+		LinePlotPanel.LogarithmicY(self, component="Y", log=False)
 
 	@sumpf.Trigger()
-	def LogarithmicY(self, component="Signal", log=True):
+	def LogarithmicY(self, component="Y", log=True):
 		"""
 		Shows the y axis logarithmically.
 		"""

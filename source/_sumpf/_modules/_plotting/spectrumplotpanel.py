@@ -24,9 +24,11 @@ class SpectrumPlotPanel(LinePlotPanel):
 	This panel is meant to be integrated into a GUI. If you want a simple plot
 	consider using SpectrumPlotWindow.
 	"""
-	def __init__(self, parent, x_interval=(20, 20000), margin=0.1, show_legend=True, show_grid=None, show_cursors=True, cursor_positions=[], log_x=True, log_y=set(["Magnitude"]), hidden_components=set(["ContinuousPhase", "GroupDelay"])):
+	def __init__(self, parent, layout=LinePlotPanel.LAYOUT_ONE_PLOT, linemanager=LinePlotPanel.NO_DOWNSAMPLING, x_interval=None, margin=0.1, show_legend=True, show_grid=None, show_cursors=True, cursor_positions=[], log_x=True, log_y=set(["Magnitude"]), hidden_components=set(["ContinuousPhase", "GroupDelay"]), move_plots_together=False):
 		"""
 		@param parent: the parent wx.Window of this panel
+		@param layout: one of the LAYOUT_... flags of the SpectrumPlotPanel class
+		@param linemanager: as there are no downsamplers implemented yet, just set it to SpectrumPlotPanel.NO_DOWNSAMPLING
 		@param margin: the margin between the plots and the window border
 		@param x_interval: a tuple (min, max) of the visible interval on the x axis, or None to set interval automatically
 		@param margin: the margin between the plots and the window border
@@ -35,9 +37,12 @@ class SpectrumPlotPanel(LinePlotPanel):
 		@param log_x: a boolean value whether to show the x axis logarithmically (True) or linearly (False)
 		@param log_y: a set of plot names whose plots shall be plotted with logarithmic y axis rather than linear
 		@param hidden_components: a set of component names whose plots shall be hidden
+		@param move_plots_together: True if panning or zooming in one plot shall cause the other plots to move accordingly, False if all plots shall be panned or zoomed independently
 		"""
 		LinePlotPanel.__init__(self,
 		                       parent=parent,
+		                       layout=layout,
+		                       linemanager=linemanager,
 		                       components=["Magnitude", "Phase", "ContinuousPhase", "GroupDelay"],
 		                       x_caption="Frequency [Hz]",
 		                       x_interval=x_interval,
@@ -48,7 +53,8 @@ class SpectrumPlotPanel(LinePlotPanel):
 		                       cursor_positions=cursor_positions,
 		                       log_x=log_x,
 		                       log_y=log_y,
-		                       hidden_components=hidden_components)
+		                       hidden_components=hidden_components,
+		                       move_plots_together=move_plots_together)
 
 	@sumpf.Input(sumpf.Spectrum)
 	def SetSpectrum(self, spectrum):
@@ -56,15 +62,12 @@ class SpectrumPlotPanel(LinePlotPanel):
 		Sets the Spectrum which shall be plotted.
 		@param spectrum: The Spectrum to plot
 		"""
-		x_data = []
-		for i in range(len(spectrum)):
-			x_data.append(i * spectrum.GetResolution())
-		y_data = {}
-		y_data["Magnitude"] = spectrum.GetMagnitude()
-		y_data["Phase"] = spectrum.GetPhase()
-		y_data["ContinuousPhase"] = spectrum.GetContinuousPhase()
-		y_data["GroupDelay"] = spectrum.GetGroupDelay()
-		self._SetData(x_data=x_data, y_data=y_data, labels=spectrum.GetLabels())
+		self._SetData(data={"Magnitude": spectrum.GetMagnitude(),
+		                    "Phase": spectrum.GetPhase(),
+		                    "ContinuousPhase": spectrum.GetContinuousPhase(),
+		                    "GroupDelay": spectrum.GetGroupDelay()},
+		              interval=(0.0, spectrum.GetResolution() * (len(spectrum) - 1)),
+		              labels=spectrum.GetLabels())
 
 	@sumpf.Trigger()
 	def LinearMagnitude(self):

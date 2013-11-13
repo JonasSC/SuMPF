@@ -16,9 +16,16 @@
 
 import wx
 import sumpf
+from .plotlayouts import PlotLayout, PlotLayout_OnePlot, PlotLayout_HorizontallyTiled, PlotLayout_VerticallyTiled
+from .linemanagers import LineManager, LineManagerNoDownsample
 
 
 class PlotWindow(object):
+	NO_DOWNSAMPLING = LineManagerNoDownsample
+	LAYOUT_ONE_PLOT = PlotLayout_OnePlot
+	LAYOUT_HORIZONTALLY_TILED = PlotLayout_HorizontallyTiled
+	LAYOUT_VERTICALLY_TILED = PlotLayout_VerticallyTiled
+
 	"""
 	An abstract base class for windows which display plots.
 	Other than the sumpf.gui.Window these windows can be shown again after they
@@ -28,6 +35,8 @@ class PlotWindow(object):
 		self._window = None
 		self._panel = None
 		# plot properties
+		self.__layout = PlotLayout_OnePlot
+		self.__linemanager_class = LineManagerNoDownsample
 		self.__x_interval = None
 		self.__show_grid = None
 		self.__show_legend = True
@@ -55,6 +64,8 @@ class PlotWindow(object):
 		# setup panel
 		self._panel = self._GetPanel()
 		self._panel.SetXInterval(self.__x_interval)
+		self._panel.SetLayout(self.__layout)
+		self._panel.SetLinemanager(self.__linemanager_class)
 		if self.__show_grid is None:
 			self._panel.ShowMajorGrid()
 		elif self.__show_grid:
@@ -100,6 +111,27 @@ class PlotWindow(object):
 		"""
 		if self._window is not None:
 			self._window.Join()
+
+	@sumpf.Input(PlotLayout)
+	def SetLayout(self, layout):
+		"""
+		Sets the way, in which the plots shall be layouted.
+		@param layout: One of the LAYOUT_... flags of this class
+		"""
+		self.__layout = layout
+		if self._panel is not None:
+			self._panel.SetLayout(layout)
+
+	@sumpf.Input(LineManager)
+	def SetLinemanager(self, linemanager):
+		"""
+		Since there are no downsamplers implemented yet, do not use this method.
+		It will, one day, provide a way to enable automatic downsampling, if the
+		input data has too many samples to be plotted directly.
+		"""
+		self.__linemanager_class = linemanager
+		if self._panel is not None:
+			self._panel.SetLinemanager(linemanager)
 
 	@sumpf.Input(tuple)
 	def SetXInterval(self, interval):
@@ -203,7 +235,6 @@ class PlotWindow(object):
 		if self._panel is not None:
 			self._panel.SetCursors(self.__cursor_positions)
 
-
 	@sumpf.Trigger()
 	def LinearX(self):
 		"""
@@ -221,4 +252,18 @@ class PlotWindow(object):
 		self.__log_x = True
 		if self._panel is not None:
 			self._panel.LogarithmicX()
+
+	@sumpf.Trigger()
+	def MovePlotsTogether(self):
+		"""
+		Sets that all plots shall be moved accordingly, when one plot is panned or zoomed.
+		"""
+		self._panel.MovePlotsTogether()
+
+	@sumpf.Trigger()
+	def MovePlotsIndependently(self):
+		"""
+		Sets that all plots shall be panned or zoomed independently.
+		"""
+		self._panel.MovePlotsIndependently()
 

@@ -19,7 +19,7 @@
 				</td>
 				<td class="overview">
 					<ul>
-						<li><nobr><a href="#nearfuture">To be done in near future</a></nobr></li>
+						<li><nobr><a href="#nearfuture">To be done in the near future</a></nobr></li>
 						<li><nobr><a href="#versionone">Until Version 1.0</a></nobr></li>
 						<li><nobr><a href="#nicetohave">Nice to have stuff for future releases</a></nobr></li>
 						<li><nobr><a href="#weirdideas">Weird ideas that might be working some day</a></nobr></li>
@@ -78,6 +78,22 @@
 					It is necessary to extend PyJack with the functionalities of
 					the JACK latency API and then make use of that in the respective
 					sound card interface.
+				</td>
+			</tr>
+			<tr>
+				<td class="subsection">Automatic downsampling</td>
+				<td colspan="2" class="text">
+					Currently it is not possible, to plot very large data sets,
+					like audio signals that are longer than five seconds. This
+					is because the pixel resolution of the plots is much lower
+					than what is necessary to visualize such a vast amount of
+					data.<br />
+					To comfortably plot data sets of any size, a system is required
+					that automatically detects, if downsampling the data is necessary,
+					and reduces the data, if it is.<br />
+					The basic framework for using downsamplers with the plot data
+					is implemented, but useful implementations of downsampling
+					algorithms are still missing.
 				</td>
 			</tr>
 			<tr>

@@ -26,12 +26,11 @@ class SignalPlotWindow(PlotWindow):
 	possible to supply a different plot panel class, that plots each channel in
 	a separate plot.
 	"""
-	def __init__(self, panel_class=SignalPlotPanel):
+	def __init__(self):
 		"""
 		@param panel_class: a plot panel like sumpf.modules.SignalPlotPanel or sumpf.modules.TiledSignalPlotPanel
 		"""
 		PlotWindow.__init__(self)
-		self.__panel_class = panel_class
 		self.__signal = sumpf.Signal()
 		self.__log_y = False
 
@@ -40,7 +39,7 @@ class SignalPlotWindow(PlotWindow):
 		Returns a properly initialized plot panel instance.
 		@retval : a plot panel instance
 		"""
-		panel = self.__panel_class(parent=self._window)
+		panel = SignalPlotPanel(parent=self._window)
 		panel.SetSignal(self.__signal)
 		if self.__log_y:
 			panel.LogarithmicY()

@@ -18,7 +18,6 @@ import collections
 import sumpf
 from .plotwindow import PlotWindow
 from .sequenceplotpanel import SequencePlotPanel
-from .tiledsequenceplotpanel import TiledSequencePlotPanel
 
 
 class SequencePlotWindow(PlotWindow):
