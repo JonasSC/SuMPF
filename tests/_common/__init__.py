@@ -18,3 +18,8 @@ from .compare import compare_signals_almost_equal, compare_spectrums_almost_equa
 from .connectiontester import test_connection_observers
 from .libutils import lib_available, unload_lib, unload_sumpf, make_lib_unavailable
 
+try:
+	from .testquestionnaire import TestQuestionnaire
+except ImportError:
+	pass
+

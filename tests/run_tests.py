@@ -29,6 +29,7 @@ config = {"run_incomplete_tests": False, 	# if False, incomplete tests will be s
           "test_gui": False, 				# if False, tests that run a GUI will be skipped
           "run_long_tests": False, 			# if False, long running tests will be skipped
           "run_time_variant_tests": False, 	# if False, time variant tests or tests with random numbers are skipped. This can be useful, because it is not possible to guarantee that the test passes, even if everything is correct
+          "run_interactive_tests": False, 	# if False, tests that require input from the user are skipped
 
           "modify_config": True, 			# if True, some SuMPF config values will be changed and a second test run will be made
           "unload_numpy": False, 			# if True, the numpy module will be unimported, so it can be tested, how SuMPF performs without it
