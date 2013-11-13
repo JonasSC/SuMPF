@@ -50,6 +50,10 @@ if sumpf.config.get("unload_numpy"):
 	import _common as common
 	sumpf.config.create_config(variables=config)
 
+if (not hasattr(sumpf, "gui")) and (sumpf.config.get("test_gui") or sumpf.config.get("run_interactive_tests")):
+	sumpf.config.set("test_gui", False)
+	sumpf.config.set("run_interactive_tests", False)
+	print("Tests of the GUI and interactive tests are skipped because of a missing library.")
 
 from base import *
 from data import *
@@ -58,7 +62,6 @@ from gui import *
 from helper import *
 from modules import *
 from other import *
-
 
 if __name__ == "__main__":
 	print(("Testing %s" % str(sumpf)))
