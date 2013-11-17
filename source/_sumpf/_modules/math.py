@@ -21,6 +21,7 @@ from ._math.amplify import AmplifySignal, AmplifySpectrum
 from ._math.average import AverageSignals, AverageSpectrums
 from ._math.conjugatespectrum import ConjugateSpectrum
 from ._math.differentiatesignal import DifferentiateSignal
+from ._math.integratesignal import IntegrateSignal
 from ._math.logarithmsignal import LogarithmSignal
 from ._math.rectifysignal import RectifySignal
 
