@@ -15,9 +15,7 @@
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 import unittest
-
 import sumpf
-
 from .connectiontester import ConnectionTester
 
 
@@ -114,13 +112,16 @@ class TestMergeSignals(unittest.TestCase):
 		"""
 		self.merger.SetLengthConflictStrategy(sumpf.modules.MergeSignals.RAISE_ERROR)
 		id1 = self.merger.AddInput(self.signal1)
-		self.assertRaises(ValueError, self.merger.RemoveInput, id1 + 42)		# this should fail because id does not exist
-		self.assertRaises(ValueError, self.merger.AddInput, self.signal3)		# this should fail because channels do not have the same length
-		self.assertRaises(ValueError, self.merger.AddInput, self.signal4)		# this should fail because sampling rate is not equal
+		self.assertRaises(ValueError, self.merger.RemoveInput, id1 + 42)		# this should fail, because the id does not exist
+		self.assertRaises(ValueError, self.merger.AddInput, self.signal3)		# this should fail, because the channels do not have the same length
+		self.assertRaises(ValueError, self.merger.AddInput, self.signal4)		# this should fail, because the sampling rate is not equal
 		self.merger.SetLengthConflictStrategy(sumpf.modules.MergeSignals.FILL_WITH_ZEROS)
 		self.merger.AddInput(self.signal3)
+		self.merger.GetOutput()													# this should not fail
+		self.merger.SetLengthConflictStrategy(sumpf.modules.MergeSignals.CROP)
+		self.merger.GetOutput()													# this should not fail
 		self.merger.SetLengthConflictStrategy(sumpf.modules.MergeSignals.RAISE_ERROR)
-		self.assertRaises(RuntimeError, self.merger.GetOutput)					# this should fail because channels do not have the same length
+		self.assertRaises(RuntimeError, self.merger.GetOutput)					# this should fail, because the channels do not have the same length
 
 	def test_length_conflict_resolution(self):
 		"""
@@ -131,8 +132,12 @@ class TestMergeSignals(unittest.TestCase):
 		id3 = self.merger.AddInput(self.signal3)
 		channels = self.merger.GetOutput().GetChannels()
 		self.assertEqual(channels[0:3], self.signal1.GetChannels())			# the longer Signal should simply be copied
-		self.assertEqual(channels[3][0:2], self.signal3.GetChannels()[0])	# first elements should be the same as in the shorter Signal
+		self.assertEqual(channels[3][0:2], self.signal3.GetChannels()[0])	# the first elements should be the same as in the shorter Signal
 		self.assertEqual(channels[3][2], 0.0)								# zeros should be added to the shorter Signal
+		self.merger.SetLengthConflictStrategy(sumpf.modules.MergeSignals.CROP)
+		channels = self.merger.GetOutput().GetChannels()
+		self.assertEqual(channels[0], self.signal1.GetChannels()[0][0:2])	# the longer Signal's channels should be cropped during the merge
+		self.assertEqual(channels[3:6], self.signal3.GetChannels())			# the shorter Signal should simply be copied
 		self.merger.SetLengthConflictStrategy(sumpf.modules.MergeSignals.RAISE_ERROR_EXCEPT_EMPTY)
 		self.assertRaises(RuntimeError, self.merger.GetOutput)				# this should fail because channels do not have the same length
 		self.merger.RemoveInput(id3)

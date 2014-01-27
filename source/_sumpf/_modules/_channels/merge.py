@@ -26,6 +26,7 @@ class MergeChannelData(object):
 	RAISE_ERROR_EXCEPT_EMPTY = 0
 	RAISE_ERROR = 1
 	FILL_WITH_ZEROS = 2
+	CROP = 3
 
 	def __init__(self):
 		self.__strategy = MergeChannelData._FIRST_DATASET_FIRST
@@ -94,13 +95,15 @@ class MergeChannelData(object):
 		The following flags are available:
 		RAISE_ERROR for raising a ValueError if the input data set has a
 			different length than the already added data. A RuntimeError is
-			raised during merging if data sets with different lengths have been
+			raised during merging, if data sets with different lengths have been
 			added and then the strategy has been changed to RAISE_ERROR.
-		FILL_WITH_ZEROS for solving the conflict by filling the too short data
-			sets with zeros until all sets have the same length
 		RAISE_ERROR_EXCEPT_EMPTY for raising errors just like with RAISE_ERROR,
-			but only when neither the input data set nor all the added data sets
-			are empty.
+			but only when neither the new input data set nor all the already added
+			data sets are empty.
+		FILL_WITH_ZEROS for solving the conflict by filling the too short data
+			sets with zeros until all sets have the same length.
+		CROP for cropping the length of all added data sets to the length of the
+			shortest data set.
 		@param strategy: one of the MergeChannelData's flags for length conflict resolution
 		"""
 		self._on_length_conflict = strategy
@@ -129,6 +132,14 @@ class MergeChannelData(object):
 				for i in range(len(c), length):
 					c.append(0.0)
 			return chs
+		def crop(chs):
+			length = len(chs[0])
+			for c in chs[1:]:
+				length = min(length, len(c))
+			result = []
+			for c in chs:
+				result.append(c[0:length])
+			return result
 		channels, labels = self.__strategy(self._data.GetData())
 		if channels != []:
 			if self._on_length_conflict == MergeChannelData.RAISE_ERROR:
@@ -137,6 +148,8 @@ class MergeChannelData(object):
 						raise RuntimeError("The data sets do not have the same length")
 			elif self._on_length_conflict == MergeChannelData.FILL_WITH_ZEROS:
 				channels = fill_with_zeros(channels)
+			elif self._on_length_conflict == MergeChannelData.CROP:
+				channels = crop(channels)
 			elif self._on_length_conflict == MergeChannelData.RAISE_ERROR_EXCEPT_EMPTY:
 				length = 0
 				empty = True

@@ -15,9 +15,7 @@
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 import unittest
-
 import sumpf
-
 from .connectiontester import ConnectionTester
 
 
@@ -114,13 +112,16 @@ class TestMergeSpectrums(unittest.TestCase):
 		"""
 		self.merger.SetLengthConflictStrategy(sumpf.modules.MergeSpectrums.RAISE_ERROR)
 		id1 = self.merger.AddInput(self.spectrum1)
-		self.assertRaises(ValueError, self.merger.RemoveInput, id1 + 42)					# this should fail because the id does not exist
-		self.assertRaises(ValueError, self.merger.AddInput, self.spectrum3)					# this should fail because the channels do not have the same length
-		self.assertRaises(ValueError, self.merger.AddInput, self.spectrum4)					# this should fail because the resolution is not equal
+		self.assertRaises(ValueError, self.merger.RemoveInput, id1 + 42)					# this should fail, because the id does not exist
+		self.assertRaises(ValueError, self.merger.AddInput, self.spectrum3)					# this should fail, because the channels do not have the same length
+		self.assertRaises(ValueError, self.merger.AddInput, self.spectrum4)					# this should fail, because the resolution is not equal
 		self.merger.SetLengthConflictStrategy(sumpf.modules.MergeSpectrums.FILL_WITH_ZEROS)
 		self.merger.AddInput(self.spectrum3)
+		self.merger.GetOutput()																# this should not fail
+		self.merger.SetLengthConflictStrategy(sumpf.modules.MergeSpectrums.CROP)
+		self.merger.GetOutput()																# this should not fail
 		self.merger.SetLengthConflictStrategy(sumpf.modules.MergeSpectrums.RAISE_ERROR)
-		self.assertRaises(RuntimeError, self.merger.GetOutput)								# this should fail because the channels do not have the same length
+		self.assertRaises(RuntimeError, self.merger.GetOutput)								# this should fail, because the channels do not have the same length
 
 	def test_length_conflict_resolution(self):
 		"""
@@ -133,6 +134,10 @@ class TestMergeSpectrums(unittest.TestCase):
 		self.assertEqual(channels[0:3], self.spectrum1.GetChannels())				# the longer Spectrum should simply be copied
 		self.assertEqual(channels[3][0:2], self.spectrum3.GetChannels()[0])			# first elements should be the same as in the shorter Spectrum
 		self.assertEqual(channels[3][2], 0.0)										# zeros should be added to the shorter Spectrum
+		self.merger.SetLengthConflictStrategy(sumpf.modules.MergeSpectrums.CROP)
+		channels = self.merger.GetOutput().GetChannels()
+		self.assertEqual(channels[0], self.spectrum1.GetChannels()[0][0:2])			# the longer Spectrum's channels should be cropped during the merge
+		self.assertEqual(channels[3:6], self.spectrum3.GetChannels())					# the shorter Spectrum should simply be copied
 		self.merger.SetLengthConflictStrategy(sumpf.modules.MergeSpectrums.RAISE_ERROR_EXCEPT_EMPTY)
 		self.assertRaises(RuntimeError, self.merger.GetOutput)						# this should fail because channels do not have the same length
 		self.merger.RemoveInput(id3)
