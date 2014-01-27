@@ -23,8 +23,12 @@ class ImpulseGenerator(SignalGenerator):
 	A class whose instances generate an impulse or a sequence of impulses.
 	It is possible to give a frequency, with which the impulses are repeated.
 	A frequency of 0.0 will lead to only one impulse.
-	The first impulse will always occur after the given initial delay, independend
+	The first impulse will always occur after the given initial delay, independent
 	of the given frequency.
+	If a frequency is given, the impulses will be repeated at a rate that is the
+	integer number of samples, which is closest to that frequency. This way, the
+	resulting frequency might not be exactly as specified, but the gaps between
+	the impulses do all have the same length.
 	The amplitude of the impulses will always be one. It can be changed by
 	sending the resulting Signal through a sumpf.AmplifySignal module.
 	The resulting Signal will have one channel.
