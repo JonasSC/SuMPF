@@ -73,9 +73,26 @@ class TypedDecorator(object):
 	"""
 	def __init__(self, data_type):
 		"""
-		@param data_type: The type of the data that is passed through this connection
+		@param data_type: the type of the data that is passed through this connection
 		"""
 		self._data_type = data_type
+
+	def GetType(self):
+		"""
+		This method returns the type of the Connector-method that is decorated
+		with this decorator.
+		With this, the type of a Connector can be determined from a class and not only
+		from an instance of that class.
+		The decoration of methods still behaves a bit odd. When having a class,
+		the determination of one of their method's type does not work the intuitive
+		way:
+			CLASS.METHOD.GetType()
+		This will raise an error that None does not have the attribute METHOD.
+		Instead, the following workaround has to be used:
+			vars(CLASS)["METHOD"].GetType()
+		@retval : the type of the data that is passed through this connection
+		"""
+		return self._data_type
 
 
 
@@ -86,7 +103,7 @@ class ObservedDecorator(object):
 	"""
 	def __init__(self, observers):
 		"""
-		@param observers: The names of output methods that are affected by calling this setter
+		@param observers: the names of output methods that are affected by calling this setter
 		"""
 		if isinstance(observers, list):
 			self._observers = observers

@@ -40,6 +40,26 @@ class TestConnectors(unittest.TestCase):
 		self.obj1.SetValueNoUpdate(2)
 		self.assertEqual(self.obj1.GetValue(), 2)
 
+	def test_get_type(self):
+		"""
+		Tests the GetType() method of the decorators and the connectors.
+		"""
+		v = vars(ExampleClass)	# somehow expressions like ExampleClass.GetValue.GetType() do not work
+		self.assertEqual(v["GetValue"].GetType(), self.obj1.GetValue.GetType())
+		self.assertEqual(v["GetValue2"].GetType(), self.obj1.GetValue2.GetType())
+		self.assertEqual(v["SetValue"].GetType(), self.obj1.SetValue.GetType())
+		self.assertEqual(v["SetValue2"].GetType(), self.obj1.SetValue2.GetType())
+		self.assertEqual(v["SetValueNoUpdate"].GetType(), self.obj1.SetValueNoUpdate.GetType())
+		self.assertEqual(v["GetFloat"].GetType(), self.obj1.GetFloat.GetType())
+		self.assertEqual(v["GetText"].GetType(), self.obj1.GetText.GetType())
+		self.assertEqual(v["SetText"].GetType(), self.obj1.SetText.GetType())
+		self.assertEqual(v["ComputeValueAndText"].GetType(), self.obj1.ComputeValueAndText.GetType())
+		self.assertRaises(AttributeError, getattr, v["Trigger"], "GetType")
+		self.assertEqual(v["GetItems"].GetType(), self.obj1.GetItems.GetType())
+		self.assertEqual(v["AddItemNoReplace"].GetType(), self.obj1.AddItemNoReplace.GetType())
+		self.assertEqual(v["AddItemReplace"].GetType(), self.obj1.AddItemReplace.GetType())
+		self.assertEqual(v["TakeList"].GetType(), self.obj1.TakeList.GetType())
+
 	def test_make_valid_connections(self):
 		"""
 		Makes and brakes some valid connections and tests if the values are passed correctly through the connections.
