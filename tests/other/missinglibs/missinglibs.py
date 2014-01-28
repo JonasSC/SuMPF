@@ -63,6 +63,7 @@ class TestMissingLibs(unittest.TestCase):
 		libs["numpy"] = "sumpf.helper.numpydummy"
 		libs["scikits"] = None	# both scikits.audiolab and scikits.samplerate
 		libs["wx"] = None
+		exceptions = [("ResampleSignal", "scikits")]
 		def function(sumpf_module, classnames):
 			for r in sumpf_module.helper.walk_module(sumpf_module):
 				for c in r[2]:
@@ -79,7 +80,8 @@ class TestMissingLibs(unittest.TestCase):
 			not_unavailable = process.namespace.not_unavailable
 			if result is not None:
 				if not_unavailable == []:
-					self.fail(result + " is still available, when " + l + " is not available")
+					if (result, l) not in exceptions:
+						self.fail(result + " is still available, when " + l + " is not available")
 				else:
 					print("%s could not be made unavailable for testing." % not_unavailable[0])
 					print("  These attributes should have been unavailable: %s" % str(result))

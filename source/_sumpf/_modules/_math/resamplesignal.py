@@ -16,7 +16,13 @@
 
 import sumpf
 import numpy
-import scikits.samplerate
+
+samplerate_available = True
+try:
+	import scikits.samplerate
+except ImportError:
+	samplerate_available = False
+
 
 
 class ResampleSignal(object):
@@ -26,16 +32,20 @@ class ResampleSignal(object):
 	the output sampling rate is an integer fraction or multiple of the input
 	sampling rate.
 	"""
-	def __init__(self, signal=None, samplingrate=None):
+	SPECTRUM = 0
+
+	def __init__(self, signal=None, samplingrate=None, algorithm=SPECTRUM):
 		"""
 		All parameters are optional.
 		@param signal: the input Signal that shall be resampled
 		@param samplingrate: the desired sampling rate of the output Signal or None, to keep the sampling rate of the input Signal
+		@param algorithm: a flag for the resampling algorithm that shall be used. See SetAlgorithm for details
 		"""
 		self.__signal = signal
 		if signal is None:
 			self.__signal = sumpf.Signal()
 		self.__samplingrate = samplingrate
+		self.__algorithm = algorithm
 
 	@sumpf.Input(sumpf.Signal, "GetOutput")
 	def SetInput(self, signal):
@@ -55,15 +65,47 @@ class ResampleSignal(object):
 		"""
 		self.__samplingrate = samplingrate
 
+	@sumpf.Input(int, "GetOutput")
+	def SetAlgorithm(self, algorithm):
+		"""
+		Sets the algorithm for the resampling of the Signal.
+		Currently, there are two algorithms available, SPECTRUM and SINC.
+		SPECTRUM is the default algorithm, as it only requires the external library
+		numpy to be available. It transforms the input Signal to the frequency
+		domain and adjusts the resulting Spectrum's length according to the target
+		sampling rate. For upsampling, zeros are appended to the Spectrum. For
+		downsampling, the Spectrum will be cropped.
+		SINC is only available, when the external libraries numpy and scikits.samplerate
+		are available. It uses the "sinc_best" mode from scikits.samplerate, which
+		itself uses the resampling algorithm from libsamplerate. This high quality
+		resampling algorithm should yield better results than the SPECTRUM algorithm.
+		@param algorithm: a flag for the resampling algorithm that shall be used (e.g. ResampleSignal.SPECTRUM)
+		"""
+		self.__algorithm = algorithm
+
 	@sumpf.Output(sumpf.Signal)
 	def GetOutput(self):
 		"""
 		Calculates the resampled output Signal and returns it.
 		@retval : a Signal instance with the given sampling rate
 		"""
-		if self.__samplingrate is None:
+		if self.__samplingrate is None or self.__samplingrate == self.__signal.GetSamplingRate():
 			return self.__signal
-		else:
+		if self.__algorithm == ResampleSignal.SPECTRUM:
+			spectrum = sumpf.modules.FourierTransform(signal=self.__signal).GetSpectrum()
+			spectrum_length = sumpf.modules.ChannelDataProperties(samplingrate=self.__samplingrate,
+			                                                      resolution=spectrum.GetResolution()).GetSpectrumLength()
+			channels = []
+			for c in spectrum.GetChannels():
+				channel = []
+				for i in range(min(len(spectrum), spectrum_length)):
+					channel.append(c[i])
+				for i in range(len(spectrum), spectrum_length):
+					channel.append(0.0)
+				channels.append(tuple(channel))
+			resampled_spectrum = sumpf.Spectrum(channels=tuple(channels), resolution=spectrum.GetResolution(), labels=spectrum.GetLabels())
+			return sumpf.modules.InverseFourierTransform(spectrum=resampled_spectrum).GetSignal()
+		elif hasattr(ResampleSignal, "SINC") and self.__algorithm == ResampleSignal.SINC:
 			factor = self.__samplingrate / self.__signal.GetSamplingRate()
 			channels = []
 			for c in self.__signal.GetChannels():
@@ -71,4 +113,13 @@ class ResampleSignal(object):
 				out_channel = scikits.samplerate.resample(in_channel, factor, 'sinc_best')
 				channels.append(tuple(out_channel))
 			return sumpf.Signal(channels=tuple(channels), samplingrate=self.__samplingrate, labels=self.__signal.GetLabels())
+		else:
+			raise ValueError("Unknown resampling algorithm")
+
+
+
+# add the possibility to use the resampling algorithm from scikits.samplerate,
+# if that library is available
+if samplerate_available:
+	ResampleSignal.SINC = 1
 

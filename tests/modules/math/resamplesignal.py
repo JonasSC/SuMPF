@@ -20,15 +20,26 @@ import _common as common
 
 
 @unittest.skipUnless(common.lib_available("numpy"), "These tests require the library 'numpy' to be available.")
-@unittest.skipUnless(common.lib_available("scikits.samplerate"), "These tests require the library 'scikits.samplerate'")
 class TestResampleSignal(unittest.TestCase):
 	"""
 	A test case for the ResampleSignal module.
 	"""
-	@unittest.skipUnless(sumpf.config.get("run_long_tests"), "Long tests are skipped")
-	def test_resampling(self):
+	def test_algorithm_availability(self):
 		"""
-		Tests if the resampling yields the correct results.
+		Tests if the flag for the SINC algorithm is only available, when the
+		scikits.samplerate library is available as well.
+		"""
+		if common.lib_available("scikits.samplerate"):
+			self.assertIn("SINC", vars(sumpf.modules.ResampleSignal))
+		else:
+			self.assertNotIn("SINC", vars(sumpf.modules.ResampleSignal))
+
+	@unittest.skipUnless(sumpf.config.get("run_long_tests"), "Long tests are skipped")
+	@unittest.skipUnless(common.lib_available("scikits.samplerate"), "This test requires the library 'scikits.samplerate'")
+	def test_resampling_scikits_samplerate(self):
+		"""
+		Tests if the resampling with the algorithm of scikits.samplerate yields
+		the correct results.
 		"""
 		samplingrate_original = 32000.0
 		samplingrate_high = 35734.0
@@ -57,8 +68,9 @@ class TestResampleSignal(unittest.TestCase):
 		self.assertEqual(signal.GetDuration(), ideal_up.GetDuration())		# the duration of the ideally upsampled Signal has to be the same as the duration of the original Signal
 		self.assertEqual(signal.GetDuration(), ideal_down.GetDuration())	# the duration of the ideally downsampled Signal has to be the same as the duration of the original Signal
 		# resample the Signal with the ResampleSignal module
-		resampled_up = sumpf.modules.ResampleSignal(signal=signal, samplingrate=samplingrate_high).GetOutput()
+		resampled_up = sumpf.modules.ResampleSignal(signal=signal, samplingrate=samplingrate_high, algorithm=sumpf.modules.ResampleSignal.SINC).GetOutput()
 		res = sumpf.modules.ResampleSignal()
+		res.SetAlgorithm(sumpf.modules.ResampleSignal.SINC)
 		res.SetInput(signal)
 		res.SetSamplingRate(samplingrate_low)
 		resampled_down = res.GetOutput()
@@ -80,6 +92,64 @@ class TestResampleSignal(unittest.TestCase):
 				self.assertGreaterEqual(snr, 10 ** (23.0 / 20.0))	# The signal to noise ratio of the sampling rate conversion must be at least 23dB
 			self.assertEqual(resampled.GetLabels(), ideal.GetLabels())
 
+	def test_resampling_fft(self):
+		"""
+		Tests if resampling by cropping or extending the spectrum behaves as expected.
+		"""
+		# create a test Signal
+		sweep = sumpf.modules.SweepGenerator(start_frequency=10.0,
+		                                     stop_frequency=1000.0,
+		                                     function=sumpf.modules.SweepGenerator.Exponential,
+		                                     interval=None,
+		                                     samplingrate=2500.0,
+		                                     length=1000).GetSignal()
+		triangle = sumpf.modules.TriangleWaveGenerator(raising=0.3,
+		                                               frequency=200.0,
+		                                               phase=1.4,
+		                                               samplingrate=2500.0,
+		                                               length=1000).GetSignal()
+		merger = sumpf.modules.MergeSignals()
+		merger.AddInput(sweep)
+		merger.AddInput(triangle)
+		input_signal = merger.GetOutput()
+		input_spectrum = sumpf.modules.FourierTransform(signal=input_signal).GetSpectrum()
+		# create resampled Signals
+		upsampled_signal = sumpf.modules.ResampleSignal(signal=input_signal,
+		                                                samplingrate=3000.0,
+		                                                algorithm=sumpf.modules.ResampleSignal.SPECTRUM).GetOutput()
+		upsampled_spectrum = sumpf.modules.FourierTransform(signal=upsampled_signal).GetSpectrum()
+		downsampled_signal = sumpf.modules.ResampleSignal(signal=input_signal,
+		                                                  samplingrate=2000.0,
+		                                                  algorithm=sumpf.modules.ResampleSignal.SPECTRUM).GetOutput()
+		downsampled_spectrum = sumpf.modules.FourierTransform(signal=downsampled_signal).GetSpectrum()
+		# test basic Signal properties
+		self.assertEqual(len(upsampled_signal), 1200)
+		self.assertEqual(len(downsampled_signal), 800)
+		self.assertEqual(len(upsampled_signal.GetChannels()), 2)
+		self.assertEqual(len(downsampled_signal.GetChannels()), 2)
+		self.assertEqual(upsampled_signal.GetSamplingRate(), 3000.0)
+		self.assertEqual(downsampled_signal.GetSamplingRate(), 2000.0)
+		# test the upsampled Signal
+		for c in range(len(upsampled_spectrum.GetChannels())):
+			for i in range(len(input_spectrum)):
+				self.assertAlmostEqual(upsampled_spectrum.GetChannels()[c][i], input_spectrum.GetChannels()[c][i])
+			for i in range(len(input_spectrum), len(upsampled_spectrum)):
+				self.assertAlmostEqual(upsampled_spectrum.GetChannels()[c][i], 0.0)
+		# test the downsampled Signal
+		for c in range(len(downsampled_spectrum.GetChannels())):
+			for i in range(len(downsampled_spectrum) - 1):
+				self.assertAlmostEqual(downsampled_spectrum.GetChannels()[c][i], input_spectrum.GetChannels()[c][i])
+
+	def test_errors(self):
+		"""
+		Tests if errors are raised as expected.
+		"""
+		res = sumpf.modules.ResampleSignal()
+		res.SetAlgorithm(-1)
+		res.GetOutput()	# this should not raise an error, since no resampling is done, because the input and output sampling rates are the same
+		res.SetSamplingRate(sumpf.config.get("default_samplingrate") + 4.7)
+		self.assertRaises(ValueError, res.GetOutput)
+
 	def test_connectors(self):
 		"""
 		Tests if the connectors are properly decorated.
@@ -87,9 +157,10 @@ class TestResampleSignal(unittest.TestCase):
 		res = sumpf.modules.ResampleSignal()
 		self.assertEqual(res.SetInput.GetType(), sumpf.Signal)
 		self.assertEqual(res.SetSamplingRate.GetType(), float)
+		self.assertEqual(res.SetAlgorithm.GetType(), int)
 		self.assertEqual(res.GetOutput.GetType(), sumpf.Signal)
 		common.test_connection_observers(testcase=self,
-		                                 inputs=[res.SetInput, res.SetSamplingRate],
+		                                 inputs=[res.SetInput, res.SetSamplingRate, res.SetAlgorithm],
 		                                 noinputs=[],
 		                                 output=res.GetOutput)
 
