@@ -15,7 +15,7 @@
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 from .average import TestAverage
-from .differentiate import TestDifferentiate
+from .math import TestMath
 from .multiinputdata import TestMultiInputData
 from .normalizepath import TestNormalizePath
 from .numpydummy import TestNumpyDummy

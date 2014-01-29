@@ -20,7 +20,7 @@ These functions are not the core functionality of SuMPF, but they are useful
 inside SuMPF and maybe elsewhere as well.
 """
 
-from ._helper.differentiate import differentiate
+from ._helper.math import differentiate, binomial_coefficient
 from ._helper.multiinputdata import MultiInputData
 from ._helper.normalizepath import normalize_path
 from ._helper.walkmodule import walk_module

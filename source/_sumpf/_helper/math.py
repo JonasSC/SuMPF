@@ -14,6 +14,21 @@
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 
+def binomial_coefficient(n, k):
+	"""
+	This function calculates the binomial coefficient of n over k. This is the
+	number of choices to pick k items out of a set of n items.
+	@param n, k: two integers
+	@retval : the binomial coefficient as an integer
+	"""
+	if k < 0 or k > n:
+		return 0
+	if k > n - k:
+		k = n - k
+	if k == 0 or n <= 1:
+		return 1
+	return binomial_coefficient(n - 1, k) + binomial_coefficient(n - 1, k - 1)
+
 def differentiate(sequence):
 	"""
 	This function takes a sequence of numbers and calculates the derivative of it.

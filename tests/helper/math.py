@@ -18,11 +18,29 @@ import unittest
 import sumpf
 
 
-class TestDifferentiate(unittest.TestCase):
+class TestMath(unittest.TestCase):
 	"""
-	A TestCase for the differentiating function.
+	A TestCase for the mathematical helper functions.
 	"""
+
+	def test_binomial_coefficient(self):
+		"""
+		Tests the sumpf.helper.binomial_coefficient function.
+		"""
+		pascal = ((1,),
+		          (1, 1),
+		          (1, 2, 1),
+		          (1, 3, 3, 1),
+		          (1, 4, 6, 4, 1),
+		          (1, 5, 10, 10, 5, 1))
+		for n in range(len(pascal)):
+			for k in range(len(pascal[n])):
+				self.assertEqual(sumpf.helper.binomial_coefficient(n, k), pascal[n][k])
+
 	def test_differentiate(self):
+		"""
+		Tests the sumpf.helper.differentiate function.
+		"""
 		tests = []
 		tests.append(([1.0, 1.0, 1.0], [0.0, 0.0, 0.0]))	# test constant input
 		tests.append(([0.0, 1.0, 2.0], [1.0, 1.0, 1.0]))	# test constant raise
