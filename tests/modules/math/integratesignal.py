@@ -35,6 +35,7 @@ class TestIntegrateSignal(unittest.TestCase):
 		sine = sumpf.modules.SineWaveGenerator(frequency=frequency, phase=0.0, length=1000).GetSignal()
 		common.compare_signals_almost_equal(testcase=self, signal1=scaled, signal2=sine, places=1)
 
+	@unittest.skipUnless(common.lib_available("numpy"), "This test requires the library 'numpy' to be available.")
 	def test_derivative(self):
 		"""
 		Compares the derivative of the integral with the original Signal.
