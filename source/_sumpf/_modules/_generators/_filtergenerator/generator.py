@@ -18,8 +18,8 @@ import sumpf
 from ..spectrumgenerator import SpectrumGenerator
 from .filters import ButterworthLowpass, ButterworthHighpass, BesselLowpass, \
                      BesselHighpass, ChebyshevLowpass, ChebyshevHighpass, \
-                     Bandpass, Bandstop, PinkSlope, RedSlope, AWeighting, \
-                     CWeighting, ConstantGroupDelay
+                     Bandpass, Bandstop, LaguerreFunction, PinkSlope, RedSlope, \
+                     AWeighting, CWeighting, ConstantGroupDelay
 from .filterbase import Filter
 
 
@@ -38,6 +38,7 @@ class FilterGenerator(SpectrumGenerator):
 	CHEBYSHEV_HIGHPASS = ChebyshevHighpass
 	BANDPASS = Bandpass
 	BANDSTOP = Bandstop
+	LAGUERRE_FUNCTION = LaguerreFunction
 	PINK_SLOPE = PinkSlope
 	RED_SLOPE = RedSlope
 	A_WEIGHTING = AWeighting

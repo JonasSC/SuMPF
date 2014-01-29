@@ -170,6 +170,32 @@ class Bandstop(FilterWithCoefficients):
 
 
 
+class LaguerreFunction(FilterWithCoefficients):
+	"""
+	A filter class that creates Laguerre functions in the frequency domain.
+	Due to properties of the implementation of the fourier transform, which is
+	used by SuMPF, the time domain data of the Laguerre functions, that are created
+	by this filter class, has to be scaled with the sampling rate of that time
+	domain data.
+	"""
+	def __init__(self, order, scaling_factor):
+		"""
+		@param order: the order of the generated Laguerre function as an integer
+		@param scaling_factor: the scaling factor for the Laguerre function as a float
+		"""
+		p = scaling_factor
+		coefficients = []
+		numerator = [(2.0 * p) ** 0.5]
+		denominator = [p, 1.0]
+		coefficients.append((numerator, denominator))
+		numerator = [p, -1.0]
+		for o in range(0, order):
+			coefficients.append((numerator, denominator))
+		f = 1.0 / (2.0 * math.pi)
+		FilterWithCoefficients.__init__(self, frequency=f, coefficients=coefficients, transform=False)
+
+
+
 class PinkSlope(FilterWithSlope):
 	"""
 	Filter class for a filter whose magnitude falls proportional to 1/f.

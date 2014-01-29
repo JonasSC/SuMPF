@@ -84,6 +84,37 @@ class TestFilterGenerator(unittest.TestCase):
 		self.assertAlmostEqual(channel[45], 1.0 / math.sqrt(2.0), 1)		# gain at lower cutoff frequency should be sqrt(2)
 		self.assertAlmostEqual(channel[55], 1.0 / math.sqrt(2.0), 1)		# gain at upper cutoff frequency should be sqrt(2)
 
+	def test_laguerre(self):
+		"""
+		Tests the generation of the Laguerre functions.
+		"""
+		# create some Laguerre functions
+		gen = sumpf.modules.FilterGenerator(resolution=0.1, length=100)
+		h = gen.AddFilter(sumpf.modules.FilterGenerator.LAGUERRE_FUNCTION(order=0, scaling_factor=1.0))
+		laguerre0 = gen.GetSpectrum()
+		gen.RemoveFilter(h)
+		h = gen.AddFilter(sumpf.modules.FilterGenerator.LAGUERRE_FUNCTION(order=1, scaling_factor=1.0))
+		laguerre1 = gen.GetSpectrum()
+		gen.RemoveFilter(h)
+		h = gen.AddFilter(sumpf.modules.FilterGenerator.LAGUERRE_FUNCTION(order=2, scaling_factor=1.0))
+		laguerre2 = gen.GetSpectrum()
+		gen.RemoveFilter(h)
+		m0 = laguerre0.GetMagnitude()[0]
+		m1 = laguerre1.GetMagnitude()[0]
+		m2 = laguerre2.GetMagnitude()[0]
+		p0 = laguerre0.GetContinuousPhase()[0]
+		p1 = laguerre1.GetContinuousPhase()[0]
+		p2 = laguerre2.GetContinuousPhase()[0]
+		# compare the generated functions
+		self.assertAlmostEqual(m0[0], 2.0 ** 0.5)
+		self.assertAlmostEqual(m1[0], 2.0 ** 0.5)
+		self.assertAlmostEqual(m2[0], 2.0 ** 0.5)
+		for i in range(1, len(m0)):
+			self.assertAlmostEqual(m0[i], m1[i])
+			self.assertAlmostEqual(m1[i], m2[i])
+			self.assertGreater(p0[i], p1[i])
+			self.assertGreater(p1[i], p2[i])
+
 	def test_slopes(self):
 		"""
 		Tests the filter functions which generate a spectrum that falls with
