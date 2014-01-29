@@ -18,6 +18,7 @@ from .arbitrarysignalgenerator import TestArbitrarySignalGenerator
 from .constantsignalgenerator import TestConstantSignalGenerator
 from .signalgenerator import TestSignalGenerator
 from .impulsegenerator import TestImpulseGenerator
+from .laguerrefunctiongenerator import TestLaguerreFunctionGenerator
 from .noisegenerator import TestNoiseGenerator
 from .silencegenerator import TestSilenceGenerator
 from .sinewavegenerator import TestSineWaveGenerator
