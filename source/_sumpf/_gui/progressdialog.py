@@ -28,12 +28,13 @@ class ProgressDialog(Window):
 	This dialog is meant to be connected to a progress indicator, to track the
 	progress of a calculation of a progressing chain.
 	"""
-	def __init__(self, message, *args, **kwargs):
+	def __init__(self, message, parent=None, *args, **kwargs):
 		"""
 		@param message: the message string that shall be displayed in the dialog
+		@param parent: the parent wx Widget
 		@param *args, **kwargs: other parameters for the constructor of a sumpf.gui.Window
 		"""
-		Window.__init__(self, *args, **kwargs)
+		Window.__init__(self, parent=parent, *args, **kwargs)
 		self.__sizer = wx.BoxSizer(wx.VERTICAL)
 		self.SetSizer(self.__sizer)
 		self.__sizer.AddStretchSpacer()

@@ -55,7 +55,7 @@ class TestProgressDialog(unittest.TestCase):
 		sumpf.connect(tester3.Output, tester4.Input)
 		sumpf.connect(tester4.Output, tester5.Input)
 		indicator = sumpf.progressindicators.ProgressIndicator_All(method=tester1.Input)
-		dialog = sumpf.gui.ProgressDialog(parent=None, message="Test")
+		dialog = sumpf.gui.ProgressDialog(message="Test")
 		sumpf.connect(indicator.GetProgressAsTuple, dialog.SetProgress)
 		tester1.Input(0.1)
 
@@ -63,7 +63,7 @@ class TestProgressDialog(unittest.TestCase):
 		"""
 		Tests if the connectors are properly decorated.
 		"""
-		dlg = sumpf.gui.ProgressDialog(parent=None, message="Test")
+		dlg = sumpf.gui.ProgressDialog(message="Test")
 		self.assertEqual(dlg.SetProgress.GetType(), tuple)
 		self.assertEqual(dlg.SetMessage.GetType(), str)
 
