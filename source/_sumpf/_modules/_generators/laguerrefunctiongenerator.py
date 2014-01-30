@@ -103,8 +103,10 @@ class LaguerreFunctionGenerator(SignalGenerator):
 		The order is equal to the number of times, which the function crosses
 		the x (or time) axis. With an order of 0, the Laguerre function will
 		fall monotonously and converge to 0.0 for a raising x (or time) value.
-		With an order of 1, the Laguerre function will fall, cross the x (or time)
-		axis and then raise to converge to 0.0 from the negative quadrant.
+		With an order of 1, the Laguerre function will start below zero, cross
+		the x (or time) axis, raise to a positive maximum and converge to 0.0
+		from there. A second order Laguerre function will cross the x (or time)
+		axis twice, a third order one three times and so on.
 		@param order: the order of the generated Laguerre function as an integer
 		"""
 		self.__order = order
