@@ -42,7 +42,7 @@ def walk_module(module):
 		variables = []
 		for i in vars(path[-1]):
 			v = vars(path[-1])[i]
-			if inspect.ismodule(v):
+			if inspect.ismodule(v) and v.__name__ != "__builtin__":
 				modules.append(v)
 			elif inspect.isclass(v):
 				classes.append(v)
@@ -52,10 +52,11 @@ def walk_module(module):
 				variables.append(i)
 		result = [(path, modules, classes, functions, variables)]
 		for m in modules:
-			subpath = copy.copy(path)
-			subpath.append(m)
-			for r in walk(subpath):
-				result.append(r)
+			if m not in path:
+				subpath = copy.copy(path)
+				subpath.append(m)
+				for r in walk(subpath):
+					result.append(r)
 		return result
 	return walk([module])
 
