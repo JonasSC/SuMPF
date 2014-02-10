@@ -35,6 +35,8 @@ class TestAttributes(unittest.TestCase):
 		"""
 		Tests if every class is sufficiently documented
 		"""
+		def format_name(classpath, classname):
+			return ".".join([m.__name__ for m in classpath] + [classname])
 		fails = []
 		short_is_enough = ["AverageSpectrums", "ConjugateSpectrum",
 		                   "RelabelSignal", "RelabelSpectrum",
@@ -44,14 +46,14 @@ class TestAttributes(unittest.TestCase):
 		for p, m, c, f, v in sumpf.helper.walk_module(sumpf):
 			for cls in c:
 				if cls.__doc__ is None:
-					fails.append(cls.__name__)
+					fails.append(format_name(classpath=p, classname=cls.__name__))
 				else:
 					doclines = len(cls.__doc__.strip().split("\n"))
 					if cls.__name__ in short_is_enough:
 						if doclines < 1:
-							fails.append(cls.__name__)
+							fails.append(format_name(classpath=p, classname=cls.__name__))
 					elif doclines < 3:
-						fails.append(cls.__name__)
+						fails.append(format_name(classpath=p, classname=cls.__name__))
 		if fails != []:
 			self.fail("The following " + str(len(fails)) + " classes are not sufficiently documented: " + str(fails))
 
