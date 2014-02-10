@@ -98,6 +98,17 @@ class Connector(object):
 		if connector in self._connections:
 			raise ValueError("The connection already exists")
 
+	def GetName(self):
+		"""
+		Returns a short string that roughly describes the method that has been
+		replaced by this connector.
+		The string has the form CLASSNAME.METHODNAME, where CLASSNAME is the name
+		of the class in which the method is declared and METHODNAME is the name
+		of the decorated method.
+		@retval : a string CLASSNAME.METHODNAME
+		"""
+		return ".".join((self._instance.__class__.__name__ , self._method.__name__))
+
 
 
 class TypedConnector(object):

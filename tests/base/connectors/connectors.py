@@ -273,13 +273,34 @@ class TestConnectors(unittest.TestCase):
 
 	def test_docstrings(self):
 		"""
-		Checks that the docstrings of the decorated methods remain the same
+		Checks that the docstrings of the decorated methods remain the same.
 		"""
 		self.assertEqual(self.obj1.GetValue.__doc__, "\n\t\tOutput with data_type int\n\t\t")					# The Output decorator should not modify the docstring of the method
 		self.assertEqual(self.obj1.SetValue.__doc__, "\n\t\tInput with data_type int and one observer\n\t\t")	# The Input decorator should not modify the docstring of the method
 		self.assertEqual(self.obj1.Trigger.__doc__, "\n\t\tA trigger with observer\n\t\t")						# The Trigger decorator should not modify the docstring of the method
 		self.assertEqual(self.obj1.AddItemNoReplace.__doc__, "\n\t\tA MultiInput\n\t\t")									# The MultiInput decorator should not modify the docstring of the method
 		self.assertEqual(self.obj1.RemoveItem.__doc__, "\n\t\tEvery MultiInput needs a remove-method\n\t\t")	# The MultiInput decorator should not modify the docstring of its remove method
+
+	def test_connector_names(self):
+		"""
+		Tests the GetName method of the connectors.
+		"""
+		self.assertEqual(self.obj1.GetValue.GetName(), "ExampleClass.GetValue")
+		self.assertEqual(self.obj1.GetValue2.GetName(), "ExampleClass.GetValue2")
+		self.assertEqual(self.obj1.SetValue.GetName(), "ExampleClass.SetValue")
+		self.assertEqual(self.obj1.SetValue2.GetName(), "ExampleClass.SetValue2")
+		self.assertEqual(self.obj1.SetValueNoUpdate.GetName(), "ExampleClass.SetValueNoUpdate")
+		self.assertEqual(self.obj1.GetFloat.GetName(), "ExampleClass.GetFloat")
+		self.assertEqual(self.obj1.GetText.GetName(), "ExampleClass.GetText")
+		self.assertEqual(self.obj1.SetText.GetName(), "ExampleClass.SetText")
+		self.assertEqual(self.obj1.ComputeValueAndText.GetName(), "ExampleClass.ComputeValueAndText")
+		self.assertEqual(self.obj1.Trigger.GetName(), "ExampleClass.Trigger")
+		self.assertEqual(self.obj1.GetItems.GetName(), "ExampleClass.GetItems")
+		self.assertEqual(self.obj1.AddItemNoReplace.GetName(), "ExampleClass.AddItemNoReplace")
+		self.assertEqual(self.obj1.AddItemReplace.GetName(), "ExampleClass.AddItemReplace")
+		self.assertEqual(self.obj1.RemoveItem.GetName(), "ExampleClass.RemoveItem")
+		self.assertEqual(self.obj1.ReplaceItem.GetName(), "ExampleClass.ReplaceItem")
+		self.assertEqual(self.obj1.TakeList.GetName(), "ExampleClass.TakeList")
 
 	def test_object_deletion(self):
 		"""
