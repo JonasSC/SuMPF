@@ -32,8 +32,12 @@ class MultiInputConnectorBase(TypedInputConnector):
 		@param observers: the names of output methods that are affected by calling this object
 		"""
 		TypedInputConnector.__init__(self, instance, data_type, method, observers)
-		self._remove_method = MultiInputConnectorAssociate(instance=instance, method=getattr(instance, remove_method), observers=observers)
-		setattr(instance, remove_method, self._remove_method)
+		method_remove = getattr(instance, remove_method)
+		if isinstance(method_remove, MultiInputConnectorAssociate):
+			self._remove_method = method_remove
+		else:
+			self._remove_method = MultiInputConnectorAssociate(instance=instance, method=method_remove, observers=observers)
+			setattr(instance, remove_method, self._remove_method)
 		self.__connections = {}
 		self.__announcements = set()
 
@@ -159,8 +163,12 @@ class ReplacingMultiInputConnector(MultiInputConnectorBase):
 		@param observers: the names of output methods that are affected by calling this object
 		"""
 		MultiInputConnectorBase.__init__(self, instance=instance, data_type=data_type, method=method, remove_method=remove_method, observers=observers)
-		self.__replace_method = MultiInputConnectorAssociate(instance=instance, method=getattr(instance, replace_method), observers=observers)
-		setattr(instance, replace_method, self.__replace_method)
+		method_replace = getattr(instance, replace_method)
+		if isinstance(method_replace, MultiInputConnectorAssociate):
+			self.__replace_method = method_replace
+		else:
+			self.__replace_method = MultiInputConnectorAssociate(instance=instance, method=method_replace, observers=observers)
+			setattr(instance, replace_method, self.__replace_method)
 
 	def _ReplaceData(self, data_id, data):
 		"""
@@ -185,7 +193,7 @@ class MultiInputConnectorAssociate(InputConnector):
 	"""
 	def __call__(self, *args, **kwargs):
 		"""
-		@param data_id: the id of the data that shall be handled by the remove method
+		@param data_id: the id of the data that shall be handled by the remove or replace method
 		@retval : the return value of the remove method
 		"""
 		self._AnnounceToObservers()
@@ -195,8 +203,8 @@ class MultiInputConnectorAssociate(InputConnector):
 
 	def CallMethod(self, *args, **kwargs):
 		"""
-		Calls the remove method without notifying any other connectors in the
-		processing chain. This method is meant to be called by MultiInputConnector
+		Calls the remove or replace method without notifying any other connectors
+		in the processing chain. This method is meant to be called by MultiInputConnector
 		instances, when those instances handle the notification in the processing
 		chain.
 		@param data_id: the id of the data that shall be handled by the remove method
@@ -206,8 +214,8 @@ class MultiInputConnectorAssociate(InputConnector):
 
 	def Connect(self, connector):
 		"""
-		Inhibits connections to instances of RemoveMethod by raising an error.
+		Inhibits connections to instances of MultiInputConnectorAssociate by raising an error.
 		@param connector: is not used
 		"""
-		raise RuntimeError("Connecting to a remove method is not possible")
+		raise RuntimeError("Connecting to a remove or replace method is not possible")
 

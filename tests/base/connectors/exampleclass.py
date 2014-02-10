@@ -131,6 +131,13 @@ class ExampleClass(object):
 		"""
 		return self.items.Add(item)
 
+	@sumpf.MultiInput(int, "RemoveItem", "GetItems", replace_method="ReplaceItem")
+	def ThirdMultiInput(self, item):
+		"""
+		Yet another MultiInput
+		"""
+		return self.items.Add(item)
+
 	def RemoveItem(self, item_id):
 		"""
 		Every MultiInput needs a remove-method

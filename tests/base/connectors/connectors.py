@@ -154,6 +154,18 @@ class TestConnectors(unittest.TestCase):
 		self.obj1.SetValue2(2)
 		self.assertEqual(self.obj2.GetItems(), [0, 4, 7])				# the connection should still work, even after many changes
 
+	def test_multiinput_method_override(self):
+		"""
+		Tests if the remove and replace methods are overridden as expected.
+		"""
+		self.obj1.AddItemReplace(4)		# trigger the replacement of the methods
+		self.obj1.AddItemNoReplace(1)	#
+		self.obj1.ThirdMultiInput(9)	#
+		self.assertIsInstance(self.obj1.RemoveItem, sumpf.internal.Connector)				# the RemoveItem method should have been overridden with a Connector instance
+		self.assertIsInstance(self.obj1.ReplaceItem, sumpf.internal.Connector)				# the ReplaceItem method should have been overridden with a Connector instance
+		self.assertNotIsInstance(self.obj1.RemoveItem._method, sumpf.internal.Connector)	# the RemoveItem method should not have been overridden multiple times by the many MultiInputs
+		self.assertNotIsInstance(self.obj1.ReplaceItem._method, sumpf.internal.Connector)	# the ReplaceItem method should not have been overridden multiple times by the many MultiInputs
+
 	def test_make_invalid_connections(self):
 		"""
 		Tries to make and brake some invalid connections and tests if the mistakes are correctly detected.
