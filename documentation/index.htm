@@ -215,11 +215,20 @@
 			<tr>
 				<td class="subsection">Python 3</td>
 				<td colspan="4" class="text">
-					SuMPF is being tested with Python 3 (currently 3.2). The
-					functionalities that do not rely on external libraries work
-					in Python 3. But since many of the used libraries are not
-					available for Python 3, many of SuMPF's features will not be
-					available with Python 3.
+					SuMPF is being tested with Python 3 (currently version 3.3).
+					These tests include the features that require NumPy, but
+					functionalities, which rely on other external libraries, are
+					not tested.<br />
+					Since some of the used libraries are not available for Python 3,
+					some of SuMPF's features will not be available with Python 3.
+				</td>
+			</tr>
+			<tr>
+				<td class="subsection">PyPy</td>
+				<td colspan="4" class="text">
+					SuMPF is being tested with PyPy (currently version 2.2). These
+					tests are run without any external libraries, so only a limited
+					set of SuMPF's features is tested.
 				</td>
 			</tr>
 			<tr>
@@ -232,9 +241,10 @@
 					functions, even the libraries have been picked with portability
 					in mind. So it should run on other operating systems like 
 					the BSDs, Solaris or MacOS. Some successful tests have shown
-					that most features of SuMPF work on Windows XP, which suggests
-					that other versions of Microsoft Windows should work aswell.
-					But as mentioned before, they are not thoroughly tested.<br />
+					that most features of SuMPF work on Windows XP and Windows 7,
+					which suggests that other versions of Microsoft Windows should
+					work aswell. But as mentioned before, they are not thoroughly
+					tested.<br />
 					See a few more details about operating system compatibility
 					<a href="installation.htm#OS">here</a>.
 				</td>
