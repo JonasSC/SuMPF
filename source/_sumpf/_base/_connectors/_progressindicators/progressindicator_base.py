@@ -33,13 +33,14 @@ class ProgressIndicator(object):
 	methods should be filtered out and the progress should be calculated from the
 	finished getter methods, to have a better estimate of the processing progress.
 	"""
-	def __init__(self, method):
+	def __init__(self, method, message=None):
 		"""
 		@param method: the method that starts the calculation of which the progress shall be tracked. This method must have been decorated to become a Connector.
 		"""
 		self.__announcements = set()
 		self.__max_length = 0
 		method.SetProgressIndicator(self)
+		self.__message = message
 
 	def Destroy(self):
 		"""
@@ -78,17 +79,23 @@ class ProgressIndicator(object):
 		@param connector: the connector whose value has just changed.
 		"""
 		if self._Filter(connector):
-			self.__announcements.discard(connector)
+			try:
+				self.__announcements.remove(connector)
+				if self.__message is not None:
+					self.__message = "%s has just finished" % connector.GetName()
+			except KeyError:
+				pass
 
 	@Output(tuple)
 	def GetProgressAsTuple(self):
 		"""
-		Returns the progress as a tuple (max, finished) of integers.
+		Returns the progress as a tuple (max, finished, message) of integers.
 		max is the number of methods that will run in total, while finished is the
-		number of methods that have finished running.
-		@retval : a tuple (max, finished) of integers
+		number of methods that have finished running. message is either None or
+		a message that can be displayed in a progress dialog.
+		@retval : a tuple (max, finished, message) of integers
 		"""
-		return self.__max_length, self.__max_length - len(self.__announcements)
+		return self.__max_length, self.__max_length - len(self.__announcements), self.__message
 
 	@Output(float)
 	def GetProgressAsFloat(self):

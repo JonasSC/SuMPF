@@ -42,33 +42,33 @@ class ProgressTester(object):
 	def SetProgress(self, progress):
 		self.progress = progress
 
-	@sumpf.Input(int, ["CachingOutput", "NotCachingOutput"])
+	@sumpf.Input(int, ["CachingOutput", "NonCachingOutput"])
 	def Input(self, value):
 		if self.progress_indicator is not None:
 			self.__Test()
 			if self.count_inputs:
-				self.progress = (self.progress[0], self.progress[1] + 1)
+				self.progress = (self.progress[0], self.progress[1] + 1, self.progress[2])
 
 	@sumpf.Input(int)
 	def InputNoObserver(self, value):
 		if self.progress_indicator is not None:
 			self.__Test()
 			if self.count_inputs or self.count_nonobserved_inputs:
-				self.progress = (self.progress[0], self.progress[1] + 1)
+				self.progress = (self.progress[0], self.progress[1] + 1, self.progress[2])
 
-	@sumpf.Trigger(["CachingOutput", "NotCachingOutput"])
+	@sumpf.Trigger(["CachingOutput", "NonCachingOutput"])
 	def Trigger(self, value=None):
 		if self.progress_indicator is not None:
 			self.__Test()
 			if self.count_inputs:
-				self.progress = (self.progress[0], self.progress[1] + 1)
+				self.progress = (self.progress[0], self.progress[1] + 1, self.progress[2])
 
-	@sumpf.MultiInput(int, "Remove", ["CachingOutput", "NotCachingOutput"])
+	@sumpf.MultiInput(int, "Remove", ["CachingOutput", "NonCachingOutput"])
 	def MultiInput(self, value):
 		if self.progress_indicator is not None:
 			self.__Test()
 			if self.count_inputs:
-				self.progress = (self.progress[0], self.progress[1] + 1)
+				self.progress = (self.progress[0], self.progress[1] + 1, self.progress[2])
 		return 1
 
 	def Remove(self, data_id):
@@ -80,14 +80,14 @@ class ProgressTester(object):
 		if self.progress_indicator is not None:
 			self.__Test()
 			if self.count_outputs:
-				self.progress = (self.progress[0], self.progress[1] + 1)
+				self.progress = (self.progress[0], self.progress[1] + 1, self.progress[2])
 
 	@sumpf.Output(int, caching=False)
-	def NotCachingOutput(self):
+	def NonCachingOutput(self):
 		if self.progress_indicator is not None:
 			self.__Test()
 			if self.count_outputs:
-				self.progress = (self.progress[0], self.progress[1] + 1)
+				self.progress = (self.progress[0], self.progress[1] + 1, self.progress[2])
 
 
 
@@ -96,12 +96,12 @@ class TestProgressIndicators(unittest.TestCase):
 	A TestCase for the ProgressIndicator classes.
 	"""
 	def test_ProgressIndicator_All(self):
-		tester1 = ProgressTester(progress=(6, 0), testcase=self)
-		tester2 = ProgressTester(progress=(6, 1), testcase=self)				# tester1.Input done
+		tester1 = ProgressTester(progress=(6, 0, None), testcase=self)
+		tester2 = ProgressTester(progress=(6, 1, None), testcase=self)				# tester1.Input done
 		sumpf.connect(tester1.CachingOutput, tester2.Trigger)
-		tester3 = ProgressTester(progress=(6, 3), testcase=self)				# tester2.Trigger & tester2.Output done
-		sumpf.connect(tester2.NotCachingOutput, tester3.MultiInput)
-		tester4 = ProgressTester(progress=(6, 5), testcase=self)				# tester3.MultiInput & tester3.Output done
+		tester3 = ProgressTester(progress=(6, 3, None), testcase=self)				# tester2.Trigger & tester2.Output done
+		sumpf.connect(tester2.NonCachingOutput, tester3.MultiInput)
+		tester4 = ProgressTester(progress=(6, 5, None), testcase=self)				# tester3.MultiInput & tester3.Output done
 		sumpf.connect(tester3.CachingOutput, tester4.InputNoObserver)
 		progress_indicator = sumpf.progressindicators.ProgressIndicator_All(method=tester1.Input)
 		tester1.SetProgressIndicator(progress_indicator)
@@ -109,12 +109,12 @@ class TestProgressIndicators(unittest.TestCase):
 		tester3.SetProgressIndicator(progress_indicator)
 		tester4.SetProgressIndicator(progress_indicator)
 		tester1.Input(1337)
-		self.assertEqual(progress_indicator.GetProgressAsTuple(), (6, 6))		# tester4.InputNoObserver done
+		self.assertEqual(progress_indicator.GetProgressAsTuple(), (6, 6, None))		# tester4.InputNoObserver done
 		self.assertEqual(progress_indicator.GetProgressAsFloat(), 1.0)
 		self.assertEqual(progress_indicator.GetProgressAsPercentage(), 100)
-		tester1.SetProgress((6, 6))
-		tester2.SetProgress((6, 6))
-		tester3.SetProgress((6, 6))
+		tester1.SetProgress((6, 6, None))
+		tester2.SetProgress((6, 6, None))
+		tester3.SetProgress((6, 6, None))
 		tester1.Input(4711)
 		progress_indicator.Destroy()
 		del tester1
@@ -125,12 +125,12 @@ class TestProgressIndicators(unittest.TestCase):
 		self.assertEqual(gc.garbage, [])
 
 	def test_ProgressIndicator_Outputs(self):
-		tester1 = ProgressTester(progress=(2, 0), testcase=self, count_inputs=False)
-		tester2 = ProgressTester(progress=(2, 0), testcase=self, count_inputs=False)
+		tester1 = ProgressTester(progress=(2, 0, None), testcase=self, count_inputs=False)
+		tester2 = ProgressTester(progress=(2, 0, None), testcase=self, count_inputs=False)
 		sumpf.connect(tester1.CachingOutput, tester2.Trigger)
-		tester3 = ProgressTester(progress=(2, 1), testcase=self, count_inputs=False)		# tester2.Output done
-		sumpf.connect(tester2.NotCachingOutput, tester3.MultiInput)
-		tester4 = ProgressTester(progress=(2, 2), testcase=self, count_inputs=False)		# tester3.Output done
+		tester3 = ProgressTester(progress=(2, 1, None), testcase=self, count_inputs=False)		# tester2.Output done
+		sumpf.connect(tester2.NonCachingOutput, tester3.MultiInput)
+		tester4 = ProgressTester(progress=(2, 2, None), testcase=self, count_inputs=False)		# tester3.Output done
 		sumpf.connect(tester3.CachingOutput, tester4.InputNoObserver)
 		progress_indicator = sumpf.progressindicators.ProgressIndicator_Outputs(method=tester1.Input)
 		tester1.SetProgressIndicator(progress_indicator)
@@ -138,12 +138,12 @@ class TestProgressIndicators(unittest.TestCase):
 		tester3.SetProgressIndicator(progress_indicator)
 		tester4.SetProgressIndicator(progress_indicator)
 		tester1.Input(1337)
-		self.assertEqual(progress_indicator.GetProgressAsTuple(), (2, 2))
+		self.assertEqual(progress_indicator.GetProgressAsTuple(), (2, 2, None))
 		self.assertEqual(progress_indicator.GetProgressAsFloat(), 1.0)
 		self.assertEqual(progress_indicator.GetProgressAsPercentage(), 100)
-		tester1.SetProgress((2, 2))
-		tester2.SetProgress((2, 2))
-		tester3.SetProgress((2, 2))
+		tester1.SetProgress((2, 2, None))
+		tester2.SetProgress((2, 2, None))
+		tester3.SetProgress((2, 2, None))
 		tester1.Input(4711)
 		progress_indicator.Destroy()
 		del tester1
@@ -154,12 +154,12 @@ class TestProgressIndicators(unittest.TestCase):
 		self.assertEqual(gc.garbage, [])
 
 	def test_ProgressIndicator_OutputsAndNonObservedInputs(self):
-		tester1 = ProgressTester(progress=(3, 0), testcase=self, count_inputs=False, count_nonobserved_inputs=True)
-		tester2 = ProgressTester(progress=(3, 0), testcase=self, count_inputs=False, count_nonobserved_inputs=True)
+		tester1 = ProgressTester(progress=(3, 0, None), testcase=self, count_inputs=False, count_nonobserved_inputs=True)
+		tester2 = ProgressTester(progress=(3, 0, None), testcase=self, count_inputs=False, count_nonobserved_inputs=True)
 		sumpf.connect(tester1.CachingOutput, tester2.Trigger)
-		tester3 = ProgressTester(progress=(3, 1), testcase=self, count_inputs=False, count_nonobserved_inputs=True)		# tester2.Output done
-		sumpf.connect(tester2.NotCachingOutput, tester3.MultiInput)
-		tester4 = ProgressTester(progress=(3, 2), testcase=self, count_inputs=False, count_nonobserved_inputs=True)		# tester3.Output done
+		tester3 = ProgressTester(progress=(3, 1, None), testcase=self, count_inputs=False, count_nonobserved_inputs=True)	# tester2.Output done
+		sumpf.connect(tester2.NonCachingOutput, tester3.MultiInput)
+		tester4 = ProgressTester(progress=(3, 2, None), testcase=self, count_inputs=False, count_nonobserved_inputs=True)	# tester3.Output done
 		sumpf.connect(tester3.CachingOutput, tester4.InputNoObserver)
 		progress_indicator = sumpf.progressindicators.ProgressIndicator_OutputsAndNonObservedInputs(method=tester1.Input)
 		tester1.SetProgressIndicator(progress_indicator)
@@ -167,12 +167,12 @@ class TestProgressIndicators(unittest.TestCase):
 		tester3.SetProgressIndicator(progress_indicator)
 		tester4.SetProgressIndicator(progress_indicator)
 		tester1.Input(1337)
-		self.assertEqual(progress_indicator.GetProgressAsTuple(), (3, 3))												# tester4.InputNoObserver done
+		self.assertEqual(progress_indicator.GetProgressAsTuple(), (3, 3, None))												# tester4.InputNoObserver done
 		self.assertEqual(progress_indicator.GetProgressAsFloat(), 1.0)
 		self.assertEqual(progress_indicator.GetProgressAsPercentage(), 100)
-		tester1.SetProgress((3, 3))
-		tester2.SetProgress((3, 3))
-		tester3.SetProgress((3, 3))
+		tester1.SetProgress((3, 3, None))
+		tester2.SetProgress((3, 3, None))
+		tester3.SetProgress((3, 3, None))
 		tester1.Input(4711)
 		progress_indicator.Destroy()
 		del tester1
@@ -184,19 +184,28 @@ class TestProgressIndicators(unittest.TestCase):
 
 	def test_setting_to_different_connectors(self):
 		for m in ["Input", "Trigger", "MultiInput"]:
-			tester1 = ProgressTester(progress=(3, 0), testcase=self)
-			tester2 = ProgressTester(progress=(3, 2), testcase=self)
+			tester1 = ProgressTester(progress=(3, 0, None), testcase=self)
+			tester2 = ProgressTester(progress=(3, 2, None), testcase=self)
 			sumpf.connect(tester1.CachingOutput, tester2.Input)
 			progress_indicator = sumpf.progressindicators.ProgressIndicator_All(method=getattr(tester1, m))
 			tester1.SetProgressIndicator(progress_indicator)
 			tester2.SetProgressIndicator(progress_indicator)
 			getattr(tester1, m)(1337)
 
+	def test_message(self):
+		tester1 = ProgressTester(progress=(1, 0, "Test"), testcase=self, count_inputs=False)
+		tester2 = ProgressTester(progress=(1, 1, "ProgressTester.NonCachingOutput has just finished"), testcase=self, count_inputs=False)
+		sumpf.connect(tester1.NonCachingOutput, tester2.Input)
+		progress_indicator = sumpf.progressindicators.ProgressIndicator_Outputs(method=tester1.Input, message="Test")
+		tester1.SetProgressIndicator(progress_indicator)
+		tester2.SetProgressIndicator(progress_indicator)
+		tester1.Input(1337)
+
 	def test_connectors(self):
 		"""
 		Tests if the connectors are properly decorated.
 		"""
-		tester = ProgressTester(progress=(1, 0), testcase=self)
+		tester = ProgressTester(progress=(1, 0, None), testcase=self)
 		for p in [sumpf.progressindicators.ProgressIndicator_All,
 		          sumpf.progressindicators.ProgressIndicator_Outputs,
 		          sumpf.progressindicators.ProgressIndicator_OutputsAndNonObservedInputs]:
