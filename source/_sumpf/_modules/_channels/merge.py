@@ -93,10 +93,8 @@ class MergeChannelData(object):
 		"""
 		Sets the behavior for when the added data sets do not have the same length.
 		The following flags are available:
-		RAISE_ERROR for raising a ValueError if the input data set has a
-			different length than the already added data. A RuntimeError is
-			raised during merging, if data sets with different lengths have been
-			added and then the strategy has been changed to RAISE_ERROR.
+		RAISE_ERROR for raising a RuntimeError during merging, if data sets with
+			different lengths have been added.
 		RAISE_ERROR_EXCEPT_EMPTY for raising errors just like with RAISE_ERROR,
 			but only when neither the new input data set nor all the already added
 			data sets are empty.
@@ -124,6 +122,7 @@ class MergeChannelData(object):
 		Creates the channels and labels for the merged ChannelData instance.
 		@retval : a tuple (a, b), where a is a tuple of channels and b is a tuple of labels
 		"""
+		# functions for length conflict resolution
 		def fill_with_zeros(chs):
 			length = 0
 			for c in chs:
@@ -140,7 +139,9 @@ class MergeChannelData(object):
 			for c in chs:
 				result.append(c[0:length])
 			return result
+		# get the channels and labels in the correct order
 		channels, labels = self.__strategy(self._data.GetData())
+		# resolve length conflicts
 		if channels != []:
 			if self._on_length_conflict == MergeChannelData.RAISE_ERROR:
 				for c in channels[1:]:
@@ -266,23 +267,27 @@ class MergeSignals(MergeChannelData):
 
 	The merged Signals must have the same sampling rate.
 	"""
-	def __init__(self):
-		MergeChannelData.__init__(self)
-		self.__samplingrate = sumpf.config.get("default_samplingrate")
-
 	@sumpf.Output(sumpf.Signal)
 	def GetOutput(self):
 		"""
 		Generates the merged Signal and returns it.
 		@retval : the merged output Signal
 		"""
-		signal = None
-		try:
+		data = self._data.GetData()
+		if data == []:
+			return sumpf.Signal()
+		else:
+			i = 0
+			if self._on_length_conflict == MergeSignals.RAISE_ERROR_EXCEPT_EMPTY:
+				while data[i].IsEmpty() and i < len(data):
+					i += 1
+			samplingrate = data[i % len(data)].GetSamplingRate()
+			for d in data[i + 1:]:
+				if d.GetSamplingRate() != samplingrate:
+					if self._on_length_conflict != MergeSignals.RAISE_ERROR_EXCEPT_EMPTY or not d.IsEmpty():
+						raise RuntimeError("The Signals in the merger do not all have the same sampling rate")
 			channels, labels = self._GetChannelsAndLabels()
-			signal = sumpf.Signal(channels=channels, samplingrate=self.__samplingrate, labels=labels)
-		except ValueError:
-			signal = sumpf.Signal(samplingrate=self.__samplingrate)
-		return signal
+			return sumpf.Signal(channels=channels, samplingrate=samplingrate, labels=labels)
 
 	@sumpf.MultiInput(data_type=sumpf.Signal, remove_method="RemoveInput", observers=["GetOutput", "GetNumberOfOutputChannels"], replace_method="ReplaceInput")
 	def AddInput(self, signal):
@@ -291,10 +296,6 @@ class MergeSignals(MergeChannelData):
 		@param signal: a Signal that shall be merged into the output Signal
 		@retval : an id under which the Signal is stored
 		"""
-		if self._IsEmpty():
-			self.__samplingrate = signal.GetSamplingRate()
-		else:
-			self.__CheckInput(signal)
 		return self._AddInput(signal)
 
 	def ReplaceInput(self, data_id, data):
@@ -303,28 +304,7 @@ class MergeSignals(MergeChannelData):
 		@param data_id: the id under which the Signal is stored, which shall be replaced
 		@param data: the new Signal that shall be stored under that id
 		"""
-		if self._GetNumberOfDataSets() == 1:
-			self.__samplingrate = data.GetSamplingRate()
-		else:
-			self.__CheckInput(data)
 		self._data.Replace(data_id=data_id, data=data)
-
-	def __CheckInput(self, signal):
-		"""
-		This method checks, if the given Signal is compatible to the other
-		Signals in the merger. It raises an error, if it is not compatible.
-		@param signal: the Signal that shall be checked
-		"""
-		if not self.AddInput.GetNumberOfExpectedInputs() == self._GetNumberOfDataSets():
-			if signal.GetSamplingRate() != self.__samplingrate:
-				if self._on_length_conflict != MergeSignals.RAISE_ERROR_EXCEPT_EMPTY or not signal.IsEmpty():
-					raise ValueError("The Signal has a different sampling rate than the other Signals in the merger")
-			if len(signal) != self._GetLength():
-				if self._on_length_conflict == MergeSignals.RAISE_ERROR or \
-				  (self._on_length_conflict == MergeSignals.RAISE_ERROR_EXCEPT_EMPTY and not signal.IsEmpty()):
-					raise ValueError("The Signal has a different length than the other Signals in the merger")
-		else:
-			self.__samplingrate = signal.GetSamplingRate()
 
 	@staticmethod
 	def FIRST_SIGNAL_FIRST(datasets):
@@ -354,23 +334,27 @@ class MergeSpectrums(MergeChannelData):
 
 	The merged Spectrums must have the same resolution.
 	"""
-	def __init__(self):
-		MergeChannelData.__init__(self)
-		self.__resolution = 48000
-
 	@sumpf.Output(sumpf.Spectrum)
 	def GetOutput(self):
 		"""
 		Generates the merged Spectrum and returns it.
 		@retval : the merged output Spectrum
 		"""
-		spectrum = None
-		try:
+		data = self._data.GetData()
+		if data == []:
+			return sumpf.Spectrum()
+		else:
+			i = 0
+			if self._on_length_conflict == MergeSpectrums.RAISE_ERROR_EXCEPT_EMPTY:
+				while data[i].IsEmpty() and i < len(data):
+					i += 1
+			resolution = data[i % len(data)].GetResolution()
+			for d in data[i + 1:]:
+				if d.GetResolution() != resolution:
+					if self._on_length_conflict != MergeSpectrums.RAISE_ERROR_EXCEPT_EMPTY or not d.IsEmpty():
+						raise RuntimeError("The Spectrums in the merger do not all have the same sampling rate")
 			channels, labels = self._GetChannelsAndLabels()
-			spectrum = sumpf.Spectrum(channels=channels, resolution=self.__resolution, labels=labels)
-		except ValueError:
-			spectrum = sumpf.Spectrum(resolution=self.__resolution)
-		return spectrum
+			return sumpf.Spectrum(channels=channels, resolution=resolution, labels=labels)
 
 	@sumpf.MultiInput(data_type=sumpf.Spectrum, remove_method="RemoveInput", observers=["GetOutput", "GetNumberOfOutputChannels"], replace_method="ReplaceInput")
 	def AddInput(self, spectrum):
@@ -379,10 +363,6 @@ class MergeSpectrums(MergeChannelData):
 		@param spectrum: a Spectrum that shall be merged into the output Spectrum
 		@retval : an id under which the Spectrum is stored
 		"""
-		if self._IsEmpty():
-			self.__resolution = spectrum.GetResolution()
-		else:
-			self.__CheckInput(spectrum)
 		return self._AddInput(spectrum)
 
 	def ReplaceInput(self, data_id, data):
@@ -391,28 +371,7 @@ class MergeSpectrums(MergeChannelData):
 		@param data_id: the id under which the Spectrum is stored, which shall be replaced
 		@param data: the new Spectrum that shall be stored under that id
 		"""
-		if self._GetNumberOfDataSets() == 1:
-			self.__resolution = data.GetResolution()
-		else:
-			self.__CheckInput(data)
 		self._data.Replace(data_id=data_id, data=data)
-
-	def __CheckInput(self, spectrum):
-		"""
-		This method checks, if the given Spectrum is compatible to the other
-		Spectrums in the merger. It raises an error, if it is not compatible.
-		@param spectrum: the Spectrum that shall be checked
-		"""
-		if not self.AddInput.GetNumberOfExpectedInputs() == self._GetNumberOfDataSets():
-			if spectrum.GetResolution() != self.__resolution:
-				if self._on_length_conflict != MergeSpectrums.RAISE_ERROR_EXCEPT_EMPTY or not spectrum.IsEmpty():
-					raise ValueError("The Spectrum has a different resolution than the other Spectrums in the merger")
-			if len(spectrum) != self._GetLength():
-				if self._on_length_conflict == MergeSpectrums.RAISE_ERROR or \
-				  (self._on_length_conflict == MergeSpectrums.RAISE_ERROR_EXCEPT_EMPTY and not spectrum.IsEmpty()):
-					raise ValueError("The Spectrums has a different length than the other Spectrums in the merger")
-		else:
-			self.__resolution = spectrum.GetResolution()
 
 	@staticmethod
 	def FIRST_SPECTRUM_FIRST(datasets):

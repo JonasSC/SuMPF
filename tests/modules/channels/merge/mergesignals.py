@@ -103,7 +103,7 @@ class TestMergeSignals(unittest.TestCase):
 		amp = sumpf.modules.AmplifySignal()
 		sumpf.connect(mrg.GetOutput, amp.SetInput)
 		self.assertFalse(tst.triggered)
-		self.assertRaises(ValueError, prp.SetSamplingRate, 23)	# this command changes the sampling rate
+		self.assertRaises(RuntimeError, prp.SetSamplingRate, 23)	# this command changes the sampling rate
 		self.assertTrue(tst.triggered)							# make sure that all input Signals have changed
 
 	def test_errors(self):
@@ -113,8 +113,12 @@ class TestMergeSignals(unittest.TestCase):
 		self.merger.SetLengthConflictStrategy(sumpf.modules.MergeSignals.RAISE_ERROR)
 		id1 = self.merger.AddInput(self.signal1)
 		self.assertRaises(ValueError, self.merger.RemoveInput, id1 + 42)		# this should fail, because the id does not exist
-		self.assertRaises(ValueError, self.merger.AddInput, self.signal3)		# this should fail, because the channels do not have the same length
-		self.assertRaises(ValueError, self.merger.AddInput, self.signal4)		# this should fail, because the sampling rate is not equal
+		id2 = self.merger.AddInput(self.signal3)
+		self.assertRaises(RuntimeError, self.merger.GetOutput)					# this should fail, because the channels do not have the same length
+		self.merger.RemoveInput(id2)
+		id3 = self.merger.AddInput(self.signal3)
+		self.assertRaises(RuntimeError, self.merger.GetOutput)					# this should fail, because the sampling rate is not equal
+		self.merger.RemoveInput(id3)
 		self.merger.SetLengthConflictStrategy(sumpf.modules.MergeSignals.FILL_WITH_ZEROS)
 		self.merger.AddInput(self.signal3)
 		self.merger.GetOutput()													# this should not fail
@@ -141,9 +145,7 @@ class TestMergeSignals(unittest.TestCase):
 		self.merger.SetLengthConflictStrategy(sumpf.modules.MergeSignals.RAISE_ERROR_EXCEPT_EMPTY)
 		self.assertRaises(RuntimeError, self.merger.GetOutput)				# this should fail because channels do not have the same length
 		self.merger.RemoveInput(id3)
-		self.assertRaises(ValueError, self.merger.AddInput, self.signal3)	# this should fail because channels are neither empty nor have the same length
 		ide = self.merger.AddInput(sumpf.Signal())
-		self.assertRaises(ValueError, self.merger.AddInput, self.signal3)	# this should fail because channels are neither empty nor have the same length
 		channels = self.merger.GetOutput().GetChannels()
 		samplingrate = self.merger.GetOutput().GetSamplingRate()
 		self.assertEqual(channels[0:3], self.signal1.GetChannels())			# the first Signal should simply be copied
@@ -151,7 +153,6 @@ class TestMergeSignals(unittest.TestCase):
 		self.assertEqual(samplingrate, self.signal1.GetSamplingRate())		# the sampling rate should have been taken from the non empty Signal
 		self.merger.RemoveInput(id1)
 		id5 = self.merger.AddInput(self.signal5)
-		self.assertRaises(ValueError, self.merger.AddInput, self.signal3)	# this should fail because channels are neither empty nor have the same length
 		channels = self.merger.GetOutput().GetChannels()
 		samplingrate = self.merger.GetOutput().GetSamplingRate()
 		self.assertEqual(channels[0], (0.0,) * len(self.signal5))			# the empty Signal should again be stretched with zeros
@@ -177,6 +178,29 @@ class TestMergeSignals(unittest.TestCase):
 		self.assertEqual(self.merger.GetOutput().GetChannels()[0:2], tester1.GetSignal().GetChannels())	# the order of the channels should remain, even if the output of tester1 has changed
 		tester1.triggered = False
 		sumpf.disconnect(tester1.GetSignal, self.merger.AddInput)
-		self.assertTrue(tester1.triggered)																# disconnecting from input should should trigger the output aswell
+		self.assertTrue(tester1.triggered)																# disconnecting from input should should trigger the output as well
 		self.assertEqual(len(self.merger.GetOutput().GetChannels()), 2)									# after removing one connection there should be one channel left in the output signal
+
+	def test_synchronous_changes(self):
+		"""
+		Tests what happens, when all input Signals are changed at the same time.
+		"""
+		properties = sumpf.modules.ChannelDataProperties(signal_length=2, samplingrate=13.37)
+		sine = sumpf.modules.SineWaveGenerator()
+		sumpf.connect(properties.GetSignalLength, sine.SetLength)
+		sumpf.connect(properties.GetSamplingRate, sine.SetSamplingRate)
+		tri = sumpf.modules.TriangleWaveGenerator()
+		sumpf.connect(properties.GetSignalLength, tri.SetLength)
+		sumpf.connect(properties.GetSamplingRate, tri.SetSamplingRate)
+		merger = sumpf.modules.MergeSignals()
+		sumpf.connect(sine.GetSignal, merger.AddInput)
+		sumpf.connect(tri.GetSignal, merger.AddInput)
+		trigger = ConnectionTester()
+		sumpf.connect(merger.GetOutput, trigger.Trigger)
+		self.assertFalse(trigger.triggered)
+		properties.SetSamplingRate(47.11)		# this should not raise an error
+		self.assertTrue(trigger.triggered)
+		trigger.triggered = False
+		properties.SetSignalLength(4)			# this should not raise an error either
+		self.assertTrue(trigger.triggered)
 

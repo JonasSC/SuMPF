@@ -103,7 +103,7 @@ class TestMergeSpectrums(unittest.TestCase):
 		amp = sumpf.modules.AmplifySpectrum()
 		sumpf.connect(mrg.GetOutput, amp.SetInput)
 		self.assertFalse(tst.triggered)
-		self.assertRaises(ValueError, prp.SetResolution, 23)	# this command changes the resolution
+		self.assertRaises(RuntimeError, prp.SetResolution, 23)	# this command changes the resolution
 		self.assertTrue(tst.triggered)							# make sure that all input Spectrums have changed
 
 	def test_errors(self):
@@ -113,8 +113,12 @@ class TestMergeSpectrums(unittest.TestCase):
 		self.merger.SetLengthConflictStrategy(sumpf.modules.MergeSpectrums.RAISE_ERROR)
 		id1 = self.merger.AddInput(self.spectrum1)
 		self.assertRaises(ValueError, self.merger.RemoveInput, id1 + 42)					# this should fail, because the id does not exist
-		self.assertRaises(ValueError, self.merger.AddInput, self.spectrum3)					# this should fail, because the channels do not have the same length
-		self.assertRaises(ValueError, self.merger.AddInput, self.spectrum4)					# this should fail, because the resolution is not equal
+		id2 = self.merger.AddInput(self.spectrum3)
+		self.assertRaises(RuntimeError, self.merger.GetOutput)								# this should fail, because the channels do not have the same length
+		self.merger.RemoveInput(id2)
+		id3 = self.merger.AddInput(self.spectrum4)
+		self.assertRaises(RuntimeError, self.merger.GetOutput)								# this should fail, because the resolution is not equal
+		self.merger.RemoveInput(id3)
 		self.merger.SetLengthConflictStrategy(sumpf.modules.MergeSpectrums.FILL_WITH_ZEROS)
 		self.merger.AddInput(self.spectrum3)
 		self.merger.GetOutput()																# this should not fail
@@ -141,9 +145,7 @@ class TestMergeSpectrums(unittest.TestCase):
 		self.merger.SetLengthConflictStrategy(sumpf.modules.MergeSpectrums.RAISE_ERROR_EXCEPT_EMPTY)
 		self.assertRaises(RuntimeError, self.merger.GetOutput)						# this should fail because channels do not have the same length
 		self.merger.RemoveInput(id3)
-		self.assertRaises(ValueError, self.merger.AddInput, self.spectrum3)			# this should fail because channels are neither empty nor have the same length
 		ide = self.merger.AddInput(sumpf.Spectrum())
-		self.assertRaises(ValueError, self.merger.AddInput, self.spectrum3)			# this should fail because channels are neither empty nor have the same length
 		channels = self.merger.GetOutput().GetChannels()
 		resolution = self.merger.GetOutput().GetResolution()
 		self.assertEqual(channels[0:3], self.spectrum1.GetChannels())				# the first Spectrum should simply be copied
@@ -151,7 +153,6 @@ class TestMergeSpectrums(unittest.TestCase):
 		self.assertEqual(resolution, self.spectrum1.GetResolution())				# the resolution should have been taken from the non empty Spectrum
 		self.merger.RemoveInput(id1)
 		id5 = self.merger.AddInput(self.spectrum5)
-		self.assertRaises(ValueError, self.merger.AddInput, self.spectrum3)			# this should fail because channels are neither empty nor have the same length
 		channels = self.merger.GetOutput().GetChannels()
 		samplingrate = self.merger.GetOutput().GetResolution()
 		self.assertEqual(channels[0], (0.0,) * len(self.spectrum5))					# the empty Spectrum should again be stretched with zeros
@@ -179,4 +180,27 @@ class TestMergeSpectrums(unittest.TestCase):
 		sumpf.disconnect(tester1.GetSpectrum, self.merger.AddInput)
 		self.assertTrue(tester1.triggered)																	# disconnecting from input should should trigger the output as well
 		self.assertEqual(len(self.merger.GetOutput().GetChannels()), 2)										# after removing one connection there should be one channel left in the output spectrum
+
+	def test_synchronous_changes(self):
+		"""
+		Tests what happens, when all input Spectrums are changed at the same time.
+		"""
+		properties = sumpf.modules.ChannelDataProperties(spectrum_length=2, resolution=13.37)
+		filter1 = sumpf.modules.FilterGenerator()
+		sumpf.connect(properties.GetSpectrumLength, filter1.SetLength)
+		sumpf.connect(properties.GetResolution, filter1.SetResolution)
+		filter2 = sumpf.modules.FilterGenerator()
+		sumpf.connect(properties.GetSpectrumLength, filter2.SetLength)
+		sumpf.connect(properties.GetResolution, filter2.SetResolution)
+		merger = sumpf.modules.MergeSpectrums()
+		sumpf.connect(filter1.GetSpectrum, merger.AddInput)
+		sumpf.connect(filter2.GetSpectrum, merger.AddInput)
+		trigger = ConnectionTester()
+		sumpf.connect(merger.GetOutput, trigger.Trigger)
+		self.assertFalse(trigger.triggered)
+		properties.SetResolution(47.11)			# this should not raise an error
+		self.assertTrue(trigger.triggered)
+		trigger.triggered = False
+		properties.SetSpectrumLength(4)			# this should not raise an error either
+		self.assertTrue(trigger.triggered)
 
