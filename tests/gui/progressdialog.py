@@ -54,8 +54,8 @@ class TestProgressDialog(unittest.TestCase):
 		sumpf.connect(tester2.Output, tester3.Input)
 		sumpf.connect(tester3.Output, tester4.Input)
 		sumpf.connect(tester4.Output, tester5.Input)
-		indicator = sumpf.progressindicators.ProgressIndicator_All(method=tester1.Input)
-		dialog = sumpf.gui.ProgressDialog(message="Test")
+		indicator = sumpf.progressindicators.ProgressIndicator_All(method=tester1.Input, message="Test")
+		dialog = sumpf.gui.ProgressDialog(message="Not Seen", title="Testing the progress dialog")
 		sumpf.connect(indicator.GetProgressAsTuple, dialog.SetProgress)
 		tester1.Input(0.1)
 

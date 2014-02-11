@@ -28,7 +28,7 @@ class ProgressDialog(Window):
 	This dialog is meant to be connected to a progress indicator, to track the
 	progress of a calculation of a progressing chain.
 	"""
-	def __init__(self, message, parent=None, *args, **kwargs):
+	def __init__(self, message="", parent=None, *args, **kwargs):
 		"""
 		@param message: the message string that shall be displayed in the dialog
 		@param parent: the parent wx Widget
@@ -40,7 +40,7 @@ class ProgressDialog(Window):
 		self.__sizer.AddStretchSpacer()
 		self.__message = wx.StaticText(parent=self, label=message)
 		self.__sizer.Add(self.__message, 0, wx.ALIGN_CENTER_HORIZONTAL)
-		self.__gauge = Gauge(parent=self, range=1, size=(250, 25))
+		self.__gauge = Gauge(parent=self, range=1, size=(400, 25))
 		self.__sizer.Add(self.__gauge, 0, wx.EXPAND)
 		self.__sizer.AddStretchSpacer()
 		self.Layout()
@@ -53,7 +53,12 @@ class ProgressDialog(Window):
 		This method can be connected to a progress indicator's GetProgressAsTuple
 		method, so this Dialog can keep updated about the progress of a processing
 		chain's calculation.
-		@param progress: a tuple (max, current), where max is the total number of methods, that have to be run and current is the number of those, which have finished
+		The parameter progress can be either a tuple with two values (max, current),
+		where max is the total number of tasks, that have to be completed and current
+		is the number of those, which have finished.
+		If progress is a three-element tuple (max, current, message), the message
+		of the progress dialog will be updated to the value of the third parameter.
+		@param progress: a tuple (max, current)
 		"""
 		try:
 			self.__gauge.SetProgress(progress)
@@ -61,10 +66,12 @@ class ProgressDialog(Window):
 				self.Show()
 				self.Center()
 				self.__shown = True
+			if progress[2] is not None:
+				self.SetMessage(progress[2])
 			if progress[0] > 0:
 				if progress[0] <= progress[1]:
-					self.Close()
 					self.__shown = False
+					self.Close()
 		except wx.PyDeadObjectError:
 			pass
 
@@ -75,7 +82,7 @@ class ProgressDialog(Window):
 		@param message: the new message string
 		"""
 		try:
-			self.__message.SetLabel(message)
+			sumpf.gui.run_in_mainloop(self.__message.SetLabel, message)
 			self.Layout()
 		except wx.PyDeadObjectError:
 			pass
