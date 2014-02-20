@@ -27,7 +27,11 @@ def binomial_coefficient(n, k):
 		k = n - k
 	if k == 0 or n <= 1:
 		return 1
-	return binomial_coefficient(n - 1, k) + binomial_coefficient(n - 1, k - 1)
+	result = 1.0
+	m = n + 1.0
+	for i in range(1, k + 1):
+		result *= (m - i) / i
+	return int(round(result))
 
 def differentiate(sequence):
 	"""
