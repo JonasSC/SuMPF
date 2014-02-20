@@ -26,6 +26,12 @@ class SpectrumFile(ChannelDataFile):
 	Instances of this class might overwrite files without further questions.
 	Generally the instance will always write to the given file name when the
 	given Spectrum is not empty. Otherwise it will attempt to load the given file.
+
+	If NumPy is available, this class can read and write Signals in NumPy's
+	npz-format.
+	If oct2py is available, this class can read (but not write) itaAudio-files
+	that have been created with the ITA-Toolbox from the Institute of Technical
+	Acoustics, RWTH Aachen University.
 	"""
 	def __init__(self, filename=None, spectrum=None, format=None):
 		"""
@@ -61,7 +67,16 @@ class SpectrumFile(ChannelDataFile):
 		self._Load()
 		return self._data
 
-	@sumpf.Input(sumpf.Spectrum, "GetSpectrum")
+	@sumpf.Output(float)
+	def GetResolution(self):
+		"""
+		Returns the frequency resolution of the Spectrum that has been loaded or
+		will be saved.
+		@retval : the resolution as a float
+		"""
+		return self._data.GetResolution()
+
+	@sumpf.Input(sumpf.Spectrum, ["GetSpectrum", "GetLength", "GetResolution"])
 	def SetSpectrum(self, spectrum):
 		"""
 		Saves the Spectrum to the file.
@@ -70,7 +85,7 @@ class SpectrumFile(ChannelDataFile):
 		self._data = spectrum
 		self._Save()
 
-	@sumpf.Input(str, "GetSpectrum")
+	@sumpf.Input(str, ["GetSpectrum", "GetLength", "GetResolution"])
 	def SetFilename(self, filename):
 		"""
 		Override of ChannelDataFile.SetFilename to decorate it with @sumpf.Input.
@@ -86,7 +101,7 @@ class SpectrumFile(ChannelDataFile):
 		"""
 		ChannelDataFile.SetFilename(self, filename)
 
-	@sumpf.Input(FileFormat, "GetSpectrum")
+	@sumpf.Input(FileFormat, ["GetSpectrum", "GetLength", "GetResolution"])
 	def SetFormat(self, format):
 		"""
 		Override of ChannelDataFile.SetFormat to decorate it with @sumpf.Input.

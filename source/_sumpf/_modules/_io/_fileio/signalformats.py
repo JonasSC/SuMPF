@@ -15,9 +15,7 @@
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 import os
-
 import numpy
-
 import sumpf
 
 try:
@@ -25,6 +23,13 @@ try:
 	audiolab_available = True
 except ImportError:
 	audiolab_available = False
+
+try:
+	import oct2py
+	import inspect
+	oct2py_available = True
+except ImportError:
+	oct2py_available = False
 
 from .fileformat import FileFormat
 
@@ -155,4 +160,45 @@ if audiolab_available:
 		encoding = "pcm24"
 
 	signalformats.append(WAV_INT)
+
+
+
+if oct2py_available:
+	class ITA_AUDIO(FileFormat):
+		"""
+		File format class for the format used by the ITA-Toolbox from the Institute
+		of Technical Acoustics, RWTH Aachen University.
+		http://www.ita-toolbox.org
+		This class can only read itaAudio files. Writing is not possible.
+		"""
+		ending = "ita"
+		read_only = True
+
+		@classmethod
+		def Load(cls, filename):
+			# retrieve the Matlab data through octave
+			path_of_this_file = sumpf.helper.normalize_path(inspect.getfile(inspect.currentframe()))
+			read_ita_file = os.sep.join(path_of_this_file.split(os.sep)[0:-1] + ["read_ita_file.m"])
+			filename = "%s.%s" % (filename, cls.ending)
+			samples, samplingrate, domain, names, units = oct2py.octave.call(read_ita_file, filename)
+			channels = tuple(numpy.transpose(samples))
+			# create channel labels
+			labels = []
+			for i in range(len(names)):
+				if i < len(units):
+					labels.append(str("%s [%s]" % (names[i], units[i])))
+				else:
+					labels.append(str(names[i]))
+			# transform to the time domain, if necessary
+			if domain == "time":
+				return sumpf.Signal(channels=channels, samplingrate=samplingrate, labels=labels)
+			elif domain == "freq":
+				spectrum = sumpf.Spectrum(channels=channels,
+				                          resolution=sumpf.modules.ChannelDataProperties(spectrum_length=len(channels[0]), samplingrate=samplingrate).GetResolution(),
+				                          labels=labels)
+				return sumpf.modules.InverseFourierTransform(spectrum=spectrum).GetSignal()
+			else:
+				raise RuntimeError("Unknown domain: %s" % domain)
+
+	signalformats.append(ITA_AUDIO)
 

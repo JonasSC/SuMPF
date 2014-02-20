@@ -23,10 +23,13 @@ class SignalFile(ChannelDataFile):
 	"""
 	A module for saving a Signal to a file and/or loading a Signal from it.
 
-	When NumPy is available, this class can read and write Signals in NumPy's
+	If NumPy is available, this class can read and write Signals in NumPy's
 	npz-format.
-	When scikits.audiolab is available, this class supports wav, aif and flac as
+	If scikits.audiolab is available, this class supports wav, aif and flac as
 	well.
+	If oct2py is available, this class can read (but not write) itaAudio-files
+	that have been created with the ITA-Toolbox from the Institute of Technical
+	Acoustics, RWTH Aachen University.
 
 	Instances of this class might overwrite files without further questions.
 	Generally the instance will always write to the given file name when the
@@ -66,7 +69,15 @@ class SignalFile(ChannelDataFile):
 		self._Load()
 		return self._data
 
-	@sumpf.Input(sumpf.Signal, "GetSignal")
+	@sumpf.Output(float)
+	def GetSamplingRate(self):
+		"""
+		Returns the sampling rate of the Signal that has been loaded or will be saved.
+		@retval : the sampling rate as a float
+		"""
+		return self._data.GetSamplingRate()
+
+	@sumpf.Input(sumpf.Signal, ["GetSignal", "GetLength", "GetSamplingRate"])
 	def SetSignal(self, signal):
 		"""
 		Saves the Signal to the file.
@@ -75,7 +86,7 @@ class SignalFile(ChannelDataFile):
 		self._data = signal
 		self._Save()
 
-	@sumpf.Input(str, "GetSignal")
+	@sumpf.Input(str, ["GetSignal", "GetLength", "GetSamplingRate"])
 	def SetFilename(self, filename):
 		"""
 		Override of ChannelDataFile.SetFilename to decorate it with @sumpf.Input.
@@ -91,7 +102,7 @@ class SignalFile(ChannelDataFile):
 		"""
 		ChannelDataFile.SetFilename(self, filename)
 
-	@sumpf.Input(FileFormat, "GetSignal")
+	@sumpf.Input(FileFormat, ["GetSignal", "GetLength", "GetSamplingRate"])
 	def SetFormat(self, format):
 		"""
 		Override of ChannelDataFile.SetFormat to decorate it with @sumpf.Input.

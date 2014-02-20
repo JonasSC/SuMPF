@@ -24,6 +24,7 @@ class FileFormat(object):
 	methods to load and save.
 	"""
 	ending = None
+	read_only = False
 
 	def __init__(self):
 		"""
@@ -40,7 +41,7 @@ class FileFormat(object):
 		@param filename: a string value of a path and filename without file ending
 		@retval : True if the file exists, False otherwise
 		"""
-		return os.path.exists(filename + "." + cls.ending)
+		return os.path.exists("%s.%s" % (filename, cls.ending))
 
 	@classmethod
 	def Load(cls, filename):
@@ -58,5 +59,8 @@ class FileFormat(object):
 		@param filename: a string value of a path and filename without file ending
 		@param data : the data set which is to save
 		"""
-		raise NotImplementedError("This method should have been overridden in a derived class")
+		if cls.read_only:
+			raise RuntimeError("This file format can only be read, not written")
+		else:
+			raise NotImplementedError("This method should have been overridden in a derived class")
 

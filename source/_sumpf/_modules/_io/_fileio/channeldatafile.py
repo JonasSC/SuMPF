@@ -33,7 +33,6 @@ class ChannelDataFile(object):
 		@param filename: None or a string value of a path and filename preferably without the file ending
 		@param data: the ChannelData instance that shall be stored in the file
 		@param format: a subclass of FileFormat that specifies the desired format of the file
-		@param formats: a list of file format classes that are supported by the instance
 		"""
 		self._data = data
 		self.__format = format
@@ -49,6 +48,14 @@ class ChannelDataFile(object):
 		@retval : a list of FileFormat classes
 		"""
 		raise NotImplementedError("This method should have been overridden in a derived class")
+
+	@sumpf.Output(int)
+	def GetLength(self):
+		"""
+		Returns the length of the data set that has been loaded or will be saved.
+		@retval : the length as an integer number of samples
+		"""
+		return len(self._data)
 
 	def SetFilename(self, filename):
 		"""
@@ -68,9 +75,12 @@ class ChannelDataFile(object):
 			self._filename = filename
 		else:
 			self._filename = delim.join(split[0:-1])
-		if self._data.IsEmpty() and self.__format.Exists(self._filename):
-			self._Load()
-		else:
+		if self.__format.Exists(self._filename):
+			if self._data.IsEmpty() or self.__format.read_only:
+				self._Load()
+			else:
+				self._Save()
+		elif not self.__format.read_only:
 			self._Save()
 
 	def SetFormat(self, format):
@@ -83,9 +93,12 @@ class ChannelDataFile(object):
 		"""
 		self.__format = format
 		if self._filename is not None:
-			if self._data.IsEmpty() and self.__format.Exists(self._filename):
-				self._Load()
-			else:
+			if self.__format.Exists(self._filename):
+				if self._data.IsEmpty() or self.__format.read_only:
+					self._Load()
+				else:
+					self._Save()
+			elif not self.__format.read_only:
 				self._Save()
 
 	def _Load(self):

@@ -45,7 +45,9 @@ class TestFileIO(unittest.TestCase):
 			formats[sumpf.modules.SignalFile.FLAC] = (False, False, False)
 			formats[sumpf.modules.SignalFile.WAV_INT] = (False, False, False)
 			formats[sumpf.modules.SignalFile.WAV_FLOAT] = (False, False, False)
-		self.assertEqual(set(formats.keys()), set(sumpf.modules.SignalFile.GetFormats()))
+		self.assertTrue(set(formats.keys()).issubset(sumpf.modules.SignalFile.GetFormats()))
+		for f in set(formats.keys()) - set(sumpf.modules.SignalFile.GetFormats()):
+			self.assertTrue(f.read_only)
 		fileio = sumpf.modules.SignalFile(format=list(formats.keys())[0])
 		self.assertEqual(os.listdir(tempdir), [])											# if no filename was provided, no file should have been written
 		try:
@@ -56,10 +58,14 @@ class TestFileIO(unittest.TestCase):
 				fileio = sumpf.modules.SignalFile(filename=filename1, format=f)
 				self.assertTrue(f.Exists(filename1))										# with a filename provided, a file should have been created
 				output = fileio.GetSignal()
+				self.assertEqual(fileio.GetLength(), len(output))
+				self.assertEqual(fileio.GetSamplingRate(), output.GetSamplingRate())
 				self.__CompareSignals(output, sumpf.Signal(), format_info, "TestFileIO1")	# this file should contain an empty data set
 				fileio = sumpf.modules.SignalFile(filename=filename1, signal=signal1, format=f)
 				fileio = sumpf.modules.SignalFile(filename=filename1, format=f)
 				output = fileio.GetSignal()
+				self.assertEqual(fileio.GetLength(), len(output))
+				self.assertEqual(fileio.GetSamplingRate(), output.GetSamplingRate())
 				self.__CompareSignals(output, signal1, format_info, "TestFileIO1")			# the existent file should be overwritten when a data set is provided
 				fileio.SetSignal(signal2)													# changing the data set should have triggered a rewrite of the file
 				fileio = sumpf.modules.SignalFile()
@@ -116,12 +122,16 @@ class TestFileIO(unittest.TestCase):
 				fileio = sumpf.modules.SpectrumFile(filename=filename1, format=f)
 				self.assertTrue(f.Exists(filename1))											# with a filename provided, a file should have been created
 				output = fileio.GetSpectrum()
+				self.assertEqual(fileio.GetLength(), len(output))
+				self.assertEqual(fileio.GetResolution(), output.GetResolution())
 				self.assertEqual(output.GetChannels(), sumpf.Spectrum().GetChannels())			# this file should contain an empty data set
 				self.assertEqual(output.GetResolution(), sumpf.Spectrum().GetResolution())		#
 				self.assertEqual(output.GetLabels(), sumpf.Spectrum().GetLabels())				#
 				fileio = sumpf.modules.SpectrumFile(filename=filename1, spectrum=spectrum1, format=f)
 				fileio = sumpf.modules.SpectrumFile(filename=filename1, format=f)
 				output = fileio.GetSpectrum()
+				self.assertEqual(fileio.GetLength(), len(output))
+				self.assertEqual(fileio.GetResolution(), output.GetResolution())
 				self.assertEqual(output.GetChannels(), spectrum1.GetChannels())					# the existent file should be overwritten when a data set is provided
 				self.assertEqual(output.GetResolution(), spectrum1.GetResolution())				# ...and then loaded when no data set, but a filename has been provided
 				self.assertEqual(output.GetLabels(), spectrum1.GetLabels())						#
@@ -159,16 +169,20 @@ class TestFileIO(unittest.TestCase):
 		self.assertEqual(sf.SetFilename.GetType(), str)
 #		self.assertEqual(sf.SetFormat.GetType(), type(sumpf.modules.SignalFile.GetFormats()[0]))
 		self.assertEqual(sf.GetSignal.GetType(), sumpf.Signal)
-		self.assertEqual(sf.SetSignal.GetObservers(), [sf.GetSignal])
-		self.assertEqual(sf.SetFilename.GetObservers(), [sf.GetSignal])
-		self.assertEqual(sf.SetFormat.GetObservers(), [sf.GetSignal])
+		self.assertEqual(sf.GetLength.GetType(), int)
+		self.assertEqual(sf.GetSamplingRate.GetType(), float)
+		self.assertEqual(set(sf.SetSignal.GetObservers()), set([sf.GetSignal, sf.GetLength, sf.GetSamplingRate]))
+		self.assertEqual(set(sf.SetFilename.GetObservers()), set([sf.GetSignal, sf.GetLength, sf.GetSamplingRate]))
+		self.assertEqual(set(sf.SetFormat.GetObservers()), set([sf.GetSignal, sf.GetLength, sf.GetSamplingRate]))
 		# SignalFile
 		sf = sumpf.modules.SpectrumFile()
 		self.assertEqual(sf.SetSpectrum.GetType(), sumpf.Spectrum)
 		self.assertEqual(sf.SetFilename.GetType(), str)
 #		self.assertEqual(sf.SetFormat.GetType(), type(sumpf.modules.SpectrumFile.GetFormats()[0]))
 		self.assertEqual(sf.GetSpectrum.GetType(), sumpf.Spectrum)
-		self.assertEqual(sf.SetSpectrum.GetObservers(), [sf.GetSpectrum])
-		self.assertEqual(sf.SetFilename.GetObservers(), [sf.GetSpectrum])
-		self.assertEqual(sf.SetFormat.GetObservers(), [sf.GetSpectrum])
+		self.assertEqual(sf.GetLength.GetType(), int)
+		self.assertEqual(sf.GetResolution.GetType(), float)
+		self.assertEqual(set(sf.SetSpectrum.GetObservers()), set([sf.GetSpectrum, sf.GetLength, sf.GetResolution]))
+		self.assertEqual(set(sf.SetFilename.GetObservers()), set([sf.GetSpectrum, sf.GetLength, sf.GetResolution]))
+		self.assertEqual(set(sf.SetFormat.GetObservers()), set([sf.GetSpectrum, sf.GetLength, sf.GetResolution]))
 
