@@ -84,11 +84,15 @@ class TestSplitSpectrum(unittest.TestCase):
 		"""
 		Tests if all errors are raised as expected.
 		"""
-		self.splitter.SetOutputChannels([])										# Selecting no channels of an empty Splitter should not raise an error
+		self.splitter.SetOutputChannels([])										# selecting no channels of an empty Splitter should not raise an error
 		self.splitter.SetInput(self.long)
-		self.assertRaises(IndexError, self.splitter.SetOutputChannels, -1)		# Selecting a channel with a negative index should raise an error
-		self.assertRaises(IndexError, self.splitter.SetOutputChannels, 5)		# Selecting a channel that is not in the Input should raise an error
-		self.assertRaises(IndexError, self.splitter.SetOutputChannels, [3, 5])	# Selecting a channel through a list that is not in the Input should raise an error
+		self.assertRaises(IndexError, self.splitter.SetOutputChannels, -1)		# selecting a channel with a negative index should raise an error
+		self.splitter.SetOutputChannels(5)
+		self.assertRaises(IndexError, self.splitter.GetOutput)					# selecting a channel that is not in the Input should raise an error
+		self.splitter.SetOutputChannels(2)
+		self.splitter.GetOutput()
+		self.splitter.SetOutputChannels([3, 5])
+		self.assertRaises(IndexError, self.splitter.GetOutput)					# selecting a channel through a list that is not in the Input should raise an error
 
 	def test_connectors(self):
 		"""

@@ -76,12 +76,9 @@ class SplitChannelData(object):
 			self.__all = False
 			if isinstance(channels, int):
 				channels = (channels,)
-			length = len(self._input.GetChannels())
 			for i in channels:
 				if i < 0:
-					raise IndexError("Negative indexes are not possible")
-				elif i >= length:
-					raise IndexError("One selected channel is out of bounds of the input data set")
+					raise IndexError("Negative indices are not possible")
 			self.__channels = channels
 
 	def _GetChannelsAndLabels(self):
