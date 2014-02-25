@@ -19,11 +19,19 @@
 import os
 from distutils.core import setup
 
-dirs = []
+dirs = {}
+additional_files = {}
 for i in os.walk("."):
-	dirs.append(i[0].lstrip("./").replace(os.sep, "."))
-while "" in dirs:
-	dirs.remove("")
+	dirname = i[0].lstrip("./")
+	if dirname != "":
+		package = dirname.replace(os.sep, ".")
+		dirs[package] = dirname
+		for filename in i[2]:
+			if not filename.endswith(".py") and \
+			   not filename.endswith(".pyc"):
+				if package not in additional_files:
+					additional_files[package] = []
+				additional_files[package].append(filename)
 
 setup(name="SuMPF",
       version="0.8",
@@ -31,6 +39,8 @@ setup(name="SuMPF",
       author="Jonas Schulte-Coerne",
       author_email="jonas@schulte-coerne.de",
       license="License :: OSI Approved :: GNU General Public License v3 or later (GPLv3+)",
-      packages=dirs,
+      packages=dirs.keys(),
+      package_dir=dirs,
+      package_data=additional_files,
       py_modules=["sumpf"])
 
