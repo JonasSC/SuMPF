@@ -132,13 +132,21 @@ class TestResampleSignal(unittest.TestCase):
 		# test the upsampled Signal
 		for c in range(len(upsampled_spectrum.GetChannels())):
 			for i in range(len(input_spectrum)):
-				self.assertAlmostEqual(upsampled_spectrum.GetChannels()[c][i], input_spectrum.GetChannels()[c][i])
+				self.assertAlmostEqual(upsampled_spectrum.GetChannels()[c][i], upsampled_signal.GetSamplingRate() / input_signal.GetSamplingRate() * input_spectrum.GetChannels()[c][i])
 			for i in range(len(input_spectrum), len(upsampled_spectrum)):
 				self.assertAlmostEqual(upsampled_spectrum.GetChannels()[c][i], 0.0)
 		# test the downsampled Signal
 		for c in range(len(downsampled_spectrum.GetChannels())):
 			for i in range(len(downsampled_spectrum) - 1):
-				self.assertAlmostEqual(downsampled_spectrum.GetChannels()[c][i], input_spectrum.GetChannels()[c][i])
+				self.assertAlmostEqual(downsampled_spectrum.GetChannels()[c][i], downsampled_signal.GetSamplingRate() / input_signal.GetSamplingRate() * input_spectrum.GetChannels()[c][i])
+		# compare amplitudes of the original and the resampled Signals
+		rms_original = sumpf.modules.RootMeanSquare(signal=input_signal, integration_time=sumpf.modules.RootMeanSquare.FULL).GetOutput()
+		rms_upsampled = sumpf.modules.RootMeanSquare(signal=upsampled_signal, integration_time=sumpf.modules.RootMeanSquare.FULL).GetOutput()
+		rms_downsampled = sumpf.modules.RootMeanSquare(signal=downsampled_signal, integration_time=sumpf.modules.RootMeanSquare.FULL).GetOutput()
+		self.assertAlmostEqual(rms_upsampled.GetChannels()[0][0], rms_original.GetChannels()[0][0], 5)
+		self.assertAlmostEqual(rms_upsampled.GetChannels()[1][0], rms_original.GetChannels()[1][0], 5)
+		self.assertAlmostEqual(rms_downsampled.GetChannels()[0][0], rms_original.GetChannels()[0][0], 2)
+		self.assertAlmostEqual(rms_downsampled.GetChannels()[1][0], rms_original.GetChannels()[1][0], 2)
 
 	def test_errors(self):
 		"""

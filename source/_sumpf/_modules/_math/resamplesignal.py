@@ -104,7 +104,8 @@ class ResampleSignal(object):
 					channel.append(0.0)
 				channels.append(tuple(channel))
 			resampled_spectrum = sumpf.Spectrum(channels=tuple(channels), resolution=spectrum.GetResolution(), labels=spectrum.GetLabels())
-			return sumpf.modules.InverseFourierTransform(spectrum=resampled_spectrum).GetSignal()
+			factor = self.__samplingrate / self.__signal.GetSamplingRate()
+			return sumpf.modules.InverseFourierTransform(spectrum=resampled_spectrum).GetSignal() * factor
 		elif hasattr(ResampleSignal, "SINC") and self.__algorithm == ResampleSignal.SINC:
 			factor = self.__samplingrate / self.__signal.GetSamplingRate()
 			channels = []
