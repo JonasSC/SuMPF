@@ -39,7 +39,7 @@ class ChannelData(object):
 		for i in range(len(self.__channels)):
 			if i < len(labels):
 				if labels[i] is not None and not isinstance(labels[i], str):
-					raise TypeError("The labels have to be string values or None")
+					raise TypeError("The labels have to be string values or None, not %s" % str(type(labels[i])))
 				tmplabels.append(labels[i])
 			else:
 				tmplabels.append(None)
