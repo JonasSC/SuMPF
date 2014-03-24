@@ -19,7 +19,7 @@ from ..spectrumgenerator import SpectrumGenerator
 from .filters import ButterworthLowpass, ButterworthHighpass, BesselLowpass, \
                      BesselHighpass, ChebyshevLowpass, ChebyshevHighpass, \
                      Bandpass, Bandstop, LaguerreFunction, PinkSlope, RedSlope, \
-                     AWeighting, CWeighting, ConstantGroupDelay
+                     AWeighting, CWeighting, ConstantGroupDelay, FilterWithCoefficients
 from .filterbase import Filter
 
 
@@ -44,6 +44,7 @@ class FilterGenerator(SpectrumGenerator):
 	A_WEIGHTING = AWeighting
 	C_WEIGHTING = CWeighting
 	CONSTANT_GROUP_DELAY = ConstantGroupDelay
+	FILTER_WITH_COEFFICIENTS = FilterWithCoefficients
 
 	def __init__(self, resolution=None, length=None):
 		"""
