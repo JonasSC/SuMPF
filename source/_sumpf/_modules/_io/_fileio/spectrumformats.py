@@ -76,7 +76,7 @@ if oct2py_available:
 			labels = []
 			for i in range(len(names)):
 				if i < len(units):
-					labels.append("%s [%s]" % (names[i], units[i]))
+					labels.append(str("%s [%s]" % (names[i], units[i])))
 				else:
 					labels.append(str(names[i]))
 			# transform to the frequency domain, if necessary
