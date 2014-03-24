@@ -88,12 +88,12 @@ class SignalChain(object):
 		#
 		# properties
 		self.__properties = sumpf.modules.ChannelDataProperties()
-		self.__silence_duration = sumpf.modules.DurationToLength()
+		self.__silence_duration = sumpf.modules.DurationToLength(even_length=True)
 		sumpf.connect(self.__properties.GetSamplingRate, self.__silence_duration.SetSamplingRate)
 		self.__silence = sumpf.modules.SilenceGenerator()
 		sumpf.connect(self.__silence_duration.GetLength, self.__silence.SetLength)
 		sumpf.connect(self.__properties.GetSamplingRate, self.__silence.SetSamplingRate)
-		self.__sweep_duration = sumpf.modules.DurationToLength()
+		self.__sweep_duration = sumpf.modules.DurationToLength(even_length=True)
 		sumpf.connect(self.__properties.GetSamplingRate, self.__sweep_duration.SetSamplingRate)
 		self.__generator = sumpf.modules.SweepGenerator()
 		sumpf.connect(self.__sweep_duration.GetLength, self.__generator.SetLength)
