@@ -46,10 +46,23 @@ def differentiate(sequence):
 	elif len(sequence) == 1:
 		return [0.0]
 	else:
+		import warnings
+		warnings.warn("\n\tThe sumpf.helper.differentiate function calculates the derivative by subtracting\n\tthe two neighboring samples of the sample of which the derivative shall be calculated.\n\tThis is a moving average of the derivative, which is basically a bandpass rather\n\tthan the expected highpass.")
 		result = []
 		result.append(float(sequence[1] - sequence[0]))
 		for i in range(1, len(sequence) - 1):
 			result.append((sequence[i + 1] - sequence[i - 1]) / 2.0)
 		result.append(float(sequence[-1] - sequence[-2]))
 		return result
+#		result = []
+#		def get_derivative(y0, y1, y2):
+#			c = y1
+#			a = (y0 + y2) / 2.0 - c
+#			b = y2 - c - a
+#			return b
+#		result.append(get_derivative(sequence[0], sequence[0], sequence[1]))
+#		for i in range(1, len(sequence) - 1):
+#			result.append(get_derivative(sequence[i - 1], sequence[i], sequence[i + 1]))
+#		result.append(get_derivative(sequence[-2], sequence[-1], sequence[-1]))
+#		return result
 
