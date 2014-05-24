@@ -34,7 +34,7 @@ for i in os.walk("."):
 				additional_files[package].append(filename)
 
 setup(name="SuMPF",
-      version="0.8",
+      version="0.9",
       description="Sound using a Monkeyforest-like processing framework",
       author="Jonas Schulte-Coerne",
       author_email="jonas@schulte-coerne.de",
