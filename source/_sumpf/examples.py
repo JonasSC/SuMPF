@@ -30,17 +30,8 @@ def RecordTransferFunction():
 	resulting transfer function or impulse response from unwanted noise or
 	harmonic distortion.
 	"""
-	# There is some weird bug that makes it impossible to start this example by importing recordtransferfunction's main.py
-#	from ._examples import recordtransferfunction
-	from ._examples.recordtransferfunction.signalchain import SignalChain
-	from ._examples.recordtransferfunction.guiwindow import GuiWindow
-
-	signalchain = SignalChain()
-	window = GuiWindow(signalchain=signalchain)
-	window.Show()
-	window.Join()
-
-
+	from ._examples import recordtransferfunction
+	recordtransferfunction.mainfunction()
 
 def ConvertFile(input="", output="", format="AUTO"):
 	"""

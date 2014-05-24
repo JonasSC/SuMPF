@@ -14,5 +14,5 @@
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 
-#import main	# There is some weird bug that makes it impossible to start this example by importing main.py
+from main import mainfunction
 

@@ -88,12 +88,12 @@ class SignalChain(object):
 		#
 		# properties
 		self.__properties = sumpf.modules.ChannelDataProperties()
-		self.__silence_duration = sumpf.modules.DurationToLength(even_length=True)
+		self.__silence_duration = sumpf.modules.DurationToLength(duration=2.0, even_length=True)
 		sumpf.connect(self.__properties.GetSamplingRate, self.__silence_duration.SetSamplingRate)
 		self.__silence = sumpf.modules.SilenceGenerator()
 		sumpf.connect(self.__silence_duration.GetLength, self.__silence.SetLength)
 		sumpf.connect(self.__properties.GetSamplingRate, self.__silence.SetSamplingRate)
-		self.__sweep_duration = sumpf.modules.DurationToLength(even_length=True)
+		self.__sweep_duration = sumpf.modules.DurationToLength(duration=0.06, even_length=True)
 		sumpf.connect(self.__properties.GetSamplingRate, self.__sweep_duration.SetSamplingRate)
 		self.__generator = sumpf.modules.SweepGenerator()
 		sumpf.connect(self.__sweep_duration.GetLength, self.__generator.SetLength)
@@ -149,6 +149,7 @@ class SignalChain(object):
 		sumpf.connect(self.__ifft.GetSignal, self.__merge_uir.AddInput)
 		# post processing: window
 		self.__window = sumpf.modules.WindowGenerator()
+		sumpf.connect(self.__properties.GetSamplingRate, self.__window.SetSamplingRate)
 		sumpf.connect(self.__properties.GetSignalLength, self.__window.SetLength)
 		self.__copy_window = sumpf.modules.CopySignalChannels()
 		sumpf.connect(self.__window.GetSignal, self.__copy_window.SetInput)
@@ -299,7 +300,6 @@ class SignalChain(object):
 		self.__relabel.SetLabels((label,))
 		data_id = self.__merge_utf.AddInput(self.__relabel.GetOutput())
 		self.__kept_ids.append(data_id)
-		self.__relabel.SetLabels(("Recent",))
 		if self.__showrecent:
 			sumpf.connect(self.__relabel.GetOutput, self.__merge_utf.AddInput)
 		sumpf.activate_output(self.__merge_utf)
