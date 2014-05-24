@@ -30,12 +30,13 @@ class ConcatenateSignals(object):
 		@param signal2: the second Signal-instance for the concatenation
 		"""
 		if signal1 is None:
-			signal1 = sumpf.Signal()
+			self.__signal1 = sumpf.Signal()
+		else:
+			self.__signal1 = signal1
 		if signal2 is None:
-			signal2 = sumpf.Signal()
-		self.__signal2 = sumpf.Signal()
-		self.SetInput1(signal1)
-		self.SetInput2(signal2)
+			self.__signal2 = sumpf.Signal()
+		else:
+			self.__signal2 = signal2
 
 	@sumpf.Input(sumpf.Signal, ["GetOutput", "GetOutputLength"])
 	def SetInput1(self, signal):
@@ -43,12 +44,6 @@ class ConcatenateSignals(object):
 		Sets the first Signal for concatenation.
 		@param signal: the first Signal instance for concatenation
 		"""
-		if not (self.__signal2.IsEmpty() or signal.IsEmpty()):
-			if not self.GetOutput.ExpectsInputFrom(self.SetInput2):
-				if signal.GetSamplingRate() != self.__signal2.GetSamplingRate():
-					raise ValueError("The given signal has a different sampling rate than the second signal")
-				if len(signal.GetChannels()) != len(self.__signal2.GetChannels()):
-					raise ValueError("The given signal has a different channel count than the second signal")
 		self.__signal1 = signal
 
 	@sumpf.Input(sumpf.Signal, ["GetOutput", "GetOutputLength"])
@@ -57,12 +52,6 @@ class ConcatenateSignals(object):
 		Sets the second Signal for concatenation.
 		@param signal: the second Signal instance for concatenation
 		"""
-		if not (self.__signal1.IsEmpty() or signal.IsEmpty()):
-			if not self.GetOutput.ExpectsInputFrom(self.SetInput1):
-				if signal.GetSamplingRate() != self.__signal1.GetSamplingRate():
-					raise ValueError("The given signal has a different sampling rate than the first signal")
-				if len(signal.GetChannels()) != len(self.__signal1.GetChannels()):
-					raise ValueError("The given signal has a different channel count than the first signal")
 		self.__signal2 = signal
 
 	@sumpf.Output(sumpf.Signal)
@@ -76,6 +65,10 @@ class ConcatenateSignals(object):
 		elif self.__signal2.IsEmpty():
 			return self.__signal1
 		else:
+			if self.__signal1.GetSamplingRate() != self.__signal2.GetSamplingRate():
+				raise ValueError("The given signal has a different sampling rate than the second signal")
+			if len(self.__signal1.GetChannels()) != len(self.__signal2.GetChannels()):
+				raise ValueError("The given signal has a different channel count than the second signal")
 			channels = []
 			for c in self.__signal1.GetChannels():
 				channels.append(list(c))

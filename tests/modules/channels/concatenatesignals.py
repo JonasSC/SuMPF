@@ -63,13 +63,10 @@ class TestConcatenateSignals(unittest.TestCase):
 		"""
 		Tests if the concatenation module raises errors correctly.
 		"""
-		ccs = sumpf.modules.ConcatenateSignals(signal1=self.signal1)
 		wrongsignal1 = sumpf.Signal(channels=self.signal2.GetChannels(), samplingrate=44100)
 		wrongsignal2 = sumpf.Signal(channels=((1.0, 0.0),), samplingrate=48000)
-		self.assertRaises(ValueError, ccs.SetInput2, wrongsignal1)						# shall fail if Signals do not have the same sampling rate
-		self.assertRaises(ValueError, ccs.SetInput2, wrongsignal2)						# shall fail if Signals do not have the same channel count
-		self.assertRaises(ValueError, sumpf.modules.ConcatenateSignals, *(self.signal1, wrongsignal1))	# shall fail if Signals do not have the same sampling rate
-		self.assertRaises(ValueError, sumpf.modules.ConcatenateSignals, *(self.signal1, wrongsignal2))	# shall fail if Signals do not have the same channel count
+		self.assertRaises(ValueError, sumpf.modules.ConcatenateSignals(signal1=self.signal1, signal2=wrongsignal1).GetOutput)	# shall fail if Signals do not have the same sampling rate
+		self.assertRaises(ValueError, sumpf.modules.ConcatenateSignals(signal1=self.signal1, signal2=wrongsignal2).GetOutput)	# shall fail if Signals do not have the same channel count
 
 	def test_connections(self):
 		"""
