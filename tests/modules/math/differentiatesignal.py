@@ -14,6 +14,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 
+import collections
 import math
 import unittest
 import sumpf
@@ -55,9 +56,25 @@ class TestDifferentiateSignal(unittest.TestCase):
 		                                      length=length)
 		drv = sumpf.modules.DifferentiateSignal()
 		places = 2
+		if common.lib_available("numpy"):
+			drv.SetFunction(lambda sequence: sumpf.helper.differentiate_spline(sequence=sequence, degree=2))
+			places = 6
 		self.assertEqual(drv.GetOutput(), sumpf.Signal())
 		drv.SetInput(sin.GetSignal())
 		common.compare_signals_almost_equal(self, drv.GetOutput(), cos.GetSignal() * (2.0 * math.pi * frequency), places)
+
+	@unittest.skipUnless(common.lib_available("numpy"), "This test requires the library 'numpy' to be available.")
+	def test_function(self):
+		"""
+		Tests if setting the differentiation function works.
+		"""
+		signal = sumpf.Signal(channels=((1.0, 0.0, 1.0, 0.0, 1.0), (0.0, 1.0, 0.0, 1.0, 0.0)), samplingrate=1.0, labels=("One", "Zero"))
+		result1 = sumpf.Signal(channels=((-1.0, 0.0, 0.0, 0.0, 1.0), (1.0, 0.0, 0.0, 0.0, -1.0)), samplingrate=1.0, labels=("One", "Zero"))
+		result2 = sumpf.Signal(channels=((-1.0, -1.0, 1.0, -1.0, 1.0), (1.0, 1.0, -1.0, 1.0, -1.0)), samplingrate=1.0, labels=("One", "Zero"))
+		drv = sumpf.modules.DifferentiateSignal(signal=signal, function=sumpf.helper.differentiate_spline)
+		self.assertEqual(drv.GetOutput(), result1)
+		drv.SetFunction(sumpf.helper.differentiate)
+		self.assertEqual(drv.GetOutput(), result2)
 
 	def test_connectors(self):
 		"""
@@ -65,9 +82,10 @@ class TestDifferentiateSignal(unittest.TestCase):
 		"""
 		drv = sumpf.modules.DifferentiateSignal()
 		self.assertEqual(drv.SetInput.GetType(), sumpf.Signal)
+		self.assertEqual(drv.SetFunction.GetType(), collections.Callable)
 		self.assertEqual(drv.GetOutput.GetType(), sumpf.Signal)
 		common.test_connection_observers(testcase=self,
-		                                 inputs=[drv.SetInput],
+		                                 inputs=[drv.SetInput, drv.SetFunction],
 		                                 noinputs=[],
 		                                 output=drv.GetOutput)
 
