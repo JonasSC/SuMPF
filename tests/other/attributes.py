@@ -52,6 +52,8 @@ class TestAttributes(unittest.TestCase):
 					if cls.__name__ in short_is_enough:
 						if doclines < 1:
 							fails.append(format_name(classpath=p, classname=cls.__name__))
+						elif doclines >= 3:
+							self.fail("The class " + cls.__name__ + " is properly documented and should not be in the short_is_enough list.")
 					elif doclines < 3:
 						fails.append(format_name(classpath=p, classname=cls.__name__))
 		if fails != []:
