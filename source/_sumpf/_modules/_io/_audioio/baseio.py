@@ -78,7 +78,7 @@ class BaseIO(object):
 		@param signal: the Signal which shall be played back
 		"""
 		if signal.GetSamplingRate() != self.GetSamplingRate():
-			raise RuntimeError("The sampling rate of the given signal is not the same as the sampling rate of the hardware")
+			raise ValueError("The sampling rate of the given signal is not the same as the sampling rate of the hardware")
 		self._playback = signal
 
 	@sumpf.Output(sumpf.Signal, caching=False)
