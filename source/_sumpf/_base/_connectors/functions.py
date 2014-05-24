@@ -37,6 +37,7 @@ def connect(a, b):
 		output = a
 	if not isinstance(input, TriggerInputConnector):
 		if output.IsActive():
+			input.NoticeAnnouncement(output)
 			input.NoticeValueChange(output)
 
 def disconnect(a, b):

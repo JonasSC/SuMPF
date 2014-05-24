@@ -19,6 +19,7 @@ import unittest
 
 import sumpf
 
+import _common as common
 from .exampleclass import ExampleClass
 
 
@@ -332,4 +333,24 @@ class TestConnectors(unittest.TestCase):
 					self.assertEqual(gc.garbage, [])					# garbage collection should have removed all garbage
 					return
 			self.fail("The object has neither been deleted, nor has it been marked as garbage")
+
+	@unittest.skipUnless(sumpf.config.get("run_long_tests"), "Long tests are skipped")
+	@unittest.skipUnless(common.lib_available("numpy"), "This test requires the library 'numpy' to be available.")
+	def test_example(self):
+		"""
+		Test an example signal processing chain that has not worked in a previous,
+		buggy version of SuMPF.
+		"""
+		properties = sumpf.modules.ChannelDataProperties(samplingrate=48000)
+		generator = sumpf.modules.SweepGenerator()
+		sumpf.connect(properties.GetSamplingRate, generator.SetSamplingRate)
+		fade_sweep = sumpf.modules.WindowGenerator()
+		sumpf.connect(properties.GetSamplingRate, fade_sweep.SetSamplingRate)
+		apply_fade = sumpf.modules.MultiplySignals()
+		sumpf.connect(generator.GetSignal, apply_fade.SetInput1)
+		sumpf.connect(fade_sweep.GetSignal, apply_fade.SetInput2)
+		amplify = sumpf.modules.AmplifySignal(factor=0.9)
+		sumpf.connect(apply_fade.GetOutput, amplify.SetInput)
+		propertiesX = sumpf.modules.ChannelDataProperties(samplingrate=44100)
+		sumpf.connect(propertiesX.GetSamplingRate, properties.SetSamplingRate)
 
