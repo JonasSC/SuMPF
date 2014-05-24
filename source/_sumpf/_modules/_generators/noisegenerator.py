@@ -73,16 +73,20 @@ class NoiseGenerator(SignalGenerator):
 
 	The resulting Signal will have one channel.
 	"""
-	def __init__(self, distribution=None, samplingrate=None, length=None):
+	def __init__(self, distribution=None, seed=None, samplingrate=None, length=None):
 		"""
 		@param distribution: a Distribution instance
+		@param seed: a seed for the random.Random instance
 		@param samplingrate: the sampling rate in Hz
 		@param length: the number of samples of the signal
 		"""
 		SignalGenerator.__init__(self, samplingrate=samplingrate, length=length)
 		self.__distribution = distribution
 		self.__random = random.Random()
-		self.__random.seed()
+		if seed is None:
+			self.__random.seed()
+		else:
+			self.__random.seed(seed)
 		if self.__distribution is None:
 			self.__distribution = type(self).WhiteNoise()
 		self.__distribution.SetRandom(self.__random)
@@ -140,7 +144,7 @@ class NoiseGenerator(SignalGenerator):
 		Generates the samples for white noise.
 		"""
 		def GetSamples(self, length):
-			fsamples = [0.0]	# first fft-sample is 0.0 to avoid dc offset
+			fsamples = [0.0]	# first fft-sample is 0.0 to avoid a dc offset
 			factor = 2.0 ** (0.5 * math.log(length, 2.0) - 1.0)
 			for i in range(length // 2):
 				fsamples.append(factor * numpy.exp(2.0j * math.pi * self._random.gauss(0.0, 1.0)))
@@ -152,7 +156,7 @@ class NoiseGenerator(SignalGenerator):
 		Generates the samples for pink noise. p ~ (1/f)
 		"""
 		def GetSamples(self, length):
-			fsamples = [0.0]	# first fft-sample is 0.0 to avoid dc offset
+			fsamples = [0.0]	# first fft-sample is 0.0 to avoid a dc offset
 			factor = length / 4.0
 			for i in range(1, length // 2 + 1):
 				fsamples.append(factor / i * numpy.exp(2.0j * math.pi * self._random.gauss(0.0, 1.0)))
@@ -164,7 +168,7 @@ class NoiseGenerator(SignalGenerator):
 		Generates the samples for red noise. p ~ (1/f^2)
 		"""
 		def GetSamples(self, length):
-			fsamples = [0.0]	# first fft-sample is 0.0 to avoid dc offset
+			fsamples = [0.0]	# first fft-sample is 0.0 to avoid a dc offset
 			factor = length / 2.0 / (math.pi ** 2 / 6.0)
 			for i in range(1, length // 2 + 1):
 				fsamples.append(factor / (i ** 2) * numpy.exp(2.0j * math.pi * self._random.gauss(0.0, 1.0)))

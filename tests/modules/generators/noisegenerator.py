@@ -53,7 +53,7 @@ class TestNoiseGenerator(unittest.TestCase):
 			length = 2 ** i
 			gen.SetLength(length)
 			magnitude = fft.GetSpectrum().GetMagnitude()[0]
-			self.assertAlmostEqual(magnitude[0], 0.0)							# there should only be very little dc offset
+			self.assertAlmostEqual(magnitude[0], 0.0)							# there should only be a very small dc offset
 			self.assertAlmostEqual(min(magnitude[1:-1]), max(magnitude[1:-1]))	# the magnitude of the spectrum should be fairly constant
 			output = rms.GetOutput()
 			self.assertEqual(output.GetLabels()[0], "White Noise")				# the label for the channel has to be "White Noise"
@@ -188,8 +188,7 @@ class TestNoiseGenerator(unittest.TestCase):
 		"""
 		Tests if seeding the random number generator works.
 		"""
-		gen = sumpf.modules.NoiseGenerator(distribution=sumpf.modules.NoiseGenerator.UniformDistribution(), samplingrate=48000, length=5)
-		gen.Seed(1337)
+		gen = sumpf.modules.NoiseGenerator(distribution=sumpf.modules.NoiseGenerator.UniformDistribution(), seed=1337, samplingrate=48000, length=5)
 		channel = gen.GetSignal().GetChannels()[0]
 		self.assertEqual(channel, (0.23550571390294128, 0.06653114721000164, -0.26830328150124894, 0.1715747078045431, -0.6686254326224383))
 		gen.SetDistribution(sumpf.modules.NoiseGenerator.GaussianDistribution())
