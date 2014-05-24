@@ -63,8 +63,8 @@ class SignalAlgebra(channeldataalgebra.ChannelDataAlgebra):
 			samplingrate = self._GetDataset2().GetSamplingRate()
 		if not self._GetDataset1().IsEmpty() and not self._GetDataset2().IsEmpty():
 			if self._GetDataset1().GetSamplingRate() != self._GetDataset2().GetSamplingRate():
-				raise ValueError("The given signals have a different sampling rate")
+				raise ValueError("The given Signals have a different sampling rate. Signal1 has %.2fHz, Signal2 has %.2fHz." % (self._GetDataset1().GetSamplingRate(), self._GetDataset2().GetSamplingRate()))
 			if len(self._GetDataset1()) != len(self._GetDataset2()):
-				raise ValueError("The given signals have a different length")
+				raise ValueError("The given Signals have a different length")
 		return sumpf.Signal(channels=self._GetChannels(), samplingrate=samplingrate, labels=self._GetLabels())
 

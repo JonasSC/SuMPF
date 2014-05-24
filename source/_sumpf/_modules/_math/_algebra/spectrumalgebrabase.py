@@ -63,8 +63,8 @@ class SpectrumAlgebra(channeldataalgebra.ChannelDataAlgebra):
 			resolution = self._GetDataset2().GetResolution()
 		if not self._GetDataset1().IsEmpty() and not self._GetDataset2().IsEmpty():
 			if self._GetDataset1().GetResolution() != self._GetDataset2().GetResolution():
-				raise ValueError("The given spectrums have a different resolution")
+				raise ValueError("The given Spectrums have a different resolution. Spectrum1 has %.2fHz, Spectrum2 has %.2fHz." % (self._GetDataset1().GetResolution(), self._GetDataset2().GetResolution()))
 			if len(self._GetDataset1()) != len(self._GetDataset2()):
-				raise ValueError("The given spectrums have a different length")
+				raise ValueError("The given Spectrums have a different length")
 		return sumpf.Spectrum(channels=self._GetChannels(), resolution=resolution, labels=self._GetLabels())
 
