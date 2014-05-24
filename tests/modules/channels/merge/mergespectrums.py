@@ -31,6 +31,18 @@ class TestMergeSpectrums(unittest.TestCase):
 		self.spectrum4 = sumpf.Spectrum(channels=((41.1, 41.2, 41.3), (42.1, 42.2, 42.3), (43.1, 43.2, 43.3)), resolution=23.0)
 		self.spectrum5 = sumpf.Spectrum(channels=((51.1, 51.2, 51.3, 51.4), (52.1, 52.2, 52.3, 52.4)), resolution=42.0)
 
+	def test_constructor_and_clear(self):
+		"""
+		Tests if adding a list of Spectrums with the constructor works and if removing them with the Clear method works.
+		"""
+		merger = sumpf.modules.MergeSpectrums(spectrums=[self.spectrum1, self.spectrum2])
+		channels = ((11.1, 11.2, 11.3), (12.1, 12.2, 12.3), (13.1, 13.2, 13.3), (21.1, 21.2, 21.3), (22.1, 22.2, 22.3))
+		self.assertEqual(merger.GetOutput().GetChannels(), channels)
+		merger.Clear()
+		self.assertEqual(merger.GetOutput().GetChannels(), ((0.0, 0.0),))
+		quickmerged = sumpf.modules.MergeSpectrums([self.spectrum1, self.spectrum2]).GetOutput()
+		self.assertEqual(quickmerged.GetChannels(), channels)
+
 	def test_merge(self):
 		"""
 		Tests if the merge works as expected

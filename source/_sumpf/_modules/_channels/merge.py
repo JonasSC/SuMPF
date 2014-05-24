@@ -28,10 +28,15 @@ class MergeChannelData(object):
 	FILL_WITH_ZEROS = 2
 	CROP = 3
 
-	def __init__(self):
+	def __init__(self, datasets):
+		"""
+		@param datasets: a list of data sets that shall be added to the merger. As the constructor can not return the data ids for these data sets, they can only be removed from the merger with the Clear method.
+		"""
 		self.__strategy = MergeChannelData._FIRST_DATASET_FIRST
 		self._on_length_conflict = MergeChannelData.RAISE_ERROR_EXCEPT_EMPTY
 		self._data = sumpf.helper.MultiInputData()
+		for d in datasets:
+			self.AddInput(d)
 
 	def AddInput(self, data):
 		"""
@@ -68,6 +73,13 @@ class MergeChannelData(object):
 		@retval : the merged output data set
 		"""
 		raise NotImplementedError("This method should have been overridden in a derived class")
+
+	@sumpf.Trigger("GetOutput")
+	def Clear(self):
+		"""
+		Removes all input data sets from the merger.
+		"""
+		self._data.Clear()
 
 	@sumpf.Output(int)
 	def GetNumberOfOutputChannels(self):
@@ -267,6 +279,12 @@ class MergeSignals(MergeChannelData):
 
 	The merged Signals must have the same sampling rate.
 	"""
+	def __init__(self, signals=[]):
+		"""
+		@param signals: a list of Signals that shall be added to the merger. As the constructor can not return the data ids for these Signals, they can only be removed from the merger with the Clear method.
+		"""
+		MergeChannelData.__init__(self, datasets=signals)
+
 	@sumpf.Output(sumpf.Signal)
 	def GetOutput(self):
 		"""
@@ -334,6 +352,12 @@ class MergeSpectrums(MergeChannelData):
 
 	The merged Spectrums must have the same resolution.
 	"""
+	def __init__(self, spectrums=[]):
+		"""
+		@param spectrums: a list of Spectrums that shall be added to the merger. As the constructor can not return the data ids for these Spectrums, they can only be removed from the merger with the Clear method.
+		"""
+		MergeChannelData.__init__(self, datasets=spectrums)
+
 	@sumpf.Output(sumpf.Spectrum)
 	def GetOutput(self):
 		"""
