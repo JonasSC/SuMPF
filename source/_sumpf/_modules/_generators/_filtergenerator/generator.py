@@ -16,20 +16,22 @@
 
 import sumpf
 from ..spectrumgenerator import SpectrumGenerator
-from .filters import ButterworthLowpass, ButterworthHighpass, BesselLowpass, \
+from .filters import Constant, ButterworthLowpass, ButterworthHighpass, BesselLowpass, \
                      BesselHighpass, ChebyshevLowpass, ChebyshevHighpass, \
                      Bandpass, Bandstop, LaguerreFunction, PinkSlope, RedSlope, \
-                     AWeighting, CWeighting, ConstantGroupDelay, FilterWithCoefficients
+                     Derivative, AWeighting, CWeighting, ConstantGroupDelay, \
+                     FilterWithCoefficients
 from .filterbase import Filter
 
 
 class FilterGenerator(SpectrumGenerator):
 	"""
-	Instances of this class generate a Spectrum from a set of given filters.
+	Instances of this class generate a Spectrum from a given filter function. This
+	filter function will be sampled with the given frequency resolution and the
+	number of samples, that are given as the length of the output Spectrum.
 	The available filter classes are accessible as static attributes of this class.
-	The spectrum can be defined by adding instances of these classes with the
-	Add-, Remove- and ReplaceFilter methods.
 	"""
+	CONSTANT = Constant
 	BUTTERWORTH_LOWPASS = ButterworthLowpass
 	BUTTERWORTH_HIGHPASS = ButterworthHighpass
 	BESSEL_LOWPASS = BesselLowpass
@@ -41,43 +43,28 @@ class FilterGenerator(SpectrumGenerator):
 	LAGUERRE_FUNCTION = LaguerreFunction
 	PINK_SLOPE = PinkSlope
 	RED_SLOPE = RedSlope
+	DERIVATIVE = Derivative
 	A_WEIGHTING = AWeighting
 	C_WEIGHTING = CWeighting
 	CONSTANT_GROUP_DELAY = ConstantGroupDelay
 	FILTER_WITH_COEFFICIENTS = FilterWithCoefficients
 
-	def __init__(self, resolution=None, length=None):
+	def __init__(self, filterfunction=Constant(), resolution=None, length=None):
 		"""
+		@param filterfunction: the filter function that shall be sampled by this generator
 		@param resolution: the resolution of the created spectrum in Hz
 		@param length: the number of samples of the spectrum
 		"""
-		SpectrumGenerator.__init__(self, resolution, length)
-		self.__filters = sumpf.helper.MultiInputData()
+		SpectrumGenerator.__init__(self, resolution=resolution, length=length)
+		self.__filter = filterfunction
 
-	@sumpf.MultiInput(data_type=Filter, remove_method="RemoveFilter", observers="GetSpectrum", replace_method="ReplaceFilter")
-	def AddFilter(self, filter):
+	@sumpf.Input(Filter, "GetSpectrum")
+	def SetFilter(self, filterfunction):
 		"""
-		Adds a filter instance to the generator.
-		@param filter: the filter instance that shall be added
-		@retval : the id under which the filter instance is stored
+		Sets the filter function that shall be sampled.
+		@param filterfunction: the filter function that shall be sampled by this generator
 		"""
-		return self.__filters.Add(filter)
-
-	def RemoveFilter(self, filter_id):
-		"""
-		Removes the filter instance that is stored under the given id from the generator.
-		@param filter_id: the id of the filter that shall be removed
-		"""
-		self.__filters.Remove(filter_id)
-
-	def ReplaceFilter(self, filter_id, filter):
-		"""
-		Replaces the filter instance that is stored under the given id from the
-		generator with a new filter instance.
-		@param filter_id: the id of the filter that shall be replaced
-		@param filter: the new filter instance that shall be stored under the given id
-		"""
-		self.__filters.Replace(filter_id, filter)
+		self.__filter = filterfunction
 
 	def _GetSample(self, f):
 		"""
@@ -85,10 +72,7 @@ class FilterGenerator(SpectrumGenerator):
 		@param f: the frequency of the sample in Hz
 		@retval : the value of the filter's transfer function at the given frequency
 		"""
-		sample = 1.0
-		for factor in self.__filters.GetData():
-			sample *= factor.GetFactor(f)
-		return sample
+		return self.__filter.GetFactor(frequency=f, resolution=self._resolution, length=self._length)
 
 	def _GetLabel(self):
 		"""

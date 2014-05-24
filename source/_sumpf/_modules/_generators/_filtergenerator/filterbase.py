@@ -19,11 +19,13 @@ class Filter(object):
 	An abstract base class for filter classes that generate a complex weighting
 	factor for a given frequency.
 	"""
-	def GetFactor(self, frequency):
+	def GetFactor(self, frequency, resolution, length):
 		"""
 		This calculates the complex factor by which the frequency shall be scaled
 		and phase shifted.
 		@param frequency: the frequency for which the factor shall be calculated
+		@param resolution: the resolution of the calculated spectrum
+		@param length: the length of the calculated spectrum
 		@retval : the value of the filter's transfer function at the given frequency
 		"""
 		raise NotImplementedError("This method should have been overridden in a derived class")
@@ -64,11 +66,13 @@ class FilterWithCoefficients(Filter):
 		self.__coefficients = coefficients
 		self._transform = transform
 
-	def GetFactor(self, frequency):
+	def GetFactor(self, frequency, resolution=None, length=None):
 		"""
 		This calculates the complex factor by which the frequency shall be scaled
 		and phase shifted.
 		@param frequency: the frequency for which the factor shall be calculated
+		@param resolution: the resolution of the calculated spectrum
+		@param length: the length of the calculated spectrum
 		@retval : the value of the filter's transfer function at the given frequency
 		"""
 		s = 1.0j * frequency / self.__frequency
@@ -105,11 +109,13 @@ class FilterWithSlope(Filter):
 		self.__start = start
 		self.__alpha = alpha
 
-	def GetFactor(self, frequency):
+	def GetFactor(self, frequency, resolution=None, length=None):
 		"""
 		This calculates the complex factor by which the frequency shall be scaled
 		and phase shifted.
 		@param frequency: the frequency for which the factor shall be calculated
+		@param resolution: the resolution of the calculated spectrum
+		@param length: the length of the calculated spectrum
 		@retval : the value of the filter's transfer function at the given frequency
 		"""
 		if frequency <= self.__start:
@@ -129,11 +135,13 @@ class Weighting(Filter):
 	def __init__(self):
 		self.__factor = 1.0 / self._GetWeighting(frequency=1000.0)
 
-	def GetFactor(self, frequency):
+	def GetFactor(self, frequency, resolution=None, length=None):
 		"""
 		This calculates the complex factor by which the frequency shall be scaled
 		and phase shifted.
 		@param frequency: the frequency for which the factor shall be calculated
+		@param resolution: the resolution of the calculated spectrum
+		@param length: the length of the calculated spectrum
 		@retval : the value of the filter's transfer function at the given frequency
 		"""
 		return self.__factor * self._GetWeighting(frequency=frequency)

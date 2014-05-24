@@ -36,9 +36,26 @@ class TestFilterGenerator(unittest.TestCase):
 		self.assertEqual(gen.GetSpectrum().GetChannels(), expected_result)	# all samples should be 1.0
 		self.assertEqual(gen.GetSpectrum().GetLabels(), ("Filter",))		# the label of the channel should be as expected
 
+	def test_constant(self):
+		"""
+		Tests the constant filter.
+		"""
+		# test a floating point factor
+		gen = sumpf.modules.FilterGenerator(filterfunction=sumpf.modules.FilterGenerator.CONSTANT(value=0.7),
+		                                    resolution=0.5,
+		                                    length=10)
+		result = sumpf.Spectrum(channels=((0.7,) * 10,), resolution=0.5, labels=("Filter",))
+		self.assertEqual(gen.GetSpectrum(), result)
+		# test an integer factor
+		gen.SetFilter(sumpf.modules.FilterGenerator.CONSTANT(value=4))
+		result = sumpf.Spectrum(channels=((4.0,) * 10,), resolution=0.5, labels=("Filter",))
+		# test a complex factor
+		gen.SetFilter(sumpf.modules.FilterGenerator.CONSTANT(value=3.4j))
+		result = sumpf.Spectrum(channels=((3.4j,) * 10,), resolution=0.5, labels=("Filter",))
+
 	def test_lowpass_highpass(self):
 		"""
-		Tests the IIR filters, namely Butterworth-, Bessel- and Chebychev-filters,
+		Tests the IIR filters, namely Butterworth-, Bessel- and Chebychev-filters
 		for both the lowpass and the highpass application.
 		"""
 		gen = sumpf.modules.FilterGenerator(resolution=200.0, length=100)
@@ -48,37 +65,34 @@ class TestFilterGenerator(unittest.TestCase):
 		lowpasses.append(sumpf.modules.FilterGenerator.BESSEL_LOWPASS(frequency=92.0, order=4))
 		lowpasses.append(sumpf.modules.FilterGenerator.CHEBYSHEV_LOWPASS(frequency=100.0, order=4, ripple=3.0))
 		for l in lowpasses:
-			lp_id = gen.AddFilter(l)
+			gen.SetFilter(l)
 			channel = gen.GetSpectrum().GetMagnitude()[0]
 			self.assertAlmostEqual(channel[0], 1.0)						# a lowpass should have a gain of 1 at low frequencies
 			self.assertAlmostEqual(channel[-1], 0.0)					# a lowpass should have a gain of 0 at high frequencies
-			gen.RemoveFilter(lp_id)
 		# highpasses
 		highpasses = []
 		highpasses.append(sumpf.modules.FilterGenerator.BUTTERWORTH_HIGHPASS(frequency=100.0, order=4))
 		highpasses.append(sumpf.modules.FilterGenerator.BESSEL_HIGHPASS(frequency=100.0, order=4))
 		highpasses.append(sumpf.modules.FilterGenerator.CHEBYSHEV_HIGHPASS(frequency=100.0, order=4, ripple=3.0))
 		for h in highpasses:
-			hp_id = gen.AddFilter(h)
+			gen.SetFilter(h)
 			channel = gen.GetSpectrum().GetMagnitude()[0]
 			self.assertAlmostEqual(channel[0], 0.0)						# a highpass should have a gain of 0 at low frequencies
 			self.assertAlmostEqual(channel[-1], 1.0, 3)					# a highpass should have a gain of 1 at high frequencies
-			gen.RemoveFilter(hp_id)
 
 	def test_bandpass_bandstop(self):
 		"""
 		Tests the bandpass and bandstop filters.
 		"""
-		# bandpass
 		gen = sumpf.modules.FilterGenerator(resolution=10.0, length=100)
-		gen.AddFilter(sumpf.modules.FilterGenerator.BANDPASS(frequency=500, q_factor=5.0))
+		# bandpass
+		gen.SetFilter(sumpf.modules.FilterGenerator.BANDPASS(frequency=500, q_factor=5.0))
 		channel = gen.GetSpectrum().GetMagnitude()[0]
 		self.assertAlmostEqual(channel[50], 1.0)							# gain at resonant frequency should be 1
 		self.assertAlmostEqual(channel[45], 1.0 / math.sqrt(2.0), 1)		# gain at lower cutoff frequency should be sqrt(2)
 		self.assertAlmostEqual(channel[55], 1.0 / math.sqrt(2.0), 1)		# gain at upper cutoff frequency should be sqrt(2)
 		# bandstop
-		gen = sumpf.modules.FilterGenerator(resolution=10.0, length=100)
-		gen.AddFilter(sumpf.modules.FilterGenerator.BANDSTOP(frequency=500, q_factor=5.0))
+		gen.SetFilter(sumpf.modules.FilterGenerator.BANDSTOP(frequency=500, q_factor=5.0))
 		channel = gen.GetSpectrum().GetMagnitude()[0]
 		self.assertAlmostEqual(channel[50], 0.0)							# gain at resonant frequency should be almost 0
 		self.assertAlmostEqual(channel[45], 1.0 / math.sqrt(2.0), 1)		# gain at lower cutoff frequency should be sqrt(2)
@@ -90,15 +104,12 @@ class TestFilterGenerator(unittest.TestCase):
 		"""
 		# create some Laguerre functions
 		gen = sumpf.modules.FilterGenerator(resolution=0.1, length=100)
-		h = gen.AddFilter(sumpf.modules.FilterGenerator.LAGUERRE_FUNCTION(order=0, scaling_factor=1.0))
+		gen.SetFilter(sumpf.modules.FilterGenerator.LAGUERRE_FUNCTION(order=0, scaling_factor=1.0))
 		laguerre0 = gen.GetSpectrum()
-		gen.RemoveFilter(h)
-		h = gen.AddFilter(sumpf.modules.FilterGenerator.LAGUERRE_FUNCTION(order=1, scaling_factor=1.0))
+		gen.SetFilter(sumpf.modules.FilterGenerator.LAGUERRE_FUNCTION(order=1, scaling_factor=1.0))
 		laguerre1 = gen.GetSpectrum()
-		gen.RemoveFilter(h)
-		h = gen.AddFilter(sumpf.modules.FilterGenerator.LAGUERRE_FUNCTION(order=2, scaling_factor=1.0))
+		gen.SetFilter(sumpf.modules.FilterGenerator.LAGUERRE_FUNCTION(order=2, scaling_factor=1.0))
 		laguerre2 = gen.GetSpectrum()
-		gen.RemoveFilter(h)
 		m0 = laguerre0.GetMagnitude()[0]
 		m1 = laguerre1.GetMagnitude()[0]
 		m2 = laguerre2.GetMagnitude()[0]
@@ -123,7 +134,7 @@ class TestFilterGenerator(unittest.TestCase):
 		res = 20
 		gen = sumpf.modules.FilterGenerator(resolution=res, length=int(20000 / res) + 1)
 		# pink slope (1/f)
-		s_id = gen.AddFilter(sumpf.modules.FilterGenerator.PINK_SLOPE(start=5.0 * res))
+		gen.SetFilter(sumpf.modules.FilterGenerator.PINK_SLOPE(start=5.0 * res))
 		channel = gen.GetSpectrum().GetChannels()[0]
 		self.assertEqual(channel[0:5], (1.0,) * 5)
 		integral1 = 0.0
@@ -133,13 +144,47 @@ class TestFilterGenerator(unittest.TestCase):
 		for i in range(2000 // res, 20000 // res + 1):
 			integral2 += channel[i]
 		self.assertLess(abs((integral1 - integral2) / integral2), 0.03)
-		gen.RemoveFilter(s_id)
 		# red slope (1/f**2)
-		gen.AddFilter(sumpf.modules.FilterGenerator.RED_SLOPE(start=5.0 * res))
+		gen.SetFilter(sumpf.modules.FilterGenerator.RED_SLOPE(start=5.0 * res))
 		channel = gen.GetSpectrum().GetChannels()[0]
 		self.assertEqual(channel[0:5], (1.0,) * 5)
 		integral1 = 0.0
 		self.assertAlmostEqual(channel[200 // res] / channel[400 // res], 4.0)
+
+	@unittest.skipUnless(common.lib_available("numpy"), "This test requires the library 'numpy' to be available.")
+	def test_derivative(self):
+		"""
+		Tests the derivative filter function.
+		"""
+		# set up a processing chain to calculate a derivative in the frequency domain.
+		properties = sumpf.modules.ChannelDataProperties(signal_length=2 ** 9, samplingrate=11025)
+		generator = sumpf.modules.SweepGenerator(start_frequency=1.0, stop_frequency=4000.0)
+		sumpf.connect(properties.GetSamplingRate, generator.SetSamplingRate)
+		sumpf.connect(properties.GetSignalLength, generator.SetLength)
+		fft = sumpf.modules.FourierTransform()
+		sumpf.connect(generator.GetSignal, fft.SetSignal)
+		filtergenerator = sumpf.modules.FilterGenerator(filterfunction=sumpf.modules.FilterGenerator.DERIVATIVE())
+		sumpf.connect(properties.GetResolution, filtergenerator.SetResolution)
+		sumpf.connect(properties.GetSpectrumLength, filtergenerator.SetLength)
+		multiply = sumpf.modules.MultiplySpectrums()
+		sumpf.connect(fft.GetSpectrum, multiply.SetInput1)
+		sumpf.connect(filtergenerator.GetSpectrum, multiply.SetInput2)
+		ifft = sumpf.modules.InverseFourierTransform()
+		sumpf.connect(multiply.GetOutput, ifft.SetSpectrum)
+		# compare the result with the helper.differentiate_fft method
+		filterderivative = ifft.GetSignal().GetChannels()[0]
+		functionderivative = sumpf.helper.differentiate_fft(generator.GetSignal().GetChannels()[0])
+		self.assertEqual(len(filterderivative), len(functionderivative))
+		for i in range(len(filterderivative)):
+			self.assertAlmostEqual(filterderivative[i], functionderivative[i])
+		# change the sampling rate and length and test again
+		properties.SetSamplingRate(22050)
+		properties.SetSignalLength(2 ** 10)
+		filterderivative = ifft.GetSignal().GetChannels()[0]
+		functionderivative = sumpf.helper.differentiate_fft(generator.GetSignal().GetChannels()[0])
+		self.assertEqual(len(filterderivative), len(functionderivative))
+		for i in range(len(filterderivative)):
+			self.assertAlmostEqual(filterderivative[i], functionderivative[i], 15)
 
 	@unittest.skipUnless(sumpf.config.get("run_long_tests"), "Long tests are skipped")
 	def test_weighting(self):
@@ -148,7 +193,7 @@ class TestFilterGenerator(unittest.TestCase):
 		filters to weighting factors in the official table for these weighting
 		functions.
 		"""
-		# define reference table, that maps a frequency to a tuple (A-weighting, C-weighting) in dB
+		# define a reference table, that maps a frequency to a tuple (A-weighting, C-weighting) in dB
 		# sometimes there were slight differences between the official weighting
 		# tables and the output of the FilterGenerator. In these cases, the
 		# reference table has been modified and the official values have been noted
@@ -197,9 +242,9 @@ class TestFilterGenerator(unittest.TestCase):
 		resolution = gcd / 10.0
 		# get magnitude data of the weighting functions
 		magnitudes = []
+		gen = sumpf.modules.FilterGenerator(resolution=resolution, length=max(frequencies) / resolution + 1)
 		for w in [sumpf.modules.FilterGenerator.A_WEIGHTING, sumpf.modules.FilterGenerator.C_WEIGHTING]:
-			gen = sumpf.modules.FilterGenerator(resolution=resolution, length=max(frequencies) / resolution + 1)
-			gen.AddFilter(w())
+			gen.SetFilter(w())
 			magnitudes.append(gen.GetSpectrum().GetMagnitude()[0])
 		# compare magnitudes to weighting table
 		for f in frequencies:
@@ -219,7 +264,7 @@ class TestFilterGenerator(unittest.TestCase):
 		sumpf.connect(gen.GetSpectrum, ifft.SetSpectrum)
 		for d in range(1, 10):
 			delay = d * 0.1
-			fid = gen.AddFilter(sumpf.modules.FilterGenerator.CONSTANT_GROUP_DELAY(delay=delay))
+			gen.SetFilter(sumpf.modules.FilterGenerator.CONSTANT_GROUP_DELAY(delay=delay))
 			for i in range(length):
 				self.assertAlmostEqual(gen.GetSpectrum().GetMagnitude()[0][i], 1.0)
 			impulse_response = ifft.GetSignal()
@@ -227,23 +272,6 @@ class TestFilterGenerator(unittest.TestCase):
 			max_index = channel.index(max(channel))
 			index = int(round((delay * impulse_response.GetSamplingRate())))
 			self.assertEqual(max_index, index)
-			fid = gen.RemoveFilter(fid)
-
-	def test_multiple_filters(self):
-		"""
-		This tests, if multiple filters can be added to one FilterGenerator, by
-		building a bandpass from a highpass and a lowpass filter and then comparing
-		it to a generic bandpass.
-		"""
-		res = 20
-		gen1 = sumpf.modules.FilterGenerator(resolution=res, length=int(20000 / res) + 1)
-		gen2 = sumpf.modules.FilterGenerator(resolution=res, length=int(20000 / res) + 1)
-		gen1.AddFilter(sumpf.modules.FilterGenerator.BANDPASS(frequency=1000.0, q_factor=0.5))
-		gen2.AddFilter(sumpf.modules.FilterGenerator.BUTTERWORTH_LOWPASS(frequency=1000.0, order=1))
-		gen2.AddFilter(sumpf.modules.FilterGenerator.BUTTERWORTH_HIGHPASS(frequency=1000.0, order=1))
-		amp = sumpf.modules.AmplifySpectrum(factor=2.0)
-		sumpf.connect(gen2.GetSpectrum, amp.SetInput)
-		common.compare_spectrums_almost_equal(testcase=self, spectrum1=gen1.GetSpectrum(), spectrum2=amp.GetOutput())
 
 	def test_connectors(self):
 		"""
@@ -255,7 +283,7 @@ class TestFilterGenerator(unittest.TestCase):
 		self.assertEqual(gen.SetMaximumFrequency.GetType(), float)
 		self.assertEqual(gen.GetSpectrum.GetType(), sumpf.Spectrum)
 		common.test_connection_observers(testcase=self,
-		                                 inputs=[gen.AddFilter, gen.SetLength, gen.SetResolution, gen.SetMaximumFrequency],
+		                                 inputs=[gen.SetFilter, gen.SetLength, gen.SetResolution, gen.SetMaximumFrequency],
 		                                 noinputs=[],
 		                                 output=gen.GetSpectrum)
 

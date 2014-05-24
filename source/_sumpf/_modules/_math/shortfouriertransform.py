@@ -121,9 +121,8 @@ class ShortFourierTransform(object):
 				block = padded_channel[b:b + block_length]
 				windowed_block = numpy.multiply(block, window.GetChannels()[0])
 				transformed_block = numpy.fft.rfft(windowed_block)
-				group_delay = sumpf.modules.FilterGenerator(resolution=resolution, length=fft_block_length)
-				group_delay.AddFilter(sumpf.modules.FilterGenerator.CONSTANT_GROUP_DELAY(delay=(b - overlap) / self.__signal.GetSamplingRate()))
-				compensated_block = numpy.multiply(transformed_block, group_delay.GetSpectrum().GetChannels()[0])
+				group_delay_filter = sumpf.modules.FilterGenerator(filterfunction=sumpf.modules.FilterGenerator.CONSTANT_GROUP_DELAY(delay=(b - overlap) / self.__signal.GetSamplingRate()), resolution=resolution, length=fft_block_length).GetSpectrum()
+				compensated_block = numpy.multiply(transformed_block, group_delay_filter.GetChannels()[0])
 				channel = numpy.add(channel, compensated_block)
 			channels.append(tuple(channel))
 		return sumpf.Spectrum(channels=channels,

@@ -102,11 +102,10 @@ class SignalEnvelope(object):
 			zeros_appended = True
 		# remove a low frequency offset, so the envelope follows the Signal more tightly
 		spectrum = sumpf.modules.FourierTransform(signal=signal).GetSpectrum()
-		lowpass_generator = sumpf.modules.FilterGenerator(resolution=spectrum.GetResolution(), length=len(spectrum))
-		lowpass_generator.AddFilter(sumpf.modules.FilterGenerator.BESSEL_LOWPASS(frequency=self.__frequency / 2.0, order=self.__order))
-		lowpass_generator.AddFilter(sumpf.modules.FilterGenerator.CONSTANT_GROUP_DELAY(delay=-1.0 / (numpy.pi * self.__frequency)))
-		lowpass = sumpf.modules.CopySpectrumChannels(input=lowpass_generator.GetSpectrum(), channelcount=len(spectrum.GetChannels())).GetOutput()
-		filtered_spectrum = spectrum * lowpass
+		lowpass = sumpf.modules.FilterGenerator(filterfunction=sumpf.modules.FilterGenerator.BESSEL_LOWPASS(frequency=self.__frequency / 2.0, order=self.__order), resolution=spectrum.GetResolution(), length=len(spectrum)).GetSpectrum()
+		time_shift = sumpf.modules.FilterGenerator(filterfunction=sumpf.modules.FilterGenerator.CONSTANT_GROUP_DELAY(delay=-1.0 / (numpy.pi * self.__frequency)), resolution=spectrum.GetResolution(), length=len(spectrum)).GetSpectrum()
+		copied = sumpf.modules.CopySpectrumChannels(input=lowpass * time_shift, channelcount=len(spectrum.GetChannels())).GetOutput()
+		filtered_spectrum = spectrum * copied
 		offset_signal = sumpf.modules.InverseFourierTransform(spectrum=filtered_spectrum).GetSignal()
 		if offset_signal.GetSamplingRate() != self.__signal.GetSamplingRate():
 			offset_signal = sumpf.Signal(channels=offset_signal.GetChannels(), samplingrate=self.__signal.GetSamplingRate())
@@ -132,11 +131,10 @@ class SignalEnvelope(object):
 		the envelope
 		"""
 		spectrum = sumpf.modules.FourierTransform(signal=rectified_signal).GetSpectrum()
-		lowpass_generator = sumpf.modules.FilterGenerator(resolution=spectrum.GetResolution(), length=len(spectrum))
-		lowpass_generator.AddFilter(sumpf.modules.FilterGenerator.BESSEL_LOWPASS(frequency=self.__frequency, order=self.__order))
-		lowpass_generator.AddFilter(sumpf.modules.FilterGenerator.CONSTANT_GROUP_DELAY(delay=-1.0 / (2.0 * numpy.pi * self.__frequency)))
-		lowpass = sumpf.modules.CopySpectrumChannels(input=lowpass_generator.GetSpectrum(), channelcount=len(spectrum.GetChannels())).GetOutput()
-		filtered_spectrum = spectrum * lowpass
+		lowpass = sumpf.modules.FilterGenerator(filterfunction=sumpf.modules.FilterGenerator.BESSEL_LOWPASS(frequency=self.__frequency, order=self.__order), resolution=spectrum.GetResolution(), length=len(spectrum)).GetSpectrum()
+		time_shift = sumpf.modules.FilterGenerator(filterfunction=sumpf.modules.FilterGenerator.CONSTANT_GROUP_DELAY(delay=-1.0 / (2.0 * numpy.pi * self.__frequency)), resolution=spectrum.GetResolution(), length=len(spectrum)).GetSpectrum()
+		copied = sumpf.modules.CopySpectrumChannels(input=lowpass * time_shift, channelcount=len(spectrum.GetChannels())).GetOutput()
+		filtered_spectrum = spectrum * copied
 		unscaled_envelope = sumpf.modules.InverseFourierTransform(spectrum=filtered_spectrum).GetSignal()
 		if unscaled_envelope.GetSamplingRate() != self.__signal.GetSamplingRate():
 			unscaled_envelope = sumpf.Signal(channels=unscaled_envelope.GetChannels(), samplingrate=self.__signal.GetSamplingRate())

@@ -18,6 +18,30 @@ import math
 from .filterbase import Filter, FilterWithCoefficients, FilterWithSlope, Weighting
 
 
+class Constant(Filter):
+	"""
+	Filter class that has a constant factor irrespective of the frequency.
+	"""
+	def __init__(self, value=1.0):
+		"""
+		@param value: the constant factor
+		"""
+		self.__value = value
+		Filter.__init__(self)
+
+	def GetFactor(self, frequency, resolution=None, length=None):
+		"""
+		This calculates the complex factor by which the frequency shall be scaled
+		and phase shifted.
+		@param frequency: the frequency for which the factor shall be calculated
+		@param resolution: the resolution of the calculated spectrum
+		@param length: the length of the calculated spectrum
+		@retval : the value of the filter's transfer function at the given frequency
+		"""
+		return self.__value
+
+
+
 class ButterworthLowpass(FilterWithCoefficients):
 	"""
 	Filter class for a Butterworth lowpass.
@@ -226,6 +250,25 @@ class RedSlope(FilterWithSlope):
 
 
 
+class Derivative(Filter):
+	"""
+	Filter class which creates a transfer function, that raises proportionally to
+	the frequency. This filter can be used to calculate the derivative of a signal
+	in the frequency domain.
+	"""
+	def GetFactor(self, frequency, resolution, length):
+		"""
+		This calculates the complex factor by which the frequency shall be scaled
+		and phase shifted.
+		@param frequency: the frequency for which the factor shall be calculated
+		@param resolution: the resolution of the calculated spectrum
+		@param length: the length of the calculated spectrum
+		@retval : the value of the filter's transfer function at the given frequency
+		"""
+		return 2.0j * math.pi * frequency / (resolution * 2.0 * (length - 1))
+
+
+
 class AWeighting(Weighting):
 	"""
 	Filter class for an A-weighting filter.
@@ -283,11 +326,13 @@ class ConstantGroupDelay(Filter):
 		"""
 		self.__delay = delay
 
-	def GetFactor(self, frequency):
+	def GetFactor(self, frequency, resolution=None, length=None):
 		"""
 		This calculates the complex factor by which the frequency shall be scaled
 		and phase shifted.
 		@param frequency: the frequency for which the factor shall be calculated
+		@param resolution: the resolution of the calculated spectrum
+		@param length: the length of the calculated spectrum
 		@retval : the value of the filter's transfer function at the given frequency
 		"""
 		return math.e ** (-1.0j * self.__delay * 2.0 * math.pi * frequency)
