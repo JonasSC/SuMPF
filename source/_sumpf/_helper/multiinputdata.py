@@ -66,3 +66,10 @@ class MultiInputData(object):
 		"""
 		return self.__data
 
+	def Clear(self):
+		"""
+		Removes all input data from the container.
+		"""
+		self.__ids = []
+		self.__data = []
+

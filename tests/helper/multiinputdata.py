@@ -50,4 +50,7 @@ class TestMultiInputData(unittest.TestCase):
 		self.assertNotEqual(id2, id5)
 		self.assertNotEqual(id2, id6)
 		self.assertNotEqual(id5, id6)
+		# clearing
+		mid.Clear()
+		self.assertEqual(mid.GetData(), [])
 
