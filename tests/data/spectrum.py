@@ -122,17 +122,16 @@ class TestSpectrum(unittest.TestCase):
 		"""
 		Tests the calculation of the continuous phase of a spectrum.
 		"""
-		swp = sumpf.modules.SweepGenerator(length=1000).GetSignal()
+		swp = sumpf.modules.SweepGenerator(length=1024).GetSignal()
 		spk = sumpf.modules.FourierTransform(signal=swp).GetSpectrum()
 		continuous_phase = spk.GetContinuousPhase()[0]
 		group_delay = spk.GetGroupDelay()[0]
 		self.assertEqual(continuous_phase[0], 0.0)
-		integral = group_delay[0]
-		for i in range(1, len(continuous_phase)):
+		integral = 0.0
+		for i in range(1, len(continuous_phase) - 1):
 			self.assertLess(continuous_phase[i], continuous_phase[i - 1])
 			integral -= 2.0 * math.pi * group_delay[i]
-			error = ((continuous_phase[i] - integral) / continuous_phase[i]) ** 2
-			self.assertLess(error, 0.006)
+			self.assertEqual(continuous_phase[i], integral)
 
 	def test_overloaded_operators(self):
 		"""

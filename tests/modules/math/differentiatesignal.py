@@ -53,12 +53,11 @@ class TestDifferentiateSignal(unittest.TestCase):
 		                                      phase=math.pi / 2.0,
 		                                      samplingrate=samplingrate,
 		                                      length=length)
-		drv1 = sumpf.modules.DifferentiateSignal()
-		drv2 = sumpf.modules.DifferentiateSignal(signal=sin.GetSignal())
-		self.assertEqual(drv1.GetOutput(), sumpf.Signal())
-		drv1.SetInput(sin.GetSignal())
-		self.assertEqual(drv1.GetOutput(), drv2.GetOutput())
-		common.compare_signals_almost_equal(self, drv1.GetOutput(), cos.GetSignal() * (2.0 * math.pi * frequency), 6)
+		drv = sumpf.modules.DifferentiateSignal()
+		places = 2
+		self.assertEqual(drv.GetOutput(), sumpf.Signal())
+		drv.SetInput(sin.GetSignal())
+		common.compare_signals_almost_equal(self, drv.GetOutput(), cos.GetSignal() * (2.0 * math.pi * frequency), places)
 
 	def test_connectors(self):
 		"""

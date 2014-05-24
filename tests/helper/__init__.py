@@ -15,7 +15,7 @@
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 from .average import TestAverage
-from .math import TestMath
+from .sumpfmath import TestMath
 from .multiinputdata import TestMultiInputData
 from .normalizepath import TestNormalizePath
 from .numpydummy import TestNumpyDummy

@@ -76,12 +76,12 @@ class TestSweepGenerator(unittest.TestCase):
 		self.gen.SetSweepFunction(sumpf.modules.SweepGenerator.Linear)
 		spk = sumpf.modules.FourierTransform(signal=self.gen.GetSignal()).GetSpectrum()
 		res = spk.GetResolution()
-		self.assertAlmostEqual(spk.GetGroupDelay()[0][int(round(self.f0 / res))], 10.0 / self.sr, 2)
-#		self.assertAlmostEqual(spk.GetGroupDelay()[0][int(round(self.fT / res))], 90.0 / self.sr, 2)
+		self.assertAlmostEqual(spk.GetGroupDelay()[0][int(round(self.f0 / res))], 10.0 / self.sr, 1)
+		self.assertAlmostEqual(spk.GetGroupDelay()[0][int(round(self.fT / res))], 90.0 / self.sr, 1)
 		self.gen.SetSweepFunction(sumpf.modules.SweepGenerator.Exponential)
 		spk = sumpf.modules.FourierTransform(signal=self.gen.GetSignal()).GetSpectrum()
 		self.assertAlmostEqual(spk.GetGroupDelay()[0][int(round(self.f0 / res))], 10.0 / self.sr, 1)
-#		self.assertAlmostEqual(spk.GetGroupDelay()[0][int(round(self.fT / res))], 90.0 / self.sr, 2)
+		self.assertAlmostEqual(spk.GetGroupDelay()[0][int(round(self.fT / res))], 90.0 / self.sr, 1)
 
 	def test_errors(self):
 		"""

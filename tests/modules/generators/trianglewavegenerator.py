@@ -69,7 +69,7 @@ class TestTriangleWaveGenerator(unittest.TestCase):
 			if round(s - 2.0 * self.frequency, 7) != 0.0:
 				self.assertLess(s, 0.0)
 				count += 1
-		self.assertEqual(count, 2 * int(self.frequency))
+		self.assertEqual(count, int(self.frequency))
 		self.gen.SetRaising(0.0)
 		self.gen.SetPhase(math.pi)
 		count = 0
@@ -77,7 +77,7 @@ class TestTriangleWaveGenerator(unittest.TestCase):
 			if round(s + 2.0 * self.frequency, 7) != 0.0:
 				self.assertGreater(s, 0.0)
 				count += 1
-		self.assertEqual(count, 2 * int(self.frequency))
+		self.assertEqual(count, int(self.frequency))
 
 	def test_phase(self):
 		"""

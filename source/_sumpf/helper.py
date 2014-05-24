@@ -20,11 +20,16 @@ These functions are not the core functionality of SuMPF, but they are useful
 inside SuMPF and maybe elsewhere as well.
 """
 
-from ._helper.math import differentiate, binomial_coefficient
+from ._helper.sumpfmath import binomial_coefficient, differentiate
 from ._helper.multiinputdata import MultiInputData
 from ._helper.normalizepath import normalize_path
 from ._helper.walkmodule import walk_module
 
 from ._helper import average
 from ._helper import numpydummy
+
+try:
+	from ._helper.sumpfmath import differentiate_fft, differentiate_spline
+except ImportError:
+	pass
 
