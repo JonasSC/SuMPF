@@ -297,7 +297,7 @@ class MergeSignals(MergeChannelData):
 		else:
 			i = 0
 			if self._on_length_conflict == MergeSignals.RAISE_ERROR_EXCEPT_EMPTY:
-				while data[i].IsEmpty() and i < len(data):
+				while i < len(data) and data[i].IsEmpty():
 					i += 1
 			samplingrate = data[i % len(data)].GetSamplingRate()
 			for d in data[i + 1:]:
@@ -370,13 +370,13 @@ class MergeSpectrums(MergeChannelData):
 		else:
 			i = 0
 			if self._on_length_conflict == MergeSpectrums.RAISE_ERROR_EXCEPT_EMPTY:
-				while data[i].IsEmpty() and i < len(data):
+				while i < len(data) and data[i].IsEmpty():
 					i += 1
 			resolution = data[i % len(data)].GetResolution()
 			for d in data[i + 1:]:
 				if d.GetResolution() != resolution:
 					if self._on_length_conflict != MergeSpectrums.RAISE_ERROR_EXCEPT_EMPTY or not d.IsEmpty():
-						raise RuntimeError("The Spectrums in the merger do not all have the same sampling rate")
+						raise RuntimeError("The Spectrums in the merger do not all have the same resolution")
 			channels, labels = self._GetChannelsAndLabels()
 			return sumpf.Spectrum(channels=channels, resolution=resolution, labels=labels)
 
