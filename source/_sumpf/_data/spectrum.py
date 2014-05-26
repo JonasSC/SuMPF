@@ -133,9 +133,7 @@ class Spectrum(ChannelData):
 		A method for adding this Spectrum and another one.
 		The result will be a newly created Spectrum instance. Neither this Spectrum
 		nor the other Spectrum will be modified.
-		The Spectrums must have the same length and resolution.
-		If one Spectrum has more channels than the other, the surplus channels
-		will be left out of the resulting Spectrum.
+		The Spectrums must have the same length, resolution and channel count.
 		The two Spectrums will be added channel per channel and sample per sample:
 			self = sumpf.Spectrum(channels = ((1, 2), (3, 4)))
 			other = sumpf.Spectrum(channels = ((5, 6), (7, 8)))
@@ -144,7 +142,7 @@ class Spectrum(ChannelData):
 		self.__CheckOtherSpectrum(other)
 		channels = []
 		labels = []
-		for i in range(min(len(self.GetChannels()), len(other.GetChannels()))):
+		for i in range(len(self.GetChannels())):
 			channels.append(tuple(numpy.add(self.GetChannels()[i], other.GetChannels()[i])))
 			labels.append("Sum %i" % (i + 1))
 		return Spectrum(channels=tuple(channels), resolution=self.GetResolution(), labels=tuple(labels))
@@ -154,9 +152,7 @@ class Spectrum(ChannelData):
 		A method for subtracting another Spectrum from this one.
 		The result will be a newly created Spectrum instance. Neither this Spectrum
 		nor the other Spectrum will be modified.
-		The Spectrums must have the same length and resolution.
-		If one Spectrum has more channels than the other, the surplus channels
-		will be left out of the resulting Spectrum.
+		The Spectrums must have the same length, resolution and channel count.
 		The two Spectrums will be subtracted channel per channel and sample per sample:
 			self = sumpf.Spectrum(channels = ((1, 2), (3, 4)))
 			other = sumpf.Spectrum(channels = ((5, 6), (7, 8)))
@@ -165,7 +161,7 @@ class Spectrum(ChannelData):
 		self.__CheckOtherSpectrum(other)
 		channels = []
 		labels = []
-		for i in range(min(len(self.GetChannels()), len(other.GetChannels()))):
+		for i in range(len(self.GetChannels())):
 			channels.append(tuple(numpy.subtract(self.GetChannels()[i], other.GetChannels()[i])))
 			labels.append("Difference %i" % (i + 1))
 		return Spectrum(channels=tuple(channels), resolution=self.GetResolution(), labels=tuple(labels))
@@ -175,9 +171,7 @@ class Spectrum(ChannelData):
 		A method for multiplying this Spectrum and another one or a scalar factor.
 		The result will be a newly created Spectrum instance. Neither this Spectrum
 		nor the other Spectrum will be modified.
-		The Spectrums must have the same length and resolution.
-		If one Spectrum has more channels than the other, the surplus channels
-		will be left out of the resulting Spectrum.
+		The Spectrums must have the same length, resolution and channel count.
 		The two Spectrums will be multiplied channel per channel and sample per sample:
 			self = sumpf.Spectrum(channels = ((1, 2), (3, 4)))
 			other = sumpf.Spectrum(channels = ((5, 6), (7, 8)))
@@ -194,7 +188,7 @@ class Spectrum(ChannelData):
 			labels = self.GetLabels()
 		else:
 			self.__CheckOtherSpectrum(other)
-			for i in range(min(len(self.GetChannels()), len(other.GetChannels()))):
+			for i in range(len(self.GetChannels())):
 				channels.append(tuple(numpy.multiply(self.GetChannels()[i], other.GetChannels()[i])))
 				labels.append("Product %i" % (i + 1))
 		return Spectrum(channels=tuple(channels), resolution=self.GetResolution(), labels=tuple(labels))
@@ -212,24 +206,29 @@ class Spectrum(ChannelData):
 		A method for dividing this Spectrum by another one.
 		The result will be a newly created Spectrum instance. Neither this Spectrum
 		nor the other Spectrum will be modified.
-		The Spectrums must have the same length and sampling rate.
-		If one Spectrum has more channels than the other, the surplus channels
-		will be left out of the resulting Spectrum.
-		The two Spectrums will be added channel per channel and sample per sample:
+		The Spectrums must have the same length, resolution and channel count.
+		The two Spectrums will be divided channel per channel and sample per sample:
 			self = sumpf.Spectrum(channels = ((1, 2), (3, 4)))
 			other = sumpf.Spectrum(channels = ((5, 6), (7, 8)))
 			self / other == sumpf.Spectrum(channels=((1/5, 2/6), (3/7, 4/8)))
 		"""
-		self.__CheckOtherSpectrum(other)
 		channels = []
 		labels = []
-		otherchannels = other.GetChannels()
-		othermagnitude = other.GetMagnitude()
-		for i in range(min(len(self.GetChannels()), len(otherchannels))):
-			if min(othermagnitude[i]) == 0.0 == max(othermagnitude[i]):
-				raise ZeroDivisionError("Spectrum division by a Spectrum with only 0.0-samples")
-			channels.append(tuple(numpy.divide(self.GetChannels()[i], otherchannels[i])))
-			labels.append("Quotient %i" % (i + 1))
+		if isinstance(other, (int, float)):
+			if other == 0.0:
+				raise ZeroDivisionError("Spectrum division by zero")
+			for c in self.GetChannels():
+				channels.append(tuple(numpy.divide(c, other)))
+			labels = self.GetLabels()
+		else:
+			self.__CheckOtherSpectrum(other)
+			otherchannels = other.GetChannels()
+			othermagnitude = other.GetMagnitude()
+			for i in range(len(self.GetChannels())):
+				if min(othermagnitude[i]) == 0.0 == max(othermagnitude[i]):
+					raise ZeroDivisionError("Spectrum division by a Spectrum with only 0.0-samples")
+				channels.append(tuple(numpy.divide(self.GetChannels()[i], otherchannels[i])))
+				labels.append("Quotient %i" % (i + 1))
 		return Spectrum(channels=tuple(channels), resolution=self.GetResolution(), labels=tuple(labels))
 
 	def __CheckOtherSpectrum(self, other):
@@ -243,4 +242,6 @@ class Spectrum(ChannelData):
 			raise ValueError("The other Spectrum has a different length")
 		if other.GetResolution() != self.GetResolution():
 			raise ValueError("The other Spectrum has a different resolution")
+		if len(other.GetChannels()) != len(self.GetChannels()):
+			raise ValueError("The other Spectrum has a different number of channels")
 

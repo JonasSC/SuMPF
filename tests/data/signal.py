@@ -17,6 +17,12 @@
 import unittest
 import sumpf
 
+try:
+	import numpy
+except ImportError:
+	numpy = sumpf.helper.numpydummy
+
+
 class TestSignal(unittest.TestCase):
 	def setUp(self):
 		samples1 = []
@@ -85,7 +91,7 @@ class TestSignal(unittest.TestCase):
 		self.assertNotEqual(self.signal, cmpsignal_channels2)		# 	"
 		self.assertNotEqual(self.signal, cmpsignal_channels3)		# 	"
 		self.assertNotEqual(self.signal, cmpsignal_channels4)		# 	"
-		self.assertNotEqual(self.signal, cmpsignal_samplingrate)	# Signals with different sampling rate should not be recognized as equal
+		self.assertNotEqual(self.signal, cmpsignal_samplingrate)	# Signals with different sampling rates should not be recognized as equal
 		self.assertNotEqual(self.signal, cmpsignal_labels)			# Signals with different labels should not be recognized as equal
 
 	def test_types(self):
@@ -120,31 +126,54 @@ class TestSignal(unittest.TestCase):
 		self.assertRaises(ValueError, self.signal.__getitem__, slice(5, 8, 2))
 		self.assertRaises(ValueError, self.signal.__getitem__, slice(6, 3))
 		# algebra
+		signal1 = sumpf.Signal(channels=(self.samples2, self.samples1), samplingrate=4410.0, labels=("1", "2"))
 		signal2 = sumpf.Signal(channels=(self.samples1,), samplingrate=4410.0, labels=("3", "4"))
 		signal3 = sumpf.Signal(channels=((1.0,) * 12, (2.0,) * 12), samplingrate=4410.0, labels=("5", "6"))
 		signal4 = sumpf.Signal(channels=((1.0,) * 10, (2.0,) * 10), samplingrate=4800.0, labels=("7", "8"))
-		signal5 = sumpf.Signal(channels=((0.0,) * 10, (0.0,) * 10), samplingrate=4410.0, labels=("9", "0"))
+		signal5 = sumpf.Signal(channels=((1.0,) * 10, (0.0,) * 10), samplingrate=4410.0, labels=("9", "0"))
 		# __add__
-		self.assertEqual(self.signal + signal2, sumpf.modules.AddSignals(signal1=self.signal, signal2=signal2).GetOutput())
-		self.assertEqual(signal2 + self.signal, sumpf.modules.AddSignals(signal1=signal2, signal2=self.signal).GetOutput())
-		self.assertRaises(ValueError, self.signal.__add__, signal3)
-		self.assertRaises(ValueError, self.signal.__add__, signal4)
+		self.assertEqual(self.signal + signal1,
+		                 sumpf.Signal(channels=(numpy.add(self.samples1, self.samples2),
+		                                        numpy.add(self.samples2, self.samples1)),
+		                              samplingrate=4410.0,
+		                              labels=("Sum 1", "Sum 2")))
+		self.assertRaises(ValueError, self.signal.__add__, signal3)	# adding a Signal with a different length should fail
+		self.assertRaises(ValueError, self.signal.__add__, signal4)	# adding a Signal with a different sampling rate should fail
+		self.assertRaises(ValueError, self.signal.__add__, signal2)	# adding a Signal with less channels should fail
+		self.assertRaises(ValueError, signal2.__add__, self.signal)	# adding a Signal with more channels should fail
 		# __sub__
-		self.assertEqual(self.signal - signal2, sumpf.modules.SubtractSignals(signal1=self.signal, signal2=signal2).GetOutput())
-		self.assertEqual(signal2 - self.signal, sumpf.modules.SubtractSignals(signal1=signal2, signal2=self.signal).GetOutput())
-		self.assertRaises(ValueError, self.signal.__sub__, signal3)
-		self.assertRaises(ValueError, self.signal.__sub__, signal4)
+		self.assertEqual(self.signal - signal1,
+		                 sumpf.Signal(channels=(numpy.subtract(self.samples1, self.samples2),
+		                                        numpy.subtract(self.samples2, self.samples1)),
+		                              samplingrate=4410.0,
+		                              labels=("Difference 1", "Difference 2")))
+		self.assertRaises(ValueError, self.signal.__sub__, signal3)	# subtracting a Signal with a different length should fail
+		self.assertRaises(ValueError, self.signal.__sub__, signal4)	# subtracting a Signal with a different sampling rate should fail
+		self.assertRaises(ValueError, self.signal.__sub__, signal2)	# subtracting a Signal with less channels should fail
+		self.assertRaises(ValueError, signal2.__sub__, self.signal)	# subtracting a Signal with more channels should fail
 		# __mul__
-		self.assertEqual(self.signal * signal2, sumpf.modules.MultiplySignals(signal1=self.signal, signal2=signal2).GetOutput())
-		self.assertEqual(signal2 * self.signal, sumpf.modules.MultiplySignals(signal1=signal2, signal2=self.signal).GetOutput())
-		self.assertRaises(ValueError, self.signal.__mul__, signal3)
-		self.assertRaises(ValueError, self.signal.__mul__, signal4)
+		self.assertEqual(self.signal * signal1,
+		                 sumpf.Signal(channels=(numpy.multiply(self.samples1, self.samples2),
+		                                        numpy.multiply(self.samples2, self.samples1)),
+		                              samplingrate=4410.0,
+		                              labels=("Product 1", "Product 2")))
 		self.assertEqual(self.signal * 5.2, sumpf.modules.AmplifySignal(input=self.signal, factor=5.2).GetOutput())
-		self.assertEqual(4 * self.signal, sumpf.modules.AmplifySignal(input=self.signal, factor=4).GetOutput())
+		self.assertEqual(4 * self.signal, sumpf.modules.AmplifySignal(input=self.signal, factor=4.0).GetOutput())
+		self.assertRaises(ValueError, self.signal.__mul__, signal3)	# multiplying with a Signal with a different length should fail
+		self.assertRaises(ValueError, self.signal.__mul__, signal4)	# multiplying with a Signal with a different sampling rate should fail
+		self.assertRaises(ValueError, self.signal.__mul__, signal2)	# multiplying with a Signal with less channels should fail
+		self.assertRaises(ValueError, signal2.__mul__, self.signal)	# multiplying with a Signal with more channels should fail
 		# __truediv__
-		self.assertEqual(self.signal / signal2, sumpf.modules.DivideSignals(signal1=self.signal, signal2=signal2).GetOutput())
-		self.assertEqual(signal2 / self.signal, sumpf.modules.DivideSignals(signal1=signal2, signal2=self.signal).GetOutput())
-		self.assertRaises(ValueError, self.signal.__truediv__, signal3)
-		self.assertRaises(ValueError, self.signal.__truediv__, signal4)
-		self.assertRaises(ZeroDivisionError, self.signal.__truediv__, signal5)
+		self.assertEqual(self.signal / signal1,
+		                 sumpf.Signal(channels=(numpy.divide(self.samples1, self.samples2),
+		                                        numpy.divide(self.samples2, self.samples1)),
+		                              samplingrate=4410.0,
+		                              labels=("Quotient 1", "Quotient 2")))
+		self.assertEqual(self.signal / 2.0, sumpf.modules.AmplifySignal(input=self.signal, factor=0.5).GetOutput())
+		self.assertRaises(ValueError, self.signal.__truediv__, signal3)			# dividing by a Signal with a different length should fail
+		self.assertRaises(ValueError, self.signal.__truediv__, signal4)			# dividing by a Signal with a different sampling rate should fail
+		self.assertRaises(ValueError, self.signal.__truediv__, signal2)			# dividing by a Signal with less channels should fail
+		self.assertRaises(ValueError, signal2.__truediv__, self.signal)			# dividing by a Signal with more channels should fail
+		self.assertRaises(ZeroDivisionError, self.signal.__truediv__, signal5)	# dividing by a Signal with a channel with only zero values should fail
+		self.assertRaises(ZeroDivisionError, self.signal.__truediv__, 0.0)		# dividing by zero should fail
 

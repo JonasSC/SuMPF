@@ -107,9 +107,7 @@ class Signal(ChannelData):
 		A method for adding this Signal and another one.
 		The result will be a newly created Signal instance. Neither this Signal
 		nor the other Signal will be modified.
-		The Signals must have the same length and sampling rate.
-		If one Signal has more channels than the other, the surplus channels will
-		be left out of the resulting Signal.
+		The Signals must have the same length, sampling rate and channel count.
 		The two Signals will be added channel per channel and sample per sample:
 			self = sumpf.Signal(channels = ((1, 2), (3, 4)))
 			other = sumpf.Signal(channels = ((5, 6), (7, 8)))
@@ -120,7 +118,7 @@ class Signal(ChannelData):
 		self.__CheckOtherSignal(other)
 		channels = []
 		labels = []
-		for i in range(min(len(self.GetChannels()), len(other.GetChannels()))):
+		for i in range(len(self.GetChannels())):
 			channels.append(tuple(numpy.add(self.GetChannels()[i], other.GetChannels()[i])))
 			labels.append("Sum %i" % (i + 1))
 		return Signal(channels=tuple(channels), samplingrate=self.GetSamplingRate(), labels=tuple(labels))
@@ -130,9 +128,7 @@ class Signal(ChannelData):
 		A method for subtracting another Signal from this one.
 		The result will be a newly created Signal instance. Neither this Signal
 		nor the other Signal will be modified.
-		The Signals must have the same length and sampling rate.
-		If one Signal has more channels than the other, the surplus channels will
-		be left out of the resulting Signal.
+		The Signals must have the same length, sampling rate and channel count.
 		The two Signals will be subtracted channel per channel and sample per sample:
 			self = sumpf.Signal(channels = ((1, 2), (3, 4)))
 			other = sumpf.Signal(channels = ((5, 6), (7, 8)))
@@ -143,7 +139,7 @@ class Signal(ChannelData):
 		self.__CheckOtherSignal(other)
 		channels = []
 		labels = []
-		for i in range(min(len(self.GetChannels()), len(other.GetChannels()))):
+		for i in range(len(self.GetChannels())):
 			channels.append(tuple(numpy.subtract(self.GetChannels()[i], other.GetChannels()[i])))
 			labels.append("Difference %i" % (i + 1))
 		return Signal(channels=tuple(channels), samplingrate=self.GetSamplingRate(), labels=tuple(labels))
@@ -153,9 +149,7 @@ class Signal(ChannelData):
 		A method for multiplying this Signal and another one or a scalar factor.
 		The result will be a newly created Signal instance. Neither this Signal
 		nor the other Signal will be modified.
-		The Signals must have the same length and sampling rate.
-		If one Signal has more channels than the other, the surplus channels will
-		be left out of the resulting Signal.
+		The Signals must have the same length, sampling rate and channel count.
 		The two Signals will be multiplied channel per channel and sample per sample:
 			self = sumpf.Signal(channels = ((1, 2), (3, 4)))
 			other = sumpf.Signal(channels = ((5, 6), (7, 8)))
@@ -172,7 +166,7 @@ class Signal(ChannelData):
 			labels = self.GetLabels()
 		else:
 			self.__CheckOtherSignal(other)
-			for i in range(min(len(self.GetChannels()), len(other.GetChannels()))):
+			for i in range(len(self.GetChannels())):
 				channels.append(tuple(numpy.multiply(self.GetChannels()[i], other.GetChannels()[i])))
 				labels.append("Product %i" % (i + 1))
 		return Signal(channels=tuple(channels), samplingrate=self.GetSamplingRate(), labels=tuple(labels))
@@ -190,9 +184,7 @@ class Signal(ChannelData):
 		A method for dividing this Signal by another one.
 		The result will be a newly created Signal instance. Neither this Signal
 		nor the other Signal will be modified.
-		The Signals must have the same length and sampling rate.
-		If one Signal has more channels than the other, the surplus channels will
-		be left out of the resulting Signal.
+		The Signals must have the same length, sampling rate and channel count.
 		The two Signals will be divided channel per channel and sample per sample:
 			self = sumpf.Signal(channels = ((1, 2), (3, 4)))
 			other = sumpf.Signal(channels = ((5, 6), (7, 8)))
@@ -200,15 +192,22 @@ class Signal(ChannelData):
 		@param other: the Signal by that this one shall be divided
 		@retval : a Signal instance that is the quotient of this Signal and the other one
 		"""
-		self.__CheckOtherSignal(other)
 		channels = []
 		labels = []
-		for i in range(min(len(self.GetChannels()), len(other.GetChannels()))):
-			otherchannel = other.GetChannels()[i]
-			if min(otherchannel) == 0.0 == max(otherchannel):
-				raise ZeroDivisionError("Signal division by a Signal with only 0.0-samples")
-			channels.append(tuple(numpy.divide(self.GetChannels()[i], otherchannel)))
-			labels.append("Quotient %i" % (i + 1))
+		if isinstance(other, (int, float)):
+			if other == 0.0:
+				raise ZeroDivisionError("Signal division by zero")
+			for c in self.GetChannels():
+				channels.append(tuple(numpy.divide(c, other)))
+			labels = self.GetLabels()
+		else:
+			self.__CheckOtherSignal(other)
+			for i in range(len(self.GetChannels())):
+				otherchannel = other.GetChannels()[i]
+				if min(otherchannel) == 0.0 == max(otherchannel):
+					raise ZeroDivisionError("Signal division by a Signal with only 0.0-samples")
+				channels.append(tuple(numpy.divide(self.GetChannels()[i], otherchannel)))
+				labels.append("Quotient %i" % (i + 1))
 		return Signal(channels=tuple(channels), samplingrate=self.GetSamplingRate(), labels=tuple(labels))
 
 	def __CheckOtherSignal(self, other):
@@ -222,4 +221,6 @@ class Signal(ChannelData):
 			raise ValueError("The other Signal has a different length")
 		if other.GetSamplingRate() != self.GetSamplingRate():
 			raise ValueError("The other Signal has a different sampling rate")
+		if len(other.GetChannels()) != len(self.GetChannels()):
+			raise ValueError("The other Signal has a different number of channels")
 
