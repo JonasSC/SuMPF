@@ -52,16 +52,16 @@
 			</tr>
 			<tr>
 				<td colspan="3" class="text">
-					There are three branches in the git repository. These are used
-					to tag the releases and to separate the cutting edge features
-					from the more stable ones.
+					There are several branches in the git repository. These are
+					used to tag the releases and to separate the cutting edge
+					features from the more stable ones.
 				</td>
 			</tr>
 			<tr>
 				<td class="subsection">master</td>
 				<td colspan="2" class="text">
-					This branch can only hold tagged commits. It is used to track
-					the releases of SuMPF.
+					The latest commit in this branch is always a tagged commit.
+					This branch is used to track the releases of SuMPF.
 				</td>
 			</tr>
 			<tr>
@@ -88,7 +88,28 @@
 				<td colspan="2" class="text">
 					This branch might be created to publish features with insufficient
 					documentation or missing unit tests. If no such features exist,
-					this branch is deleted from GitHub.
+					this branch is deleted from the repository.
+				</td>
+			</tr>
+			<tr>
+				<td class="subsection">documentation</td>
+				<td colspan="2" class="text">
+					This branch tracks the changes from "current" and has some
+					patches that help publishing the documentation on GitHub.
+					However, it does not contain the automatically generated
+					documentation.
+				</td>
+			</tr>
+			<tr>
+				<td class="subsection">gh-pages</td>
+				<td colspan="2" class="text">
+					This branch is needed to publish the documentation in a way
+					that it can be accessed on a GitHub website. It tracks the
+					"documentation" branch and only adds patches that create or
+					update the automatically generated documentation. This way it
+					is easy to delete and recreate this branch from time to time
+					to avoid that the repository becomes too large, because it
+					tracks the history of the automatically generated documentation.
 				</td>
 			</tr>
 			<tr>
@@ -112,20 +133,15 @@
 					tests:
 					<ul>
 						<li>
-							<b>Many connectors of the audio processing classes</b><br />
-							The audio processing classes have getter and setter
-							methods that have been turned into connectors. For
-							many of these classes the connectors are not tested
-							to have the correct type or if all setters are notifying
-							the respective getter methods.<br />
-							These unit tests should be added in the near future.
-						</li>
-						<li>
 							<b>The GUI components</b><br />
 							It is hard to test every aspect of a user interface
-							with unit tests. Therefore the GUI unit tests are very
-							shallow. They just create some windows, change some
-							properties and close the windows again.
+							with unit tests. Therefore the fully automatic unit
+							tests for the GUI are very shallow. They just create
+							some windows, change some properties and close the
+							windows again.<br />
+							To improve the test coverage, the GUI features are
+							also tested with interactive tests that ask the user,
+							if the GUI shows the expected behavior.
 						</li>
 						<li>
 							<b>The sound card interface</b><br />
@@ -141,22 +157,32 @@
 					</ul>
 					<br />
 					The unit tests can be started with the run_tests.py file in
-					the tests directory. When these tests are started, make sure
-					to add the source path to the PYTHONPATH environment variable,
-					so the tests are able to import SuMPF.<br />
+					the tests directory. When these tests are started, the run_tests.py
+					script adds the source directory of SuMPF to the PATH environment
+					variable, so that it tests the SuMPF version in that directory.
+					This only works, if the source and the tests directories are
+					in the same parent directory (like they are in the git repository).
+					If the directories have been moved, make sure to add the correct
+					source path to the PYTHONPATH environment variable, so the
+					tests are able to import the version of SuMPF that shall be
+					tested.<br />
 					An easy way to run the tests is starting them with Eclipse/Pydev.
 					To do so, add both the source and the tests folder as Source
 					Folder in the project's properties. Starting the tests through
 					Eclipse has another great advantage: it is possible to run the
 					tests in unit test mode, where each test is run and their results
 					are evaluated by Eclipse and it is possible to run the tests
-					like a normal Python program. The latter mode runs the tests
-					twice, while the config is edited between the runs.<br />
+					like a normal Python program.<br />
+					In the latter mode, which is the same as running the run_tests.py
+					file directly with the Python interpreter, it is possible to
+					run the tests twice, while changing configuration values between
+					the runs. This helps to find bugs that might be masked by a
+					lucky selection of default values in the configuration.<br />
 					<br />
-					At the top of th run_tests.py file some config options are
+					At the top of the run_tests.py file some config options are
 					set to specify which tests are skipped. This way tests with
 					extraordinary run times can be skipped, so that the ordinary
-					test run takes about half a second.
+					test run takes about a second.
 				</td>
 			</tr>
 			<tr>
