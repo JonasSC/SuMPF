@@ -70,62 +70,79 @@ class GuiWindow(sumpf.gui.Window):
 		self.__jack_capture = self.__AddChoice(parent=self.__record_panel, sizer=self.__jack_sizer, label="Playback to", choices=[])
 		self.__jack_playback = self.__AddChoice(parent=self.__record_panel, sizer=self.__jack_sizer, label="Record from", choices=[])
 		self.__UpdatePortlists()
+		if sumpf.config.get("capture_port") < len(self.__jack_capture.GetItems()):
+			self.__jack_capture.SetSelection(sumpf.config.get("capture_port"))
+		if sumpf.config.get("playback_port") < len(self.__jack_playback.GetItems()):
+			self.__jack_playback.SetSelection(sumpf.config.get("playback_port"))
 		# sweep
 		self.__sweep_sizer = self.__AddStaticBoxSizer(parent=self.__record_panel, sizer=self.__record_sizer, label="Sweep properties")
-		self.__sweep_duration = self.__AddFloatField(parent=self.__record_panel, sizer=self.__sweep_sizer, label="Duration [s]", value=2.0)
-		self.__sweep_silenceduration = self.__AddFloatField(parent=self.__record_panel, sizer=self.__sweep_sizer, label="Silence [s]", value=0.06)
-		self.__sweep_start = self.__AddFloatField(parent=self.__record_panel, sizer=self.__sweep_sizer, label="Start frequency [Hz]", value=20, minimum=0.0001, maximum=self.__signalchain.GetSamplingRate() / 2)
-		self.__sweep_stop = self.__AddFloatField(parent=self.__record_panel, sizer=self.__sweep_sizer, label="Stop frequency [Hz]", value=20000, minimum=0.0001, maximum=self.__signalchain.GetSamplingRate() / 2)
+		self.__sweep_duration = self.__AddFloatField(parent=self.__record_panel, sizer=self.__sweep_sizer, label="Duration [s]", value=sumpf.config.get("sweep_duration"))
+		self.__sweep_silenceduration = self.__AddFloatField(parent=self.__record_panel, sizer=self.__sweep_sizer, label="Silence [s]", value=sumpf.config.get("silence_duration"))
+		self.__sweep_start = self.__AddFloatField(parent=self.__record_panel, sizer=self.__sweep_sizer, label="Start frequency [Hz]", value=sumpf.config.get("sweep_start_frequency"), minimum=0.0001, maximum=self.__signalchain.GetSamplingRate() / 2)
+		self.__sweep_stop = self.__AddFloatField(parent=self.__record_panel, sizer=self.__sweep_sizer, label="Stop frequency [Hz]", value=sumpf.config.get("sweep_stop_frequency"), minimum=0.0001, maximum=self.__signalchain.GetSamplingRate() / 2)
 		self.__sweep_scale = self.__AddRadioButtons(parent=self.__record_panel, sizer=self.__sweep_sizer, labels=["Linear", "Exponential"], selected="Exponential")
-		self.__sweep_fade = self.__AddFloatField(parent=self.__record_panel, sizer=self.__sweep_sizer, label="Fade in/out", value=0.02, minimum=0.0)
-		self.__sweep_amplitude = self.__AddFloatField(parent=self.__record_panel, sizer=self.__sweep_sizer, label="Amplitude", value=0.9, minimum=0.0, maximum=1.0)
-		self.__sweep_average = self.__AddIntegerField(parent=self.__record_panel, sizer=self.__sweep_sizer, label="Averages", value=1, minimum=1)
+		if not sumpf.config.get("sweep_exponentially"):
+			self.__sweep_scale["Linear"].SetValue(True)
+		self.__sweep_fade = self.__AddFloatField(parent=self.__record_panel, sizer=self.__sweep_sizer, label="Fade in/out", value=sumpf.config.get("fade_out"), minimum=0.0)
+		self.__sweep_amplitude = self.__AddFloatField(parent=self.__record_panel, sizer=self.__sweep_sizer, label="Amplitude", value=sumpf.config.get("amplitude"), minimum=0.0, maximum=1.0)
+		self.__sweep_average = self.__AddIntegerField(parent=self.__record_panel, sizer=self.__sweep_sizer, label="Averages", value=sumpf.config.get("averages"), minimum=1)
 		# regularization
 		self.__regularization_sizer = self.__AddStaticBoxSizer(parent=self.__record_panel, sizer=self.__record_sizer, label="Regularization properties")
-		self.__regularization_checkbox = self.__AddCheckbox(parent=self.__record_panel, sizer=self.__regularization_sizer, label="Apply regularization", checked=True, function=self.__OnUpdateRegularization)
-		self.__regularization_start = self.__AddFloatField(parent=self.__record_panel, sizer=self.__regularization_sizer, label="Start frequency [Hz]", value=20, minimum=0.0001, maximum=self.__signalchain.GetSamplingRate() / 2)
-		self.__regularization_stop = self.__AddFloatField(parent=self.__record_panel, sizer=self.__regularization_sizer, label="Stop frequency [Hz]", value=20000, minimum=0.0001, maximum=self.__signalchain.GetSamplingRate() / 2)
-		self.__regularization_transition = self.__AddFloatField(parent=self.__record_panel, sizer=self.__regularization_sizer, label="Transition width [Hz]", value=20, minimum=0.0001, maximum=self.__signalchain.GetSamplingRate() / 2)
-		self.__regularization_epsilon_max = self.__AddFloatField(parent=self.__record_panel, sizer=self.__regularization_sizer, label="Epsilon max", value=0.1)
+		self.__regularization_checkbox = self.__AddCheckbox(parent=self.__record_panel, sizer=self.__regularization_sizer, label="Apply regularization", checked=sumpf.config.get("apply_regularization"), function=self.__OnUpdateRegularization)
+		self.__regularization_start = self.__AddFloatField(parent=self.__record_panel, sizer=self.__regularization_sizer, label="Start frequency [Hz]", value=sumpf.config.get("regularization_start_frequency"), minimum=0.0001, maximum=self.__signalchain.GetSamplingRate() / 2)
+		self.__regularization_stop = self.__AddFloatField(parent=self.__record_panel, sizer=self.__regularization_sizer, label="Stop frequency [Hz]", value=sumpf.config.get("regularization_stop_frequency"), minimum=0.0001, maximum=self.__signalchain.GetSamplingRate() / 2)
+		self.__regularization_transition = self.__AddFloatField(parent=self.__record_panel, sizer=self.__regularization_sizer, label="Transition width [Hz]", value=sumpf.config.get("regularization_transition_width"), minimum=0.0001, maximum=self.__signalchain.GetSamplingRate() / 2)
+		self.__regularization_epsilon_max = self.__AddFloatField(parent=self.__record_panel, sizer=self.__regularization_sizer, label="Epsilon max", value=sumpf.config.get("regularization_epsilon"))
 		self.__regularization_update = self.__AddButton(parent=self.__record_panel, sizer=self.__regularization_sizer, label="Update regularization", buttontext="Update", function=self.__OnUpdateRegularization)
+		if not self.__regularization_checkbox.GetValue():
+			self.__regularization_start.Disable()
+			self.__regularization_stop.Disable()
+			self.__regularization_transition.Disable()
+			self.__regularization_epsilon_max.Disable()
+			self.__regularization_update.Disable()
 		# lowpass filter
 		self.__lowpass_sizer = self.__AddStaticBoxSizer(parent=self.__postprocessing_panel, sizer=self.__postprocessing_sizer, label="Lowpass")
-		self.__lowpass_checkbox = self.__AddCheckbox(parent=self.__postprocessing_panel, sizer=self.__lowpass_sizer, label="Lowpass filter", checked=False, function=self.__OnUpdateLowpass)
-		self.__lowpass_frequency = self.__AddFloatField(parent=self.__postprocessing_panel, sizer=self.__lowpass_sizer, label="Cutoff Frequency [Hz]", value=20000, minimum=0.0001)
-		self.__lowpass_frequency.Disable()
-		self.__lowpass_order = self.__AddIntegerField(parent=self.__postprocessing_panel, sizer=self.__lowpass_sizer, label="Order", value=16, minimum=1)
-		self.__lowpass_order.Disable()
+		self.__lowpass_checkbox = self.__AddCheckbox(parent=self.__postprocessing_panel, sizer=self.__lowpass_sizer, label="Lowpass filter", checked=sumpf.config.get("apply_lowpass"), function=self.__OnUpdateLowpass)
+		self.__lowpass_frequency = self.__AddFloatField(parent=self.__postprocessing_panel, sizer=self.__lowpass_sizer, label="Cutoff Frequency [Hz]", value=sumpf.config.get("lowpass_cutoff_frequency"), minimum=0.0001)
+		self.__lowpass_order = self.__AddIntegerField(parent=self.__postprocessing_panel, sizer=self.__lowpass_sizer, label="Order", value=sumpf.config.get("lowpass_order"), minimum=1)
 		self.__lowpass_update = self.__AddButton(parent=self.__postprocessing_panel, sizer=self.__lowpass_sizer, label="Update filter", buttontext="Update", function=self.__OnUpdateLowpass)
-		self.__lowpass_update.Disable()
+		if not self.__lowpass_checkbox.GetValue():
+			self.__lowpass_frequency.Disable()
+			self.__lowpass_order.Disable()
+			self.__lowpass_update.Disable()
 		# window function
 		self.__window_sizer = self.__AddStaticBoxSizer(parent=self.__postprocessing_panel, sizer=self.__postprocessing_sizer, label="Window function")
-		self.__window_checkbox = self.__AddCheckbox(parent=self.__postprocessing_panel, sizer=self.__window_sizer, label="Apply window", checked=False, function=self.__OnUpdateWindow)
+		self.__window_checkbox = self.__AddCheckbox(parent=self.__postprocessing_panel, sizer=self.__window_sizer, label="Apply window", checked=sumpf.config.get("apply_window"), function=self.__OnUpdateWindow)
 		self.__window_functions = {"Bartlett": sumpf.modules.WindowGenerator.Bartlett(),
 		                           "Blackman": sumpf.modules.WindowGenerator.Blackman(),
 		                           "Hamming": sumpf.modules.WindowGenerator.Hamming(),
 		                           "Hanning": sumpf.modules.WindowGenerator.Hanning()}
 		self.__window_function = self.__AddChoice(parent=self.__postprocessing_panel, sizer=self.__window_sizer, label="Window function", choices=list(self.__window_functions.keys()))
-		self.__window_function.SetStringSelection("Hanning")
-		self.__window_function.Disable()
-		self.__window_start = self.__AddFloatField(parent=self.__postprocessing_panel, sizer=self.__window_sizer, label="Window start [s]", value=0.3)
-		self.__window_start.Disable()
-		self.__window_stop = self.__AddFloatField(parent=self.__postprocessing_panel, sizer=self.__window_sizer, label="Window stop [s]", value=0.5)
-		self.__window_stop.Disable()
+		self.__window_function.SetStringSelection(sumpf.config.get("window_function"))
+		self.__window_start = self.__AddFloatField(parent=self.__postprocessing_panel, sizer=self.__window_sizer, label="Window start [s]", value=sumpf.config.get("window_start"))
+		self.__window_stop = self.__AddFloatField(parent=self.__postprocessing_panel, sizer=self.__window_sizer, label="Window stop [s]", value=sumpf.config.get("window_stop"))
 		self.__window_update = self.__AddButton(parent=self.__postprocessing_panel, sizer=self.__window_sizer, label="Update window", buttontext="Update", function=self.__OnUpdateWindow)
-		self.__window_update.Disable()
+		if not self.__window_checkbox.GetValue():
+			self.__window_function.Disable()
+			self.__window_start.Disable()
+			self.__window_stop.Disable()
+			self.__window_update.Disable()
 		# normalization
 		self.__normalize_sizer = self.__AddStaticBoxSizer(parent=self.__postprocessing_panel, sizer=self.__postprocessing_sizer, label="Normalization")
 		self.__normalize_choice = self.__AddChoice(parent=self.__postprocessing_panel, sizer=self.__normalize_sizer, label="Normalize", choices=["Don't normalize", "to average", "to frequency"], function=self.__OnUpdateNormalize)
-		self.__normalize_individually = self.__AddCheckbox(parent=self.__postprocessing_panel, sizer=self.__normalize_sizer, label="Normalize individually", checked=False, function=self.__OnUpdateNormalize)
-		self.__normalize_individually.Disable()
-		self.__normalize_frequency = self.__AddFloatField(parent=self.__postprocessing_panel, sizer=self.__normalize_sizer, label="Frequency [Hz]", value=1000.0)
-		self.__normalize_frequency.Disable()
+		self.__normalize_choice.SetSelection(sumpf.config.get("normalization"))
+		self.__normalize_individually = self.__AddCheckbox(parent=self.__postprocessing_panel, sizer=self.__normalize_sizer, label="Normalize individually", checked=sumpf.config.get("normalize_individually"), function=self.__OnUpdateNormalize)
+		if self.__normalize_choice.GetSelection() != 1:
+			self.__normalize_individually.Disable()
+		self.__normalize_frequency = self.__AddFloatField(parent=self.__postprocessing_panel, sizer=self.__normalize_sizer, label="Frequency [Hz]", value=sumpf.config.get("normalization_frequency"))
+		if self.__normalize_choice.GetSelection() != 2:
+			self.__normalize_frequency.Disable()
 		# view
 		self.__view_sizer = self.__AddStaticBoxSizer(parent=self.__postprocessing_panel, sizer=self.__postprocessing_sizer, label="View")
 		self.__view_showrecent = self.__AddCheckbox(parent=self.__postprocessing_panel, sizer=self.__view_sizer, label="Show recent", checked=True, function=self.__ShowRecent)
 		self.__view_showrecent.Disable()
-		self.__view_start = self.__AddFloatField(parent=self.__postprocessing_panel, sizer=self.__view_sizer, label="Minimal Frequency [Hz]", value=20, minimum=0.0001, maximum=self.__signalchain.GetSamplingRate() / 2)
-		self.__view_stop = self.__AddFloatField(parent=self.__postprocessing_panel, sizer=self.__view_sizer, label="Maximal Frequency [Hz]", value=20000, minimum=0.0001, maximum=self.__signalchain.GetSamplingRate() / 2)
+		self.__view_start = self.__AddFloatField(parent=self.__postprocessing_panel, sizer=self.__view_sizer, label="Minimal Frequency [Hz]", value=sumpf.config.get("view_start_frequency"), minimum=0.0001, maximum=self.__signalchain.GetSamplingRate() / 2)
+		self.__view_stop = self.__AddFloatField(parent=self.__postprocessing_panel, sizer=self.__view_sizer, label="Maximal Frequency [Hz]", value=sumpf.config.get("view_stop_frequency"), minimum=0.0001, maximum=self.__signalchain.GetSamplingRate() / 2)
 		self.__view_update = self.__AddButton(parent=self.__postprocessing_panel, sizer=self.__view_sizer, label="Update View", buttontext="Update", function=self.__UpdateView)
 		# control buttons
 		self.__start = wx.Button(parent=self, label="Start")
@@ -169,6 +186,19 @@ class GuiWindow(sumpf.gui.Window):
 		sumpf.gui.Window.Destroy(self)
 
 	def __Start(self, event=None):
+		# save the excitation parameters to the config
+		self.__statusbar.SetStatusText("Storing configuration")
+		sumpf.config.set("amplitude", self.__sweep_amplitude.GetValue())
+		if self.__sweep_duration.IsEnabled():
+			sumpf.config.set("sweep_duration", self.__sweep_duration.GetValue())
+			sumpf.config.set("silence_duration", self.__sweep_silenceduration.GetValue())
+		sumpf.config.set("sweep_start_frequency", self.__sweep_start.GetValue())
+		sumpf.config.set("sweep_stop_frequency", self.__sweep_stop.GetValue())
+		sumpf.config.set("sweep_exponentially", self.__sweep_scale["Exponential"].GetValue())
+		sumpf.config.set("fade_out", self.__sweep_fade.GetValue())
+		sumpf.config.set("averages", self.__sweep_average.GetValue())
+		sumpf.config.set("capture_port", self.__jack_capture.GetSelection())
+		sumpf.config.set("playback_port", self.__jack_playback.GetSelection())
 		# run the record
 		self.__statusbar.SetStatusText("Recording transfer function")
 		sweep_duration = None
@@ -247,6 +277,13 @@ class GuiWindow(sumpf.gui.Window):
 
 	def __OnUpdateRegularization(self, event=None):
 		epsilon_max = 0.0
+		self.__statusbar.SetStatusText("Storing configuration")
+		sumpf.config.set("apply_regularization", self.__regularization_checkbox.GetValue())
+		sumpf.config.set("regularization_start_frequency", self.__regularization_start.GetValue())
+		sumpf.config.set("regularization_stop_frequency", self.__regularization_stop.GetValue())
+		sumpf.config.set("regularization_transition_width", self.__regularization_transition.GetValue())
+		sumpf.config.set("regularization_epsilon", self.__regularization_epsilon_max.GetValue())
+		self.__statusbar.SetStatusText("Updating GUI")
 		if self.__regularization_checkbox.GetValue():
 			epsilon_max = self.__regularization_epsilon_max.GetValue()
 			self.__regularization_start.Enable()
@@ -254,18 +291,25 @@ class GuiWindow(sumpf.gui.Window):
 			self.__regularization_transition.Enable()
 			self.__regularization_epsilon_max.Enable()
 			self.__regularization_update.Enable()
+			self.__statusbar.SetStatusText("Applying regularization")
 		else:
 			self.__regularization_start.Disable()
 			self.__regularization_stop.Disable()
 			self.__regularization_transition.Disable()
 			self.__regularization_epsilon_max.Disable()
 			self.__regularization_update.Disable()
+			self.__statusbar.SetStatusText("Disabling regularization")
 		self.__signalchain.SetRegularization(start_frequency=self.__regularization_start.GetValue(),
 		                                     stop_frequency=self.__regularization_stop.GetValue(),
 		                                     transition_width=self.__regularization_transition.GetValue(),
 		                                     epsilon_max=epsilon_max)
+		self.__statusbar.SetStatusText("Done")
 
 	def __OnUpdateLowpass(self, event=None):
+		self.__statusbar.SetStatusText("Storing configuration")
+		sumpf.config.set("apply_lowpass", self.__lowpass_checkbox.GetValue())
+		sumpf.config.set("lowpass_cutoff_frequency", self.__lowpass_frequency.GetValue())
+		sumpf.config.set("lowpass_order", self.__lowpass_order.GetValue())
 		if self.__lowpass_checkbox.GetValue():
 			self.__statusbar.SetStatusText("Applying lowpass filter")
 			self.__signalchain.SetLowpass(frequency=self.__lowpass_frequency.GetValue(), order=self.__lowpass_order.GetValue())
@@ -283,6 +327,11 @@ class GuiWindow(sumpf.gui.Window):
 		self.__statusbar.SetStatusText("Done")
 
 	def __OnUpdateWindow(self, event=None):
+		self.__statusbar.SetStatusText("Storing configuration")
+		sumpf.config.set("apply_window", self.__window_checkbox.GetValue())
+		sumpf.config.set("window_function", self.__window_function.GetStringSelection())
+		sumpf.config.set("window_start", self.__window_start.GetValue())
+		sumpf.config.set("window_stop", self.__window_stop.GetValue())
 		if self.__window_checkbox.GetValue():
 			self.__statusbar.SetStatusText("Applying window")
 			function = self.__window_functions[self.__window_function.GetStringSelection()]
@@ -306,6 +355,10 @@ class GuiWindow(sumpf.gui.Window):
 		self.__statusbar.SetStatusText("Done")
 
 	def __OnUpdateNormalize(self, event=None):
+		self.__statusbar.SetStatusText("Storing configuration")
+		sumpf.config.set("normalization", self.__normalize_choice.GetSelection())
+		sumpf.config.set("normalize_individually", self.__normalize_individually.GetValue())
+		sumpf.config.set("normalization_frequency", self.__normalize_frequency.GetValue())
 		self.__statusbar.SetStatusText("Updating GUI")
 		if self.__normalize_choice.GetStringSelection() == "Don't normalize":
 			self.__normalize_individually.Disable()
@@ -334,8 +387,11 @@ class GuiWindow(sumpf.gui.Window):
 		self.__statusbar.SetStatusText("Done")
 
 	def __UpdateView(self, event=None):
-		self.__recordedtransferfunctionpage.SetXInterval((self.__view_start.GetValue(), self.__view_stop.GetValue()))
-		self.__processedtransferfunctionpage.SetXInterval((self.__view_start.GetValue(), self.__view_stop.GetValue()))
+		x_interval = (self.__view_start.GetValue(), self.__view_stop.GetValue())
+		sumpf.config.set("view_start_frequency", x_interval[0])
+		sumpf.config.set("view_stop_frequency", x_interval[1])
+		self.__recordedtransferfunctionpage.SetXInterval(x_interval)
+		self.__processedtransferfunctionpage.SetXInterval(x_interval)
 
 	################
 	# File methods #

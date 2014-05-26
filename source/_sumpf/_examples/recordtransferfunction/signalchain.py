@@ -88,12 +88,12 @@ class SignalChain(object):
 		#
 		# properties
 		self.__properties = sumpf.modules.ChannelDataProperties()
-		self.__silence_duration = sumpf.modules.DurationToLength(duration=2.0, even_length=True)
+		self.__silence_duration = sumpf.modules.DurationToLength(duration=sumpf.config.get("sweep_duration"), even_length=True)
 		sumpf.connect(self.__properties.GetSamplingRate, self.__silence_duration.SetSamplingRate)
 		self.__silence = sumpf.modules.SilenceGenerator()
 		sumpf.connect(self.__silence_duration.GetLength, self.__silence.SetLength)
 		sumpf.connect(self.__properties.GetSamplingRate, self.__silence.SetSamplingRate)
-		self.__sweep_duration = sumpf.modules.DurationToLength(duration=0.06, even_length=True)
+		self.__sweep_duration = sumpf.modules.DurationToLength(duration=sumpf.config.get("silence_duration"), even_length=True)
 		sumpf.connect(self.__properties.GetSamplingRate, self.__sweep_duration.SetSamplingRate)
 		self.__generator = sumpf.modules.SweepGenerator()
 		sumpf.connect(self.__sweep_duration.GetLength, self.__generator.SetLength)
@@ -122,10 +122,10 @@ class SignalChain(object):
 		self.__record_fft = sumpf.modules.FourierTransform()
 		sumpf.connect(self.__average.GetOutput, self.__record_fft.SetSignal)
 		# calculate the excitation out of the recorded Signal
-		self.__regularization = sumpf.modules.RegularizedSpectrumInversion(start_frequency=20.0,
-		                                                                   stop_frequency=20000.0,
-		                                                                   transition_length=int(round(20 * self.__properties.GetResolution())),
-		                                                                   epsilon_max=0.1)
+		self.__regularization = sumpf.modules.RegularizedSpectrumInversion(start_frequency=sumpf.config.get("regularization_start_frequency"),
+		                                                                   stop_frequency=sumpf.config.get("regularization_stop_frequency"),
+		                                                                   transition_length=int(round(sumpf.config.get("regularization_transition_width") / self.__properties.GetResolution())),
+		                                                                   epsilon_max=sumpf.config.get("regularization_epsilon"))
 		sumpf.connect(self.__playback_fft.GetSpectrum, self.__regularization.SetSpectrum)
 		self.__divide = sumpf.modules.DivideSpectrums()
 		sumpf.connect(self.__record_fft.GetSpectrum, self.__divide.SetInput1)
@@ -450,7 +450,7 @@ class SignalChain(object):
 			sumpf.deactivate_output(self.__select_regularization.GetOutput)
 			self.__regularization.SetStartFrequency(start_frequency)
 			self.__regularization.SetStopFrequency(stop_frequency)
-			self.__regularization.SetTransitionLength(int(round(transition_width * self.__properties.GetResolution())))
+			self.__regularization.SetTransitionLength(int(round(transition_width / self.__properties.GetResolution())))
 			self.__regularization.SetEpsilonMax(epsilon_max)
 			self.__select_regularization.SetSelection(self.__REGULARIZE)
 			sumpf.activate_output(self.__select_regularization.GetOutput)

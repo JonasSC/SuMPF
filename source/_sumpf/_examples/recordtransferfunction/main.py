@@ -14,10 +14,12 @@
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 
+from config import create_config
 from signalchain import SignalChain
 from guiwindow import GuiWindow
 
 def mainfunction():
+	create_config()
 	signalchain = SignalChain()
 	window = GuiWindow(signalchain=signalchain)
 	window.Show()
