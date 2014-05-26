@@ -15,10 +15,9 @@
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 import sumpf
-from . import channeldataalgebra
 
 
-class SpectrumAlgebra(channeldataalgebra.ChannelDataAlgebra):
+class SpectrumAlgebra(object):
 	"""
 	A base class for calculations with two Spectrum instances.
 	"""
@@ -29,10 +28,13 @@ class SpectrumAlgebra(channeldataalgebra.ChannelDataAlgebra):
 		@param spectrum2: the second Spectrum-instance for the calculation
 		"""
 		if spectrum1 is None:
-			spectrum1 = sumpf.Spectrum()
+			self.__spectrum1 = sumpf.Spectrum()
+		else:
+			self.__spectrum1 = spectrum1
 		if spectrum2 is None:
-			spectrum2 = sumpf.Spectrum()
-		channeldataalgebra.ChannelDataAlgebra.__init__(self, spectrum1, spectrum2)
+			self.__spectrum2 = sumpf.Spectrum()
+		else:
+			self.__spectrum2 = spectrum2
 
 	@sumpf.Input(sumpf.Spectrum, "GetOutput")
 	def SetInput1(self, spectrum):
@@ -40,7 +42,7 @@ class SpectrumAlgebra(channeldataalgebra.ChannelDataAlgebra):
 		Sets the first Spectrum for the calculation.
 		@param spectrum: the first Spectrum-instance for the calculation
 		"""
-		self._SetDataset1(spectrum)
+		self.__spectrum1 = spectrum
 
 	@sumpf.Input(sumpf.Spectrum, "GetOutput")
 	def SetInput2(self, spectrum):
@@ -48,23 +50,43 @@ class SpectrumAlgebra(channeldataalgebra.ChannelDataAlgebra):
 		Sets the second Spectrum for the calculation.
 		@param spectrum: the second Spectrum-instance for the calculation
 		"""
-		self._SetDataset2(spectrum)
+		self.__spectrum2 = spectrum
 
 	@sumpf.Output(sumpf.Spectrum)
 	def GetOutput(self):
 		"""
 		Calculates and returns the Spectrum resulting from the calculation.
-		The resulting Spectrum will have as many channels as the input Spectrum
-		with the least channels.
+		Before the calculation, the input Spectrums are checked for compatibility.
+		If the Spectrums are incompatible and both not empty, a ValueError is raised.
+		If the Spectrums are incompatible and one Spectrum is empty, an empty
+		Spectrum is returned.
 		@retval : a Spectrum whose channels are the result of the calculation
 		"""
-		resolution = self._GetDataset1().GetResolution()
-		if self._GetDataset1().IsEmpty():
-			resolution = self._GetDataset2().GetResolution()
-		if not self._GetDataset1().IsEmpty() and not self._GetDataset2().IsEmpty():
-			if self._GetDataset1().GetResolution() != self._GetDataset2().GetResolution():
-				raise ValueError("The given Spectrums have a different resolution. Spectrum1 has %.2fHz, Spectrum2 has %.2fHz." % (self._GetDataset1().GetResolution(), self._GetDataset2().GetResolution()))
-			if len(self._GetDataset1()) != len(self._GetDataset2()):
-				raise ValueError("The given Spectrums have a different length")
-		return sumpf.Spectrum(channels=self._GetChannels(), resolution=resolution, labels=self._GetLabels())
+		spectrum1 = self.__spectrum1
+		spectrum2 = self.__spectrum2
+		if spectrum1.GetResolution() != spectrum2.GetResolution():
+			if spectrum1.IsEmpty() or spectrum2.IsEmpty():
+				return sumpf.Spectrum()
+			else:
+				raise ValueError("The Spectrums do not have the same resolution (Spectrum1: %f, Spectrum2: %f)" % (spectrum1.GetResolution(), spectrum2.GetResolution()))
+		elif len(spectrum1.GetChannels()) != len(spectrum2.GetChannels()):
+			if spectrum1.IsEmpty() or spectrum2.IsEmpty():
+				return sumpf.Spectrum(resolution=spectrum1.GetResolution())
+			else:
+				raise ValueError("The Spectrums do not have the same number of channels (Spectrum1: %i, Spectrum2: %i)" % (len(spectrum1.GetChannels()), len(spectrum2.GetChannels())))
+		elif len(spectrum1) != len(spectrum2):
+			if spectrum1.IsEmpty() or spectrum2.IsEmpty():
+				return sumpf.Spectrum(channels=((0.0, 0.0),) * len(spectrum1.GetChannels()), resolution=spectrum1.GetResolution())
+			else:
+				raise ValueError("The Spectrums do not have the same length (Spectrum1: %i, Spectrum2: %i)" % (len(spectrum1), len(spectrum2)))
+		else:
+			return self._Calculate(spectrum1, spectrum2)
+
+	def _Calculate(self, spectrum1, spectrum2):
+		"""
+		Abstract method that shall be overwritten with the actual calculation.
+		@param spectrum1: the first Spectrum for the calculation
+		@param spectrum2: the second Spectrum for the calculation
+		"""
+		raise NotImplementedError("This method should have been overridden in a derived class")
 

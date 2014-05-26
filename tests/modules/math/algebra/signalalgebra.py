@@ -24,94 +24,78 @@ class TestSignalAlgebra(unittest.TestCase):
 	A test case for the algebra modules for Signals.
 	"""
 	def setUp(self):
-		self.signal1 = sumpf.Signal(channels=((4.0, 6.0), (3.0, 5.0)), samplingrate=48000)
-		self.signal2 = sumpf.Signal(channels=((2.0, 1.0), (3.0, 7.0)), samplingrate=48000)
+		self.signal1 = sumpf.Signal(channels=((4.0, 6.0, 9.34), (3.0, 5.0, 8.4)), samplingrate=62.33)
+		self.signal2 = sumpf.Signal(channels=((2.0, 1.0, 14.2), (3.0, 7.0, 2.1)), samplingrate=62.33)
+		self.wrongsamplingrate = 59.78
 
-	def test_add(self):
+	def test_results(self):
 		"""
-		Tests the addition of Signals.
+		Tests if the calculations yield the expected results.
 		"""
-		alg = sumpf.modules.AddSignals(signal1=self.signal1, signal2=self.signal2)
-		res = alg.GetOutput()
-		self.assertEqual(res.GetChannels(), ((6.0, 7.0), (6.0, 12.0)))
-		self.assertEqual(res.GetLabels(), ("Sum 1", "Sum 2"))
-
-	def test_subtract(self):
-		"""
-		Tests the subtraction of Signals.
-		"""
-		alg = sumpf.modules.SubtractSignals(signal1=self.signal1, signal2=self.signal2)
-		res = alg.GetOutput()
-		self.assertEqual(res.GetChannels(), ((2.0, 5.0), (0.0, -2.0)))
-		self.assertEqual(res.GetLabels(), ("Difference 1", "Difference 2"))
-
-	def test_multiply(self):
-		"""
-		Tests the multiplication of Signals.
-		"""
-		alg = sumpf.modules.MultiplySignals(signal1=self.signal1, signal2=self.signal2)
-		res = alg.GetOutput()
-		self.assertEqual(res.GetChannels(), ((8.0, 6.0), (9.0, 35.0)))
-		self.assertEqual(res.GetLabels(), ("Product 1", "Product 2"))
-
-	def test_divide(self):
-		"""
-		Tests the division of Signals.
-		"""
-		alg = sumpf.modules.DivideSignals(signal1=self.signal1, signal2=self.signal2)
-		res = alg.GetOutput()
-		self.assertEqual(res.GetChannels(), ((2.0, 6.0), (1.0, (5.0 / 7.0))))
-		self.assertEqual(res.GetLabels(), ("Quotient 1", "Quotient 2"))
+		self.assertEqual(sumpf.modules.AddSignals(signal1=self.signal1, signal2=self.signal2).GetOutput(), self.signal1 + self.signal2)
+		self.assertEqual(sumpf.modules.SubtractSignals(signal1=self.signal1, signal2=self.signal2).GetOutput(), self.signal1 - self.signal2)
+		self.assertEqual(sumpf.modules.MultiplySignals(signal1=self.signal1, signal2=self.signal2).GetOutput(), self.signal1 * self.signal2)
+		self.assertEqual(sumpf.modules.DivideSignals(signal1=self.signal1, signal2=self.signal2).GetOutput(), self.signal1 / self.signal2)
 
 	def test_compare(self):
 		"""
 		Tests the comparison of Signals.
 		"""
-		alg = sumpf.modules.CompareSignals(signal1=self.signal1, signal2=self.signal2)
-		res = alg.GetOutput()
-		self.assertEqual(res.GetChannels(), ((1.0, 1.0), (0.0, -1.0)))
-		self.assertEqual(res.GetLabels(), ("Comparison 1", "Comparison 2"))
+		comparator = sumpf.modules.CompareSignals()
+		comparator.SetInput1(self.signal1)
+		comparator.SetInput2(self.signal2)
+		result = comparator.GetOutput()
+		self.assertEqual(result.GetChannels(), ((1.0, 1.0, -1.0), (0.0, -1.0, 1.0)))
+		self.assertEqual(result.GetSamplingRate(), 62.33)
+		self.assertEqual(result.GetLabels(), ("Comparison 1", "Comparison 2"))
 
-	def test_emptysignal(self):
+	def test_empty_signals(self):
 		"""
-		Tests if empty Signals are processed as expected.
+		Tests the algebra modules in case at least one of the input Signals is empty.
 		"""
-		signal = sumpf.Signal(channels=((1.0, 2.0, 3.0), (4.0, 5.0, 6.0)), samplingrate=37.0)
-		nullsignal = sumpf.Signal(channels=((0.0, 0.0, 0.0), (0.0, 0.0, 0.0)), samplingrate=37.0)
-		invsignal = sumpf.modules.AmplifySignal(input=signal, factor= -1.0).GetOutput()
-		asignal = sumpf.modules.RelabelSignal(input=signal, labels=("Sum 1", "Sum 2")).GetOutput()
-		ssignal = sumpf.modules.RelabelSignal(input=signal, labels=("Difference 1", "Difference 2")).GetOutput()
-		sinvsignal = sumpf.modules.RelabelSignal(input=invsignal, labels=("Difference 1", "Difference 2")).GetOutput()
-		mnullsignal = sumpf.modules.RelabelSignal(input=nullsignal, labels=("Product 1", "Product 2")).GetOutput()
-		dnullsignal = sumpf.modules.RelabelSignal(input=nullsignal, labels=("Quotient 1", "Quotient 2")).GetOutput()
-		donesignal = sumpf.Signal(channels=((1.0, 1.0),), labels=("Quotient 1",))
-		self.assertEqual(sumpf.modules.AddSignals(signal, sumpf.Signal()).GetOutput(), asignal)
-		self.assertEqual(sumpf.modules.AddSignals(sumpf.Signal(), signal).GetOutput(), asignal)
-		self.assertEqual(sumpf.modules.SubtractSignals(signal, sumpf.Signal()).GetOutput(), ssignal)
-		self.assertEqual(sumpf.modules.SubtractSignals(sumpf.Signal(), signal).GetOutput(), sinvsignal)
-		self.assertEqual(sumpf.modules.MultiplySignals(signal, sumpf.Signal()).GetOutput(), mnullsignal)
-		self.assertEqual(sumpf.modules.MultiplySignals(sumpf.Signal(), signal).GetOutput(), mnullsignal)
-		self.assertRaises(ZeroDivisionError, sumpf.modules.DivideSignals(signal, sumpf.Signal()).GetOutput)
-		self.assertEqual(sumpf.modules.DivideSignals(sumpf.Signal(), signal).GetOutput(), dnullsignal)
-		self.assertEqual(sumpf.modules.DivideSignals(sumpf.Signal(), sumpf.Signal()).GetOutput(), donesignal)
+		wrong_samplingrate = sumpf.Signal(channels=((0.0, 0.0), (0.0, 0.0)), samplingrate=self.wrongsamplingrate)
+		wrong_channelcount = sumpf.Signal(samplingrate=self.signal1.GetSamplingRate())
+		wrong_length = sumpf.Signal(channels=((0.0, 0.0), (0.0, 0.0)), samplingrate=self.signal1.GetSamplingRate(), labels=("These should", "not be copied"))
+		for m in [sumpf.modules.AddSignals(),
+		          sumpf.modules.SubtractSignals(),
+		          sumpf.modules.MultiplySignals(),
+		          sumpf.modules.DivideSignals(),
+		          sumpf.modules.CompareSignals()]:
+			m.SetInput1(self.signal1)
+			m.SetInput2(wrong_samplingrate)
+			self.assertEqual(m.GetOutput(), sumpf.Signal())
+			m.SetInput1(wrong_channelcount)
+			m.SetInput2(self.signal1)
+			self.assertEqual(m.GetOutput(), sumpf.Signal(samplingrate=self.signal1.GetSamplingRate()))
+			m.SetInput1(wrong_length)
+			self.assertEqual(m.GetOutput(), sumpf.Signal(channels=wrong_length.GetChannels(), samplingrate=self.signal1.GetSamplingRate()))
+		self.assertEqual(sumpf.modules.DivideSignals(signal1=wrong_length, signal2=wrong_length).GetOutput(),
+		                 sumpf.Signal(channels=wrong_length.GetChannels(), samplingrate=self.signal1.GetSamplingRate()))
 
 	def test_errors(self):
 		"""
 		Tests if the algebra modules raise errors correctly.
 		"""
-		alg = sumpf.modules.AddSignals(signal1=self.signal1)
-		alg.SetInput2(sumpf.Signal(channels=((0.0, 1.0, 0.0),), samplingrate=48000))
-		self.assertRaises(ValueError, alg.GetOutput)								# shall fail because Signals do not have the same length
-		alg.SetInput2(sumpf.Signal(channels=((0.0, 1.0),), samplingrate=44100))
-		self.assertRaises(ValueError, alg.GetOutput)								# shall fail if Signals do not have the same sampling rate
-		alg.SetInput2(sumpf.Signal(channels=((6.0, 4.0),), samplingrate=48000))		# adding a Signal with different channel count shall not fail. Surplus channels shall simply be cropped.
-		self.assertEqual(alg.GetOutput().GetChannels(), ((10.0, 10.0),))
+		wrong_samplingrate = sumpf.Signal(channels=self.signal2.GetChannels(), samplingrate=self.wrongsamplingrate)
+		wrong_channelcount = sumpf.Signal(channels=(self.signal2.GetChannels()[0],), samplingrate=self.signal1.GetSamplingRate())
+		wrong_length = self.signal2[0:2]
+		for cls in [sumpf.modules.AddSignals,
+		            sumpf.modules.SubtractSignals,
+		            sumpf.modules.MultiplySignals,
+		            sumpf.modules.DivideSignals,
+		            sumpf.modules.CompareSignals]:
+			for wrong_signal in [wrong_samplingrate, wrong_channelcount, wrong_length]:
+				self.assertRaises(ValueError, cls(signal1=self.signal1, signal2=wrong_signal).GetOutput)
 
 	def test_connectors(self):
 		"""
 		Tests if the connectors are properly decorated.
 		"""
-		for m in [sumpf.modules.AddSignals(), sumpf.modules.SubtractSignals(), sumpf.modules.MultiplySignals(), sumpf.modules.DivideSignals(), sumpf.modules.CompareSignals()]:
+		for m in [sumpf.modules.AddSignals(),
+		          sumpf.modules.SubtractSignals(),
+		          sumpf.modules.MultiplySignals(),
+		          sumpf.modules.DivideSignals(),
+		          sumpf.modules.CompareSignals()]:
 			self.assertEqual(m.SetInput1.GetType(), sumpf.Signal)
 			self.assertEqual(m.SetInput2.GetType(), sumpf.Signal)
 			self.assertEqual(m.GetOutput.GetType(), sumpf.Signal)
