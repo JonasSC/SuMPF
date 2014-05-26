@@ -55,7 +55,7 @@ class Toolbar(wx.Panel):
 		self.__AddMenu(label="log y", entries=components, function=self.__OnLogY)
 		if len(components) > 1:
 			self.__AddSeparator()
-			self.__AddMenu(label="hide", entries=components, function=self.__OnHide)
+			self.__AddMenu(label="show", entries=components, function=self.__OnShow)
 		self.__AddSeparator()
 		self.__move_plots_together = self.__AddCheckbox(caption="join moves", onclick=self.__OnMoveTogether, description="Sets if the plots shall be panned and\nzoomed together or independently")
 		# finish
@@ -79,10 +79,10 @@ class Toolbar(wx.Panel):
 				for p in self.__components:
 					self.__components[p]["log y"].Check(check=p in logy)
 					self.__components[p]["log y"].Enable(p in shown)
-					self.__components[p]["hide"].Check(check=p not in shown)
-					self.__components[p]["hide"].Enable()
+					self.__components[p]["show"].Check(check=p in shown)
+					self.__components[p]["show"].Enable()
 				if len(shown) == 1:
-					self.__components[list(shown)[0]]["hide"].Enable(False)
+					self.__components[list(shown)[0]]["show"].Enable(False)
 			self.__move_plots_together.SetValue(move_plots_together)
 		sumpf.gui.run_in_mainloop(update)
 
@@ -178,13 +178,13 @@ class Toolbar(wx.Panel):
 			if event.GetId() == self.__components[c]["log y"].GetId():
 				self.__parent.LogarithmicY(component=c, log=self.__components[c]["log y"].IsChecked())
 
-	def __OnHide(self, event):
+	def __OnShow(self, event):
 		"""
 		Event handler for when a "join moves"-checkbox is clicked.
 		"""
 		for c in self.__components:
-			if event.GetId() == self.__components[c]["hide"].GetId():
-				self.__parent.ShowComponent(component=c, show=not self.__components[c]["hide"].IsChecked())
+			if event.GetId() == self.__components[c]["show"].GetId():
+				self.__parent.ShowComponent(component=c, show=self.__components[c]["show"].IsChecked())
 
 	def __OnMoveTogether(self, event):
 		"""
