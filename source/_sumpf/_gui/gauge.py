@@ -34,11 +34,12 @@ class Gauge(wx.Gauge):
 		chain's calculation.
 		@param progress: a tuple (max, current), where max is the total number of methods, that have to be run and current is the number of those, which have finished
 		"""
-		if progress[1] == 0:
+		if progress[0] != 0 and progress[1] == 0:
 			self.Pulse()
 		else:
 			self.SetRange(progress[0])
 			self.SetValue(progress[1])
+		sumpf.gui.run_in_mainloop(self.Update)
 
 	def AddToStatusBar(self, statusbar, field):
 		"""
