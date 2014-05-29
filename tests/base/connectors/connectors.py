@@ -20,7 +20,7 @@ import unittest
 import sumpf
 
 import _common as common
-from .exampleclass import ExampleClass
+from .exampleclasses import ExampleClass, SetMultipleValuesTestClass
 
 
 class TestConnectors(unittest.TestCase):
@@ -260,6 +260,27 @@ class TestConnectors(unittest.TestCase):
 		self.assertEqual(self.obj2.GetText(), "2")				# Text output should have remained deactivated
 		sumpf.activate_output(self.obj1)
 		self.assertEqual(self.obj2.GetText(), "3")				# Text should have been passed while globally enabling outputs
+
+	def test_set_multiple_values(self):
+		"""
+		Tests the set_multiple_values function.
+		Most assertions will be don in the SetMultipleValuesTestClass class.
+		"""
+		# test with single Inputs
+		testobject = SetMultipleValuesTestClass(testcase=self)
+		sumpf.connect(testobject.GetState, self.obj1.SetValue)
+		testobject.Start()
+		sumpf.set_multiple_values(pairs=[(testobject.SetValue1, 37.9),
+		                                 (testobject.SetValue2, "Broccoli"),
+		                                 (testobject.TriggerValue3,)])
+		self.assertEqual(testobject.GetValue1(), 37.9)
+		self.assertEqual(testobject.GetValue2(), "Broccoli")
+		self.assertEqual(testobject.GetValue3(), True)
+		# test with a MultiInput
+		sumpf.set_multiple_values(pairs=[(testobject.AddValue4, 1),
+		                                 (testobject.AddValue4, 2),
+		                                 (testobject.AddValue4, 3)])
+		self.assertEqual(testobject.GetValue4().GetData(), [1, 2, 3])
 
 	def test_duplicate_calculation(self):
 		"""

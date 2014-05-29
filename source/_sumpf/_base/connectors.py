@@ -16,7 +16,7 @@
 
 from ._connectors.functions import connect, disconnect, disconnect_all, \
                                   deactivate_output, activate_output, \
-                                  destroy_connectors
+                                  destroy_connectors, set_multiple_values
 from ._connectors.decorators import Input, Trigger, MultiInput, Output
 
 from ._connectors import progressindicators

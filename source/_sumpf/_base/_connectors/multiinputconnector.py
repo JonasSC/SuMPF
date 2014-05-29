@@ -40,6 +40,7 @@ class MultiInputConnectorBase(TypedInputConnector):
 			setattr(instance, remove_method, self._remove_method)
 		self.__connections = {}
 		self.__announcements = set()
+		self.__self_announcements = 0
 
 	def __call__(self, *args, **kwargs):
 		"""
@@ -51,7 +52,10 @@ class MultiInputConnectorBase(TypedInputConnector):
 		"""
 		self._Announce()
 		result = self._method(self._instance, *args, **kwargs)
-		self._Report()
+		if self.__self_announcements == 0:
+			self._Report()
+		else:
+			self.__self_announcements -= 1
 		return result
 
 	def NoticeAnnouncement(self, connector):
@@ -61,7 +65,9 @@ class MultiInputConnectorBase(TypedInputConnector):
 		unnecessary computations in forked connection chains can be avoided.
 		@param connector: the connected output connector
 		"""
-		if connector not in self.__announcements:
+		if connector is self:
+			self.__self_announcements += 1
+		elif connector not in self.__announcements:
 			self._progress_indicator.Announce(connector)
 			self.__announcements.add(connector)
 			TypedInputConnector._Announce(self)
@@ -78,7 +84,7 @@ class MultiInputConnectorBase(TypedInputConnector):
 		else:
 			self.__connections[connector] = self._method(self._instance, value)
 		self.__announcements.discard(connector)
-		if self.__announcements == set():
+		if self.__announcements == set() and self.__self_announcements == 0:
 			self._Report()
 
 	def Connect(self, connector):
@@ -96,6 +102,7 @@ class MultiInputConnectorBase(TypedInputConnector):
 		Use the disconnect function instead.
 		@param connector: the connector whose output shall be removed from this connectror's input
 		"""
+		self._Announce()
 		if self.__connections[connector] is not None:
 			self._remove_method.CallMethod(self.__connections[connector])
 			del self.__connections[connector]

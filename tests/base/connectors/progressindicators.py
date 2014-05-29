@@ -20,75 +20,7 @@ import unittest
 import sumpf
 import _common as common
 
-
-class ProgressTester(object):
-	def __init__(self, progress, testcase, count_inputs=True, count_nonobserved_inputs=False, count_outputs=True):
-		self.progress = progress
-		self.testcase = testcase
-		self.progress_indicator = None
-		self.count_inputs = count_inputs
-		self.count_nonobserved_inputs = count_nonobserved_inputs
-		self.count_outputs = count_outputs
-
-	def __Test(self):
-		if self.progress[0] >= self.progress[1]:
-			self.testcase.assertEqual(self.progress_indicator.GetProgressAsTuple(), self.progress)
-			self.testcase.assertAlmostEqual(self.progress_indicator.GetProgressAsFloat(), float(self.progress[1]) / float(self.progress[0]))
-			self.testcase.assertEqual(self.progress_indicator.GetProgressAsPercentage(), int(round(100.0 * float(self.progress[1]) / float(self.progress[0]))))
-
-	def SetProgressIndicator(self, indicator):
-		self.progress_indicator = indicator
-
-	def SetProgress(self, progress):
-		self.progress = progress
-
-	@sumpf.Input(int, ["CachingOutput", "NonCachingOutput"])
-	def Input(self, value):
-		if self.progress_indicator is not None:
-			self.__Test()
-			if self.count_inputs:
-				self.progress = (self.progress[0], self.progress[1] + 1, self.progress[2])
-
-	@sumpf.Input(int)
-	def InputNoObserver(self, value):
-		if self.progress_indicator is not None:
-			self.__Test()
-			if self.count_inputs or self.count_nonobserved_inputs:
-				self.progress = (self.progress[0], self.progress[1] + 1, self.progress[2])
-
-	@sumpf.Trigger(["CachingOutput", "NonCachingOutput"])
-	def Trigger(self, value=None):
-		if self.progress_indicator is not None:
-			self.__Test()
-			if self.count_inputs:
-				self.progress = (self.progress[0], self.progress[1] + 1, self.progress[2])
-
-	@sumpf.MultiInput(int, "Remove", ["CachingOutput", "NonCachingOutput"])
-	def MultiInput(self, value):
-		if self.progress_indicator is not None:
-			self.__Test()
-			if self.count_inputs:
-				self.progress = (self.progress[0], self.progress[1] + 1, self.progress[2])
-		return 1
-
-	def Remove(self, data_id):
-		if self.progress_indicator is not None:
-			self.__Test()
-
-	@sumpf.Output(int, caching=True)
-	def CachingOutput(self):
-		if self.progress_indicator is not None:
-			self.__Test()
-			if self.count_outputs:
-				self.progress = (self.progress[0], self.progress[1] + 1, self.progress[2])
-
-	@sumpf.Output(int, caching=False)
-	def NonCachingOutput(self):
-		if self.progress_indicator is not None:
-			self.__Test()
-			if self.count_outputs:
-				self.progress = (self.progress[0], self.progress[1] + 1, self.progress[2])
-
+from .exampleclasses import SetMultipleValuesTestClass, ProgressTester
 
 
 class TestProgressIndicators(unittest.TestCase):
@@ -200,6 +132,30 @@ class TestProgressIndicators(unittest.TestCase):
 		tester1.SetProgressIndicator(progress_indicator)
 		tester2.SetProgressIndicator(progress_indicator)
 		tester1.Input(1337)
+
+	def test_set_multiple_values(self):
+		"""
+		Tests the set_multiple_values function when a progress_indicator is given.
+		Most assertions will be don in the SetMultipleValuesTestClass and
+		ProgressTester classes.
+		"""
+		# test with single Inputs
+		testobject = SetMultipleValuesTestClass(testcase=self)
+		progress_tester = ProgressTester(progress=(5, 4, "SetMultipleValuesTestClass.GetState has just finished"), testcase=self, count_inputs=False)
+		sumpf.connect(testobject.GetState, progress_tester.Input)
+		testobject.Start()
+		progress_indicator = sumpf.progressindicators.ProgressIndicator_All(message="smv")
+		testobject.SetProgressIndicator(progress_indicator)
+		progress_tester.SetProgressIndicator(progress_indicator)
+		sumpf.set_multiple_values(pairs=[(testobject.SetValue1, 37.9),
+		                                 (testobject.SetValue2, "Broccoli"),
+		                                 (testobject.TriggerValue3,)],
+		                          progress_indicator=progress_indicator)
+		# test with a MultiInput
+		sumpf.set_multiple_values(pairs=[(testobject.AddValue4, 1),
+		                                 (testobject.AddValue4, 2),
+		                                 (testobject.AddValue4, 3)],
+		                          progress_indicator=progress_indicator)
 
 	def test_connectors(self):
 		"""

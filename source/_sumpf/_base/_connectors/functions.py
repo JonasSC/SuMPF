@@ -99,3 +99,30 @@ def destroy_connectors(obj):
 		if isinstance(attributes[a], Connector):
 			setattr(obj, a, None)
 
+def set_multiple_values(pairs, progress_indicator=None):
+	"""
+	Calls multiple setter methods with the respective input parameter.
+	This is useful when changing multiple values in a processing chain of objects
+	that are connected through SuMPF's connectors. If the values were set by calling
+	the setter methods individually, each call would trigger a recalculation in
+	the processing chain. By combining the calls of the setter methods with this
+	function, the unnecessary recalculations are avoided.
+	The methods will be executed in the order in which they are found in the pairs
+	parameter list.
+	@param pairs: a list of tuples (SETTER_METHOD, VALUE), where SETTER_METHOD is the method that shall be called with VALUE as parameter
+	@param progress_indicator: an optional parameter to set a ProgressIndicator that tracks the progress of the calculations in the processing chain
+	"""
+	# set progress indicator
+	if progress_indicator is not None:
+		for p in pairs:
+			progress_indicator.AddMethod(p[0])
+	# announce
+	for p in pairs:
+		p[0].NoticeAnnouncement(p[0])
+	# set values
+	for p in pairs:
+		if len(p) == 2:
+			p[0](p[1])
+		else:
+			p[0]()
+
