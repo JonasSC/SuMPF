@@ -33,14 +33,24 @@ class ProgressIndicator(object):
 	methods should be filtered out and the progress should be calculated from the
 	finished getter methods, to have a better estimate of the processing progress.
 	"""
-	def __init__(self, method, message=None):
+	def __init__(self, method=None, message=None):
 		"""
-		@param method: the method that starts the calculation of which the progress shall be tracked. This method must have been decorated to become a Connector.
+		@param method: a method that starts the calculation of which the progress shall be tracked. This method must have been decorated to become a Connector.
+		@param message: the message that shall be passed by this ProgressIndicator, when none of the observed methods has finished yet
 		"""
 		self.__announcements = set()
 		self.__max_length = 0
-		method.SetProgressIndicator(self)
+		if method is not None:
+			method.SetProgressIndicator(self)
 		self.__message = message
+
+	def AddMethod(self, method):
+		"""
+		Adds a method that starts a calculation, whose progress shall be tracked
+		by this ProgressIndicator.
+		@param method: a method that starts the calculation of which the progress shall be tracked. This method must have been decorated to become a Connector.
+		"""
+		method.SetProgressIndicator(self)
 
 	def Destroy(self):
 		"""
