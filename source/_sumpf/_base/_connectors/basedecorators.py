@@ -105,8 +105,8 @@ class ObservedDecorator(object):
 		"""
 		@param observers: the names of output methods that are affected by calling this setter
 		"""
-		if isinstance(observers, list):
-			self._observers = observers
-		else:
+		if isinstance(observers, str):
 			self._observers = [observers]
+		else:
+			self._observers = observers
 
