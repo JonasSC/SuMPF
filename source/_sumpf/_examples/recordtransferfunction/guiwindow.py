@@ -170,6 +170,8 @@ class GuiWindow(sumpf.gui.Window):
 		# status bar
 		self.__statusbar = self.CreateStatusBar(3)
 		self.__statusbar.SetStatusWidths([-7, -2, -1])
+		self.__gauge = sumpf.gui.Gauge(parent=self.__statusbar)
+		self.__gauge.AddToStatusBar(statusbar=self.__statusbar, field=2)
 		# finish gui initialization
 		self.Fit()
 		self.Layout()
@@ -178,6 +180,7 @@ class GuiWindow(sumpf.gui.Window):
 		sumpf.connect(self.__signalchain.GetUnprocessedImpulseResponse, self.__recordedimpulseresponsepage.SetSignal)
 		sumpf.connect(self.__signalchain.GetProcessedTransferFunction, self.__processedtransferfunctionpage.SetSpectrum)
 		sumpf.connect(self.__signalchain.GetProcessedImpulseResponse, self.__processedimpulseresponsepage.SetSignal)
+		sumpf.connect(self.__signalchain.GetProgress, self.__gauge.SetProgress)
 		# finish
 		self.__UpdateView()
 

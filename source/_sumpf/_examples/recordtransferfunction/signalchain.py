@@ -47,7 +47,9 @@ class SignalChain(object):
 		#  |    |     MULTIPLY   |                    self.__multiply
 		#  |    |          \    /
 		#  |    |          SELECT                     self.__select_regularization
-		#  |    |          RELABEL                    self.__relabel
+		#  |    |             |  \
+		#  |    |             |   RELABEL             self.__relabel_kept
+		#  |    |         RELABEL                     self.__relabel
 		#  |    |           MERGE --------> Plot      self.__merge_utf
 		#  |    |           /    \+-------> Save
 		#  |    |          /      +<------- Load
@@ -138,10 +140,13 @@ class SignalChain(object):
 		sumpf.connect(self.__divide.GetOutput, self.__select_regularization.SetInput2)
 		self.__REGULARIZE = 1
 		self.__NOT_REGULARIZE = 2
+		self.__relabel_kept = sumpf.modules.RelabelSpectrum()
+		sumpf.connect(self.__select_regularization.GetOutput, self.__relabel_kept.SetInput)
 		self.__relabel = sumpf.modules.RelabelSpectrum(labels=("Recent",))
 		sumpf.connect(self.__select_regularization.GetOutput, self.__relabel.SetInput)
 		# unprocessed data
 		self.__merge_utf = sumpf.modules.MergeSpectrums()
+		self.__merge_utf.SetLengthConflictStrategy(sumpf.modules.MergeSpectrums.RAISE_ERROR)
 		sumpf.connect(self.__relabel.GetOutput, self.__merge_utf.AddInput)
 		self.__ifft = sumpf.modules.InverseFourierTransform()
 		sumpf.connect(self.__merge_utf.GetOutput, self.__ifft.SetSpectrum)
@@ -202,14 +207,6 @@ class SignalChain(object):
 		sumpf.connect(self.__merge_ptf.GetOutput, self.__last_ifft.SetSpectrum)
 		self.__merge_pir = sumpf.modules.MergeSignals()
 		sumpf.connect(self.__last_ifft.GetSignal, self.__merge_pir.AddInput)
-		# make outputs publicly available
-		self.GetUnprocessedTransferFunction = self.__merge_utf.GetOutput
-		self.GetUnprocessedImpulseResponse = self.__merge_uir.GetOutput
-		self.GetProcessedTransferFunction = self.__merge_ptf.GetOutput
-		self.GetProcessedImpulseResponse = self.__merge_pir.GetOutput
-		self.GetPlaybackPorts = self.__audio_io.GetPlaybackPorts
-		self.GetCapturePorts = self.__audio_io.GetCapturePorts
-		self.GetSamplingRate = self.__properties.GetSamplingRate
 		# initialize other attributes
 		self.__kept_ids = []
 		self.__loaded_ids_utf = {}
@@ -218,6 +215,16 @@ class SignalChain(object):
 		self.__loaded_ids_pir = {}
 		self.__showrecent = True
 		self.__has_data = False
+		self.__progress_indicator = sumpf.progressindicators.ProgressIndicator_OutputsAndNonObservedInputs()
+		# make outputs publicly available
+		self.GetUnprocessedTransferFunction = self.__merge_utf.GetOutput
+		self.GetUnprocessedImpulseResponse = self.__merge_uir.GetOutput
+		self.GetProcessedTransferFunction = self.__merge_ptf.GetOutput
+		self.GetProcessedImpulseResponse = self.__merge_pir.GetOutput
+		self.GetPlaybackPorts = self.__audio_io.GetPlaybackPorts
+		self.GetCapturePorts = self.__audio_io.GetCapturePorts
+		self.GetSamplingRate = self.__properties.GetSamplingRate
+		self.GetProgress = self.__progress_indicator.GetProgressAsTuple
 
 	def Delete(self):
 		self.__audio_io.Delete()
@@ -241,39 +248,6 @@ class SignalChain(object):
 		@param playback_port: the name of the other program's playback port
 		"""
 		self.__has_data = True
-		# deactivate modules
-		sumpf.deactivate_output(self.__divide.GetOutput)
-		sumpf.deactivate_output(self.__concatenation)
-		sumpf.deactivate_output(self.__generator.GetSignal)
-		sumpf.deactivate_output(self.__fade_sweep.GetSignal)
-		sumpf.deactivate_output(self.__apply_fade.GetOutput)
-		# set parameters
-		self.__generator.SetStartFrequency(start_frequency)
-		self.__generator.SetStopFrequency(stop_frequency)
-		if exponential:
-			self.__generator.SetSweepFunction(sumpf.modules.SweepGenerator.Exponential)
-		else:
-			self.__generator.SetSweepFunction(sumpf.modules.SweepGenerator.Linear)
-		if sweep_duration is not None:
-			self.__sweep_duration.SetDuration(sweep_duration)
-		if silence_duration is not None:
-			self.__silence_duration.SetDuration(silence_duration)
-		fade_length = sumpf.modules.DurationToLength(duration=fade).GetLength()
-		if fade_length == 0:
-			self.__generator.SetInterval(None)
-			self.__fade_sweep.SetRaiseInterval(None)
-			self.__fade_sweep.SetFallInterval(None)
-		else:
-			self.__generator.SetInterval((fade_length, self.__sweep_duration.GetLength() - fade_length))
-			self.__fade_sweep.SetRaiseInterval((0, fade_length))
-			self.__fade_sweep.SetFallInterval((self.__sweep_duration.GetLength() - fade_length, self.__sweep_duration.GetLength()))
-		self.__amplifier.SetAmplificationFactor(amplitude)
-		self.__average.SetNumber(averages)
-		# reactivate modules
-		sumpf.activate_output(self.__fade_sweep.GetSignal)
-		sumpf.activate_output(self.__generator.GetSignal)
-		sumpf.activate_output(self.__apply_fade.GetOutput)
-		sumpf.activate_output(self.__concatenation)
 		# connect to jack
 		input = self.__audio_io.GetInputs()[0]
 		output = self.__audio_io.GetOutputs()[0]
@@ -281,9 +255,32 @@ class SignalChain(object):
 			self.__audio_io.Connect(output, capture_port)
 		if playback_port is not None:
 			self.__audio_io.Connect(playback_port, input)
-		# run the recording
-		self.__average.Start()
-		sumpf.activate_output(self.__divide.GetOutput)
+		# prepare settings
+		method_pairs = []
+		method_pairs.append((self.__generator.SetStartFrequency, start_frequency))
+		method_pairs.append((self.__generator.SetStopFrequency, stop_frequency))
+		if exponential:
+			method_pairs.append((self.__generator.SetSweepFunction, sumpf.modules.SweepGenerator.Exponential))
+		else:
+			method_pairs.append((self.__generator.SetSweepFunction, sumpf.modules.SweepGenerator.Linear))
+		if sweep_duration is not None:
+			method_pairs.append((self.__sweep_duration.SetDuration, sweep_duration))
+		if silence_duration is not None:
+			method_pairs.append((self.__silence_duration.SetDuration, silence_duration))
+		fade_length = sumpf.modules.DurationToLength(duration=fade, samplingrate=self.__properties.GetSamplingRate()).GetLength()
+		if fade_length == 0:
+			method_pairs.append((self.__generator.SetInterval, None))
+			method_pairs.append((self.__fade_sweep.SetRaiseInterval, None))
+			method_pairs.append((self.__fade_sweep.SetFallInterval, None))
+		else:
+			method_pairs.append((self.__generator.SetInterval, (fade_length, -fade_length)))
+			method_pairs.append((self.__fade_sweep.SetRaiseInterval, (0, fade_length)))
+			method_pairs.append((self.__fade_sweep.SetFallInterval, (-fade_length, -1)))
+		method_pairs.append((self.__amplifier.SetAmplificationFactor, amplitude))
+		method_pairs.append((self.__average.SetNumber, averages))
+		method_pairs.append((self.__average.Start,))
+		# apply settings and start recording
+		sumpf.set_multiple_values(pairs=method_pairs, progress_indicator=self.__progress_indicator)
 		# disconnect from jack
 		if capture_port is not None:
 			self.__audio_io.Disconnect(playback_port, input)
@@ -294,15 +291,10 @@ class SignalChain(object):
 		"""
 		Stores the current spectrum in the merger.
 		"""
-		sumpf.deactivate_output(self.__merge_utf)
-		if self.__showrecent:
-			sumpf.disconnect(self.__relabel.GetOutput, self.__merge_utf.AddInput)
-		self.__relabel.SetLabels((label,))
-		data_id = self.__merge_utf.AddInput(self.__relabel.GetOutput())
+		self.__relabel_kept.SetLabels((label,))
+		self.__progress_indicator.AddMethod(self.__merge_utf.AddInput)
+		data_id = self.__merge_utf.AddInput(self.__relabel_kept.GetOutput())
 		self.__kept_ids.append(data_id)
-		if self.__showrecent:
-			sumpf.connect(self.__relabel.GetOutput, self.__merge_utf.AddInput)
-		sumpf.activate_output(self.__merge_utf)
 
 	def Clear(self):
 		"""
@@ -313,6 +305,7 @@ class SignalChain(object):
 			data_id = self.__kept_ids.pop()
 			self.__merge_utf.RemoveInput(data_id)
 		self.ShowRecent(True)
+		self.__progress_indicator.AddMethod(self.__ifft.SetSpectrum)
 		sumpf.activate_output(self.__merge_utf)
 
 	################
@@ -447,35 +440,33 @@ class SignalChain(object):
 		if epsilon_max == 0.0:
 			self.__select_regularization.SetSelection(self.__NOT_REGULARIZE)
 		else:
-			sumpf.deactivate_output(self.__select_regularization.GetOutput)
-			self.__regularization.SetStartFrequency(start_frequency)
-			self.__regularization.SetStopFrequency(stop_frequency)
-			self.__regularization.SetTransitionLength(int(round(transition_width / self.__properties.GetResolution())))
-			self.__regularization.SetEpsilonMax(epsilon_max)
-			self.__select_regularization.SetSelection(self.__REGULARIZE)
-			sumpf.activate_output(self.__select_regularization.GetOutput)
+			method_pairs = [(self.__regularization.SetStartFrequency, start_frequency),
+			                (self.__regularization.SetStopFrequency, stop_frequency),
+			                (self.__regularization.SetTransitionLength, int(round(transition_width / self.__properties.GetResolution()))),
+			                (self.__regularization.SetEpsilonMax, epsilon_max),
+			                (self.__select_regularization.SetSelection, self.__REGULARIZE)]
+			sumpf.set_multiple_values(pairs=method_pairs, progress_indicator=self.__progress_indicator)
 
 	def SetLowpass(self, frequency, order=16):
 		if frequency is not None:
 			sumpf.deactivate_output(self.__bypass_filter.GetOutput)
-			self.__filter.SetFilter(sumpf.modules.FilterGenerator.BUTTERWORTH_LOWPASS(frequency=frequency, order=order))
-			self.__bypass_filter.SetSelection(self.__FILTER)
-			sumpf.activate_output(self.__bypass_filter)
+			method_pairs = [(self.__filter.SetFilter, sumpf.modules.FilterGenerator.BUTTERWORTH_LOWPASS(frequency=frequency, order=order)),
+			                (self.__bypass_filter.SetSelection, self.__FILTER)]
+			sumpf.set_multiple_values(pairs=method_pairs, progress_indicator=self.__progress_indicator)
 		else:
 			self.__bypass_filter.SetSelection(self.__BYPASS)
 
 	def SetWindow(self, function, interval=None):
 		if function is not None:
-			sumpf.deactivate_output(self.__bypass_window.GetOutput)
-			self.__bypass_window.SetSelection(self.__WINDOW)
-			self.__window.SetFunction(function)
+			method_pairs = [(self.__bypass_window.SetSelection, self.__WINDOW),
+			                (self.__window.SetFunction, function)]
 			if interval is not None:
 				linterval = []
 				for d in interval:
-					d2l = sumpf.modules.DurationToLength(duration=d, samplingrate=self.__properties.GetSamplingRate())
-					linterval.append(d2l.GetLength())
-				self.__window.SetFallInterval(linterval)
-			sumpf.activate_output(self.__bypass_window.GetOutput)
+					index = sumpf.modules.DurationToLength(duration=d, samplingrate=self.__properties.GetSamplingRate()).GetLength()
+					linterval.append(index)
+				method_pairs.append((self.__window.SetFallInterval, linterval))
+			sumpf.set_multiple_values(pairs=method_pairs, progress_indicator=self.__progress_indicator)
 		else:
 			self.__bypass_window.SetSelection(self.__BYPASS)
 
@@ -484,14 +475,15 @@ class SignalChain(object):
 		@param normalize: False, to disable normalization, "average" to normalize to average, "frequency" to normalize to frequency
 		"""
 		sumpf.deactivate_output(self.__bypass_normalize.GetOutput)
-		if normalize == "average":
-			self.__select_normalization.SetSelection(self.__AVERAGE)
-			self.__bypass_normalize.SetSelection(self.__NORMALIZE)
-			self.__normalize_avg.SetIndividual(individual)
-		elif normalize == "frequency":
-			self.__select_normalization.SetSelection(self.__FREQUENCY)
-			self.__bypass_normalize.SetSelection(self.__NORMALIZE)
-			self.__normalize_frq.SetFrequency(frequency)
+		if normalize in ("average", "frequency"):
+			method_pairs = [(self.__bypass_normalize.SetSelection, self.__NORMALIZE)]
+			if normalize == "average":
+				method_pairs.append((self.__select_normalization.SetSelection, self.__AVERAGE))
+				method_pairs.append((self.__normalize_avg.SetIndividual, individual))
+			else:
+				method_pairs.append((self.__select_normalization.SetSelection, self.__FREQUENCY))
+				method_pairs.append((self.__normalize_frq.SetFrequency, frequency))
+			sumpf.set_multiple_values(pairs=method_pairs, progress_indicator=self.__progress_indicator)
 		else:
 			self.__bypass_normalize.SetSelection(self.__BYPASS)
 		sumpf.activate_output(self.__bypass_normalize.GetOutput)
@@ -499,10 +491,12 @@ class SignalChain(object):
 	def ShowRecent(self, show=True):
 		if show:
 			if not self.__showrecent:
+				self.__progress_indicator.AddMethod(self.__merge_utf.AddInput)
 				sumpf.connect(self.__relabel.GetOutput, self.__merge_utf.AddInput)
 				self.__showrecent = True
 		else:
-			if self.__showrecent:
+			if self.__showrecent and self.__kept_ids != []:
+				self.__progress_indicator.AddMethod(self.__merge_utf.AddInput)
 				sumpf.disconnect(self.__relabel.GetOutput, self.__merge_utf.AddInput)
 				self.__showrecent = False
 
