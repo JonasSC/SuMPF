@@ -44,7 +44,7 @@ class NUMPY_NPZ(FileFormat):
 		return sumpf.Spectrum(channels=channels, resolution=data["resolution"], labels=data["labels"])
 	@classmethod
 	def Save(cls, filename, data):
-		numpy.savez(filename + "." + cls.ending,
+		numpy.savez_compressed(filename + "." + cls.ending,
 		            channels=data.GetChannels(),
 		            resolution=data.GetResolution(),
 		            labels=data.GetLabels())

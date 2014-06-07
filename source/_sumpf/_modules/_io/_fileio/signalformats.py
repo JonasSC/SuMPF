@@ -53,7 +53,7 @@ class NUMPY_NPZ(FileFormat):
 
 	@classmethod
 	def Save(cls, filename, data):
-		numpy.savez(filename + "." + cls.ending,
+		numpy.savez_compressed(filename + "." + cls.ending,
 		            channels=data.GetChannels(),
 		            samplingrate=data.GetSamplingRate(),
 		            labels=data.GetLabels())
