@@ -186,6 +186,7 @@ class LineManager(object):
 			line = self.__lines[i]
 			line.set_xdata(x_data)
 			line.set_ydata(y_data_list[i])
+			line.set_label(self.__label)
 			color = line.get_color()
 		# create new lines if necessary
 		for i in range(len(self.__lines), len(y_data_list)):
