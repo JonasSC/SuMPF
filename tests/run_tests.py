@@ -14,6 +14,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 
+import argparse
 import os
 import sys
 import unittest
@@ -39,9 +40,39 @@ config = {"run_incomplete_tests": False, 	# if False, incomplete tests will be s
           "source_dir": os.path.join("..", "source"),
           "test_dir": os.path.join("..", "tests")
          }
-
 sumpf.config.create_config(variables=config)
 
+# parse command line arguments
+if __name__ == "__main__":
+	parser = argparse.ArgumentParser(description="The test suite for SuMPF.",
+	                                 formatter_class=argparse.RawDescriptionHelpFormatter,
+	                                 epilog="optional arguments for the unit tests:\n" + \
+	                                        "  -v, --verbose         Verbose output\n" + \
+	                                        "  -q, --quiet           Minimal output\n" + \
+	                                        "  -f, --failfast        Stop on first failure\n" + \
+	                                        "  -c, --catch           Catch control-C and display results\n" + \
+	                                        "  -b, --buffer          Buffer stdout and stderr during test runs")
+	parser.add_argument("--incomplete", dest="run_incomplete_tests", action="store_true", default=False, help="Attempt to run tests whose implementation is incomplete or faulty.")
+	parser.add_argument("-w, --write_to_disk", dest="write_to_disk", action="store_true", default=False, help="Run tests that write to the hard drive.")
+	parser.add_argument("-g, --gui", dest="test_gui", action="store_true", default=False, help="Run tests for the GUI components.")
+	parser.add_argument("-l, --long", dest="run_long_tests", action="store_true", default=False, help="Run tests that take a long time to complete.")
+	parser.add_argument("-t, --time_variant", dest="run_time_variant_tests", action="store_true", default=False, help="Run tests whose result is non deterministic. These tests might pass and fail in two consecutive runs without any changes to the code.")
+	parser.add_argument("-i, --interactive", dest="run_interactive_tests", action="store_true", default=False, help="Run tests that require input from the user.")
+	parser.add_argument("-C, --dont_modify_config", dest="modify_config", action="store_false", default=True, help="Do not modify the configuration to avoid that errors are masked by luckily chosen default values.")
+	parser.add_argument("-N, --unload_numpy", dest="unload_numpy", action="store_true", default=False, help="Unload the NumPy library to see how SuMPF performs without it.")
+	parser.add_argument("-r, --repetitions", dest="repetitions", action="store", type=int, default=1, metavar="N", help="The number of times, the tests are repeated.")
+	args, unittest_args = parser.parse_known_args()
+	sys.argv[1:] = unittest_args
+	sumpf.config.set("run_incomplete_tests", args.run_incomplete_tests)
+	sumpf.config.set("write_to_disk", args.write_to_disk)
+	sumpf.config.set("test_gui", args.test_gui)
+	sumpf.config.set("run_long_tests", args.run_long_tests)
+	sumpf.config.set("run_time_variant_tests", args.run_time_variant_tests)
+	sumpf.config.set("run_interactive_tests", args.run_interactive_tests)
+	sumpf.config.set("modify_config", args.modify_config)
+	sumpf.config.set("unload_numpy", args.unload_numpy)
+
+# unload NumPy if requested
 if sumpf.config.get("unload_numpy"):
 	common.make_lib_unavailable("numpy")
 	common.unload_sumpf()
@@ -50,11 +81,13 @@ if sumpf.config.get("unload_numpy"):
 	import _common as common
 	sumpf.config.create_config(variables=config)
 
+# print a notification when the gui shall be tested, but is not available
 if (not hasattr(sumpf, "gui")) and (sumpf.config.get("test_gui") or sumpf.config.get("run_interactive_tests")):
 	sumpf.config.set("test_gui", False)
 	sumpf.config.set("run_interactive_tests", False)
 	print("Tests of the GUI and interactive tests are skipped because of a missing library.")
 
+# import the tests
 from base import *
 from data import *
 from examples import *
@@ -63,13 +96,21 @@ from helper import *
 from modules import *
 from other import *
 
-if __name__ == "__main__":
-	print(("Testing %s" % str(sumpf)))
-	unittest.main(exit=False)
+# define the configuration modifications
+def modify_config():
 	if sumpf.config.get("modify_config"):
 		sumpf.config.set("default_samplingrate", sumpf.config.get("default_samplingrate") + 13.6)
 		sumpf.config.set("default_signal_length", sumpf.config.get("default_signal_length") + 7)
-		sumpf.config.set("default_frequency", sumpf.config.get("default_frequency") / 3.0)
+		sumpf.config.set("default_frequency", sumpf.config.get("default_frequency") / 1.9)
 		sumpf.config.set("caching", not sumpf.config.get("caching"))
-		unittest.main()
+modify_config()
+
+
+# run the tests
+if __name__ == "__main__":
+	print(("Testing %s" % str(sumpf)))
+	for i in range(1, args.repetitions):
+		unittest.main(exit=False)
+		modify_config()
+	unittest.main()
 

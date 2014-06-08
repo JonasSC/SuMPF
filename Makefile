@@ -20,6 +20,41 @@ mrproper:	clean
 	rm -rf documentation/moduledoc
 	rm -f documentation/statistics.htm
 
+test_quick:
+	# runs the quick standard tests of SuMPF's test suite with the default
+	# Python interpreter.
+	cd tests && python run_tests.py
+
+test:
+	# runs SuMPF's test suite with the default Python interpreter. This run
+	# includes tests that write to disk and tests that take a longer time to run.
+	# It skips gui tests, time variant tests and interactive tests.
+	cd tests && python run_tests.py -w -l
+
+test3:
+	# runs SuMPF's test suite with the Python3 interpreter. This run includes
+	# tests that write to disk and tests that take a longer time to run. It skips
+	# gui tests, time variant tests and interactive tests.
+	cd tests && python3 run_tests.py -w -l
+
+test_pypy:
+	# runs SuMPF's test suite with the PyPy interpreter. This run includes tests
+	# that write to disk and tests that take a longer time to run. It skips gui
+	# tests, time variant tests and interactive tests.
+	cd tests && pypy run_tests.py -w -l
+
+test_all:
+	# runs SuMPF's full test suite with all interpreters that are installed and
+	# supported by SuMPF. This starts with running all tests except for the
+	# incomplete ones with the standard python interpreter. After that all tests
+	# except for the incomplete, the interactive and the gui tests are run twice
+	# with each installed and supported interpreter (the standard one (most
+	# likely Python2), Python3 and PyPy).
+	cd tests && python run_tests.py -w -g -l -t -i
+	cd tests && python run_tests.py -w -l -t -r 2
+	if which python3 > /dev/null; then cd tests && python3 run_tests.py -w -l -t -r 2; fi
+	if which pypy > /dev/null; then cd tests && pypy run_tests.py -w -l -t -r 2; fi
+
 doc:
 	# creates the documentation files that are created automatically.
 	# The files can be found in the ./documentation folder
