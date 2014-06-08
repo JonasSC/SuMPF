@@ -28,12 +28,14 @@ class MergeChannelData(object):
 	FILL_WITH_ZEROS = 2
 	CROP = 3
 
-	def __init__(self, datasets):
+	def __init__(self, datasets, merge_strategy, on_length_conflict):
 		"""
 		@param datasets: a list of data sets that shall be added to the merger. As the constructor can not return the data ids for these data sets, they can only be removed from the merger with the Clear method.
+		@param merge_strategy: a function that implements the strategy according to which the channels of the output data are sorted
+		@param on_length_conflict: one of the merger class's flags for length conflict resolution (e.g. RAISE_ERROR_EXCEPT_EMPTY)
 		"""
-		self.__strategy = MergeChannelData._FIRST_DATASET_FIRST
-		self._on_length_conflict = MergeChannelData.RAISE_ERROR_EXCEPT_EMPTY
+		self.__strategy = merge_strategy
+		self._on_length_conflict = on_length_conflict
 		self._data = sumpf.helper.MultiInputData()
 		for d in datasets:
 			self.AddInput(d)
@@ -96,7 +98,7 @@ class MergeChannelData(object):
 	def SetMergeStrategy(self, strategy):
 		"""
 		Sets the strategy according to which the channels of the output data are sorted.
-		@param strategy: a method that returns a tuple of channels
+		@param strategy: a function that returns a tuple of channels
 		"""
 		self.__strategy = strategy
 
@@ -114,7 +116,7 @@ class MergeChannelData(object):
 			sets with zeros until all sets have the same length.
 		CROP for cropping the length of all added data sets to the length of the
 			shortest data set.
-		@param strategy: one of the MergeChannelData's flags for length conflict resolution
+		@param strategy: one of the merger class's flags for length conflict resolution
 		"""
 		self._on_length_conflict = strategy
 
@@ -279,11 +281,13 @@ class MergeSignals(MergeChannelData):
 
 	The merged Signals must have the same sampling rate.
 	"""
-	def __init__(self, signals=[]):
+	def __init__(self, signals=[], merge_strategy=MergeChannelData._FIRST_DATASET_FIRST, on_length_conflict=MergeChannelData.RAISE_ERROR_EXCEPT_EMPTY):
 		"""
 		@param signals: a list of Signals that shall be added to the merger. As the constructor can not return the data ids for these Signals, they can only be removed from the merger with the Clear method.
+		@param merge_strategy: a function that implements the strategy according to which the channels of the output Signal are sorted
+		@param on_length_conflict: one of the flags of the MergeSignals class for length conflict resolution (e.g. RAISE_ERROR_EXCEPT_EMPTY)
 		"""
-		MergeChannelData.__init__(self, datasets=signals)
+		MergeChannelData.__init__(self, datasets=signals, merge_strategy=merge_strategy, on_length_conflict=on_length_conflict)
 
 	@sumpf.Output(sumpf.Signal)
 	def GetOutput(self):
@@ -352,11 +356,13 @@ class MergeSpectrums(MergeChannelData):
 
 	The merged Spectrums must have the same resolution.
 	"""
-	def __init__(self, spectrums=[]):
+	def __init__(self, spectrums=[], merge_strategy=MergeChannelData._FIRST_DATASET_FIRST, on_length_conflict=MergeChannelData.RAISE_ERROR_EXCEPT_EMPTY):
 		"""
 		@param spectrums: a list of Spectrums that shall be added to the merger. As the constructor can not return the data ids for these Spectrums, they can only be removed from the merger with the Clear method.
+		@param merge_strategy: a function that implements the strategy according to which the channels of the output Signal are sorted
+		@param on_length_conflict: one of the flags of the MergeSpectrums class for length conflict resolution (e.g. RAISE_ERROR_EXCEPT_EMPTY)
 		"""
-		MergeChannelData.__init__(self, datasets=spectrums)
+		MergeChannelData.__init__(self, datasets=spectrums, merge_strategy=merge_strategy, on_length_conflict=on_length_conflict)
 
 	@sumpf.Output(sumpf.Spectrum)
 	def GetOutput(self):

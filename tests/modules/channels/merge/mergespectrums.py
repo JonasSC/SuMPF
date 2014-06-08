@@ -35,13 +35,17 @@ class TestMergeSpectrums(unittest.TestCase):
 		"""
 		Tests if adding a list of Spectrums with the constructor works and if removing them with the Clear method works.
 		"""
-		merger = sumpf.modules.MergeSpectrums(spectrums=[self.spectrum1, self.spectrum2])
-		channels = ((11.1, 11.2, 11.3), (12.1, 12.2, 12.3), (13.1, 13.2, 13.3), (21.1, 21.2, 21.3), (22.1, 22.2, 22.3))
-		self.assertEqual(merger.GetOutput().GetChannels(), channels)
+		channels_fsf = ((11.1, 11.2, 11.3), (12.1, 12.2, 12.3), (13.1, 13.2, 13.3), (21.1, 21.2, 21.3), (22.1, 22.2, 22.3))
+		channels_fcf = ((11.1, 11.2, 11.3), (21.1, 21.2, 21.3), (12.1, 12.2, 12.3), (22.1, 22.2, 22.3), (13.1, 13.2, 13.3))
+		channels_fsff = ((11.1, 11.2, 11.3), (12.1, 12.2, 12.3), (13.1, 13.2, 13.3), (21.1, 21.2, 21.3), (22.1, 22.2, 22.3), (31.1, 31.2, 0.0), (32.1, 32.2, 0.0), (33.1, 33.2, 0.0))
+		merger = sumpf.modules.MergeSpectrums(spectrums=[self.spectrum1, self.spectrum2], merge_strategy=sumpf.modules.MergeSpectrums.FIRST_CHANNEL_FIRST)
+		self.assertEqual(merger.GetOutput().GetChannels(), channels_fcf)
 		merger.Clear()
 		self.assertEqual(merger.GetOutput().GetChannels(), ((0.0, 0.0),))
 		quickmerged = sumpf.modules.MergeSpectrums([self.spectrum1, self.spectrum2]).GetOutput()
-		self.assertEqual(quickmerged.GetChannels(), channels)
+		self.assertEqual(quickmerged.GetChannels(), channels_fsf)
+		self.assertRaises(RuntimeError, sumpf.modules.MergeSpectrums([self.spectrum1, self.spectrum2, self.spectrum3]).GetOutput)
+		self.assertEqual(sumpf.modules.MergeSpectrums([self.spectrum1, self.spectrum2, self.spectrum3], on_length_conflict=sumpf.modules.MergeSpectrums.FILL_WITH_ZEROS).GetOutput().GetChannels(), channels_fsff)
 
 	def test_merge(self):
 		"""
