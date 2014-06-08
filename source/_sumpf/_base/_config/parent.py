@@ -19,8 +19,8 @@ from .interface import InterfaceConfig
 
 class ParentConfig(InterfaceConfig):
 	"""
-	A class whose instance(s) can be given to root configs that have not parents
-	such as the system wide config.
+	A class whose instance(s) can be given to root configurations that do not have
+	a parent config instance (like for example the system wide configuration).
 	A ParentConfig instance does not store any values. It always raises an error
 	when the Get or Set methods are called and it always returns False when the
 	Has method is called.
