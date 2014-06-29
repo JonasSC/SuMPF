@@ -14,6 +14,12 @@
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 
-from ._models.laguerrehermite import *
-from ._models.thielesmallparameters import *
+try:
+	from ._laguerrehermite.model import LaguerreHermiteModel
+	from ._laguerrehermite.identification import LaguerreHermiteIdentification
+	from ._laguerrehermite.coefficients import LaguerreHermiteCoefficients
+	from ._laguerrehermite.coefficientsfilter import LaguerreHermiteCoefficientsFilter
+	from ._laguerrehermite.coefficientsfile import LaguerreHermiteCoefficientsFile
+except ImportError:
+	pass
 
