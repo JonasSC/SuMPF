@@ -20,6 +20,7 @@ from .interpretations import *
 from .io import *
 from .math import *
 from .metadata import *
+from .models import *
 from .normalize import *
 from .plotting import *
 

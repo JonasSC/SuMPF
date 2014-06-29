@@ -16,4 +16,5 @@
 
 from .signal import TestSignal
 from .spectrum import TestSpectrum
+from .thielesmallparameters import TestThieleSmallParameters
 

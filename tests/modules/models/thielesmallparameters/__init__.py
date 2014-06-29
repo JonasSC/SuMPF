@@ -14,22 +14,6 @@
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 
-"""
-This name space contains the audio processing modules. These modules can be
-connected with sumpf.connect to form complex processing chains.
-"""
-
-from ._modules.generators import *
-from ._modules.interpretations import *
-from ._modules.io import *
-from ._modules.math import *
-from ._modules.metadata import *
-from ._modules.models import *
-from ._modules.normalize import *
-from ._modules.channels import *
-
-try:
-	from ._modules.plotting import *
-except ImportError:
-	pass
+from .auralization import TestThieleSmallParameterAuralization
+from .interpretation import TestThieleSmallParameterInterpretation
 

@@ -17,3 +17,5 @@
 from ._data.signal import Signal
 from ._data.spectrum import Spectrum
 
+from ._data.thielesmallparameters import ThieleSmallParameters
+
