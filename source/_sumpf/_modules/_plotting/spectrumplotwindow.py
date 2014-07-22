@@ -22,16 +22,13 @@ from .spectrumplotpanel import SpectrumPlotPanel
 class SpectrumPlotWindow(PlotWindow):
 	"""
 	A class whose instances create a window in which plots of Spectrums are shown.
-	By default, it plots all channels of the given Spectrum in one plot. It is
-	however possible to supply a different plot panel class, that plots each
-	channel in a separate plot.
+	It basically has the same properties as a SpectrumPlotPanel, but it comes with
+	its own window. This window is created every time, when the Show-method is
+	called and the window is currently not shown. This means that a closed
+	SpectrumPlotWindow can be shown again after closing.
 	"""
-	def __init__(self, panel_class=SpectrumPlotPanel):
-		"""
-		@param panel_class: a plot panel like sumpf.modules.SpectrumPlotPanel or sumpf.modules.TiledSpectrumPlotPanel
-		"""
+	def __init__(self):
 		PlotWindow.__init__(self)
-		self.__panel_class = panel_class
 		self.LogarithmicX()
 		self.__spectrum = sumpf.Spectrum()
 		self.__log_magnitude = True
@@ -48,7 +45,7 @@ class SpectrumPlotWindow(PlotWindow):
 		Returns a properly initialized plot panel instance.
 		@retval : a plot panel instance
 		"""
-		panel = self.__panel_class(parent=self._window)
+		panel = SpectrumPlotPanel(parent=self._window)
 		panel.SetSpectrum(self.__spectrum)
 		if self.__log_magnitude:
 			panel.LogarithmicMagnitude()

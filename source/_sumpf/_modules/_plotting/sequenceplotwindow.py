@@ -26,12 +26,8 @@ class SequencePlotWindow(PlotWindow):
 	like tuples or lists are shown.
 	It is also possible to plot multiple lines by giving a sequence of sequences.
 	"""
-	def __init__(self, panel_class=SequencePlotPanel):
-		"""
-		@param panel_class: a plot panel like sumpf.modules.SequencePlotPanel or sumpf.modules.TiledSequencePlotPanel
-		"""
+	def __init__(self):
 		PlotWindow.__init__(self)
-		self.__panel_class = panel_class
 		self.__sequence = [[0.0, 0.0]]
 		self.__x_resolution = 1.0
 		self.__log_y = False
@@ -41,7 +37,7 @@ class SequencePlotWindow(PlotWindow):
 		Returns a properly initialized plot panel instance.
 		@retval : a plot panel instance
 		"""
-		panel = self.__panel_class(parent=self._window)
+		panel = SequencePlotPanel(parent=self._window)
 		panel.SetSequence(self.__sequence)
 		panel.SetXResolution(self.__x_resolution)
 		if self.__log_y:
