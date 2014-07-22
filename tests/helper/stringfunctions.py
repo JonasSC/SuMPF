@@ -14,23 +14,28 @@
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 
-"""
-This name space contains some helper functions.
-These functions are not the core functionality of SuMPF, but they are useful
-inside SuMPF and maybe elsewhere as well.
-"""
+import unittest
+import sumpf
 
-from ._helper.sumpfmath import binomial_coefficient, differentiate
-from ._helper.multiinputdata import MultiInputData
-from ._helper.normalizepath import normalize_path
-from ._helper.stringfunctions import counting_number
-from ._helper.walkmodule import walk_module
 
-from ._helper import average
-from ._helper import numpydummy
-
-try:
-	from ._helper.sumpfmath import differentiate_fft, differentiate_spline
-except ImportError:
-	pass
+class TestStringFunctions(unittest.TestCase):
+	"""
+	A TestCase for the helper functions in the stringfunctions.py file.
+	"""
+	def test_counting_number(self):
+		pairs = [(1, "1st"),
+		         (2, "2nd"),
+		         (3, "3rd"),
+		         (4, "4th"),
+		         (10, "10th"),
+		         (11, "11th"),
+		         (12, "12th"),
+		         (13, "13th"),
+		         (31, "31st"),
+		         (43, "43rd"),
+		         (101, "101st"),
+		         (213, "213th"),
+		         (323, "323rd")]
+		for p in pairs:
+			self.assertEqual(sumpf.helper.counting_number(p[0]), p[1])
 

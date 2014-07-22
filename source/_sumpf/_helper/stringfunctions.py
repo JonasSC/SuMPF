@@ -14,23 +14,20 @@
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 
-"""
-This name space contains some helper functions.
-These functions are not the core functionality of SuMPF, but they are useful
-inside SuMPF and maybe elsewhere as well.
-"""
-
-from ._helper.sumpfmath import binomial_coefficient, differentiate
-from ._helper.multiinputdata import MultiInputData
-from ._helper.normalizepath import normalize_path
-from ._helper.stringfunctions import counting_number
-from ._helper.walkmodule import walk_module
-
-from ._helper import average
-from ._helper import numpydummy
-
-try:
-	from ._helper.sumpfmath import differentiate_fft, differentiate_spline
-except ImportError:
-	pass
+def counting_number(number):
+	"""
+	Creates a counting number string (e.g. "1st", "2nd", "3rd", "4th" ...) from
+	an integer number.
+	@param number: an integer number
+	@retval : a string
+	"""
+	stringnumber = str(number)
+	if stringnumber.endswith("1") and not stringnumber.endswith("11"):
+		return "%sst" % stringnumber
+	elif stringnumber.endswith("2") and not stringnumber.endswith("12"):
+		return "%snd" % stringnumber
+	elif stringnumber.endswith("3") and not stringnumber.endswith("13"):
+		return "%srd" % stringnumber
+	else:
+		return "%sth" % stringnumber
 

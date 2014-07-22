@@ -19,4 +19,5 @@ from .sumpfmath import TestMath
 from .multiinputdata import TestMultiInputData
 from .normalizepath import TestNormalizePath
 from .numpydummy import TestNumpyDummy
+from .stringfunctions import TestStringFunctions
 
