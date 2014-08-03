@@ -50,11 +50,11 @@ class TestThieleSmallParameterInterpretation(unittest.TestCase):
 		functions = [("SuspensionCompliance", ("SuspensionStiffness",), 1.0),
 		             ("MembraneRadius", ("MembraneArea",), (1.0 / math.pi) ** 0.5),
 		             ("ResonanceFrequency", ("SuspensionCompliance", "MembraneMass"), 1.0 / (2.0 * math.pi * 2.0 ** 0.5)),
-		             ("ElectricalQFactor", ("ResonanceFrequency", "MembraneMass", "VoicecoilResistance", "ForceFactor"), 12.0 * math.pi / 16.0),
+		             ("ElectricalQFactor", ("ResonanceFrequency", "MembraneMass", "VoiceCoilResistance", "ForceFactor"), 12.0 * math.pi / 16.0),
 		             ("MechanicalQFactor", ("ResonanceFrequency", "MembraneMass", "MechanicalDamping"), 4.0 * math.pi / 3.0),
 		             ("TotalQFactor", ("ElectricalQFactor", "MechanicalQFactor"), 2.0 / 3.0),
 		             ("EquivalentComplianceVolume", ("MembraneArea", "SuspensionCompliance"), rho * c ** 2 * 2.0),
-		             ("ResonanceImpedance", ("VoicecoilResistance", "MechanicalQFactor", "ElectricalQFactor"), 1.0 + 2.0 / 3.0),
+		             ("ResonanceImpedance", ("VoiceCoilResistance", "MechanicalQFactor", "ElectricalQFactor"), 1.0 + 2.0 / 3.0),
 		             ("EfficiencyBandwidthProduct", ("ResonanceFrequency", "ElectricalQFactor"), 0.5)]
 		for f in functions:
 			interpretation = sumpf.modules.ThieleSmallParameterInterpretation(medium_density=rho, speed_of_sound=c)
@@ -76,8 +76,8 @@ class TestThieleSmallParameterInterpretation(unittest.TestCase):
 		"""
 		Tests if the errors are raised as expected.
 		"""
-		all_parameters = ["ThieleSmallParameters", "VoicecoilResistance",
-		                  "VoicecoilInductance", "ForceFactor", "SuspensionStiffness",
+		all_parameters = ["ThieleSmallParameters", "VoiceCoilResistance",
+		                  "VoiceCoilInductance", "ForceFactor", "SuspensionStiffness",
 		                  "MechanicalDamping", "MembraneMass", "MembraneArea",
 		                  "SuspensionCompliance", "MembraneRadius", "ResonanceFrequency",
 		                  "ElectricalQFactor", "MechanicalQFactor", "TotalQFactor",
@@ -94,8 +94,8 @@ class TestThieleSmallParameterInterpretation(unittest.TestCase):
 		"""
 		Tests if the connectors are properly decorated.
 		"""
-		all_parameters = set(["ThieleSmallParameters", "VoicecoilResistance",
-		                      "VoicecoilInductance", "ForceFactor", "SuspensionStiffness",
+		all_parameters = set(["ThieleSmallParameters", "VoiceCoilResistance",
+		                      "VoiceCoilInductance", "ForceFactor", "SuspensionStiffness",
 		                      "MechanicalDamping", "MembraneMass", "MembraneArea",
 		                      "SuspensionCompliance", "MembraneRadius", "ResonanceFrequency",
 		                      "ElectricalQFactor", "MechanicalQFactor", "TotalQFactor",
@@ -111,14 +111,14 @@ class TestThieleSmallParameterInterpretation(unittest.TestCase):
 		for p in all_parameters - set(["ThieleSmallParameters"]):
 			self.assertEqual(getattr(ts_int, "Get" + p).GetType(), float)
 			self.assertEqual(getattr(ts_int, "Set" + p).GetType(), float)
-			if p == "VoicecoilInductance":
+			if p == "VoiceCoilInductance":
 				common.test_connection_observers(testcase=self,
-				                                 inputs=[ts_int.SetThieleSmallParameters, ts_int.SetVoicecoilInductance],
-				                                 noinputs=[getattr(ts_int, "Set" + q) for q in ((all_parameters | additional_parameters) - set(["VoicecoilInductance", "ThieleSmallParameters"]))],
-				                                 output=ts_int.GetVoicecoilInductance)
+				                                 inputs=[ts_int.SetThieleSmallParameters, ts_int.SetVoiceCoilInductance],
+				                                 noinputs=[getattr(ts_int, "Set" + q) for q in ((all_parameters | additional_parameters) - set(["VoiceCoilInductance", "ThieleSmallParameters"]))],
+				                                 output=ts_int.GetVoiceCoilInductance)
 			else:
 				common.test_connection_observers(testcase=self,
-				                                 inputs=[getattr(ts_int, "Set" + q) for q in ((all_parameters | additional_parameters) - set(["VoicecoilInductance"]))],
-				                                 noinputs=[ts_int.SetVoicecoilInductance],
+				                                 inputs=[getattr(ts_int, "Set" + q) for q in ((all_parameters | additional_parameters) - set(["VoiceCoilInductance"]))],
+				                                 noinputs=[ts_int.SetVoiceCoilInductance],
 				                                 output=getattr(ts_int, "Get" + p))
 
