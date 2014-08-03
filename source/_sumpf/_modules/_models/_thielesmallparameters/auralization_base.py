@@ -43,9 +43,9 @@ class ThieleSmallParameterAuralization(object):
 		self.__current = None
 		self.__sound_pressure = None
 		# state variable
-		self.__recalculate = True
+		self._recalculate = True
 
-	@sumpf.Input(sumpf.ThieleSmallParameters, ["GetDisplacement", "GetVelocity", "GetAcceleration", "GetCurrent", "GetSoundPressure"])
+	@sumpf.Input(sumpf.ThieleSmallParameters, ("GetDisplacement", "GetVelocity", "GetAcceleration", "GetCurrent", "GetSoundPressure"))
 	def SetThieleSmallParameters(self, parameters):
 		"""
 		Sets the Thiele-Small parameters that characterize the loudspeaker that
@@ -53,19 +53,19 @@ class ThieleSmallParameterAuralization(object):
 		@param parameters: a ThieleSmallParameters instance
 		"""
 		self._thiele_small = parameters
-		self.__recalculate = True
+		self._recalculate = True
 
-	@sumpf.Input(sumpf.Signal, ["GetDisplacement", "GetVelocity", "GetAcceleration", "GetCurrent", "GetSoundPressure"])
+	@sumpf.Input(sumpf.Signal, ("GetDisplacement", "GetVelocity", "GetAcceleration", "GetCurrent", "GetSoundPressure"))
 	def SetVoltage(self, signal):
 		"""
 		Sets the input voltage signal for the simulated loudspeaker.
 		@param signal: a signal for the input voltage of the loudspeaker
 		"""
 		self._voltage = signal
-		self.__recalculate = True
+		self._recalculate = True
 		self._Precalculate()
 
-	@sumpf.Input(float, ["GetDisplacement", "GetVelocity", "GetAcceleration", "GetCurrent", "GetSoundPressure"])
+	@sumpf.Input(float, ("GetDisplacement", "GetVelocity", "GetAcceleration", "GetCurrent", "GetSoundPressure"))
 	def SetListenerDistance(self, distance):
 		"""
 		Sets the distance between the loudspeaker and the point where the radiated
@@ -73,9 +73,9 @@ class ThieleSmallParameterAuralization(object):
 		@param distance: a float value for the distance in meters
 		"""
 		self._listener_distance = distance
-		self.__recalculate = True
+		self._recalculate = True
 
-	@sumpf.Input(float, ["GetDisplacement", "GetVelocity", "GetAcceleration", "GetCurrent", "GetSoundPressure"])
+	@sumpf.Input(float, ("GetDisplacement", "GetVelocity", "GetAcceleration", "GetCurrent", "GetSoundPressure"))
 	def SetMediumDensity(self, density):
 		"""
 		Sets a value for the density of the medium in which the loudspeaker radiates
@@ -83,7 +83,7 @@ class ThieleSmallParameterAuralization(object):
 		@param value: a float value for the density in kilograms per cubic meter
 		"""
 		self._medium_density = density
-		self.__recalculate = True
+		self._recalculate = True
 
 	@sumpf.Output(sumpf.Signal, caching=False)
 	def GetDisplacement(self):
@@ -92,7 +92,7 @@ class ThieleSmallParameterAuralization(object):
 		simulated loudspeaker, when it is excited with the given input voltage.
 		@retval : a Signal instance
 		"""
-		if self.__recalculate:
+		if self._recalculate:
 			self.__Recalculate()
 		return self.__displacement
 
@@ -103,7 +103,7 @@ class ThieleSmallParameterAuralization(object):
 		simulated loudspeaker, when it is excited with the given input voltage.
 		@retval : a Signal instance
 		"""
-		if self.__recalculate:
+		if self._recalculate:
 			self.__Recalculate()
 		return self.__velocity
 
@@ -114,7 +114,7 @@ class ThieleSmallParameterAuralization(object):
 		simulated loudspeaker, when it is excited with the given input voltage.
 		@retval : a Signal instance
 		"""
-		if self.__recalculate:
+		if self._recalculate:
 			self.__Recalculate()
 		return self.__acceleration
 
@@ -125,7 +125,7 @@ class ThieleSmallParameterAuralization(object):
 		loudspeaker, when it is excited with the given input voltage.
 		@retval : a Signal instance
 		"""
-		if self.__recalculate:
+		if self._recalculate:
 			self.__Recalculate()
 		return self.__current
 
@@ -143,7 +143,7 @@ class ThieleSmallParameterAuralization(object):
 		travel the given listener distance.
 		@retval : a Signal instance
 		"""
-		if self.__recalculate:
+		if self._recalculate:
 			self.__Recalculate()
 		return self.__sound_pressure
 

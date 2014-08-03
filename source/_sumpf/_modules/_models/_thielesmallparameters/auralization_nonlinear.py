@@ -21,7 +21,7 @@ from .auralization_base import ThieleSmallParameterAuralization
 
 class ThieleSmallParameterAuralizationNonlinear(ThieleSmallParameterAuralization):
 	"""
-	Synthesizes loudspeaker responses to a given input voltage signal.
+	Synthesizes loudspeaker responses for a given input voltage signal.
 	These responses can be the membrane displacement, the membrane velocity, the
 	membrane acceleration, the input current and the generated sound pressure
 	at a given distance.
@@ -38,43 +38,53 @@ class ThieleSmallParameterAuralizationNonlinear(ThieleSmallParameterAuralization
 	The formula for the IIR-filter has been calculated by using the bilinear transform
 	on the voltage-to-displacement transfer function in the Laplace domain. Due
 	to the non-infinite sampling rate, this causes an error in the high frequencies
-	of the output signals.
+	of the output signals. Specifying a "warp frequency" for the Filter minimizes
+	the error at that frequency, but this increases the errors at other frequencies.
 	"""
-	def __init__(self, thiele_small_parameters=sumpf.ThieleSmallParameters(), voltage_signal=None, listener_distance=1.0, medium_density=1.2041):
+	def __init__(self, thiele_small_parameters=sumpf.ThieleSmallParameters(), voltage_signal=None, listener_distance=1.0, medium_density=1.2041, warp_frequency=0.0, regularization=0.0):
 		"""
 		@param thiele_small_parameters: a ThieleSmallParameters instance
 		@param voltage_signal: a signal for the input voltage of the loudspeaker
 		@param listener_distance: a float value for the distance between the loudspeaker and the point where the radiated sound is received in meters
 		@param medium_density: a float value for the density of the medium, in which the loudspeaker radiates sound (probably air) in kilograms per cubic meter
+		@param warp_frequency: a frequency in Hz, at which the error, that is caused by the bilinear transform, shall be minimized
+		@param regularization: a small float < 1.0 that ensures the stability of the bilinear transform
 		"""
 		ThieleSmallParameterAuralization.__init__(self, thiele_small_parameters=thiele_small_parameters, voltage_signal=voltage_signal, listener_distance=listener_distance, medium_density=medium_density)
-		# parameters that are precalculated to speed up the calculation
-		self.__length = None
-		self.__fs = None
-		self.__fs2 = None
-		self.__fs3 = None
-		self.__2fs = None
-		self.__4fs2 = None
-		self.__8fs2 = None
-		self.__8fs3 = None
-		self.__4fs3 = None
-		self.__4pi = None
-		self._Precalculate()
+		self.__warp_frequency = warp_frequency
+		self.__regularization = regularization
 
-	def _Precalculate(self):
+	@sumpf.Input(float, ("GetDisplacement", "GetVelocity", "GetAcceleration", "GetCurrent", "GetSoundPressure"))
+	def SetWarpFrequency(self, frequency):
 		"""
-		Calculates some values to speed up the actual simulation step.
+		Sets a frequency, at which the error, that is caused by the bilinear
+		transform, shall be minimized.
+		This increases the error at frequencies, that are not near the warp frequency.
+		Setting the warp frequency to a high frequency, where the errors of the
+		bilinear transform are especially high, causes a significant increase in
+		the overall simulation error, so low warp frequencies (e.g. the resonance
+		frequency of the simulated loudspeaker) are recommended.
+		@param warp_frequency: a frequency in Hz as a float
 		"""
-		self.__length = len(self._voltage.GetChannels()[0]) + 4
-		self.__fs = self._voltage.GetSamplingRate()
-		self.__fs2 = self.__fs ** 2
-		self.__fs3 = self.__fs ** 3
-		self.__2fs = 2.0 * self.__fs
-		self.__4fs2 = 4.0 * self.__fs2
-		self.__8fs2 = 8.0 * self.__fs2
-		self.__4fs3 = 4.0 * self.__fs3
-		self.__8fs3 = 8.0 * self.__fs3
-		self.__4pi = 4.0 * math.pi
+		self.__warp_frequency = frequency
+		self._recalculate = True
+
+	@sumpf.Input(float, ("GetDisplacement", "GetVelocity", "GetAcceleration", "GetCurrent", "GetSoundPressure"))
+	def SetRegularization(self, value):
+		"""
+		Sets a regularization value, that ensures the stability of the bilinear
+		transform.
+		The bilinear transform has a pole at z=-1, which is on the unit circle and
+		means that the resulting filter is not stable. The regularization value
+		shifts the pole to z=-1+q to get a stable filter. The formula for the
+		bilinear transform with regularization is:
+			s = K * (z-1) / (z+1-q)
+		It is recommended, to use a small regularization value, as larger values
+		increase the simulation error.
+		@param regularization: a small float < 1.0
+		"""
+		self.__regularization, value
+		self._recalculate = True
 
 	def _Recalculate(self):
 		"""
@@ -83,78 +93,80 @@ class ThieleSmallParameterAuralizationNonlinear(ThieleSmallParameterAuralization
 		@retval the channel data displacement_channels, velocity_channels, acceleration_channels, current_channels, sound_pressure_channels
 		"""
 		# make class variables local
-		__length = self.__length
-		__fs = self.__fs
-		__fs2 = self.__fs2
-		__fs3 = self.__fs3
-		__2fs = self.__2fs
-		__4fs2 = self.__4fs2
-		__8fs2 = self.__8fs2
-		__4fs3 = self.__4fs3
-		__8fs3 = self.__8fs3
-		__4pi = self.__4pi
-		_thiele_small = self._thiele_small
+		thiele_small = self._thiele_small
 		r = self._listener_distance
 		rho = self._medium_density
+		# precalculate necessary values
+		length = len(self._voltage.GetChannels()[0]) + 3
+		K = 2.0 * self._voltage.GetSamplingRate()
+		if self.__warp_frequency != 0.0:
+			K = 2.0 * math.pi * self.__warp_frequency / math.tan(2.0 * math.pi * self.__warp_frequency / K)
+		q = 1.0 - self.__regularization
+		_4pi = 4.0 * math.pi
+		_3q = 3.0 * q					# a1
+		_3q2 = 3.0 * q ** 2				# a2
+		_q3 = q ** 3					# a3
+		_K3 = K ** 3					# b0
+		_K2 = K ** 2
+		_3K3 = 3.0 * _K3				# b1
+		_K2q2 = _K2 * (q - 2.0)
+		_K2q1 = K * (2.0 * q - 1.0)
+		_K212q = _K2 * (1.0 - 2.0 * q)	# b2
+		_Kqq2 = K * q * (q - 2.0)
+		_K2q = K ** 2 * q				# b3
+		_Kq2 = K * q ** 2
 		# start the calculation
 		displacement_channels = []
 		velocity_channels = []
 		acceleration_channels = []
 		current_channels = []
 		sound_pressure_channels = []
-		for c in self._voltage.GetChannels():
-			voltage = (0.0,) * 4 + c
-			displacement = [0.0] * __length
-			velocity = [0.0] * __length
-			acceleration = [0.0] * __length
-			current = [0.0] * __length
-			sound_pressure = [0.0] * __length
+		f = 0.0
+		t = None
+		for channel in self._voltage.GetChannels():
+			voltage = (0.0,) * 3 + channel
+			displacement = [0.0] * length
+			velocity = [0.0] * length
+			acceleration = [0.0] * length
+			current = [0.0] * length
+			sound_pressure = [0.0] * length
 			for i in range(4, len(voltage)):
-				f = 0.0
 				x = displacement[i - 1]
 				v = velocity[i - 1]
-				t = None
 				# get the Thiele Small parameters
-				R = _thiele_small.GetVoiceCoilResistance(f, x, v, t)
-				L = _thiele_small.GetVoiceCoilInductance(f, x, v, t)
-				M = _thiele_small.GetForceFactor(f, x, v, t)
-				k = _thiele_small.GetSuspensionStiffness(f, x, v, t)
-				w = _thiele_small.GetMechanicalDamping(f, x, v, t)
-				m = _thiele_small.GetMembraneMass(f, x, v, t)
-				S = _thiele_small.GetMembraneArea(f, x, v, t)
+				R = thiele_small.GetVoiceCoilResistance(f, x, v, t)
+				L = thiele_small.GetVoiceCoilInductance(f, x, v, t)
+				M = thiele_small.GetForceFactor(f, x, v, t)
+				k = thiele_small.GetSuspensionStiffness(f, x, v, t)
+				w = thiele_small.GetMechanicalDamping(f, x, v, t)
+				m = thiele_small.GetMembraneMass(f, x, v, t)
+				S = thiele_small.GetMembraneArea(f, x, v, t)
 				# precalculate some values for the displacement calculation
 				Lm = L * m
-				Lw = L * w
-				Lk = L * k
-				Rm = R * m
-				Rw = R * w
+				LwRm = L * w + R * m
+				LkM2Rw = L * k + M * M + R * w
 				Rk = R * k
-				M2 = M * M
-				LwRm = Lw + Rm
-				LkM2Rw = Lk + M2 + Rw
-				factor = 1.0 / (Rk + __8fs3 * Lm + __4fs2 * LwRm + __2fs * LkM2Rw)
-				factor4 = 4.0 * factor
 				# calculate the filter coefficients for the displacement calculation
-				a0 = factor * M
-				a1 = factor4 * M
-				a2 = 6.0 * a0
-				a3 = a1
-				a4 = a0
-				b1 = factor4 * (Rk - __4fs3 * Lm + __fs * LkM2Rw)
-				b2 = factor * (6.0 * Rk - __8fs2 * LwRm)
-				b3 = factor4 * (Rk + __4fs3 * Lm - __fs * LkM2Rw)
-				b4 = factor * (Rk - __8fs3 * Lm + __4fs2 * LwRm - __2fs * LkM2Rw)
-				displacement[i] = a0 * voltage[i] + a1 * voltage[i - 1] + a2 * voltage[i - 2] + a3 * voltage[i - 3] + a4 * voltage[i - 4] - b1 * displacement[i - 1] - b2 * displacement[i - 2] - b3 * displacement[i - 3] - b4 * displacement[i - 4]
+				a0 = M
+				a1 = M * _3q
+				a2 = M * _3q2
+				a3 = M * _q3
+				b0 = Lm * _K3 + LwRm * _K2 + LkM2Rw * K + Rk
+				b1 = -Lm * _3K3 + LwRm * _K2q2 + LkM2Rw * _K2q1 + Rk * _3q
+				b2 = Lm * _3K3 + LwRm * _K212q + LkM2Rw * _Kqq2 + Rk * _3q2
+				b3 = -Lm * _K3 + LwRm * _K2q - LkM2Rw * _Kq2 + Rk * _q3
+				summed = a0 * voltage[i] + a1 * voltage[i - 1] + a2 * voltage[i - 2] + a3 * voltage[i - 3] - b1 * displacement[i - 1] - b2 * displacement[i - 2] - b3 * displacement[i - 3]
+				displacement[i] = summed / b0
 				# calculate the velocity, the acceleration, the current and the sound pressure
-				velocity[i] = __2fs * displacement[i] - __2fs * displacement[i - 1] - velocity[i - 1]
-				acceleration[i] = __2fs * velocity[i] - __2fs * velocity[i - 1] - acceleration[i - 1]
+				velocity[i] = K * (displacement[i] - displacement[i - 1]) - q * velocity[i - 1]
+				acceleration[i] = K * (velocity[i] - velocity[i - 1]) - q * acceleration[i - 1]
 				current[i] = (k * displacement[i] + w * velocity[i] + m * acceleration[i]) / M
-				sound_pressure[i] = (rho * acceleration[i] * S) / (__4pi * r)
+				sound_pressure[i] = (rho * acceleration[i] * S) / (_4pi * r)
 			# store the Signals
-			displacement_channels.append(tuple(displacement[4:]))
-			velocity_channels.append(tuple(velocity[4:]))
-			acceleration_channels.append(tuple(acceleration[4:]))
-			current_channels.append(tuple(current[4:]))
-			sound_pressure_channels.append(tuple(sound_pressure[4:]))
+			displacement_channels.append(tuple(displacement[3:]))
+			velocity_channels.append(tuple(velocity[3:]))
+			acceleration_channels.append(tuple(acceleration[3:]))
+			current_channels.append(tuple(current[3:]))
+			sound_pressure_channels.append(tuple(sound_pressure[3:]))
 		return displacement_channels, velocity_channels, acceleration_channels, current_channels, sound_pressure_channels
 
