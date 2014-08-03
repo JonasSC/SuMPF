@@ -15,6 +15,7 @@
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 from .energydecaycurvefromimpulseresponse import TestEnergyDecayCurveFromImpulseResponse
+from .findharmonicimpulseresponse import TestFindHarmonicImpulseResponse
 from .regularizedspectruminversion import TestRegularizedSpectrumInversion
 from .signalenvelope import TestSignalEnvelope
 

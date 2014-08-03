@@ -342,18 +342,20 @@ class LinePlotPanel(wx.Panel):
 		@param component: the name of the component that shall be changed
 		@param log: if True, the component's y data will be plotted logarithmically, otherwise linearly
 		"""
+		if log:
+			self.__logy.add(component)
+			formatter = self.__ytick_logformatter
+		else:
+			self.__logy.discard(component)
 		if component in self.__shown_components:
 			formatter = self.__ytick_linformatter
 			if log:
-				self.__logy.add(component)
 				formatter = self.__ytick_logformatter
-			else:
-				self.__logy.discard(component)
 			for g in range(len(self.__plots)):
 				data_max = numpy.max(self.__ordered_data[g][component])
 				if data_max > 0.0:
 					if log:
-						# readjust visible interval, if it goes below zero
+						# read just visible interval, if it goes below zero
 						ylim = self.__plots[g][component].get_ylim()
 						new_ylim_min, new_ylim_max = ylim
 						if ylim[0] <= 0.0:

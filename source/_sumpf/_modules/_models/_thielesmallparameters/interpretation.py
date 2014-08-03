@@ -146,22 +146,22 @@ class ThieleSmallParameterInterpretation(object):
 		return self.__GetThieleSmallParameters()
 
 	@sumpf.Output(float)
-	def GetVoicecoilResistance(self):
+	def GetVoiceCoilResistance(self):
 		"""
 		Calculates and returns the voice coil resistance in Ohms from the parameters,
 		that have been passed to this object.
 		@retval : a float
 		"""
-		return self.__GetVoicecoilResistance()
+		return self.__GetVoiceCoilResistance()
 
 	@sumpf.Output(float)
-	def GetVoicecoilInductance(self):
+	def GetVoiceCoilInductance(self):
 		"""
 		Calculates and returns the voice coil inductance in Henrys from the
 		parameters, that have been passed to this object.
 		@retval : a float
 		"""
-		return self.__GetVoicecoilInductance()
+		return self.__GetVoiceCoilInductance()
 
 	@sumpf.Output(float)
 	def GetForceFactor(self):
@@ -295,8 +295,8 @@ class ThieleSmallParameterInterpretation(object):
 	# setter methods #
 	##################
 
-	@sumpf.Input(sumpf.ThieleSmallParameters, ("GetThieleSmallParameters", "GetVoicecoilResistance",
-	"GetVoicecoilInductance", "GetForceFactor", "GetSuspensionStiffness", "GetMechanicalDamping",
+	@sumpf.Input(sumpf.ThieleSmallParameters, ("GetThieleSmallParameters", "GetVoiceCoilResistance",
+	"GetVoiceCoilInductance", "GetForceFactor", "GetSuspensionStiffness", "GetMechanicalDamping",
 	"GetMembraneMass", "GetMembraneArea", "GetSuspensionCompliance", "GetMembraneRadius",
 	"GetResonanceFrequency", "GetElectricalQFactor", "GetMechanicalQFactor", "GetTotalQFactor",
 	"GetResonanceImpedance", "GetEfficiencyBandwidthProduct"))
@@ -308,11 +308,11 @@ class ThieleSmallParameterInterpretation(object):
 		"""
 		self.__thiele_small_parameters = parameters
 
-	@sumpf.Input(float, ("GetThieleSmallParameters", "GetVoicecoilResistance", "GetForceFactor",
+	@sumpf.Input(float, ("GetThieleSmallParameters", "GetVoiceCoilResistance", "GetForceFactor",
 	"GetSuspensionStiffness", "GetMechanicalDamping", "GetMembraneMass", "GetMembraneArea",
 	"GetSuspensionCompliance", "GetMembraneRadius", "GetResonanceFrequency", "GetElectricalQFactor",
 	"GetMechanicalQFactor", "GetTotalQFactor", "GetResonanceImpedance", "GetEfficiencyBandwidthProduct"))
-	def SetVoicecoilResistance(self, value):
+	def SetVoiceCoilResistance(self, value):
 		"""
 		Specifies a value for the voice coil resistance from which other parameters
 		can be calculated.
@@ -320,8 +320,8 @@ class ThieleSmallParameterInterpretation(object):
 		"""
 		self.__voicecoil_resistance = value
 
-	@sumpf.Input(float, ("GetThieleSmallParameters", "GetVoicecoilInductance"))
-	def SetVoicecoilInductance(self, value):
+	@sumpf.Input(float, ("GetThieleSmallParameters", "GetVoiceCoilInductance"))
+	def SetVoiceCoilInductance(self, value):
 		"""
 		Specifies a value for the voice coil inductance from which other parameters
 		can be calculated.
@@ -329,7 +329,7 @@ class ThieleSmallParameterInterpretation(object):
 		"""
 		self.__voicecoil_inductance = value
 
-	@sumpf.Input(float, ("GetThieleSmallParameters", "GetVoicecoilResistance", "GetForceFactor",
+	@sumpf.Input(float, ("GetThieleSmallParameters", "GetVoiceCoilResistance", "GetForceFactor",
 	"GetSuspensionStiffness", "GetMechanicalDamping", "GetMembraneMass", "GetMembraneArea",
 	"GetSuspensionCompliance", "GetMembraneRadius", "GetResonanceFrequency", "GetElectricalQFactor",
 	"GetMechanicalQFactor", "GetTotalQFactor", "GetResonanceImpedance", "GetEfficiencyBandwidthProduct"))
@@ -341,7 +341,7 @@ class ThieleSmallParameterInterpretation(object):
 		"""
 		self.__force_factor = value
 
-	@sumpf.Input(float, ("GetThieleSmallParameters", "GetVoicecoilResistance", "GetForceFactor",
+	@sumpf.Input(float, ("GetThieleSmallParameters", "GetVoiceCoilResistance", "GetForceFactor",
 	"GetSuspensionStiffness", "GetMechanicalDamping", "GetMembraneMass", "GetMembraneArea",
 	"GetSuspensionCompliance", "GetMembraneRadius", "GetResonanceFrequency", "GetElectricalQFactor",
 	"GetMechanicalQFactor", "GetTotalQFactor", "GetResonanceImpedance", "GetEfficiencyBandwidthProduct"))
@@ -353,7 +353,7 @@ class ThieleSmallParameterInterpretation(object):
 		"""
 		self.__suspension_stiffness = value
 
-	@sumpf.Input(float, ("GetThieleSmallParameters", "GetVoicecoilResistance", "GetForceFactor",
+	@sumpf.Input(float, ("GetThieleSmallParameters", "GetVoiceCoilResistance", "GetForceFactor",
 	"GetSuspensionStiffness", "GetMechanicalDamping", "GetMembraneMass", "GetMembraneArea",
 	"GetSuspensionCompliance", "GetMembraneRadius", "GetResonanceFrequency", "GetElectricalQFactor",
 	"GetMechanicalQFactor", "GetTotalQFactor", "GetResonanceImpedance", "GetEfficiencyBandwidthProduct"))
@@ -365,7 +365,7 @@ class ThieleSmallParameterInterpretation(object):
 		"""
 		self.__mechanical_damping = value
 
-	@sumpf.Input(float, ("GetThieleSmallParameters", "GetVoicecoilResistance", "GetForceFactor",
+	@sumpf.Input(float, ("GetThieleSmallParameters", "GetVoiceCoilResistance", "GetForceFactor",
 	"GetSuspensionStiffness", "GetMechanicalDamping", "GetMembraneMass", "GetMembraneArea",
 	"GetSuspensionCompliance", "GetMembraneRadius", "GetResonanceFrequency", "GetElectricalQFactor",
 	"GetMechanicalQFactor", "GetTotalQFactor", "GetResonanceImpedance", "GetEfficiencyBandwidthProduct"))
@@ -378,7 +378,7 @@ class ThieleSmallParameterInterpretation(object):
 		"""
 		self.__membrane_mass = value
 
-	@sumpf.Input(float, ("GetThieleSmallParameters", "GetVoicecoilResistance", "GetForceFactor",
+	@sumpf.Input(float, ("GetThieleSmallParameters", "GetVoiceCoilResistance", "GetForceFactor",
 	"GetSuspensionStiffness", "GetMechanicalDamping", "GetMembraneMass", "GetMembraneArea",
 	"GetSuspensionCompliance", "GetMembraneRadius", "GetResonanceFrequency", "GetElectricalQFactor",
 	"GetMechanicalQFactor", "GetTotalQFactor", "GetResonanceImpedance", "GetEfficiencyBandwidthProduct"))
@@ -390,7 +390,7 @@ class ThieleSmallParameterInterpretation(object):
 		"""
 		self.__membrane_area = value
 
-	@sumpf.Input(float, ("GetThieleSmallParameters", "GetVoicecoilResistance", "GetForceFactor",
+	@sumpf.Input(float, ("GetThieleSmallParameters", "GetVoiceCoilResistance", "GetForceFactor",
 	"GetSuspensionStiffness", "GetMechanicalDamping", "GetMembraneMass", "GetMembraneArea",
 	"GetSuspensionCompliance", "GetMembraneRadius", "GetResonanceFrequency", "GetElectricalQFactor",
 	"GetMechanicalQFactor", "GetTotalQFactor", "GetResonanceImpedance", "GetEfficiencyBandwidthProduct"))
@@ -402,7 +402,7 @@ class ThieleSmallParameterInterpretation(object):
 		"""
 		self.__suspension_compliance = value
 
-	@sumpf.Input(float, ("GetThieleSmallParameters", "GetVoicecoilResistance", "GetForceFactor",
+	@sumpf.Input(float, ("GetThieleSmallParameters", "GetVoiceCoilResistance", "GetForceFactor",
 	"GetSuspensionStiffness", "GetMechanicalDamping", "GetMembraneMass", "GetMembraneArea",
 	"GetSuspensionCompliance", "GetMembraneRadius", "GetResonanceFrequency", "GetElectricalQFactor",
 	"GetMechanicalQFactor", "GetTotalQFactor", "GetResonanceImpedance", "GetEfficiencyBandwidthProduct"))
@@ -414,7 +414,7 @@ class ThieleSmallParameterInterpretation(object):
 		"""
 		self.__membrane_radius = value
 
-	@sumpf.Input(float, ("GetThieleSmallParameters", "GetVoicecoilResistance", "GetForceFactor",
+	@sumpf.Input(float, ("GetThieleSmallParameters", "GetVoiceCoilResistance", "GetForceFactor",
 	"GetSuspensionStiffness", "GetMechanicalDamping", "GetMembraneMass", "GetMembraneArea",
 	"GetSuspensionCompliance", "GetMembraneRadius", "GetResonanceFrequency", "GetElectricalQFactor",
 	"GetMechanicalQFactor", "GetTotalQFactor", "GetResonanceImpedance", "GetEfficiencyBandwidthProduct"))
@@ -426,7 +426,7 @@ class ThieleSmallParameterInterpretation(object):
 		"""
 		self.__resonance_frequency = value
 
-	@sumpf.Input(float, ("GetThieleSmallParameters", "GetVoicecoilResistance", "GetForceFactor",
+	@sumpf.Input(float, ("GetThieleSmallParameters", "GetVoiceCoilResistance", "GetForceFactor",
 	"GetSuspensionStiffness", "GetMechanicalDamping", "GetMembraneMass", "GetMembraneArea",
 	"GetSuspensionCompliance", "GetMembraneRadius", "GetResonanceFrequency", "GetElectricalQFactor",
 	"GetMechanicalQFactor", "GetTotalQFactor", "GetResonanceImpedance", "GetEfficiencyBandwidthProduct"))
@@ -438,7 +438,7 @@ class ThieleSmallParameterInterpretation(object):
 		"""
 		self.__electrical_q_factor = value
 
-	@sumpf.Input(float, ("GetThieleSmallParameters", "GetVoicecoilResistance", "GetForceFactor",
+	@sumpf.Input(float, ("GetThieleSmallParameters", "GetVoiceCoilResistance", "GetForceFactor",
 	"GetSuspensionStiffness", "GetMechanicalDamping", "GetMembraneMass", "GetMembraneArea",
 	"GetSuspensionCompliance", "GetMembraneRadius", "GetResonanceFrequency", "GetElectricalQFactor",
 	"GetMechanicalQFactor", "GetTotalQFactor", "GetResonanceImpedance", "GetEfficiencyBandwidthProduct"))
@@ -450,7 +450,7 @@ class ThieleSmallParameterInterpretation(object):
 		"""
 		self.__mechanical_q_factor = value
 
-	@sumpf.Input(float, ("GetThieleSmallParameters", "GetVoicecoilResistance", "GetForceFactor",
+	@sumpf.Input(float, ("GetThieleSmallParameters", "GetVoiceCoilResistance", "GetForceFactor",
 	"GetSuspensionStiffness", "GetMechanicalDamping", "GetMembraneMass", "GetMembraneArea",
 	"GetSuspensionCompliance", "GetMembraneRadius", "GetResonanceFrequency", "GetElectricalQFactor",
 	"GetMechanicalQFactor", "GetTotalQFactor", "GetResonanceImpedance", "GetEfficiencyBandwidthProduct"))
@@ -462,7 +462,7 @@ class ThieleSmallParameterInterpretation(object):
 		"""
 		self.__total_q_factor = value
 
-	@sumpf.Input(float, ("GetThieleSmallParameters", "GetVoicecoilResistance", "GetForceFactor",
+	@sumpf.Input(float, ("GetThieleSmallParameters", "GetVoiceCoilResistance", "GetForceFactor",
 	"GetSuspensionStiffness", "GetMechanicalDamping", "GetMembraneMass", "GetMembraneArea",
 	"GetSuspensionCompliance", "GetMembraneRadius", "GetResonanceFrequency", "GetElectricalQFactor",
 	"GetMechanicalQFactor", "GetTotalQFactor", "GetResonanceImpedance", "GetEfficiencyBandwidthProduct"))
@@ -474,7 +474,7 @@ class ThieleSmallParameterInterpretation(object):
 		"""
 		self.__equivalent_compliance_volume = value
 
-	@sumpf.Input(float, ("GetThieleSmallParameters", "GetVoicecoilResistance", "GetForceFactor",
+	@sumpf.Input(float, ("GetThieleSmallParameters", "GetVoiceCoilResistance", "GetForceFactor",
 	"GetSuspensionStiffness", "GetMechanicalDamping", "GetMembraneMass", "GetMembraneArea",
 	"GetSuspensionCompliance", "GetMembraneRadius", "GetResonanceFrequency", "GetElectricalQFactor",
 	"GetMechanicalQFactor", "GetTotalQFactor", "GetResonanceImpedance", "GetEfficiencyBandwidthProduct"))
@@ -486,7 +486,7 @@ class ThieleSmallParameterInterpretation(object):
 		"""
 		self.__resonance_impedance = value
 
-	@sumpf.Input(float, ("GetThieleSmallParameters", "GetVoicecoilResistance", "GetForceFactor",
+	@sumpf.Input(float, ("GetThieleSmallParameters", "GetVoiceCoilResistance", "GetForceFactor",
 	"GetSuspensionStiffness", "GetMechanicalDamping", "GetMembraneMass", "GetMembraneArea",
 	"GetSuspensionCompliance", "GetMembraneRadius", "GetResonanceFrequency", "GetElectricalQFactor",
 	"GetMechanicalQFactor", "GetTotalQFactor", "GetResonanceImpedance", "GetEfficiencyBandwidthProduct"))
@@ -498,7 +498,7 @@ class ThieleSmallParameterInterpretation(object):
 		"""
 		self.__efficiency_bandwidth_product = value
 
-	@sumpf.Input(float, ("GetThieleSmallParameters", "GetVoicecoilResistance", "GetForceFactor",
+	@sumpf.Input(float, ("GetThieleSmallParameters", "GetVoiceCoilResistance", "GetForceFactor",
 	"GetSuspensionStiffness", "GetMechanicalDamping", "GetMembraneMass", "GetMembraneArea",
 	"GetSuspensionCompliance", "GetMembraneRadius", "GetResonanceFrequency", "GetElectricalQFactor",
 	"GetMechanicalQFactor", "GetTotalQFactor", "GetResonanceImpedance", "GetEfficiencyBandwidthProduct"))
@@ -510,7 +510,7 @@ class ThieleSmallParameterInterpretation(object):
 		"""
 		self.__medium_density = density
 
-	@sumpf.Input(float, ("GetThieleSmallParameters", "GetVoicecoilResistance", "GetForceFactor",
+	@sumpf.Input(float, ("GetThieleSmallParameters", "GetVoiceCoilResistance", "GetForceFactor",
 	"GetSuspensionStiffness", "GetMechanicalDamping", "GetMembraneMass", "GetMembraneArea",
 	"GetSuspensionCompliance", "GetMembraneRadius", "GetResonanceFrequency", "GetElectricalQFactor",
 	"GetMechanicalQFactor", "GetTotalQFactor", "GetResonanceImpedance", "GetEfficiencyBandwidthProduct"))
@@ -540,8 +540,8 @@ class ThieleSmallParameterInterpretation(object):
 		else:
 			try:
 				# get the necessary values to create a new object
-				R = self.__GetVoicecoilResistance(callers)
-				L = self.__GetVoicecoilInductance(callers)
+				R = self.__GetVoiceCoilResistance(callers)
+				L = self.__GetVoiceCoilInductance(callers)
 				M = self.__GetForceFactor(callers)
 				k = self.__GetSuspensionStiffness(callers)
 				w = self.__GetMechanicalDamping(callers)
@@ -560,8 +560,8 @@ class ThieleSmallParameterInterpretation(object):
 				else:
 					raise e
 
-	@parameter_getter("voicecoil resistance")
-	def __GetVoicecoilResistance(self, callers=None):
+	@parameter_getter("voice coil resistance")
+	def __GetVoiceCoilResistance(self, callers=None):
 		"""
 		A private getter method that hides the "callers"-parameter from the public
 		API.
@@ -575,7 +575,7 @@ class ThieleSmallParameterInterpretation(object):
 			return self.__thiele_small_parameters.GetVoiceCoilResistance()
 		else:
 			try:
-				# try to calculate the voicecoil resistance from the electrical q-factor
+				# try to calculate the voice coil resistance from the electrical q-factor
 				Qe = self.__GetElectricalQFactor(callers)
 				fr = self.__GetResonanceFrequency(callers)
 				m = self.__GetMembraneMass(callers)
@@ -589,13 +589,13 @@ class ThieleSmallParameterInterpretation(object):
 					Qms = self.__GetMechanicalQFactor(callers)
 					return (Qe * Zmax) / (Qe + Qms)
 				except ParameterNotSpecifiedError as e:
-					if callers[0] == "__GetVoicecoilResistance":
+					if callers[0] == "__GetVoiceCoilResistance":
 						return self.__OnParameterNotSpecified(exception=e)
 					else:
 						raise e
 
-	@parameter_getter("voicecoil inductance")
-	def __GetVoicecoilInductance(self, callers=None):
+	@parameter_getter("voice coil inductance")
+	def __GetVoiceCoilInductance(self, callers=None):
 		"""
 		A private getter method that hides the "callers"-parameter from the public
 		API.
@@ -607,7 +607,7 @@ class ThieleSmallParameterInterpretation(object):
 		elif self.__thiele_small_parameters is not None:
 			return self.__thiele_small_parameters.GetVoiceCoilInductance()
 		else:
-			e = ParameterNotSpecifiedError("The voicecoil inductance has not been specified and neither have the values that are necessary to calculate it.")
+			e = ParameterNotSpecifiedError("The voice coil inductance has not been specified and neither have the values that are necessary to calculate it.")
 			return self.__OnParameterNotSpecified(exception=e)
 
 	@parameter_getter("force factor")
@@ -629,7 +629,7 @@ class ThieleSmallParameterInterpretation(object):
 				Qe = self.__GetElectricalQFactor(callers)
 				fr = self.__GetResonanceFrequency(callers)
 				m = self.__GetMembraneMass(callers)
-				R = self.__GetVoicecoilResistance(callers)
+				R = self.__GetVoiceCoilResistance(callers)
 				return ((2.0 * math.pi * fr * m * R) / Qe) ** 0.5
 			except ParameterNotSpecifiedError as e:
 				if callers[0] == "__GetForceFactor":
@@ -720,7 +720,7 @@ class ThieleSmallParameterInterpretation(object):
 						# try to calculate the membrane mass from the electrical q-factor
 						Qe = self.__GetElectricalQFactor(callers)
 						fr = self.__GetResonanceFrequency(callers)
-						R = self.__GetVoicecoilResistance(callers)
+						R = self.__GetVoiceCoilResistance(callers)
 						M = self.__GetForceFactor(callers)
 						return (Qe * M ** 2) / (2.0 * math.pi * fr * R)
 					except ParameterNotSpecifiedError:
@@ -846,7 +846,7 @@ class ThieleSmallParameterInterpretation(object):
 					try:
 						# try to calculate the resonance frequency from the electrical q-factor
 						Qe = self.__GetElectricalQFactor(callers)
-						R = self.__GetVoicecoilResistance(callers)
+						R = self.__GetVoiceCoilResistance(callers)
 						M = self.__GetForceFactor(callers)
 						m = self.__GetMembraneMass(callers)
 						return Qe * M ** 2 / (2.0 * math.pi * m * R)
@@ -870,7 +870,7 @@ class ThieleSmallParameterInterpretation(object):
 		else:
 			try:
 				# try to calculate the electrical q-factor from the electrical parameters
-				R = self.__GetVoicecoilResistance(callers)
+				R = self.__GetVoiceCoilResistance(callers)
 				M = self.__GetForceFactor(callers)
 				m = self.__GetMembraneMass(callers)
 				fr = self.__GetResonanceFrequency(callers)
@@ -885,7 +885,7 @@ class ThieleSmallParameterInterpretation(object):
 					try:
 						# try to calculate the electrical q-factor from the resonance impedance
 						Zmax = self.__GetResonanceImpedance(callers)
-						R = self.__GetVoicecoilResistance(callers)
+						R = self.__GetVoiceCoilResistance(callers)
 						Qms = self.__GetMechanicalQFactor(callers)
 						return (Qms * R) / (Zmax - R)
 					except ParameterNotSpecifiedError:
@@ -999,7 +999,7 @@ class ThieleSmallParameterInterpretation(object):
 		else:
 			try:
 				# try to calculate the resonance impedance from the voice coil impedance and the q-factors
-				R = self.__GetVoicecoilResistance(callers)
+				R = self.__GetVoiceCoilResistance(callers)
 				Qe = self.__GetElectricalQFactor(callers)
 				Qms = self.__GetMechanicalQFactor(callers)
 				return R * (1.0 + (Qms / Qe))

@@ -16,9 +16,13 @@
 
 import math
 import unittest
-
 import sumpf
 import _common as common
+
+try:
+	import numpy
+except ImportError:
+	numpy = sumpf.helper.numpydummy
 
 
 class TestThieleSmallParameterAuralization(unittest.TestCase):
@@ -69,10 +73,61 @@ class TestThieleSmallParameterAuralization(unittest.TestCase):
 		# compare phase
 		phase_linear = spectrum_linear.GetPhase()[0]
 		phase_nonlinear = spectrum_nonlinear.GetPhase()[0]
-		for i in range(1, len(phase_linear) - 2):
+		for i in range(1, len(phase_linear) - 716):
 			difference = abs(phase_linear[i] - phase_nonlinear[i])
 			if difference < math.pi:
-				self.assertLess(difference, 0.2)
+				self.assertLess(difference, 0.1)
+
+	@unittest.skipUnless(sumpf.config.get("run_long_tests"), "Long tests are skipped")
+	@unittest.skipUnless(common.lib_available("numpy"), "This test requires the library 'numpy' to be available.")
+	def test_warp_frequency(self):
+		"""
+		Tests if setting a warp frequency can minimize the auralization errors at
+		given frequencies.
+		"""
+		thiele_small_parameters = sumpf.ThieleSmallParameters()
+		properties = sumpf.modules.ChannelDataProperties(spectrum_length=20000, resolution=1.0)
+		excitation_voltage = sumpf.modules.SweepGenerator(start_frequency=1.0, stop_frequency=19000.0, function=sumpf.modules.SweepGenerator.Linear)
+		sumpf.connect(properties.GetSamplingRate, excitation_voltage.SetSamplingRate)
+		sumpf.connect(properties.GetSignalLength, excitation_voltage.SetLength)
+		auralization_linear = sumpf.modules.ThieleSmallParameterAuralizationLinear(thiele_small_parameters=thiele_small_parameters)
+		sumpf.connect(excitation_voltage.GetSignal, auralization_linear.SetVoltage)
+		auralization_nonlinear = sumpf.modules.ThieleSmallParameterAuralizationNonlinear(thiele_small_parameters=thiele_small_parameters)
+		sumpf.connect(excitation_voltage.GetSignal, auralization_nonlinear.SetVoltage)
+		linear_fft = sumpf.modules.FourierTransform()
+		sumpf.connect(auralization_linear.GetSoundPressure, linear_fft.SetSignal)
+		nonlinear_fft = sumpf.modules.FourierTransform()
+		sumpf.connect(auralization_nonlinear.GetSoundPressure, nonlinear_fft.SetSignal)
+		difference = sumpf.modules.SubtractSpectrums()
+		sumpf.connect(linear_fft.GetSpectrum, difference.SetInput1)
+		sumpf.connect(nonlinear_fft.GetSpectrum, difference.SetInput2)
+		square = sumpf.modules.MultiplySpectrums()
+		sumpf.connect(difference.GetOutput, square.SetInput1)
+		sumpf.connect(difference.GetOutput, square.SetInput2)
+		channel = tuple(numpy.abs(square.GetOutput().GetChannels()[0]))
+		self.assertLess(channel.index(min(channel[0:300])), 50)				# the simulation should be precise at 0Hz
+		auralization_nonlinear.SetWarpFrequency(4000.0)
+		channel = tuple(numpy.abs(square.GetOutput().GetChannels()[0]))
+		self.assertLessEqual(channel.index(min(channel)), 5)				# the simulation should still be precise at 0Hz
+		self.assertLess(abs(4000 - channel.index(min(channel[50:]))), 20)	# the error should have a minimum around 4000Hz
+
+	@unittest.skipUnless(sumpf.config.get("run_long_tests"), "Long tests are skipped")
+	@unittest.skipUnless(common.lib_available("numpy"), "This test requires the library 'numpy' to be available.")
+	def test_regularization(self):
+		"""
+		Tests if the regularization helps stabilizing the instability of the bilinear
+		transform at half the sampling frequency.
+		"""
+		thiele_small_parameters = sumpf.ThieleSmallParameters()
+		excitation_voltage = sumpf.modules.SweepGenerator(start_frequency=10.0, stop_frequency=10000.0, function=sumpf.modules.SweepGenerator.Linear, samplingrate=44100.0, length=2 ** 16).GetSignal()
+		auralization_nonregularized = sumpf.modules.ThieleSmallParameterAuralizationNonlinear(voltage_signal=excitation_voltage, thiele_small_parameters=thiele_small_parameters, regularization=0.0).GetSoundPressure()
+		nonregularized_spectrum = sumpf.modules.FourierTransform(signal=auralization_nonregularized).GetSpectrum()
+		auralization_regularized = sumpf.modules.ThieleSmallParameterAuralizationNonlinear(voltage_signal=excitation_voltage, thiele_small_parameters=thiele_small_parameters, regularization=0.01).GetSoundPressure()
+		regularized_spectrum = sumpf.modules.FourierTransform(signal=auralization_regularized).GetSpectrum()
+		self.assertLess(regularized_spectrum.GetMagnitude()[0][-1], nonregularized_spectrum.GetMagnitude()[0][-1])
+		derivative_regularized = sumpf.helper.differentiate(regularized_spectrum.GetMagnitude()[0])
+		derivative_nonregularized = sumpf.helper.differentiate(nonregularized_spectrum.GetMagnitude()[0])
+		self.assertLess(derivative_regularized[-1], derivative_nonregularized[-1])
 
 	@unittest.skipUnless(sumpf.config.get("run_long_tests"), "Long tests are skipped")
 	@unittest.skipUnless(common.lib_available("numpy"), "This test requires the library 'numpy' to be available.")
@@ -80,8 +135,8 @@ class TestThieleSmallParameterAuralization(unittest.TestCase):
 		"""
 		Tests if the nonlinearities are produced as expected.
 		"""
-		def force_factor(frequency=0.0, membrane_displacement=0.0, membrane_velocity=0.0, voicecoil_temperature=20.0):
-			return 10.0 + 1000.0 * membrane_displacement - 1000000.0 * membrane_displacement ** 2
+		def force_factor(frequency=0.0, membrane_excursion=0.0, membrane_velocity=0.0, voicecoil_temperature=20.0):
+			return 10.0 + 1000.0 * membrane_excursion - 1000000.0 * membrane_excursion ** 2
 		ts = sumpf.ThieleSmallParameters(force_factor=force_factor)
 		sine = sumpf.modules.SineWaveGenerator(frequency=73.0, samplingrate=44100, length=2 ** 14).GetSignal()
 		linear = sumpf.modules.ThieleSmallParameterAuralizationLinear(thiele_small_parameters=ts, voltage_signal=sine).GetSoundPressure()
@@ -96,32 +151,46 @@ class TestThieleSmallParameterAuralization(unittest.TestCase):
 				linear_peaks.append(i)
 		self.assertEqual(linear_peaks, [int(round(73.0 / linear_spectrum.GetResolution()))])
 		nonlinear_peaks = []
-		for i in range(1, len(nonlinear_magnitude) - 1):
+		for i in range(1, int(round(10000.0 / nonlinear_spectrum.GetResolution()))):
 			if nonlinear_magnitude[i - 1] < nonlinear_magnitude[i] > nonlinear_magnitude[i + 1]:
 				nonlinear_peaks.append(i)
-		self.assertEqual(nonlinear_peaks, [int(round(73.0 * (i + 1) / linear_spectrum.GetResolution())) for i in range(3)])
+		self.assertEqual(nonlinear_peaks, [int(round(73.0 * (i + 1) / nonlinear_spectrum.GetResolution())) for i in range(3)])
 
 	def test_connectors(self):
 		"""
 		Tests if the connectors are properly decorated.
 		"""
-		class_list = [sumpf.modules.ThieleSmallParameterAuralizationNonlinear]
 		if common.lib_available("numpy"):
-			class_list.append(sumpf.modules.ThieleSmallParameterAuralizationLinear)
-		for cls in class_list:
-			aur = cls()
+			aur = sumpf.modules.ThieleSmallParameterAuralizationLinear()
 			self.assertEqual(aur.SetThieleSmallParameters.GetType(), sumpf.ThieleSmallParameters)
 			self.assertEqual(aur.SetVoltage.GetType(), sumpf.Signal)
 			self.assertEqual(aur.SetListenerDistance.GetType(), float)
 			self.assertEqual(aur.SetMediumDensity.GetType(), float)
-			self.assertEqual(aur.GetDisplacement.GetType(), sumpf.Signal)
+			self.assertEqual(aur.GetExcursion.GetType(), sumpf.Signal)
 			self.assertEqual(aur.GetVelocity.GetType(), sumpf.Signal)
 			self.assertEqual(aur.GetAcceleration.GetType(), sumpf.Signal)
 			self.assertEqual(aur.GetCurrent.GetType(), sumpf.Signal)
 			self.assertEqual(aur.GetSoundPressure.GetType(), sumpf.Signal)
-			for getter in [aur.GetDisplacement, aur.GetVelocity, aur.GetAcceleration, aur.GetCurrent, aur.GetSoundPressure]:
+			for getter in [aur.GetExcursion, aur.GetVelocity, aur.GetAcceleration, aur.GetCurrent, aur.GetSoundPressure]:
 				common.test_connection_observers(testcase=self,
 				                                 inputs=[aur.SetThieleSmallParameters, aur.SetVoltage, aur.SetListenerDistance, aur.SetMediumDensity],
 				                                 noinputs=[],
 				                                 output=getter)
+		aur = sumpf.modules.ThieleSmallParameterAuralizationNonlinear()
+		self.assertEqual(aur.SetThieleSmallParameters.GetType(), sumpf.ThieleSmallParameters)
+		self.assertEqual(aur.SetVoltage.GetType(), sumpf.Signal)
+		self.assertEqual(aur.SetListenerDistance.GetType(), float)
+		self.assertEqual(aur.SetMediumDensity.GetType(), float)
+		self.assertEqual(aur.SetWarpFrequency.GetType(), float)
+		self.assertEqual(aur.SetRegularization.GetType(), float)
+		self.assertEqual(aur.GetExcursion.GetType(), sumpf.Signal)
+		self.assertEqual(aur.GetVelocity.GetType(), sumpf.Signal)
+		self.assertEqual(aur.GetAcceleration.GetType(), sumpf.Signal)
+		self.assertEqual(aur.GetCurrent.GetType(), sumpf.Signal)
+		self.assertEqual(aur.GetSoundPressure.GetType(), sumpf.Signal)
+		for getter in [aur.GetExcursion, aur.GetVelocity, aur.GetAcceleration, aur.GetCurrent, aur.GetSoundPressure]:
+			common.test_connection_observers(testcase=self,
+			                                 inputs=[aur.SetThieleSmallParameters, aur.SetVoltage, aur.SetListenerDistance, aur.SetMediumDensity, aur.SetWarpFrequency, aur.SetRegularization],
+			                                 noinputs=[],
+			                                 output=getter)
 

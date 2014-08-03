@@ -37,15 +37,15 @@ class ThieleSmallParameterAuralization(object):
 		self._listener_distance = listener_distance
 		self._medium_density = medium_density
 		# output Signals
-		self.__displacement = None
+		self.__excursion = None
 		self.__velocity = None
 		self.__acceleration = None
 		self.__current = None
 		self.__sound_pressure = None
 		# state variable
-		self.__recalculate = True
+		self._recalculate = True
 
-	@sumpf.Input(sumpf.ThieleSmallParameters, ["GetDisplacement", "GetVelocity", "GetAcceleration", "GetCurrent", "GetSoundPressure"])
+	@sumpf.Input(sumpf.ThieleSmallParameters, ("GetExcursion", "GetVelocity", "GetAcceleration", "GetCurrent", "GetSoundPressure"))
 	def SetThieleSmallParameters(self, parameters):
 		"""
 		Sets the Thiele-Small parameters that characterize the loudspeaker that
@@ -53,19 +53,19 @@ class ThieleSmallParameterAuralization(object):
 		@param parameters: a ThieleSmallParameters instance
 		"""
 		self._thiele_small = parameters
-		self.__recalculate = True
+		self._recalculate = True
 
-	@sumpf.Input(sumpf.Signal, ["GetDisplacement", "GetVelocity", "GetAcceleration", "GetCurrent", "GetSoundPressure"])
+	@sumpf.Input(sumpf.Signal, ("GetExcursion", "GetVelocity", "GetAcceleration", "GetCurrent", "GetSoundPressure"))
 	def SetVoltage(self, signal):
 		"""
 		Sets the input voltage signal for the simulated loudspeaker.
 		@param signal: a signal for the input voltage of the loudspeaker
 		"""
 		self._voltage = signal
-		self.__recalculate = True
+		self._recalculate = True
 		self._Precalculate()
 
-	@sumpf.Input(float, ["GetDisplacement", "GetVelocity", "GetAcceleration", "GetCurrent", "GetSoundPressure"])
+	@sumpf.Input(float, ("GetExcursion", "GetVelocity", "GetAcceleration", "GetCurrent", "GetSoundPressure"))
 	def SetListenerDistance(self, distance):
 		"""
 		Sets the distance between the loudspeaker and the point where the radiated
@@ -73,9 +73,9 @@ class ThieleSmallParameterAuralization(object):
 		@param distance: a float value for the distance in meters
 		"""
 		self._listener_distance = distance
-		self.__recalculate = True
+		self._recalculate = True
 
-	@sumpf.Input(float, ["GetDisplacement", "GetVelocity", "GetAcceleration", "GetCurrent", "GetSoundPressure"])
+	@sumpf.Input(float, ("GetExcursion", "GetVelocity", "GetAcceleration", "GetCurrent", "GetSoundPressure"))
 	def SetMediumDensity(self, density):
 		"""
 		Sets a value for the density of the medium in which the loudspeaker radiates
@@ -83,18 +83,18 @@ class ThieleSmallParameterAuralization(object):
 		@param value: a float value for the density in kilograms per cubic meter
 		"""
 		self._medium_density = density
-		self.__recalculate = True
+		self._recalculate = True
 
 	@sumpf.Output(sumpf.Signal, caching=False)
-	def GetDisplacement(self):
+	def GetExcursion(self):
 		"""
-		Calculates and returns a signal for the membrane displacement of the
+		Calculates and returns a signal for the membrane excursion of the
 		simulated loudspeaker, when it is excited with the given input voltage.
 		@retval : a Signal instance
 		"""
-		if self.__recalculate:
+		if self._recalculate:
 			self.__Recalculate()
-		return self.__displacement
+		return self.__excursion
 
 	@sumpf.Output(sumpf.Signal, caching=False)
 	def GetVelocity(self):
@@ -103,7 +103,7 @@ class ThieleSmallParameterAuralization(object):
 		simulated loudspeaker, when it is excited with the given input voltage.
 		@retval : a Signal instance
 		"""
-		if self.__recalculate:
+		if self._recalculate:
 			self.__Recalculate()
 		return self.__velocity
 
@@ -114,7 +114,7 @@ class ThieleSmallParameterAuralization(object):
 		simulated loudspeaker, when it is excited with the given input voltage.
 		@retval : a Signal instance
 		"""
-		if self.__recalculate:
+		if self._recalculate:
 			self.__Recalculate()
 		return self.__acceleration
 
@@ -125,7 +125,7 @@ class ThieleSmallParameterAuralization(object):
 		loudspeaker, when it is excited with the given input voltage.
 		@retval : a Signal instance
 		"""
-		if self.__recalculate:
+		if self._recalculate:
 			self.__Recalculate()
 		return self.__current
 
@@ -143,7 +143,7 @@ class ThieleSmallParameterAuralization(object):
 		travel the given listener distance.
 		@retval : a Signal instance
 		"""
-		if self.__recalculate:
+		if self._recalculate:
 			self.__Recalculate()
 		return self.__sound_pressure
 
@@ -160,9 +160,9 @@ class ThieleSmallParameterAuralization(object):
 		"""
 		This protected method has to be implemented in derived classes, so it
 		computes and returns the channels of the simulated signals.
-		The calculated channels shall be returned as a tuple with its elemenets
+		The calculated channels shall be returned as a tuple with its elements
 		in the following order:
-		 1) the channels for the membrane displacement
+		 1) the channels for the membrane excursion
 		 2) the channels for the membrane velocity
 		 3) the channels for the membrane acceleration
 		 4) the channels for the input current
@@ -177,19 +177,19 @@ class ThieleSmallParameterAuralization(object):
 		implementations like labeling the channels of the simulated signals and
 		creating Signal instances from that.
 		"""
-		displacement_channels, velocity_channels, acceleration_channels, current_channels, sound_pressure_channels = self._Recalculate()
-		displacement_labels = []
+		excursion_channels, velocity_channels, acceleration_channels, current_channels, sound_pressure_channels = self._Recalculate()
+		excursion_labels = []
 		velocity_labels = []
 		acceleration_labels = []
 		current_labels = []
 		sound_pressure_labels = []
 		for c in range(len(self._voltage.GetChannels())):
-			displacement_labels.append("Displacement %i" % (c + 1))
+			excursion_labels.append("Excursion %i" % (c + 1))
 			velocity_labels.append("Velocity %i" % (c + 1))
 			acceleration_labels.append("Acceleration %i" % (c + 1))
 			current_labels.append("Current %i" % (c + 1))
 			sound_pressure_labels.append("Sound Pressure %i" % (c + 1))
-		self.__displacement = sumpf.Signal(channels=tuple(displacement_channels), samplingrate=self._voltage.GetSamplingRate(), labels=tuple(displacement_labels))
+		self.__excursion = sumpf.Signal(channels=tuple(excursion_channels), samplingrate=self._voltage.GetSamplingRate(), labels=tuple(excursion_labels))
 		self.__velocity = sumpf.Signal(channels=tuple(velocity_channels), samplingrate=self._voltage.GetSamplingRate(), labels=tuple(velocity_labels))
 		self.__acceleration = sumpf.Signal(channels=tuple(acceleration_channels), samplingrate=self._voltage.GetSamplingRate(), labels=tuple(acceleration_labels))
 		self.__current = sumpf.Signal(channels=tuple(current_channels), samplingrate=self._voltage.GetSamplingRate(), labels=tuple(current_labels))
