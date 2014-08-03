@@ -35,10 +35,10 @@ class TestThieleSmallParameters(unittest.TestCase):
 			kwargs = {n: 37.7056}
 			ts = sumpf.ThieleSmallParameters(**kwargs)
 			self.assertEqual(getattr(ts, names[n])(), kwargs[n])
-			self.assertEqual(getattr(ts, names[n])(frequency=440.1, membrane_displacement=0.6, membrane_velocity=4.03, voicecoil_temperature=29.4), kwargs[n])
+			self.assertEqual(getattr(ts, names[n])(frequency=440.1, membrane_excursion=0.6, membrane_velocity=4.03, voicecoil_temperature=29.4), kwargs[n])
 			# test values that depend on the loudspeaker's state
 			kwargs = {n: lambda f, x, v, t: f + x + v + t}
 			ts = sumpf.ThieleSmallParameters(**kwargs)
 			self.assertEqual(getattr(ts, names[n])(), 20.0)
-			self.assertEqual(getattr(ts, names[n])(frequency=440.1, membrane_displacement=0.6, membrane_velocity=4.03, voicecoil_temperature=29.4), 474.13)
+			self.assertEqual(getattr(ts, names[n])(frequency=440.1, membrane_excursion=0.6, membrane_velocity=4.03, voicecoil_temperature=29.4), 474.13)
 

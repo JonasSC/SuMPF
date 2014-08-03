@@ -135,8 +135,8 @@ class TestThieleSmallParameterAuralization(unittest.TestCase):
 		"""
 		Tests if the nonlinearities are produced as expected.
 		"""
-		def force_factor(frequency=0.0, membrane_displacement=0.0, membrane_velocity=0.0, voicecoil_temperature=20.0):
-			return 10.0 + 1000.0 * membrane_displacement - 1000000.0 * membrane_displacement ** 2
+		def force_factor(frequency=0.0, membrane_excursion=0.0, membrane_velocity=0.0, voicecoil_temperature=20.0):
+			return 10.0 + 1000.0 * membrane_excursion - 1000000.0 * membrane_excursion ** 2
 		ts = sumpf.ThieleSmallParameters(force_factor=force_factor)
 		sine = sumpf.modules.SineWaveGenerator(frequency=73.0, samplingrate=44100, length=2 ** 14).GetSignal()
 		linear = sumpf.modules.ThieleSmallParameterAuralizationLinear(thiele_small_parameters=ts, voltage_signal=sine).GetSoundPressure()
@@ -166,12 +166,12 @@ class TestThieleSmallParameterAuralization(unittest.TestCase):
 			self.assertEqual(aur.SetVoltage.GetType(), sumpf.Signal)
 			self.assertEqual(aur.SetListenerDistance.GetType(), float)
 			self.assertEqual(aur.SetMediumDensity.GetType(), float)
-			self.assertEqual(aur.GetDisplacement.GetType(), sumpf.Signal)
+			self.assertEqual(aur.GetExcursion.GetType(), sumpf.Signal)
 			self.assertEqual(aur.GetVelocity.GetType(), sumpf.Signal)
 			self.assertEqual(aur.GetAcceleration.GetType(), sumpf.Signal)
 			self.assertEqual(aur.GetCurrent.GetType(), sumpf.Signal)
 			self.assertEqual(aur.GetSoundPressure.GetType(), sumpf.Signal)
-			for getter in [aur.GetDisplacement, aur.GetVelocity, aur.GetAcceleration, aur.GetCurrent, aur.GetSoundPressure]:
+			for getter in [aur.GetExcursion, aur.GetVelocity, aur.GetAcceleration, aur.GetCurrent, aur.GetSoundPressure]:
 				common.test_connection_observers(testcase=self,
 				                                 inputs=[aur.SetThieleSmallParameters, aur.SetVoltage, aur.SetListenerDistance, aur.SetMediumDensity],
 				                                 noinputs=[],
@@ -183,12 +183,12 @@ class TestThieleSmallParameterAuralization(unittest.TestCase):
 		self.assertEqual(aur.SetMediumDensity.GetType(), float)
 		self.assertEqual(aur.SetWarpFrequency.GetType(), float)
 		self.assertEqual(aur.SetRegularization.GetType(), float)
-		self.assertEqual(aur.GetDisplacement.GetType(), sumpf.Signal)
+		self.assertEqual(aur.GetExcursion.GetType(), sumpf.Signal)
 		self.assertEqual(aur.GetVelocity.GetType(), sumpf.Signal)
 		self.assertEqual(aur.GetAcceleration.GetType(), sumpf.Signal)
 		self.assertEqual(aur.GetCurrent.GetType(), sumpf.Signal)
 		self.assertEqual(aur.GetSoundPressure.GetType(), sumpf.Signal)
-		for getter in [aur.GetDisplacement, aur.GetVelocity, aur.GetAcceleration, aur.GetCurrent, aur.GetSoundPressure]:
+		for getter in [aur.GetExcursion, aur.GetVelocity, aur.GetAcceleration, aur.GetCurrent, aur.GetSoundPressure]:
 			common.test_connection_observers(testcase=self,
 			                                 inputs=[aur.SetThieleSmallParameters, aur.SetVoltage, aur.SetListenerDistance, aur.SetMediumDensity, aur.SetWarpFrequency, aur.SetRegularization],
 			                                 noinputs=[],

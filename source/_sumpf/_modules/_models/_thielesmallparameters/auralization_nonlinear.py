@@ -22,22 +22,22 @@ from .auralization_base import ThieleSmallParameterAuralization
 class ThieleSmallParameterAuralizationNonlinear(ThieleSmallParameterAuralization):
 	"""
 	Synthesizes loudspeaker responses for a given input voltage signal.
-	These responses can be the membrane displacement, the membrane velocity, the
+	These responses can be the membrane excursion, the membrane velocity, the
 	membrane acceleration, the input current and the generated sound pressure
 	at a given distance.
 
 	This synthesis also simulates nonlinear effects, which are caused by loudspeaker
-	parameters that change with the membrane displacement or the membrane velocity.
+	parameters that change with the membrane excursion or the membrane velocity.
 	Frequency or temperature dependencies of parameters are not considered in
 	this simulation.
 
 	The simulation is implemented as an IIR-filter in the z-domain, that updates
-	the displacement and velocity dependent parameters for each sample with the
-	displacement and velocity that has been calculated for the previous sample.
+	the excursion and velocity dependent parameters for each sample with the
+	excursion and velocity that has been calculated for the previous sample.
 
 	The formula for the IIR-filter has been calculated by using the bilinear transform
-	on the voltage-to-displacement transfer function in the Laplace domain. Due
-	to the non-infinite sampling rate, this causes an error in the high frequencies
+	on the voltage-to-excursion transfer function in the Laplace domain. Due to
+	the non-infinite sampling rate, this causes an error in the high frequencies
 	of the output signals. Specifying a "warp frequency" for the Filter minimizes
 	the error at that frequency, but this increases the errors at other frequencies.
 	"""
@@ -54,7 +54,7 @@ class ThieleSmallParameterAuralizationNonlinear(ThieleSmallParameterAuralization
 		self.__warp_frequency = warp_frequency
 		self.__regularization = regularization
 
-	@sumpf.Input(float, ("GetDisplacement", "GetVelocity", "GetAcceleration", "GetCurrent", "GetSoundPressure"))
+	@sumpf.Input(float, ("GetExcursion", "GetVelocity", "GetAcceleration", "GetCurrent", "GetSoundPressure"))
 	def SetWarpFrequency(self, frequency):
 		"""
 		Sets a frequency, at which the error, that is caused by the bilinear
@@ -69,7 +69,7 @@ class ThieleSmallParameterAuralizationNonlinear(ThieleSmallParameterAuralization
 		self.__warp_frequency = frequency
 		self._recalculate = True
 
-	@sumpf.Input(float, ("GetDisplacement", "GetVelocity", "GetAcceleration", "GetCurrent", "GetSoundPressure"))
+	@sumpf.Input(float, ("GetExcursion", "GetVelocity", "GetAcceleration", "GetCurrent", "GetSoundPressure"))
 	def SetRegularization(self, value):
 		"""
 		Sets a regularization value, that ensures the stability of the bilinear
@@ -88,9 +88,9 @@ class ThieleSmallParameterAuralizationNonlinear(ThieleSmallParameterAuralization
 
 	def _Recalculate(self):
 		"""
-		Calculates the channels for the displacement, velocity and acceleration
+		Calculates the channels for the excursion, velocity and acceleration
 		of the membrane and for the input current and the generated sound pressure.
-		@retval the channel data displacement_channels, velocity_channels, acceleration_channels, current_channels, sound_pressure_channels
+		@retval the channel data excursion_channels, velocity_channels, acceleration_channels, current_channels, sound_pressure_channels
 		"""
 		# make class variables local
 		thiele_small = self._thiele_small
@@ -116,7 +116,7 @@ class ThieleSmallParameterAuralizationNonlinear(ThieleSmallParameterAuralization
 		_K2q = K ** 2 * q				# b3
 		_Kq2 = K * q ** 2
 		# start the calculation
-		displacement_channels = []
+		excursion_channels = []
 		velocity_channels = []
 		acceleration_channels = []
 		current_channels = []
@@ -125,13 +125,13 @@ class ThieleSmallParameterAuralizationNonlinear(ThieleSmallParameterAuralization
 		t = None
 		for channel in self._voltage.GetChannels():
 			voltage = (0.0,) * 3 + channel
-			displacement = [0.0] * length
+			excursion = [0.0] * length
 			velocity = [0.0] * length
 			acceleration = [0.0] * length
 			current = [0.0] * length
 			sound_pressure = [0.0] * length
 			for i in range(4, len(voltage)):
-				x = displacement[i - 1]
+				x = excursion[i - 1]
 				v = velocity[i - 1]
 				# get the Thiele Small parameters
 				R = thiele_small.GetVoiceCoilResistance(f, x, v, t)
@@ -141,12 +141,12 @@ class ThieleSmallParameterAuralizationNonlinear(ThieleSmallParameterAuralization
 				w = thiele_small.GetMechanicalDamping(f, x, v, t)
 				m = thiele_small.GetMembraneMass(f, x, v, t)
 				S = thiele_small.GetMembraneArea(f, x, v, t)
-				# precalculate some values for the displacement calculation
+				# precalculate some values for the excursion calculation
 				Lm = L * m
 				LwRm = L * w + R * m
 				LkM2Rw = L * k + M * M + R * w
 				Rk = R * k
-				# calculate the filter coefficients for the displacement calculation
+				# calculate the filter coefficients for the excursion calculation
 				a0 = M
 				a1 = M * _3q
 				a2 = M * _3q2
@@ -155,18 +155,18 @@ class ThieleSmallParameterAuralizationNonlinear(ThieleSmallParameterAuralization
 				b1 = -Lm * _3K3 + LwRm * _K2q2 + LkM2Rw * _K2q1 + Rk * _3q
 				b2 = Lm * _3K3 + LwRm * _K212q + LkM2Rw * _Kqq2 + Rk * _3q2
 				b3 = -Lm * _K3 + LwRm * _K2q - LkM2Rw * _Kq2 + Rk * _q3
-				summed = a0 * voltage[i] + a1 * voltage[i - 1] + a2 * voltage[i - 2] + a3 * voltage[i - 3] - b1 * displacement[i - 1] - b2 * displacement[i - 2] - b3 * displacement[i - 3]
-				displacement[i] = summed / b0
+				summed = a0 * voltage[i] + a1 * voltage[i - 1] + a2 * voltage[i - 2] + a3 * voltage[i - 3] - b1 * excursion[i - 1] - b2 * excursion[i - 2] - b3 * excursion[i - 3]
+				excursion[i] = summed / b0
 				# calculate the velocity, the acceleration, the current and the sound pressure
-				velocity[i] = K * (displacement[i] - displacement[i - 1]) - q * velocity[i - 1]
+				velocity[i] = K * (excursion[i] - excursion[i - 1]) - q * velocity[i - 1]
 				acceleration[i] = K * (velocity[i] - velocity[i - 1]) - q * acceleration[i - 1]
-				current[i] = (k * displacement[i] + w * velocity[i] + m * acceleration[i]) / M
+				current[i] = (k * excursion[i] + w * velocity[i] + m * acceleration[i]) / M
 				sound_pressure[i] = (rho * acceleration[i] * S) / (_4pi * r)
 			# store the Signals
-			displacement_channels.append(tuple(displacement[3:]))
+			excursion_channels.append(tuple(excursion[3:]))
 			velocity_channels.append(tuple(velocity[3:]))
 			acceleration_channels.append(tuple(acceleration[3:]))
 			current_channels.append(tuple(current[3:]))
 			sound_pressure_channels.append(tuple(sound_pressure[3:]))
-		return displacement_channels, velocity_channels, acceleration_channels, current_channels, sound_pressure_channels
+		return excursion_channels, velocity_channels, acceleration_channels, current_channels, sound_pressure_channels
 

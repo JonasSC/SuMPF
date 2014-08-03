@@ -32,12 +32,12 @@ class ThieleSmallParameters(object):
 	TestThieleSmallParameterInterpretation class.
 
 	The parameters can be specified as constant values or as functions in dependency
-	of the frequency, the membrane displacement, the membrane velocity or the
+	of the frequency, the membrane excursion, the membrane velocity or the
 	voice coil temperature (the function's arguments are ordered in that order).
 	This makes it possible to partially describe the nonlinear and time variant
 	behavior of a loudspeaker.
 	The performance is best, when the parameters are either specified as constants
-	or as functions with the arguments "frequency", "membrane_displacement",
+	or as functions with the arguments "frequency", "membrane_excursion",
 	"membrane_velocity" and "voicecoil_temperature" that default to 0.0, 0.0, 0.0
 	and 20.0 respectively. This allows to replace the getter methods directly with
 	the given function.
@@ -71,92 +71,92 @@ class ThieleSmallParameters(object):
 		doc = self.GetVoiceCoilResistance.__doc__
 		if isinstance(voicecoil_resistance, collections.Callable):
 			argspec = inspect.getargspec(voicecoil_resistance)
-			if argspec.args == ["frequency", "membrane_displacement", "membrane_velocity", "voicecoil_temperature"] and argspec.defaults is not None and len(argspec.defaults) == 4:
+			if argspec.args == ["frequency", "membrane_excursion", "membrane_velocity", "voicecoil_temperature"] and argspec.defaults is not None and len(argspec.defaults) == 4:
 				self.GetVoiceCoilResistance = voicecoil_resistance
 			else:
-				self.GetVoiceCoilResistance = lambda frequency = 0.0, membrane_displacement = 0.0, membrane_velocity = 0.0, voicecoil_temperature = 20.0: voicecoil_resistance(frequency, membrane_displacement, membrane_velocity, voicecoil_temperature)
+				self.GetVoiceCoilResistance = lambda frequency = 0.0, membrane_excursion = 0.0, membrane_velocity = 0.0, voicecoil_temperature = 20.0: voicecoil_resistance(frequency, membrane_excursion, membrane_velocity, voicecoil_temperature)
 		else:
-			self.GetVoiceCoilResistance = lambda frequency = 0.0, membrane_displacement = 0.0, membrane_velocity = 0.0, voicecoil_temperature = 20.0: voicecoil_resistance
+			self.GetVoiceCoilResistance = lambda frequency = 0.0, membrane_excursion = 0.0, membrane_velocity = 0.0, voicecoil_temperature = 20.0: voicecoil_resistance
 		self.GetVoiceCoilResistance.__name__ = "GetVoiceCoilResistance"
 		self.GetVoiceCoilResistance.__doc__ = doc
 		# GetVoiceCoilInductance
 		doc = self.GetVoiceCoilInductance.__doc__
 		if isinstance(voicecoil_inductance, collections.Callable):
 			argspec = inspect.getargspec(voicecoil_inductance)
-			if argspec.args == ["frequency", "membrane_displacement", "membrane_velocity", "voicecoil_temperature"] and argspec.defaults is not None and len(argspec.defaults) == 4:
+			if argspec.args == ["frequency", "membrane_excursion", "membrane_velocity", "voicecoil_temperature"] and argspec.defaults is not None and len(argspec.defaults) == 4:
 				self.GetVoiceCoilInductance = voicecoil_inductance
 			else:
-				self.GetVoiceCoilInductance = lambda frequency = 0.0, membrane_displacement = 0.0, membrane_velocity = 0.0, voicecoil_temperature = 20.0: voicecoil_inductance(frequency, membrane_displacement, membrane_velocity, voicecoil_temperature)
+				self.GetVoiceCoilInductance = lambda frequency = 0.0, membrane_excursion = 0.0, membrane_velocity = 0.0, voicecoil_temperature = 20.0: voicecoil_inductance(frequency, membrane_excursion, membrane_velocity, voicecoil_temperature)
 		else:
-			self.GetVoiceCoilInductance = lambda frequency = 0.0, membrane_displacement = 0.0, membrane_velocity = 0.0, voicecoil_temperature = 20.0: voicecoil_inductance
+			self.GetVoiceCoilInductance = lambda frequency = 0.0, membrane_excursion = 0.0, membrane_velocity = 0.0, voicecoil_temperature = 20.0: voicecoil_inductance
 		self.GetVoiceCoilInductance.__name__ = "GetVoiceCoilInductance"
 		self.GetVoiceCoilInductance.__doc__ = doc
 		# GetForceFactor
 		doc = self.GetForceFactor.__doc__
 		if isinstance(force_factor, collections.Callable):
 			argspec = inspect.getargspec(force_factor)
-			if argspec.args == ["frequency", "membrane_displacement", "membrane_velocity", "voicecoil_temperature"] and argspec.defaults is not None and len(argspec.defaults) == 4:
+			if argspec.args == ["frequency", "membrane_excursion", "membrane_velocity", "voicecoil_temperature"] and argspec.defaults is not None and len(argspec.defaults) == 4:
 				self.GetForceFactor = force_factor
 			else:
-				self.GetForceFactor = lambda frequency = 0.0, membrane_displacement = 0.0, membrane_velocity = 0.0, voicecoil_temperature = 20.0: force_factor(frequency, membrane_displacement, membrane_velocity, voicecoil_temperature)
+				self.GetForceFactor = lambda frequency = 0.0, membrane_excursion = 0.0, membrane_velocity = 0.0, voicecoil_temperature = 20.0: force_factor(frequency, membrane_excursion, membrane_velocity, voicecoil_temperature)
 		else:
-			self.GetForceFactor = lambda frequency = 0.0, membrane_displacement = 0.0, membrane_velocity = 0.0, voicecoil_temperature = 20.0: force_factor
+			self.GetForceFactor = lambda frequency = 0.0, membrane_excursion = 0.0, membrane_velocity = 0.0, voicecoil_temperature = 20.0: force_factor
 		self.GetForceFactor.__name__ = "GetForceFactor"
 		self.GetForceFactor.__doc__ = doc
 		# GetSuspensionStiffness
 		doc = self.GetSuspensionStiffness.__doc__
 		if isinstance(suspension_stiffness, collections.Callable):
 			argspec = inspect.getargspec(suspension_stiffness)
-			if argspec.args == ["frequency", "membrane_displacement", "membrane_velocity", "voicecoil_temperature"] and argspec.defaults is not None and len(argspec.defaults) == 4:
+			if argspec.args == ["frequency", "membrane_excursion", "membrane_velocity", "voicecoil_temperature"] and argspec.defaults is not None and len(argspec.defaults) == 4:
 				self.GetSuspensionStiffness = suspension_stiffness
 			else:
-				self.GetSuspensionStiffness = lambda frequency = 0.0, membrane_displacement = 0.0, membrane_velocity = 0.0, voicecoil_temperature = 20.0: suspension_stiffness(frequency, membrane_displacement, membrane_velocity, voicecoil_temperature)
+				self.GetSuspensionStiffness = lambda frequency = 0.0, membrane_excursion = 0.0, membrane_velocity = 0.0, voicecoil_temperature = 20.0: suspension_stiffness(frequency, membrane_excursion, membrane_velocity, voicecoil_temperature)
 		else:
-			self.GetSuspensionStiffness = lambda frequency = 0.0, membrane_displacement = 0.0, membrane_velocity = 0.0, voicecoil_temperature = 20.0: suspension_stiffness
+			self.GetSuspensionStiffness = lambda frequency = 0.0, membrane_excursion = 0.0, membrane_velocity = 0.0, voicecoil_temperature = 20.0: suspension_stiffness
 		self.GetSuspensionStiffness.__name__ = "GetSuspensionStiffness"
 		self.GetSuspensionStiffness.__doc__ = doc
 		# GetMechanicalDamping
 		doc = self.GetMechanicalDamping.__doc__
 		if isinstance(mechanical_damping, collections.Callable):
 			argspec = inspect.getargspec(mechanical_damping)
-			if argspec.args == ["frequency", "membrane_displacement", "membrane_velocity", "voicecoil_temperature"] and argspec.defaults is not None and len(argspec.defaults) == 4:
+			if argspec.args == ["frequency", "membrane_excursion", "membrane_velocity", "voicecoil_temperature"] and argspec.defaults is not None and len(argspec.defaults) == 4:
 				self.GetMechanicalDamping = mechanical_damping
 			else:
-				self.GetMechanicalDamping = lambda frequency = 0.0, membrane_displacement = 0.0, membrane_velocity = 0.0, voicecoil_temperature = 20.0: mechanical_damping(frequency, membrane_displacement, membrane_velocity, voicecoil_temperature)
+				self.GetMechanicalDamping = lambda frequency = 0.0, membrane_excursion = 0.0, membrane_velocity = 0.0, voicecoil_temperature = 20.0: mechanical_damping(frequency, membrane_excursion, membrane_velocity, voicecoil_temperature)
 		else:
-			self.GetMechanicalDamping = lambda frequency = 0.0, membrane_displacement = 0.0, membrane_velocity = 0.0, voicecoil_temperature = 20.0: mechanical_damping
+			self.GetMechanicalDamping = lambda frequency = 0.0, membrane_excursion = 0.0, membrane_velocity = 0.0, voicecoil_temperature = 20.0: mechanical_damping
 		self.GetMechanicalDamping.__name__ = "GetMechanicalDamping"
 		self.GetMechanicalDamping.__doc__ = doc
 		# GetMembraneMass
 		doc = self.GetMembraneMass.__doc__
 		if isinstance(membrane_mass, collections.Callable):
 			argspec = inspect.getargspec(membrane_mass)
-			if argspec.args == ["frequency", "membrane_displacement", "membrane_velocity", "voicecoil_temperature"] and argspec.defaults is not None and len(argspec.defaults) == 4:
+			if argspec.args == ["frequency", "membrane_excursion", "membrane_velocity", "voicecoil_temperature"] and argspec.defaults is not None and len(argspec.defaults) == 4:
 				self.GetMembraneMass = membrane_mass
 			else:
-				self.GetMembraneMass = lambda frequency = 0.0, membrane_displacement = 0.0, membrane_velocity = 0.0, voicecoil_temperature = 20.0: membrane_mass(frequency, membrane_displacement, membrane_velocity, voicecoil_temperature)
+				self.GetMembraneMass = lambda frequency = 0.0, membrane_excursion = 0.0, membrane_velocity = 0.0, voicecoil_temperature = 20.0: membrane_mass(frequency, membrane_excursion, membrane_velocity, voicecoil_temperature)
 		else:
-			self.GetMembraneMass = lambda frequency = 0.0, membrane_displacement = 0.0, membrane_velocity = 0.0, voicecoil_temperature = 20.0: membrane_mass
+			self.GetMembraneMass = lambda frequency = 0.0, membrane_excursion = 0.0, membrane_velocity = 0.0, voicecoil_temperature = 20.0: membrane_mass
 		self.GetMembraneMass.__name__ = "GetMembraneMass"
 		self.GetMembraneMass.__doc__ = doc
 		# GetMembraneArea
 		doc = self.GetMembraneArea.__doc__
 		if isinstance(membrane_area, collections.Callable):
 			argspec = inspect.getargspec(membrane_area)
-			if argspec.args == ["frequency", "membrane_displacement", "membrane_velocity", "voicecoil_temperature"] and argspec.defaults is not None and len(argspec.defaults) == 4:
+			if argspec.args == ["frequency", "membrane_excursion", "membrane_velocity", "voicecoil_temperature"] and argspec.defaults is not None and len(argspec.defaults) == 4:
 				self.GetMembraneArea = membrane_area
 			else:
-				self.GetMembraneArea = lambda frequency = 0.0, membrane_displacement = 0.0, membrane_velocity = 0.0, voicecoil_temperature = 20.0: membrane_area(frequency, membrane_displacement, membrane_velocity, voicecoil_temperature)
+				self.GetMembraneArea = lambda frequency = 0.0, membrane_excursion = 0.0, membrane_velocity = 0.0, voicecoil_temperature = 20.0: membrane_area(frequency, membrane_excursion, membrane_velocity, voicecoil_temperature)
 		else:
-			self.GetMembraneArea = lambda frequency = 0.0, membrane_displacement = 0.0, membrane_velocity = 0.0, voicecoil_temperature = 20.0: membrane_area
+			self.GetMembraneArea = lambda frequency = 0.0, membrane_excursion = 0.0, membrane_velocity = 0.0, voicecoil_temperature = 20.0: membrane_area
 		self.GetMembraneArea.__name__ = "GetMembraneArea"
 		self.GetMembraneArea.__doc__ = doc
 
-	def GetVoiceCoilResistance(self, frequency=0.0, membrane_displacement=0.0, membrane_velocity=0.0, voicecoil_temperature=20.0):
+	def GetVoiceCoilResistance(self, frequency=0.0, membrane_excursion=0.0, membrane_velocity=0.0, voicecoil_temperature=20.0):
 		"""
 		Returns the DC resistance of the voice coil in Ohms.
 		@param frequency: optional float, that can be used to model the voice coil resistance in dependency of the frequency (in Hz)
-		@param membrane_displacement: optional float, that can be used to model the voice coil resistance in dependency of the membrane displacement (in meters)
+		@param membrane_excursion: optional float, that can be used to model the voice coil resistance in dependency of the membrane excursion (in meters)
 		@param membrane_velocity: optional float, that can be used to model the voice coil resistance in dependency of the membrane velocity (in meters per second)
 		@param voicecoil_temperature: optional float, that can be used to model the voice coil resistance in dependency of the voice coil temperature (in degrees Celsius)
 		@retval : the DC resistance of the voice coil as a float
@@ -167,11 +167,11 @@ class ThieleSmallParameters(object):
 		# ThieleSmallParameters' values very often.
 		pass
 
-	def GetVoiceCoilInductance(self, frequency=0.0, membrane_displacement=0.0, membrane_velocity=0.0, voicecoil_temperature=20.0):
+	def GetVoiceCoilInductance(self, frequency=0.0, membrane_excursion=0.0, membrane_velocity=0.0, voicecoil_temperature=20.0):
 		"""
 		Returns the voice coil inductance in Henrys.
 		@param frequency: optional float, that can be used to model the voice coil inductance in dependency of the frequency (in Hz)
-		@param membrane_displacement: optional float, that can be used to model the voice coil inductance in dependency of the membrane displacement (in meters)
+		@param membrane_excursion: optional float, that can be used to model the voice coil inductance in dependency of the membrane excursion (in meters)
 		@param membrane_velocity: optional float, that can be used to model the voice coil inductance in dependency of the membrane velocity (in meters per second)
 		@param voicecoil_temperature: optional float, that can be used to model the voice coil inductance in dependency of the voice coil temperature (in degrees Celsius)
 		@retval : the inductance of the voice coil as a float
@@ -182,11 +182,11 @@ class ThieleSmallParameters(object):
 		# ThieleSmallParameters' values very often.
 		pass
 
-	def GetForceFactor(self, frequency=0.0, membrane_displacement=0.0, membrane_velocity=0.0, voicecoil_temperature=20.0):
+	def GetForceFactor(self, frequency=0.0, membrane_excursion=0.0, membrane_velocity=0.0, voicecoil_temperature=20.0):
 		"""
 		Returns the force factor in Tesla times meters.
 		@param frequency: optional float, that can be used to model the force factor in dependency of the frequency (in Hz)
-		@param membrane_displacement: optional float, that can be used to model the force factor in dependency of the membrane displacement (in meters)
+		@param membrane_excursion: optional float, that can be used to model the force factor in dependency of the membrane excursion (in meters)
 		@param membrane_velocity: optional float, that can be used to model the force factor in dependency of the membrane velocity (in meters per second)
 		@param voicecoil_temperature: optional float, that can be used to model the force factor in dependency of the voice coil temperature (in degrees Celsius)
 		@retval : the force factor as a float
@@ -197,11 +197,11 @@ class ThieleSmallParameters(object):
 		# ThieleSmallParameters' values very often.
 		pass
 
-	def GetSuspensionStiffness(self, frequency=0.0, membrane_displacement=0.0, membrane_velocity=0.0, voicecoil_temperature=20.0):
+	def GetSuspensionStiffness(self, frequency=0.0, membrane_excursion=0.0, membrane_velocity=0.0, voicecoil_temperature=20.0):
 		"""
 		Returns the suspension stiffness in Newtons per meter.
 		@param frequency: optional float, that can be used to model the suspension stiffness in dependency of the frequency (in Hz)
-		@param membrane_displacement: optional float, that can be used to model the suspension stiffness in dependency of the membrane displacement (in meters)
+		@param membrane_excursion: optional float, that can be used to model the suspension stiffness in dependency of the membrane excursion (in meters)
 		@param membrane_velocity: optional float, that can be used to model the suspension stiffness in dependency of the membrane velocity (in meters per second)
 		@param voicecoil_temperature: optional float, that can be used to model the suspension stiffness in dependency of the voice coil temperature (in degrees Celsius)
 		@retval : the suspension stiffness as a float
@@ -212,11 +212,11 @@ class ThieleSmallParameters(object):
 		# ThieleSmallParameters' values very often.
 		pass
 
-	def GetMechanicalDamping(self, frequency=0.0, membrane_displacement=0.0, membrane_velocity=0.0, voicecoil_temperature=20.0):
+	def GetMechanicalDamping(self, frequency=0.0, membrane_excursion=0.0, membrane_velocity=0.0, voicecoil_temperature=20.0):
 		"""
 		Returns the damping losses of the mechanical part in Newton times seconds per meter.
 		@param frequency: optional float, that can be used to model the mechanical damping in dependency of the frequency (in Hz)
-		@param membrane_displacement: optional float, that can be used to model the mechanical damping in dependency of the membrane displacement (in meters)
+		@param membrane_excursion: optional float, that can be used to model the mechanical damping in dependency of the membrane excursion (in meters)
 		@param membrane_velocity: optional float, that can be used to model the mechanical damping in dependency of the membrane velocity (in meters per second)
 		@param voicecoil_temperature: optional float, that can be used to model the mechanical damping in dependency of the voice coil temperature (in degrees Celsius)
 		@retval : the mechanical damping as a float
@@ -227,11 +227,11 @@ class ThieleSmallParameters(object):
 		# ThieleSmallParameters' values very often.
 		pass
 
-	def GetMembraneMass(self, frequency=0.0, membrane_displacement=0.0, membrane_velocity=0.0, voicecoil_temperature=20.0):
+	def GetMembraneMass(self, frequency=0.0, membrane_excursion=0.0, membrane_velocity=0.0, voicecoil_temperature=20.0):
 		"""
 		Returns the mass of the membrane including voice coil and acoustic load in kilograms.
 		@param frequency: optional float, that can be used to model the membrane mass in dependency of the frequency (in Hz)
-		@param membrane_displacement: optional float, that can be used to model the membrane mass in dependency of the membrane displacement (in meters)
+		@param membrane_excursion: optional float, that can be used to model the membrane mass in dependency of the membrane excursion (in meters)
 		@param membrane_velocity: optional float, that can be used to model the membrane mass in dependency of the membrane velocity (in meters per second)
 		@param voicecoil_temperature: optional float, that can be used to model the membrane mass in dependency of the voice coil temperature (in degrees Celsius)
 		@retval : the membrane mass as a float
@@ -242,11 +242,11 @@ class ThieleSmallParameters(object):
 		# ThieleSmallParameters' values very often.
 		pass
 
-	def GetMembraneArea(self, frequency=0.0, membrane_displacement=0.0, membrane_velocity=0.0, voicecoil_temperature=20.0):
+	def GetMembraneArea(self, frequency=0.0, membrane_excursion=0.0, membrane_velocity=0.0, voicecoil_temperature=20.0):
 		"""
 		Returns the effective surface area of the membrane in square meters.
 		@param frequency: optional float, that can be used to model the membrane area of the frequency (in Hz)
-		@param membrane_displacement: optional float, that can be used to model the membrane area in dependency of the membrane displacement (in meters)
+		@param membrane_excursion: optional float, that can be used to model the membrane area in dependency of the membrane excursion (in meters)
 		@param membrane_velocity: optional float, that can be used to model the membrane area in dependency of the membrane velocity (in meters per second)
 		@param voicecoil_temperature: optional float, that can be used to model the membrane area in dependency of the voice coil temperature (in degrees Celsius)
 		@retval : the effective surface area of the membrane as a float
