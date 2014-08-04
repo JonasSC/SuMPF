@@ -39,3 +39,8 @@ class TestStringFunctions(unittest.TestCase):
 		for p in pairs:
 			self.assertEqual(sumpf.helper.counting_number(p[0]), p[1])
 
+	def test_leading_zeros(self):
+		self.assertEqual(sumpf.helper.leading_zeros(number=5, maximum=1), "5")
+		self.assertEqual(sumpf.helper.leading_zeros(number=3790, maximum=43e6), "00003790")
+		self.assertEqual(sumpf.helper.leading_zeros(number=90, maximum=3), "90")
+

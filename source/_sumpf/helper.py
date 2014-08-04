@@ -23,7 +23,7 @@ inside SuMPF and maybe elsewhere as well.
 from ._helper.sumpfmath import binomial_coefficient, differentiate
 from ._helper.multiinputdata import MultiInputData
 from ._helper.normalizepath import normalize_path
-from ._helper.stringfunctions import counting_number
+from ._helper.stringfunctions import counting_number, leading_zeros
 from ._helper.walkmodule import walk_module
 
 from ._helper import average

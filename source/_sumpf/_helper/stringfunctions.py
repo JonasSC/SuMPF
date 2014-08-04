@@ -14,6 +14,8 @@
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 
+import math
+
 def counting_number(number):
 	"""
 	Creates a counting number string (e.g. "1st", "2nd", "3rd", "4th" ...) from
@@ -30,4 +32,17 @@ def counting_number(number):
 		return "%srd" % stringnumber
 	else:
 		return "%sth" % stringnumber
+
+
+def leading_zeros(number, maximum):
+	"""
+	This function creates a string from an integer number, that has as many digits
+	as the given maximum number. If the given integer has less digits than the
+	maximum number, zeros will be prepended to the string.
+	@param number: the integer number that shall be converted to a string
+	@param maximum: the integer number to whose number of digits the string shall be extended
+	@retval : a string from the given integer with the same number of digits as the given maximum
+	"""
+	width = int(math.ceil(math.log(maximum, 10)))
+	return str(number).zfill(width)
 
