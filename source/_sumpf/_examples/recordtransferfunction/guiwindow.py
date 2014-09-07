@@ -27,27 +27,24 @@ class GuiWindow(sumpf.gui.Window):
 		# menu
 		self.__menubar = wx.MenuBar()
 		self.SetMenuBar(self.__menubar)
-		self.__menu_save = self.__AddMenu(parent=self.__menubar,
-		                                title="Save",
-		                                items=[("Unprocessed transfer function", self.__SaveUnprocessedTransferFunction),
-		                                       ("Unprocessed impulse response", self.__SaveUnprocessedImpulseResponse),
-		                                       ("Processed transfer function", self.__SaveProcessedTransferFunction),
-		                                       ("Processed impulse response", self.__SaveProcessedImpulseResponse)])
-		self.__menubar.AddChild(self.__menu_save)
-		self.__menu_save = self.__AddMenu(parent=self.__menubar,
-		                                title="Load",
-		                                items=[("Unprocessed transfer function", self.__LoadUnprocessedTransferFunction),
-		                                       ("Unprocessed impulse response", self.__LoadUnprocessedImpulseResponse),
-		                                       ("Processed transfer function", self.__LoadProcessedTransferFunction),
-		                                       ("Processed impulse response", self.__LoadProcessedImpulseResponse)])
-		self.__menubar.AddChild(self.__menu_save)
-		self.__menu_save = self.__AddMenu(parent=self.__menubar,
-		                                title="Unload",
-		                                items=[("Unprocessed transfer function", self.__UnloadUnprocessedTransferFunction),
-		                                       ("Unprocessed impulse response", self.__UnloadUnprocessedImpulseResponse),
-		                                       ("Processed transfer function", self.__UnloadProcessedTransferFunction),
-		                                       ("Processed impulse response", self.__UnloadProcessedImpulseResponse)])
-		self.__menubar.AddChild(self.__menu_save)
+		self.__AddMenu(parent=self.__menubar,
+		               title="Save",
+		               items=[("Unprocessed transfer function", self.__SaveUnprocessedTransferFunction),
+		                      ("Unprocessed impulse response", self.__SaveUnprocessedImpulseResponse),
+		                      ("Processed transfer function", self.__SaveProcessedTransferFunction),
+		                      ("Processed impulse response", self.__SaveProcessedImpulseResponse)])
+		self.__AddMenu(parent=self.__menubar,
+		               title="Load",
+		               items=[("Unprocessed transfer function", self.__LoadUnprocessedTransferFunction),
+		                      ("Unprocessed impulse response", self.__LoadUnprocessedImpulseResponse),
+		                      ("Processed transfer function", self.__LoadProcessedTransferFunction),
+		                      ("Processed impulse response", self.__LoadProcessedImpulseResponse)])
+		self.__AddMenu(parent=self.__menubar,
+		               title="Unload",
+		               items=[("Unprocessed transfer function", self.__UnloadUnprocessedTransferFunction),
+		                      ("Unprocessed impulse response", self.__UnloadUnprocessedImpulseResponse),
+		                      ("Processed transfer function", self.__UnloadProcessedTransferFunction),
+		                      ("Processed impulse response", self.__UnloadProcessedImpulseResponse)])
 		# sizer
 		self.__mainsizer = wx.BoxSizer(wx.HORIZONTAL)
 		self.__controlsizer = wx.BoxSizer(wx.VERTICAL)
@@ -555,7 +552,6 @@ class GuiWindow(sumpf.gui.Window):
 
 	def __AddIntegerField(self, parent, sizer, label, value, minimum=None, maximum=None):
 		element = wx.lib.masked.NumCtrl(parent=parent, fractionWidth=0, value=value)
-		element.SetGroupChar(" ")
 		if minimum is not None:
 			element.SetMin(minimum)
 		if maximum is not None:
@@ -566,7 +562,6 @@ class GuiWindow(sumpf.gui.Window):
 
 	def __AddFloatField(self, parent, sizer, label, value, minimum=None, maximum=None):
 		element = wx.lib.masked.NumCtrl(parent=parent, fractionWidth=4, value=value)
-		element.SetGroupChar(" ")
 		if minimum is not None:
 			element.SetMin(minimum)
 		if maximum is not None:
