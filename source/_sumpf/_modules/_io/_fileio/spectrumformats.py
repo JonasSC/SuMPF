@@ -37,11 +37,17 @@ class NUMPY_NPZ(FileFormat):
 	ending = "npz"
 	@classmethod
 	def Load(cls, filename):
+		def to_string(label):
+			if label is None:
+				return None
+			else:
+				return str(label)
 		data = numpy.load(filename + "." + cls.ending)
 		channels = []
 		for c in data["channels"]:
 			channels.append(tuple(c))
-		return sumpf.Spectrum(channels=channels, resolution=data["resolution"], labels=data["labels"])
+		return sumpf.Spectrum(channels=channels, resolution=data["resolution"], labels=[to_string(l) for l in data["labels"]])
+
 	@classmethod
 	def Save(cls, filename, data):
 		numpy.savez_compressed(filename + "." + cls.ending,
