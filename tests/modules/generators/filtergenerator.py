@@ -53,6 +53,17 @@ class TestFilterGenerator(unittest.TestCase):
 		gen.SetFilter(sumpf.modules.FilterGenerator.CONSTANT(value=3.4j))
 		result = sumpf.Spectrum(channels=((3.4j,) * 10,), resolution=0.5, labels=("Filter",))
 
+	def test_rectangle(self):
+		"""
+		Tests the rectangle filter.
+		"""
+		spectrum = sumpf.modules.FilterGenerator(filterfunction=sumpf.modules.FilterGenerator.RECTANGLE(start_frequency=5.0, stop_frequency=7.0),
+		                                         resolution=0.1,
+		                                         length=100).GetSpectrum()
+		self.assertEqual(spectrum.GetChannels()[0][0:50], (0.0,) * 50)
+		self.assertEqual(spectrum.GetChannels()[0][50:70], (1.0,) * 20)
+		self.assertEqual(spectrum.GetChannels()[0][70:], (0.0,) * 30)
+
 	def test_lowpass_highpass(self):
 		"""
 		Tests the IIR filters, namely Butterworth-, Bessel- and Chebychev-filters
