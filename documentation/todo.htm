@@ -33,6 +33,31 @@
 				</td>
 			</tr>
 			<tr>
+				<td class="subsection">Fix a memory leak</td>
+				<td colspan="2" class="text">
+					The connector decorators replace the decorated method with an
+					object, that mimics the functionality of the decorated method
+					with the additional features of a SuMPF connector. For this,
+					they store a reference to the instance, whose method they have
+					replaced. As the instance has a reference to the method as well,
+					this leads to circular references, which prevent proper reference
+					counting and object destruction. These objects have therefore
+					to be destroyed explicitly with <span class="code">sumpf.destroy_connectors(...)</span>
+					or <span class="code">sumpf.collect_garbage()</span>.<br />
+					Replacing the connector's refenece to the instance with a weak
+					reference is not possible, as this leads to a dead-on-arrival
+					problem, when the return value of a decorated method is retrieved
+					directly without storing the instance of the object to a variable
+					(e.g. <span class="code">value = MyClass().MyMethod()</span>).<br />
+					The connectors therefore have to be implemented purely as decorators
+					instead of decorators that replace methods with connector objects.
+					This dynamic implementation would prevent storing the output
+					connectors, that have to be notified, when an input connector
+					changes the state of its instance, as references rather than
+					as strings, which might come with a performance penalty.
+				</td>
+			</tr>
+			<tr>
 				<td class="subsection">OS dependend default config paths</td>
 				<td colspan="2" class="text">
 					The default paths for the configuration files are currently
@@ -41,6 +66,15 @@
 					Windows.<br />
 					There has to be an operating system check in the configuration
 					defaults that sets the paths accordingly.
+				</td>
+			</tr>
+			<tr>
+				<td class="subsection">Switch to a different GUI library</td>
+				<td colspan="2" class="text">
+					As wxPython is only available for Python2, it is necessary
+					to switch to an alternative. PyQt5 looks promising.<br />
+					Maybe this also solves some threading issues in the current
+					implementation.
 				</td>
 			</tr>
 			<tr>
