@@ -350,7 +350,8 @@ class TestConnectors(unittest.TestCase):
 		if ExampleClass.instance_count != current_instance_count - 1:
 			for o in gc.garbage:
 				if isinstance(o, ExampleClass):
-					sumpf.collect_garbage()
+					collected = sumpf.collect_garbage()
+					self.assertIsInstance(collected, int)				# sumpf.collect_garbage shall return the integer number of collected items
 					self.assertEqual(gc.garbage, [])					# garbage collection should have removed all garbage
 					return
 			self.fail("The object has neither been deleted, nor has it been marked as garbage")

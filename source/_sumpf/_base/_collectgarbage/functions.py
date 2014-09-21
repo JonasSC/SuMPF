@@ -22,10 +22,11 @@ def collect_garbage():
 	A garbage collector function that calls destroyer functions that do some
 	SuMPF-specific object destruction. This way this method can be better at
 	cleaning up than the generic gc.collect call.
+	@retval : the number of garbage collected items
 	"""
-	gc.collect()
+	result = gc.collect()
 	for destroyer in objects.destroyer_functions:
 		destroyer()
 	del gc.garbage[:]
-	gc.collect()
+	return result + gc.collect()
 

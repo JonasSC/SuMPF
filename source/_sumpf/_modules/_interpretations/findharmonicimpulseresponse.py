@@ -35,8 +35,9 @@ class FindHarmonicImpulseResponse(object):
 	The peaks, that have been cut out of the full impulse response, are time stretched
 	to become the impulse response of the harmonic. This becomes clear, when considering
 	that the spectrum of the unscaled impulse response of the n-th harmonic would
-	be a transfer function in dependency of n times the frequency. This has to be
-	resampled to become the harmonic's ordinary transfer function.
+	be a transfer function in dependency of n times the frequency. Therefore, the
+	resulting impulse response has a sampling rate, that is n times smaller than
+	that of the original impulse response and may have to be resampled.
 
 	To locate the impulse responses of the harmonics, the sweep rate of the excitation
 	signal has to be known. This rate can be calculated by the sweep's start frequency,
@@ -48,6 +49,13 @@ class FindHarmonicImpulseResponse(object):
 	             sweep_start_frequency=20.0,
 	             sweep_stop_frequency=20000.0,
 	             sweep_duration=None):
+		"""
+		@param impulse_response: the impulse response Signal, from which the impulse responses of the harmonics shall be cut out
+		@param harmonic_order: the integer order of the harmonic, whose impulse response shall be determined
+		@param sweep_start_frequency: the start frequency of the exponential sweep, that has been used to measure the given impulse response
+		@param sweep_stop_frequency: the stop frequency of the exponential sweep, that has been used to measure the given impulse response
+		@param sweep_duration: the time in seconds that it took the sweep to go from the start frequency to the stop frequency
+		"""
 		if harmonic_order < 2:
 			raise ValueError("The harmonic order has to be at least 2.")
 		self.__impulse_response = impulse_response
@@ -125,19 +133,19 @@ class FindHarmonicImpulseResponse(object):
 		sweep_rate = (self.__sweep_stop_frequency / self.__sweep_start_frequency) ** (1.0 / sweep_duration)
 		harmonic_start_time = self.__impulse_response.GetDuration() - math.log(self.__harmonic_order, sweep_rate)
 		harmonic_start_sample = sumpf.modules.DurationToLength(duration=harmonic_start_time, samplingrate=self.__impulse_response.GetSamplingRate(), even_length=False).GetLength()
-		harmonic_stop_sample = None
+		harmonic_stop_sample = len(self.__impulse_response)
 		if self.__harmonic_order > 2:
 			harmonic_stop_time = self.__impulse_response.GetDuration() - math.log(self.__harmonic_order - 1, sweep_rate)
 			harmonic_stop_sample = sumpf.modules.DurationToLength(duration=harmonic_stop_time, samplingrate=self.__impulse_response.GetSamplingRate(), even_length=False).GetLength()
-		# crop to the impulse response of the wanted harmonic
-		unscaled_harmonic = self.__impulse_response[harmonic_start_sample:harmonic_stop_sample]
-		if len(unscaled_harmonic) % 2 != 0:
-			unscaled_harmonic = sumpf.Signal(channels=[c + (0.0,) for c in unscaled_harmonic.GetChannels()], samplingrate=unscaled_harmonic.GetSamplingRate())
-		resampled_harmonic = sumpf.modules.ResampleSignal(signal=unscaled_harmonic, samplingrate=self.__harmonic_order * self.__impulse_response.GetSamplingRate(), algorithm=sumpf.modules.ResampleSignal.SPECTRUM).GetOutput()
-		# set the labels and return the impulse response
+		# prepare the labels
 		labels = []
 		affix = " (%s harmonic)" % sumpf.helper.counting_number(self.__harmonic_order)
 		for l in self.__impulse_response.GetLabels():
 			labels.append(l + affix)
-		return sumpf.Signal(channels=resampled_harmonic.GetChannels(), samplingrate=self.__impulse_response.GetSamplingRate(), labels=labels)
+		# crop to the impulse response of the wanted harmonic
+		cropped = self.__impulse_response[harmonic_start_sample:harmonic_stop_sample]
+		harmonic = sumpf.Signal(channels=cropped.GetChannels(), samplingrate=cropped.GetSamplingRate() / self.__harmonic_order, labels=tuple(labels))
+		if len(harmonic) % 2 != 0:
+			harmonic = sumpf.Signal(channels=tuple([c + (0.0,) for c in harmonic.GetChannels()]), samplingrate=harmonic.GetSamplingRate(), labels=harmonic.GetLabels())
+		return harmonic
 

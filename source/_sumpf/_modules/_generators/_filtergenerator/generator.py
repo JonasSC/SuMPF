@@ -16,7 +16,8 @@
 
 import sumpf
 from ..spectrumgenerator import SpectrumGenerator
-from .filters import Constant, ButterworthLowpass, ButterworthHighpass, BesselLowpass, \
+from .filters import Constant, Rectangle, \
+                     ButterworthLowpass, ButterworthHighpass, BesselLowpass, \
                      BesselHighpass, ChebyshevLowpass, ChebyshevHighpass, \
                      Bandpass, Bandstop, LaguerreFunction, PinkSlope, RedSlope, \
                      Derivative, AWeighting, CWeighting, ConstantGroupDelay, \
@@ -32,6 +33,7 @@ class FilterGenerator(SpectrumGenerator):
 	The available filter classes are accessible as static attributes of this class.
 	"""
 	CONSTANT = Constant
+	RECTANGLE = Rectangle
 	BUTTERWORTH_LOWPASS = ButterworthLowpass
 	BUTTERWORTH_HIGHPASS = ButterworthHighpass
 	BESSEL_LOWPASS = BesselLowpass

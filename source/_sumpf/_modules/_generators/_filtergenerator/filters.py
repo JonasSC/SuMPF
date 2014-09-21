@@ -42,6 +42,36 @@ class Constant(Filter):
 
 
 
+class Rectangle(Filter):
+	"""
+	Filter class that sets all frequencies outside a pass band to zero. Inside
+	the pass band, the transfer function will be one.
+	"""
+	def __init__(self, start_frequency=20.0, stop_frequency=20000.0):
+		"""
+		@param start_frequency: the smallest frequency at which the filter function shall be one
+		@param stop_frequency: the smallest frequency over the pass band, at which the filter shall be zero
+		"""
+		self.__start_frequency = start_frequency
+		self.__stop_frequency = stop_frequency
+		Filter.__init__(self)
+
+	def GetFactor(self, frequency, resolution=None, length=None):
+		"""
+		This calculates the complex factor by which the frequency shall be scaled
+		and phase shifted.
+		@param frequency: the frequency for which the factor shall be calculated
+		@param resolution: the resolution of the calculated spectrum
+		@param length: the length of the calculated spectrum
+		@retval : the value of the filter's transfer function at the given frequency
+		"""
+		if self.__start_frequency <= frequency < self.__stop_frequency:
+			return 1.0
+		else:
+			return 0.0
+
+
+
 class ButterworthLowpass(FilterWithCoefficients):
 	"""
 	Filter class for a Butterworth lowpass.

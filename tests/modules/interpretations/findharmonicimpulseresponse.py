@@ -44,18 +44,22 @@ class TestFindHarmonicImpulseResponse(unittest.TestCase):
 		findharmonics.SetSweepStartFrequency(f0)
 		findharmonics.SetSweepStopFrequency(fT)
 		findharmonics.SetSweepDuration(T)
-		# check length for a harmonic order of 2
+		# check length and sampling rate for a harmonic order of 2
 		l = sumpf.modules.DurationToLength(duration=math.log(2.0, k), samplingrate=sr).GetLength()
 		if l % 2 != 0:
 			l += 1
-		self.assertEqual(len(findharmonics.GetHarmonicImpulseResponse()), 2 * l)
-		# check length for higher harmonic orders
+		harmonic = findharmonics.GetHarmonicImpulseResponse()
+		self.assertEqual(len(harmonic), l)
+		self.assertEqual(harmonic.GetSamplingRate(), sr / 2.0)
+		# check length and sampling rate for higher harmonic orders
 		for o in range(3, 6):
 			l = sumpf.modules.DurationToLength(duration=math.log(o, k), samplingrate=sr).GetLength() - sumpf.modules.DurationToLength(duration=math.log(o - 1.0, k), samplingrate=sr).GetLength()
 			if l % 2 != 0:
 				l += 1
 			findharmonics.SetHarmonicOrder(o)
-			self.assertEqual(len(findharmonics.GetHarmonicImpulseResponse()), o * l)
+			harmonic = findharmonics.GetHarmonicImpulseResponse()
+			self.assertEqual(len(harmonic), l)
+			self.assertEqual(harmonic.GetSamplingRate(), sr / o)
 
 	def test_harmonic_frequency_response(self):
 		"""
