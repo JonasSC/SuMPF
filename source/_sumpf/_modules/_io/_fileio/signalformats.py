@@ -50,11 +50,15 @@ class NUMPY_NPZ(FileFormat):
 				return None
 			else:
 				return str(label)
-		data = numpy.load(filename + "." + cls.ending)
 		channels = []
-		for c in data["channels"]:
-			channels.append(tuple(c))
-		return sumpf.Signal(channels=channels, samplingrate=data["samplingrate"], labels=[to_string(l) for l in data["labels"]])
+		samplingrate = 44100.0
+		labels = None
+		with numpy.load(filename + "." + cls.ending) as data:
+			for c in data["channels"]:
+				channels.append(tuple(c))
+			samplingrate = data["samplingrate"]
+			labels = tuple([to_string(l) for l in data["labels"]])
+		return sumpf.Signal(channels=channels, samplingrate=samplingrate, labels=labels)
 
 	@classmethod
 	def Save(cls, filename, data):

@@ -42,11 +42,15 @@ class NUMPY_NPZ(FileFormat):
 				return None
 			else:
 				return str(label)
-		data = numpy.load(filename + "." + cls.ending)
 		channels = []
-		for c in data["channels"]:
-			channels.append(tuple(c))
-		return sumpf.Spectrum(channels=channels, resolution=data["resolution"], labels=[to_string(l) for l in data["labels"]])
+		resolution = 1.0
+		labels = None
+		with numpy.load(filename + "." + cls.ending) as data:
+			for c in data["channels"]:
+				channels.append(tuple(c))
+			resolution = data["resolution"]
+			labels = tuple([to_string(l) for l in data["labels"]])
+		return sumpf.Spectrum(channels=channels, resolution=resolution, labels=labels)
 
 	@classmethod
 	def Save(cls, filename, data):
