@@ -45,6 +45,8 @@ class TestFileIO(unittest.TestCase):
 			formats[sumpf.modules.SignalFile.FLAC] = (False, False, False)
 			formats[sumpf.modules.SignalFile.WAV_INT] = (False, False, False)
 			formats[sumpf.modules.SignalFile.WAV_FLOAT] = (False, False, False)
+		if common.lib_available("oct2py"):
+			formats[sumpf.modules.SignalFile.MATLAB] = (True, True, True)
 		self.assertTrue(set(formats.keys()).issubset(sumpf.modules.SignalFile.GetFormats()))
 		for f in set(formats.keys()) - set(sumpf.modules.SignalFile.GetFormats()):
 			self.assertTrue(f.read_only)
@@ -113,6 +115,8 @@ class TestFileIO(unittest.TestCase):
 		spectrum2 = sumpf.Spectrum(channels=((5.0, 6.0), (7.0, 8.2 + 2.7j)), resolution=25.0, labels=("three", "four"))
 		formats = []
 		formats.append(sumpf.modules.SpectrumFile.NUMPY_NPZ)
+		if common.lib_available("oct2py"):
+			formats.append(sumpf.modules.SpectrumFile.MATLAB)
 		try:
 			for f in formats:
 				filename1e = filename1 + "." + f.ending

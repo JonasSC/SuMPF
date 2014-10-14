@@ -14,6 +14,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 
+import collections
 import os
 import numpy
 import sumpf
@@ -210,4 +211,117 @@ if oct2py_available:
 				raise RuntimeError("Unknown domain: %s" % domain)
 
 	signalformats.append(ITA_AUDIO)
+
+
+
+	class MATLAB(FileFormat):
+		"""
+		File format class for the import and export of Octave/Matlab mat-files.
+		This class tries its best to guess, how the data has to be interpreted
+		as a Signal:
+		  - It searches for a value for the sampling rate in the following variables:
+		      samplingrate, sampling_rate, fs, sr, sampling_frequency, samplingfrequency
+		    This search is performed in that order. The sampling rate is taken
+		    from the first variable that is found. The variable names are case
+		    insensitive. If none of these variables is found, the default sampling
+		    rate is taken.
+		  - The channels are taken from the longest (most rows or most columns)
+		    array that contains numbers. If the longest array has more columns
+		    than rows, all arrays are transposed, so that their rows are interpreted
+		    as channels and their columns are interpreted as samples.
+		    If multiple arrays have the same length as the longest array, their
+		    channels are added to the channels of the output Signal. If it is
+		    possible to add multiple arrays to the output Signal's channels by
+		    transposing all arrays, this transposing is done.
+		  - If an array with the name 'labels' (case insensitive), that contains
+		    strings, is found, the Signal's labels are taken from that array.
+		    Otherwise the labels are created from the channel array's variable
+		    name.
+		"""
+		ending = "mat"
+		read_only = False
+
+		@classmethod
+		def Load(cls, filename):
+			# retrieve the Matlab data through octave
+			path_of_this_file = sumpf.helper.normalize_path(inspect.getfile(inspect.currentframe()))
+			read_mat_file = os.sep.join(path_of_this_file.split(os.sep)[0:-1] + ["read_mat_file.m"])
+			filename = "%s.%s" % (filename, cls.ending)
+			data = oct2py.octave.call(read_mat_file, filename)
+			# get sampling rate
+			samplingrate = None
+			for searched in ["samplingrate", "sampling_rate", "fs", "sr", "sampling_frequency", "samplingfrequency"]:
+				for found in data:
+					if searched.lower() == found.lower() and isinstance(data[found], (int, float)):
+						samplingrate = data[found]
+				if samplingrate is not None:
+					break
+			if samplingrate is None:
+				samplingrate = sumpf.config.get("default_samplingrate")
+			# get channels
+			channels = []
+			labels = []
+			for v in data:
+				variable = data[v]
+				if isinstance(variable, numpy.ndarray) and 0 < len(variable):
+					if isinstance(variable[0], (int, float)):
+						if channels == [] or len(channels[0]) < len(variable):
+							channels = [tuple(variable)]
+							labels = [v]
+						elif len(channels[0]) == len(variable):
+							channels.append(tuple(variable))
+							labels.append(v)
+					elif isinstance(variable[0][0], (int, float)):
+						if channels == []:
+							if len(variable[0]) < len(variable):
+								channels = list(numpy.transpose(variable))
+							else:
+								channels = list(variable)
+							labels = [v] * len(variable[0])
+						elif len(channels[0]) == len(variable[0]):
+							channels.extend(variable)
+							labels.extend([v] * len(variable))
+						elif 2 <= len(channels) and len(channels) == len(variable):
+							labels = [labels[0]] * len(channels[0]) + [v] * len(variable[0])
+							channels = list(numpy.transpose(channels)) + list(numpy.transpose(variable))
+						elif len(channels[0]) < len(variable[0]):
+							channels = list(variable)
+							labels = [v] * len(variable)
+			if len(channels) == 0:
+				channels = ((0.0, 0.0),)
+				labels = [None]
+			# get labels
+			for found in data:
+				if found.lower() == "labels":
+					if isinstance(data[found], collections.Iterable) and \
+					   0 < len(data[found]) and \
+					   isinstance(data[found][0], basestring):
+						for i in range(min(len(labels), len(data[found]))):
+							if data[found][i] in [[], ()]:
+								labels[i] = None
+							else:
+								labels[i] = str(data[found][i])
+						break
+					elif data[found] in [[], (), 0]:
+						labels[0] = None
+			return sumpf.Signal(channels=channels, samplingrate=samplingrate, labels=labels)
+
+		@classmethod
+		def Save(cls, filename, data):
+			path_of_this_file = sumpf.helper.normalize_path(inspect.getfile(inspect.currentframe()))
+			write_mat_file = os.sep.join(path_of_this_file.split(os.sep)[0:-1] + ["write_mat_file.m"])
+			filename = "%s.%s" % (filename, cls.ending)
+			# avoid labels that are None
+			labels = list(data.GetLabels())
+			for i, l in enumerate(labels):
+				if l is None:
+					labels[i] = 0
+			oct2py.octave.call(write_mat_file,
+			                   filename,
+			                   data.GetChannels(),
+			                   data.GetSamplingRate(),
+			                   0.0, 	# this does not write a Spectrum, so the resolution is 0.0
+			                   labels)
+
+	signalformats.append(MATLAB)
 
