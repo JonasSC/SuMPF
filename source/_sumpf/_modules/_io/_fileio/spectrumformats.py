@@ -77,11 +77,12 @@ if oct2py_available:
 
 		@classmethod
 		def Load(cls, filename):
+			filename = "%s.%s" % (filename, cls.ending)
 			# retrieve the Matlab data through octave
 			path_of_this_file = sumpf.helper.normalize_path(inspect.getfile(inspect.currentframe()))
-			read_ita_file = os.sep.join(path_of_this_file.split(os.sep)[0:-1] + ["read_ita_file.m"])
-			filename = "%s.%s" % (filename, cls.ending)
-			samples, samplingrate, domain, names, units = oct2py.octave.call(read_ita_file, filename)
+			from oct2py import octave
+			octave.addpath(os.sep.join(path_of_this_file.split(os.sep)[0:-1]))
+			samples, samplingrate, domain, names, units = octave.read_ita_file(filename)
 			channels = tuple(numpy.transpose(samples))
 			# create channel labels
 			labels = []
@@ -133,11 +134,12 @@ if oct2py_available:
 
 		@classmethod
 		def Load(cls, filename):
+			filename = "%s.%s" % (filename, cls.ending)
 			# retrieve the Matlab data through octave
 			path_of_this_file = sumpf.helper.normalize_path(inspect.getfile(inspect.currentframe()))
-			read_mat_file = os.sep.join(path_of_this_file.split(os.sep)[0:-1] + ["read_mat_file.m"])
-			filename = "%s.%s" % (filename, cls.ending)
-			data = oct2py.octave.call(read_mat_file, filename)
+			from oct2py import octave
+			octave.addpath(os.sep.join(path_of_this_file.split(os.sep)[0:-1]))
+			data = octave.read_mat_file(filename)
 			# get sampling rate
 			resolution = None
 			for searched in ["resolution", "frequency_resolution", "frequencyresolution", "delta_f", "deltaf", "d_f", "df"]:
@@ -199,20 +201,20 @@ if oct2py_available:
 
 		@classmethod
 		def Save(cls, filename, data):
-			path_of_this_file = sumpf.helper.normalize_path(inspect.getfile(inspect.currentframe()))
-			write_mat_file = os.sep.join(path_of_this_file.split(os.sep)[0:-1] + ["write_mat_file.m"])
 			filename = "%s.%s" % (filename, cls.ending)
+			path_of_this_file = sumpf.helper.normalize_path(inspect.getfile(inspect.currentframe()))
+			from oct2py import octave
+			octave.addpath(os.sep.join(path_of_this_file.split(os.sep)[0:-1]))
 			labels = list(data.GetLabels())
 			# avoid labels that are None
 			for i, l in enumerate(labels):
 				if l is None:
 					labels[i] = 0
-			oct2py.octave.call(write_mat_file,
-			                   filename,
-			                   data.GetChannels(),
-			                   0.0, 	# this does not write a Signal, so the sampling rate is 0.0
-			                   data.GetResolution(),
-			                   labels)
+			octave.write_mat_file(filename,
+			                      data.GetChannels(),
+			                      0.0, 	# this does not write a Signal, so the sampling rate is 0.0
+			                      data.GetResolution(),
+			                      labels)
 
 	spectrumformats.append(MATLAB)
 
