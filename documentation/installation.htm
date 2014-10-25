@@ -234,14 +234,25 @@
 				<td class="subsection"><a href="https://github.com/blink1073/oct2py">oct2py</a></td>
 				<td colspan="2" class="text">
 					oct2py is a bridge between Python and <a href="https://www.gnu.org/software/octave">GNU Octave</a>.
-					It is used to read files that have been created with the
+					It is used to read and write audio data to mat-files,
+					so it is possible to excange such data with Octave and Python.
+					It is also used to read files that have been created with the
 					<a href="http://www.ita-toolbox.org">ITA-Toolbox</a>, a Matlab
 					toolbox for processing audio data, which is developped at the
 					Institute of Technical Acoustics, RWTH Aachen University.
-					Currently, it is not possible to write those files.<br />
+					Currently, it is not possible to write those files with SuMPF.<br />
 					<br />
 					To make use of oct2py, it is of course also necessary to
 					install GNU Octave.<br />
+					<br />
+					In the current Implementation, SuMPF closes oct2py's convenience
+					instance, if it has not been created before reading or writing
+					a file. This has the side effect, that the convenience instance
+					has to be restarted before it is usable, when a file was read
+					or written with oct2py, before oct2py had been imported anywhere
+					else. Sadly this is necessary, because if the convenience instance
+					were not closed, a probably unused process of Octave would
+					remain active until the Python interpreter is closed.<br />
 					<br />
 					If oct2py cannot be installed through the operating system,
 					it can be installed with easy_install.<br />

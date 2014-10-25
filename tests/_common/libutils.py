@@ -18,12 +18,29 @@ import os
 import re
 import sys
 
-def lib_available(libname):
-	try:
-		__import__(libname)
-		return True
-	except ImportError:
-		return False
+def lib_available(libname, dont_import=False):
+	"""
+	Tests if a library can be imported as a module.
+	@param libname: the name of the module
+	@param dont_import: if True, a different test for availability is used, that does not import the module, if it is available. This test might fail to find a module that actually is available.
+	"""
+	if dont_import:
+		if sys.version_info.major == 2:	# Python2
+			import imp
+			try:
+				imp.find_module(libname)
+				return True
+			except ImportError:
+				return False
+		else:							# Python3 (and maybe later)
+			import importlib.util
+			return importlib.util.find_spec(libname) is not None
+	else:
+		try:
+			__import__(libname)
+			return True
+		except ImportError:
+			return False
 
 def unload_lib(libname):
 	to_remove = []

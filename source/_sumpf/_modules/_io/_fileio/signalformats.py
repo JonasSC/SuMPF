@@ -15,7 +15,9 @@
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 import collections
+import inspect
 import os
+import sys
 import numpy
 import sumpf
 
@@ -25,14 +27,21 @@ try:
 except ImportError:
 	audiolab_available = False
 
-try:
-	import oct2py
-	import inspect
-	oct2py_available = True
-except ImportError:
-	oct2py_available = False
+oct2py_available = False
+if sys.version_info.major == 2:
+	import imp
+	try:
+		imp.find_module("oct2py")
+		oct2py_available = True
+	except ImportError:
+		pass
+else:
+	import importlib.util
+	if importlib.util.find_spec("oct2py") is not None:
+		oct2py_available = True
 
 from .fileformat import FileFormat
+
 
 signalformats = []
 
@@ -180,17 +189,32 @@ if oct2py_available:
 		of Technical Acoustics, RWTH Aachen University.
 		http://www.ita-toolbox.org
 		This class can only read itaAudio files. Writing is not possible.
+
+		Importing itaAudio files is done with the help of the oct2py library.
+		In the current Implementation, SuMPF closes oct2py's convenience instance,
+		if it has not been created before reading or writing a file. This has
+		the side effect, that the convenience instance has to be restarted before
+		it is usable, when a file was read or written with oct2py, before oct2py
+		had been imported anywhere else.
+		Sadly this is necessary, because if the convenience instance were not closed,
+		a probably unused process of Octave would remain active until the Python
+		interpreter is closed.
 		"""
 		ending = "ita"
 		read_only = True
 
 		@classmethod
 		def Load(cls, filename):
+			filename = "%s.%s" % (filename, cls.ending)
 			# retrieve the Matlab data through octave
 			path_of_this_file = sumpf.helper.normalize_path(inspect.getfile(inspect.currentframe()))
-			read_ita_file = os.sep.join(path_of_this_file.split(os.sep)[0:-1] + ["read_ita_file.m"])
-			filename = "%s.%s" % (filename, cls.ending)
-			samples, samplingrate, domain, names, units = oct2py.octave.call(read_ita_file, filename)
+			terminate_convenience_instance = "oct2py" not in sys.modules
+			import oct2py
+			with oct2py.Oct2Py() as octave:
+				octave.addpath(os.sep.join(path_of_this_file.split(os.sep)[0:-1]))
+				samples, samplingrate, domain, names, units = octave.read_ita_file(filename)
+			if terminate_convenience_instance:
+				oct2py.octave.exit()					# stop the convenience instance to avoid an unused instance of Octave
 			channels = tuple(numpy.transpose(samples))
 			# create channel labels
 			labels = []
@@ -237,6 +261,16 @@ if oct2py_available:
 		    strings, is found, the Signal's labels are taken from that array.
 		    Otherwise the labels are created from the channel array's variable
 		    name.
+
+		Reading/writing Matlab files is done with the help of the oct2py library.
+		In the current Implementation, SuMPF closes oct2py's convenience instance,
+		if it has not been created before reading or writing a file. This has
+		the side effect, that the convenience instance has to be restarted before
+		it is usable, when a file was read or written with oct2py, before oct2py
+		had been imported anywhere else.
+		Sadly this is necessary, because if the convenience instance were not closed,
+		a probably unused process of Octave would remain active until the Python
+		interpreter is closed.
 		"""
 		ending = "mat"
 		read_only = False
@@ -246,9 +280,13 @@ if oct2py_available:
 			filename = "%s.%s" % (filename, cls.ending)
 			# retrieve the Matlab data through octave
 			path_of_this_file = sumpf.helper.normalize_path(inspect.getfile(inspect.currentframe()))
-			from oct2py import octave
-			octave.addpath(os.sep.join(path_of_this_file.split(os.sep)[0:-1]))
-			data = octave.read_mat_file(filename)
+			terminate_convenience_instance = "oct2py" not in sys.modules
+			import oct2py
+			with oct2py.Oct2Py() as octave:
+				octave.addpath(os.sep.join(path_of_this_file.split(os.sep)[0:-1]))
+				data = octave.read_mat_file(filename)
+			if terminate_convenience_instance:
+				oct2py.octave.exit()					# stop the convenience instance to avoid an unused instance of Octave
 			# get sampling rate
 			samplingrate = None
 			for searched in ["samplingrate", "sampling_rate", "fs", "sr", "sampling_frequency", "samplingfrequency"]:
@@ -311,18 +349,22 @@ if oct2py_available:
 		def Save(cls, filename, data):
 			filename = "%s.%s" % (filename, cls.ending)
 			path_of_this_file = sumpf.helper.normalize_path(inspect.getfile(inspect.currentframe()))
-			from oct2py import octave
-			octave.addpath(os.sep.join(path_of_this_file.split(os.sep)[0:-1]))
 			# avoid labels that are None
 			labels = list(data.GetLabels())
 			for i, l in enumerate(labels):
 				if l is None:
 					labels[i] = 0
-			octave.write_mat_file(filename,
-			                      data.GetChannels(),
-			                      data.GetSamplingRate(),
-			                      0.0, 	# this does not write a Spectrum, so the resolution is 0.0
-			                      labels)
+			terminate_convenience_instance = "oct2py" not in sys.modules
+			import oct2py
+			with oct2py.Oct2Py() as octave:
+				octave.addpath(os.sep.join(path_of_this_file.split(os.sep)[0:-1]))
+				octave.write_mat_file(filename,
+				                      data.GetChannels(),
+				                      data.GetSamplingRate(),
+				                      0.0, 	# this does not write a Spectrum, so the resolution is 0.0
+				                      labels)
+			if terminate_convenience_instance:
+				oct2py.octave.exit()					# stop the convenience instance to avoid an unused instance of Octave
 
 	signalformats.append(MATLAB)
 
