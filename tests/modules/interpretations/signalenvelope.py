@@ -45,8 +45,7 @@ class TestSignalEnvelope(unittest.TestCase):
 		modulations.AddInput(1.2 * sumpf.modules.TriangleWaveGenerator(raising=0.3, frequency=1.5, phase=0.3, samplingrate=samplingrate, length=length).GetSignal())
 		modulations.AddInput(0.7 * sumpf.modules.SineWaveGenerator(frequency=1.0, phase=-0.1, samplingrate=samplingrate, length=length).GetSignal())
 		modulations.AddInput(sumpf.modules.ConstantSignalGenerator(value=0.4, samplingrate=samplingrate, length=length).GetSignal())
-		if sumpf.config.get("run_time_variant_tests"):
-			modulations.AddInput(sumpf.modules.NoiseGenerator(distribution=sumpf.modules.NoiseGenerator.RedNoise(), samplingrate=samplingrate, length=length).GetSignal())
+		modulations.AddInput(sumpf.modules.NoiseGenerator(distribution=sumpf.modules.NoiseGenerator.RedNoise(), seed=3886, samplingrate=samplingrate, length=length).GetSignal())
 		rectified = sumpf.modules.RectifySignal(signal=modulations.GetOutput()).GetOutput()
 		# setup a carrier Signal
 		carrier1 = sumpf.modules.SineWaveGenerator(frequency=1234.0, samplingrate=samplingrate, length=length).GetSignal()

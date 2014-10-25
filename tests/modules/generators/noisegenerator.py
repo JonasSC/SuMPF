@@ -141,7 +141,7 @@ class TestNoiseGenerator(unittest.TestCase):
 		gen = sumpf.modules.NoiseGenerator(distribution=sumpf.modules.NoiseGenerator.UniformDistribution(), samplingrate=48000, length=length)
 		minimum = -1.0	# the default interval should be (-1.0, 1.0)
 		maximum = 1.0	# 	"
-		for r in range(0, 2):
+		for r in range(2):
 			intervals_count = 5
 			intervals = [0] * intervals_count
 			signal = gen.GetSignal()
@@ -152,10 +152,10 @@ class TestNoiseGenerator(unittest.TestCase):
 				self.assertLess(s, maximum)											# all samples must be in the interval (minimum, maximum)
 				for i in range(1, intervals_count + 1):
 					if s < minimum + i * ((maximum - minimum) / intervals_count):
-						intervals[i - 1] = intervals[i - 1] + 1
+						intervals[i - 1] += 1
 						break
 			normalized = tuple(numpy.multiply(intervals, float(intervals_count) / float(length)))
-			self.assertLess(max(normalized) - min(normalized), 0.3)
+			self.assertGreater(min(normalized) / max(normalized), 0.5 ** 0.5)
 			minimum = 3.7
 			maximum = 5.4
 			gen.SetDistribution(sumpf.modules.NoiseGenerator.UniformDistribution(minimum, maximum))
