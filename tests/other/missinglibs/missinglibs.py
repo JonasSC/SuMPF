@@ -14,7 +14,6 @@
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 
-import inspect
 import unittest
 import re
 import os
@@ -33,24 +32,42 @@ class TestMissingLibs(unittest.TestCase):
 	"""
 	def test_signal_formats(self):
 		"""
-		Tests if the correct signal formats are unavailable if audiolab is missing.
+		Tests if the correct signal formats are unavailable when audiolab and
+		oct2py are missing.
 		"""
-		def function(sumpf_module):
-			formats = ["AIFF_FLOAT", "AIFF_INT", "FLAC", "WAV_FLOAT", "WAV_INT"]
-			result = {}
-			for f in formats:
-				result[f] = hasattr(sumpf_module.modules.SignalFile, f)
-			return result
-		process = MissingLibProcess(libnames=["scikits"], function=function)
+		process = MissingLibProcess(libnames=["scikits", "oct2py"],
+		                            function=MissingLibProcess.FILE_FORMATS,
+		                            formats=["AIFF_FLOAT", "AIFF_INT", "FLAC", "WAV_FLOAT", "WAV_INT", "ITA_AUDIO", "MATLAB"],
+		                            data_type="Signal")
 		process.start()
 		process.join()
 		result = process.namespace.result
 		not_unavailable = process.namespace.not_unavailable
 		if "scikits" in not_unavailable:
 			self.fail("scikits could not be made unavailable")
+		elif "oct2py" in not_unavailable:
+			self.fail("oct2py could not be made unavailable")
 		elif True in list(result.values()):
-			format = list(result.keys())[list(result.values()).index(True)]
-			self.fail(format + " is still available, when scikits is not available")
+			format_name = list(result.keys())[list(result.values()).index(True)]
+			self.fail(format_name + " is still available, when scikits and oct2py are not available")
+
+	def test_spectrum_formats(self):
+		"""
+		Tests if the correct spectrum formats are unavailable when oct2py is missing.
+		"""
+		process = MissingLibProcess(libnames=["oct2py"],
+		                            function=MissingLibProcess.FILE_FORMATS,
+		                            formats=["ITA_AUDIO", "MATLAB"],
+		                            data_type="Spectrum")
+		process.start()
+		process.join()
+		result = process.namespace.result
+		not_unavailable = process.namespace.not_unavailable
+		if "oct2py" in not_unavailable:
+			self.fail("oct2py could not be made unavailable")
+		elif True in list(result.values()):
+			format_name = list(result.keys())[list(result.values()).index(True)]
+			self.fail(format_name + " is still available, when oct2py is not available")
 
 	def test_missing_libs(self):
 		"""
@@ -61,19 +78,13 @@ class TestMissingLibs(unittest.TestCase):
 		libs["jack"] = None
 		libs["matplotlib"] = None
 		libs["numpy"] = "sumpf.helper.numpydummy"
+		libs["oct2py"] = None
 		libs["scikits"] = None	# both scikits.audiolab and scikits.samplerate
 		libs["wx"] = None
 		exceptions = [("ResampleSignal", "scikits")]
-		def function(sumpf_module, classnames):
-			for r in sumpf_module.helper.walk_module(sumpf_module):
-				for c in r[2]:
-					for s in inspect.getmro(c):
-						if s.__name__ in classnames:
-							return s.__name__
-			return None
 		for l in libs:
 			c = self.__GetLibClasses(l, libs[l])
-			process = MissingLibProcess(libnames=[l], function=function, classnames=c)
+			process = MissingLibProcess(libnames=[l], function=MissingLibProcess.MISSING_LIBS, classnames=c)
 			process.start()
 			process.join()
 			result = process.namespace.result
