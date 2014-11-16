@@ -205,7 +205,12 @@ class TestFileIO(unittest.TestCase):
 		def get_running_octave_instances():
 			result = []
 			for p in psutil.get_process_list():
-				if p.name() in ["octave", "octave-cli"]:
+				process_name = None
+				try:
+					process_name = p.name()
+				except psutil.AccessDenied:
+					pass
+				if process_name in ["octave", "octave-cli"]:
 					result.append(p.pid)
 			return set(result)
 		original_octave_instances = get_running_octave_instances()
