@@ -14,6 +14,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 
+import inspect
 import os
 import shutil
 import tempfile
@@ -152,6 +153,30 @@ class TestFileIO(unittest.TestCase):
 				os.remove(filename2e)
 		finally:
 			shutil.rmtree(tempdir)
+
+	@unittest.skipUnless(sumpf.config.get("run_long_tests"), "Long tests are skipped")
+	@unittest.skipUnless(common.lib_available("oct2py", dont_import=True), "This test requires the library 'oct2py' to be available.")
+	def test_read_ita_audio(self):
+		path_of_this_file = sumpf.helper.normalize_path(inspect.getfile(inspect.currentframe()))
+		data_path = os.path.join(os.sep.join(path_of_this_file.split(os.sep)[0:-1]), "data")
+		timedata_file = os.path.join(data_path, "time.ita")
+		freqdata_file = os.path.join(data_path, "freq.ita")
+		signalreader = sumpf.modules.SignalFile(filename=timedata_file, format=sumpf.modules.SignalFile.ITA_AUDIO)
+		spectrumreader = sumpf.modules.SpectrumFile(filename=freqdata_file, format=sumpf.modules.SpectrumFile.ITA_AUDIO)
+		reference_signal = sumpf.Signal(channels=((0.125, 0.375, 0.375, 0.125), (1.0, -1.0, 1.0, -1.0)), samplingrate=44100.000000, labels=('Lowpass [V]', 'Shah [Pa]'))
+		reference_spectrum = sumpf.Spectrum(channels=(((0.25 + 0j), (-0.088388347648318447 - 0.088388347648318447j), 0j), (0j, 0j, (0.70710678118654746 + 0j))), resolution=11025.000000, labels=('Lowpass [V]', 'Shah [Pa]'))
+		# compare with reference data
+		signal_from_time = signalreader.GetSignal()
+		self.assertEqual(signal_from_time, reference_signal)
+		spectrum_from_freq = spectrumreader.GetSpectrum()
+		self.assertEqual(spectrum_from_freq, reference_spectrum)
+		# test if automatic transformation works as expected
+		reference_transformed_signal = sumpf.modules.FourierTransform(signal=signal_from_time).GetSpectrum()
+		spectrumreader.SetFilename(timedata_file)
+		self.assertEqual(spectrumreader.GetSpectrum(), reference_transformed_signal)
+		reference_transformed_spectrum = sumpf.modules.InverseFourierTransform(spectrum=spectrum_from_freq).GetSignal()
+		signalreader.SetFilename(freqdata_file)
+		self.assertEqual(signalreader.GetSignal(), reference_transformed_spectrum)
 
 	@unittest.skipUnless(sumpf.config.get("write_to_disk"), "Tests that write to disk are skipped")
 	@unittest.skipUnless(sumpf.config.get("run_long_tests"), "Long tests are skipped")
