@@ -21,7 +21,7 @@ from .checks import CheckWhitespaceAtLineEnd, CheckNewlineAtFileend, CheckNewlin
                    CheckLineEndStyle, CheckNoneComparison, CheckBoolComparison, \
                    CheckWrongDocstringKeywords, CheckPassUsage, CheckOsSepUsage, \
                    CheckLicense
-from .helper import ForEachFile, ProcessContent, SplitLines, IterateOverLines
+from .helper import ForEachFile, ProcessContent, SplitLines, IterateOverLines, StripComments
 
 
 class TestCodingStyle(BaseCodingStyleTestCase):
@@ -86,7 +86,7 @@ class TestCodingStyle(BaseCodingStyleTestCase):
 		Fails if such a comparison is found.
 		It is recommended to use something like "if value:" instead of comparisons.
 		"""
-		function = ForEachFile(WithEnding="py", Do=ProcessContent(With=SplitLines(For=IterateOverLines(AndDo=CheckBoolComparison))))
+		function = ForEachFile(WithEnding="py", Do=ProcessContent(With=SplitLines(For=IterateOverLines(AndDo=StripComments(And=CheckBoolComparison)))))
 		for d in sumpf.config.get("source_dirs"):
 			self.EvaluateResult(function(d))
 

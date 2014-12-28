@@ -105,6 +105,27 @@ class IterateOverLines(object):
 
 
 
+class StripComments(object):
+	def __init__(self, And):
+		self.__function = And
+		self.__in_comment = False
+
+	def __call__(self, line):
+		splits = line.split('"""')
+		l = ""
+		for s in splits:
+			if not self.__in_comment:
+				l += s
+			self.__in_comment = not self.__in_comment
+		self.__in_comment = not self.__in_comment
+		l = l.split("#")[0]
+		if l == "":
+			return None
+		else:
+			return self.__function(l)
+
+
+
 class ExpectFailure(object):
 	def __init__(self, In):
 		self.__function = In
