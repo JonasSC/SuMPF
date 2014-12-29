@@ -144,7 +144,7 @@
 					NumPy is missing, a set of replacement functions has been
 					written. These functions are used only, when NumPy is not
 					available. They are likely to run a lot slower than the
-					original function from NumPy.<br />
+					original function from NumPy.
 				</td>
 			</tr>
 			<tr>
@@ -227,7 +227,7 @@
 					Use <nobr>"(sudo )easy_install scikits.samplerate"</nobr>
 					to install it for every user on the system. To install it in
 					your home directory to somewhere like "~/.local/lib/python..."
-					use the command <nobr>"easy_install --user scikits.samplerate"</nobr><br />
+					use the command <nobr>"easy_install --user scikits.samplerate"</nobr>
 				</td>
 			</tr>
 			<tr>
@@ -259,7 +259,25 @@
 					Use <nobr>"(sudo )easy_install oct2py"</nobr>
 					to install it for every user on the system. To install it in
 					your home directory to somewhere like "~/.local/lib/python..."
-					use the command <nobr>"easy_install --user oct2py"</nobr><br />
+					use the command <nobr>"easy_install --user oct2py"</nobr>
+				</td>
+			</tr>
+			<tr>
+				<td class="subsection"><a href="http://cython.org/">Cython</a></td>
+				<td colspan="2" class="text">
+					Cython is a tool for generating C code from Python source code
+					and compile that with an optimizing compiler. It also adds
+					an extension to the Python language that allows static typing
+					of variables for further performance improvements.<br />
+					Cython is used in SuMPF to speed up certain performance critical
+					parts. Alongside with any Cython implementation in SuMPF, there
+					is a pure Python implementation, so no functionality is lost,
+					if Cython is not used.<br />
+					<br />
+					Currently the following parts of SuMPF are implemented in Cython:
+					<ul>
+						<li>The rendering algorithm of the ThieleSmallParameterAuralizationNonlinear class</li>
+					</ul>
 				</td>
 			</tr>
 			<tr>

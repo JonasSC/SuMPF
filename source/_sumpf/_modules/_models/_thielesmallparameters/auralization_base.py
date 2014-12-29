@@ -194,5 +194,5 @@ class ThieleSmallParameterAuralization(object):
 		self.__acceleration = sumpf.Signal(channels=tuple(acceleration_channels), samplingrate=self._voltage.GetSamplingRate(), labels=tuple(acceleration_labels))
 		self.__current = sumpf.Signal(channels=tuple(current_channels), samplingrate=self._voltage.GetSamplingRate(), labels=tuple(current_labels))
 		self.__sound_pressure = sumpf.Signal(channels=tuple(sound_pressure_channels), samplingrate=self._voltage.GetSamplingRate(), labels=tuple(sound_pressure_labels))
-		self.__recalculate = False
+		self._recalculate = False
 
