@@ -1,5 +1,5 @@
 # SuMPF - Sound using a Monkeyforest-like processing framework
-# Copyright (C) 2012-2014 Jonas Schulte-Coerne
+# Copyright (C) 2012-2015 Jonas Schulte-Coerne
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -14,8 +14,6 @@
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 
-import os
-
 import sumpf
 
 from .parent import ParentConfig
@@ -26,7 +24,8 @@ defaults = {"systemconfig_path" : sumpf.helper.normalize_path("/etc/sumpf/config
             "default_samplingrate" : 48000.0,
             "default_signal_length" : 2 ** 16,
             "default_frequency" : 1000.0,
-            "caching" : True}
+            "caching" : True,
+            "use_cython" : True}
 
 parent = ParentConfig()
 system = Config(variables=defaults, parent=parent, path=defaults["systemconfig_path"])

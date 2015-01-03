@@ -1,5 +1,5 @@
 # SuMPF - Sound using a Monkeyforest-like processing framework
-# Copyright (C) 2012-2014 Jonas Schulte-Coerne
+# Copyright (C) 2012-2015 Jonas Schulte-Coerne
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -21,7 +21,7 @@ from .checks import CheckWhitespaceAtLineEnd, CheckNewlineAtFileend, CheckNewlin
                    CheckLineEndStyle, CheckNoneComparison, CheckBoolComparison, \
                    CheckWrongDocstringKeywords, CheckPassUsage, CheckOsSepUsage, \
                    CheckLicense
-from .helper import ForEachFile, ProcessContent, SplitLines, IterateOverLines
+from .helper import ForEachFile, ProcessContent, SplitLines, IterateOverLines, StripComments
 
 
 class TestCodingStyle(BaseCodingStyleTestCase):
@@ -86,7 +86,7 @@ class TestCodingStyle(BaseCodingStyleTestCase):
 		Fails if such a comparison is found.
 		It is recommended to use something like "if value:" instead of comparisons.
 		"""
-		function = ForEachFile(WithEnding="py", Do=ProcessContent(With=SplitLines(For=IterateOverLines(AndDo=CheckBoolComparison))))
+		function = ForEachFile(WithEnding="py", Do=ProcessContent(With=SplitLines(For=IterateOverLines(AndDo=StripComments(And=CheckBoolComparison)))))
 		for d in sumpf.config.get("source_dirs"):
 			self.EvaluateResult(function(d))
 

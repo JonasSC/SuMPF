@@ -1,5 +1,5 @@
 # SuMPF - Sound using a Monkeyforest-like processing framework
-# Copyright (C) 2012-2014 Jonas Schulte-Coerne
+# Copyright (C) 2012-2015 Jonas Schulte-Coerne
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -14,7 +14,10 @@
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 
+import collections
+import inspect
 import os
+import sys
 import numpy
 import sumpf
 
@@ -24,14 +27,21 @@ try:
 except ImportError:
 	audiolab_available = False
 
-try:
-	import oct2py
-	import inspect
-	oct2py_available = True
-except ImportError:
-	oct2py_available = False
+oct2py_available = False
+if sys.version_info.major == 2:
+	import imp
+	try:
+		imp.find_module("oct2py")
+		oct2py_available = True
+	except ImportError:
+		pass
+else:
+	import importlib.util
+	if importlib.util.find_spec("oct2py") is not None:
+		oct2py_available = True
 
 from .fileformat import FileFormat
+
 
 signalformats = []
 
@@ -50,11 +60,15 @@ class NUMPY_NPZ(FileFormat):
 				return None
 			else:
 				return str(label)
-		data = numpy.load(filename + "." + cls.ending)
 		channels = []
-		for c in data["channels"]:
-			channels.append(tuple(c))
-		return sumpf.Signal(channels=channels, samplingrate=data["samplingrate"], labels=[to_string(l) for l in data["labels"]])
+		samplingrate = 44100.0
+		labels = None
+		with numpy.load(filename + "." + cls.ending) as data:
+			for c in data["channels"]:
+				channels.append(tuple(c))
+			samplingrate = data["samplingrate"]
+			labels = tuple([to_string(l) for l in data["labels"]])
+		return sumpf.Signal(channels=channels, samplingrate=samplingrate, labels=labels)
 
 	@classmethod
 	def Save(cls, filename, data):
@@ -175,17 +189,32 @@ if oct2py_available:
 		of Technical Acoustics, RWTH Aachen University.
 		http://www.ita-toolbox.org
 		This class can only read itaAudio files. Writing is not possible.
+
+		Importing itaAudio files is done with the help of the oct2py library.
+		In the current Implementation, SuMPF closes oct2py's convenience instance,
+		if it has not been created before reading or writing a file. This has
+		the side effect, that the convenience instance has to be restarted before
+		it is usable, when a file was read or written with oct2py, before oct2py
+		had been imported anywhere else.
+		Sadly this is necessary, because if the convenience instance were not closed,
+		a probably unused process of Octave would remain active until the Python
+		interpreter is closed.
 		"""
 		ending = "ita"
 		read_only = True
 
 		@classmethod
 		def Load(cls, filename):
+			filename = "%s.%s" % (filename, cls.ending)
 			# retrieve the Matlab data through octave
 			path_of_this_file = sumpf.helper.normalize_path(inspect.getfile(inspect.currentframe()))
-			read_ita_file = os.sep.join(path_of_this_file.split(os.sep)[0:-1] + ["read_ita_file.m"])
-			filename = "%s.%s" % (filename, cls.ending)
-			samples, samplingrate, domain, names, units = oct2py.octave.call(read_ita_file, filename)
+			terminate_convenience_instance = "oct2py" not in sys.modules
+			import oct2py
+			with oct2py.Oct2Py() as octave:
+				octave.addpath(os.sep.join(path_of_this_file.split(os.sep)[0:-1]))
+				samples, samplingrate, domain, names, units = octave.read_ita_file(filename)
+			if terminate_convenience_instance:
+				oct2py.octave.exit()					# stop the convenience instance to avoid an unused instance of Octave
 			channels = tuple(numpy.transpose(samples))
 			# create channel labels
 			labels = []
@@ -206,4 +235,136 @@ if oct2py_available:
 				raise RuntimeError("Unknown domain: %s" % domain)
 
 	signalformats.append(ITA_AUDIO)
+
+
+
+	class MATLAB(FileFormat):
+		"""
+		File format class for the import and export of Octave/Matlab mat-files.
+		This class tries its best to guess, how the data has to be interpreted
+		as a Signal:
+		  - It searches for a value for the sampling rate in the following variables:
+		      samplingrate, sampling_rate, fs, sr, sampling_frequency, samplingfrequency
+		    This search is performed in that order. The sampling rate is taken
+		    from the first variable that is found. The variable names are case
+		    insensitive. If none of these variables is found, the default sampling
+		    rate is taken.
+		  - The channels are taken from the longest (most rows or most columns)
+		    array that contains numbers. If the longest array has more columns
+		    than rows, all arrays are transposed, so that their rows are interpreted
+		    as channels and their columns are interpreted as samples.
+		    If multiple arrays have the same length as the longest array, their
+		    channels are added to the channels of the output Signal. If it is
+		    possible to add multiple arrays to the output Signal's channels by
+		    transposing all arrays, this transposing is done.
+		  - If an array with the name 'labels' (case insensitive), that contains
+		    strings, is found, the Signal's labels are taken from that array.
+		    Otherwise the labels are created from the channel array's variable
+		    name.
+
+		Reading/writing Matlab files is done with the help of the oct2py library.
+		In the current Implementation, SuMPF closes oct2py's convenience instance,
+		if it has not been created before reading or writing a file. This has
+		the side effect, that the convenience instance has to be restarted before
+		it is usable, when a file was read or written with oct2py, before oct2py
+		had been imported anywhere else.
+		Sadly this is necessary, because if the convenience instance were not closed,
+		a probably unused process of Octave would remain active until the Python
+		interpreter is closed.
+		"""
+		ending = "mat"
+		read_only = False
+
+		@classmethod
+		def Load(cls, filename):
+			filename = "%s.%s" % (filename, cls.ending)
+			# retrieve the Matlab data through octave
+			path_of_this_file = sumpf.helper.normalize_path(inspect.getfile(inspect.currentframe()))
+			terminate_convenience_instance = "oct2py" not in sys.modules
+			import oct2py
+			with oct2py.Oct2Py() as octave:
+				octave.addpath(os.sep.join(path_of_this_file.split(os.sep)[0:-1]))
+				data = octave.read_mat_file(filename)
+			if terminate_convenience_instance:
+				oct2py.octave.exit()					# stop the convenience instance to avoid an unused instance of Octave
+			# get sampling rate
+			samplingrate = None
+			for searched in ["samplingrate", "sampling_rate", "fs", "sr", "sampling_frequency", "samplingfrequency"]:
+				for found in data:
+					if searched.lower() == found.lower() and isinstance(data[found], (int, float)):
+						samplingrate = data[found]
+				if samplingrate is not None:
+					break
+			if samplingrate is None:
+				samplingrate = sumpf.config.get("default_samplingrate")
+			# get channels
+			channels = []
+			labels = []
+			for v in data:
+				variable = data[v]
+				if isinstance(variable, numpy.ndarray) and 0 < len(variable):
+					if isinstance(variable[0], (int, float)):
+						if channels == [] or len(channels[0]) < len(variable):
+							channels = [tuple(variable)]
+							labels = [v]
+						elif len(channels[0]) == len(variable):
+							channels.append(tuple(variable))
+							labels.append(v)
+					elif isinstance(variable[0][0], (int, float)):
+						if channels == []:
+							if len(variable[0]) < len(variable):
+								channels = list(numpy.transpose(variable))
+							else:
+								channels = list(variable)
+							labels = [v] * len(variable[0])
+						elif len(channels[0]) == len(variable[0]):
+							channels.extend(variable)
+							labels.extend([v] * len(variable))
+						elif 2 <= len(channels) and len(channels) == len(variable):
+							labels = [labels[0]] * len(channels[0]) + [v] * len(variable[0])
+							channels = list(numpy.transpose(channels)) + list(numpy.transpose(variable))
+						elif len(channels[0]) < len(variable[0]):
+							channels = list(variable)
+							labels = [v] * len(variable)
+			if len(channels) == 0:
+				channels = ((0.0, 0.0),)
+				labels = [None]
+			# get labels
+			for found in data:
+				if found.lower() == "labels":
+					if isinstance(data[found], collections.Iterable) and \
+					   0 < len(data[found]) and \
+					   isinstance(data[found][0], basestring):
+						for i in range(min(len(labels), len(data[found]))):
+							if data[found][i] in [[], ()]:
+								labels[i] = None
+							else:
+								labels[i] = str(data[found][i])
+						break
+					elif data[found] in [[], (), 0]:
+						labels[0] = None
+			return sumpf.Signal(channels=channels, samplingrate=samplingrate, labels=labels)
+
+		@classmethod
+		def Save(cls, filename, data):
+			filename = "%s.%s" % (filename, cls.ending)
+			path_of_this_file = sumpf.helper.normalize_path(inspect.getfile(inspect.currentframe()))
+			# avoid labels that are None
+			labels = list(data.GetLabels())
+			for i, l in enumerate(labels):
+				if l is None:
+					labels[i] = 0
+			terminate_convenience_instance = "oct2py" not in sys.modules
+			import oct2py
+			with oct2py.Oct2Py() as octave:
+				octave.addpath(os.sep.join(path_of_this_file.split(os.sep)[0:-1]))
+				octave.write_mat_file(filename,
+				                      data.GetChannels(),
+				                      data.GetSamplingRate(),
+				                      0.0, 	# this does not write a Spectrum, so the resolution is 0.0
+				                      labels)
+			if terminate_convenience_instance:
+				oct2py.octave.exit()					# stop the convenience instance to avoid an unused instance of Octave
+
+	signalformats.append(MATLAB)
 

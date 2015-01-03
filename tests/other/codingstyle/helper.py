@@ -1,5 +1,5 @@
 # SuMPF - Sound using a Monkeyforest-like processing framework
-# Copyright (C) 2012-2014 Jonas Schulte-Coerne
+# Copyright (C) 2012-2015 Jonas Schulte-Coerne
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -102,6 +102,27 @@ class IterateOverLines(object):
 					location += " " + result[1]
 				return result[0], location
 		return None
+
+
+
+class StripComments(object):
+	def __init__(self, And):
+		self.__function = And
+		self.__in_comment = False
+
+	def __call__(self, line):
+		splits = line.split('"""')
+		l = ""
+		for s in splits:
+			if not self.__in_comment:
+				l += s
+			self.__in_comment = not self.__in_comment
+		self.__in_comment = not self.__in_comment
+		l = l.split("#")[0]
+		if l == "":
+			return None
+		else:
+			return self.__function(l)
 
 
 

@@ -1,5 +1,5 @@
 # SuMPF - Sound using a Monkeyforest-like processing framework
-# Copyright (C) 2012-2014 Jonas Schulte-Coerne
+# Copyright (C) 2012-2015 Jonas Schulte-Coerne
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -25,8 +25,13 @@ class TestNormalizePath(unittest.TestCase):
 	"""
 	def test_normalize_path(self):
 		tests = {}
-		tests[os.path.join(os.sep, "a", "b", "c")] = os.path.join(os.sep, "a", "b", "c")
-		tests[os.path.join(os.sep, "a", "b", "c", "")] = os.path.join(os.sep, "a", "b", "c")
+		if os.name in ["nt", "ce", "os2"]:
+			# perform a slightly different test for operating systems that use device letters
+			tests[os.path.join(os.sep, "a", "b", "c")] = os.path.join("C:", os.sep, "a", "b", "c")
+			tests[os.path.join(os.sep, "a", "b", "c", "")] = os.path.join("C:", os.sep, "a", "b", "c")
+		else:
+			tests[os.path.join(os.sep, "a", "b", "c")] = os.path.join(os.sep, "a", "b", "c")
+			tests[os.path.join(os.sep, "a", "b", "c", "")] = os.path.join(os.sep, "a", "b", "c")
 		tests[os.path.join("a", "b", "c")] = os.path.join(os.getcwd(), "a", "b", "c")
 		tests[os.path.join("	a", "b", "c ")] = os.path.join(os.getcwd(), "a", "b", "c")
 		tests[os.path.join("~", "a", "b", "c")] = os.path.join(os.path.expanduser("~"), "a", "b", "c")

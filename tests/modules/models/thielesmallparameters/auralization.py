@@ -1,5 +1,5 @@
 # SuMPF - Sound using a Monkeyforest-like processing framework
-# Copyright (C) 2012-2014 Jonas Schulte-Coerne
+# Copyright (C) 2012-2015 Jonas Schulte-Coerne
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -129,6 +129,59 @@ class TestThieleSmallParameterAuralization(unittest.TestCase):
 		derivative_nonregularized = sumpf.helper.differentiate(nonregularized_spectrum.GetMagnitude()[0])
 		self.assertLess(derivative_regularized[-1], derivative_nonregularized[-1])
 
+	def test_nonlinear_concatenation(self):
+		"""
+		Tests if saving the last samples of the recently auralized signal works as expected.
+		"""
+		thiele_small_parameters = sumpf.ThieleSmallParameters()
+		sweep1 = sumpf.modules.SweepGenerator(start_frequency=10.0, stop_frequency=10000.0, function=sumpf.modules.SweepGenerator.Linear, samplingrate=44100.0, length=2 ** 8).GetSignal()
+		sweep2 = sumpf.modules.ConcatenateSignals(signal1=sweep1, signal2=sweep1).GetOutput()
+		auralization = sumpf.modules.ThieleSmallParameterAuralizationNonlinear(thiele_small_parameters=thiele_small_parameters,
+		                                                                       voltage_signal=sweep1,
+		                                                                       save_samples=False)
+		auralized1_0 = auralization.GetCurrent()
+		auralized1_1 = auralization.GetCurrent()
+		self.assertEqual(auralized1_0, auralized1_1)
+		auralization.SetSaveSamples(True)
+		auralized1_2 = auralization.GetCurrent()
+		auralized1_3 = auralization.GetCurrent()
+		self.assertEqual(auralized1_2, auralized1_3)
+		auralization.ResetSavedSamples()
+		auralization.SetVoltage(sweep2)
+		auralized2_0 = auralization.GetCurrent()
+		auralized2_1 = sumpf.modules.ConcatenateSignals(signal1=auralized1_0, signal2=auralized1_2).GetOutput()
+		self.assertEqual(auralized2_0.GetChannels(), auralized2_1.GetChannels())
+		auralization.SetVoltage(sweep1)
+		auralization.SetSaveSamples(False)
+		auralized1_2 = auralization.GetCurrent()
+		self.assertEqual(auralized1_0, auralized1_2)
+
+	@unittest.skipUnless(common.lib_available("cython"), "This test requires the library 'cython' to be available.")
+	def test_cython(self):
+		thiele_small_parameters = sumpf.ThieleSmallParameters()
+		sweep = sumpf.modules.SweepGenerator(start_frequency=10.0, stop_frequency=10000.0, function=sumpf.modules.SweepGenerator.Linear, samplingrate=44100.0, length=2 ** 2).GetSignal()
+		python = sumpf.modules.ThieleSmallParameterAuralizationNonlinear(thiele_small_parameters=thiele_small_parameters,
+		                                                                 voltage_signal=sweep,
+		                                                                 listener_distance=2.9,
+		                                                                 medium_density=1.5,
+		                                                                 warp_frequency=33.2,
+		                                                                 regularization=0.1,
+		                                                                 save_samples=True,
+		                                                                 use_cython=False)
+		cython = sumpf.modules.ThieleSmallParameterAuralizationNonlinear(thiele_small_parameters=thiele_small_parameters,
+		                                                                 voltage_signal=sweep,
+		                                                                 listener_distance=2.9,
+		                                                                 medium_density=1.5,
+		                                                                 warp_frequency=33.2,
+		                                                                 regularization=0.1,
+		                                                                 save_samples=True,
+		                                                                 use_cython=True)
+		self.assertEqual(python.GetCurrent(), cython.GetCurrent())
+		sine = sumpf.modules.SineWaveGenerator(frequency=443.9, samplingrate=48000.0, length=2 ** 7).GetSignal()
+		python.SetVoltage(sine)
+		cython.SetVoltage(sine)
+		common.compare_signals_almost_equal(self, signal1=python.GetSoundPressure(), signal2=cython.GetSoundPressure(), places=11)
+
 	@unittest.skipUnless(sumpf.config.get("run_long_tests"), "Long tests are skipped")
 	@unittest.skipUnless(common.lib_available("numpy"), "This test requires the library 'numpy' to be available.")
 	def test_nonlinearities(self):
@@ -183,6 +236,8 @@ class TestThieleSmallParameterAuralization(unittest.TestCase):
 		self.assertEqual(aur.SetMediumDensity.GetType(), float)
 		self.assertEqual(aur.SetWarpFrequency.GetType(), float)
 		self.assertEqual(aur.SetRegularization.GetType(), float)
+		self.assertEqual(aur.SetSaveSamples.GetType(), bool)
+		self.assertEqual(aur.SetUseCython.GetType(), bool)
 		self.assertEqual(aur.GetExcursion.GetType(), sumpf.Signal)
 		self.assertEqual(aur.GetVelocity.GetType(), sumpf.Signal)
 		self.assertEqual(aur.GetAcceleration.GetType(), sumpf.Signal)
@@ -191,6 +246,6 @@ class TestThieleSmallParameterAuralization(unittest.TestCase):
 		for getter in [aur.GetExcursion, aur.GetVelocity, aur.GetAcceleration, aur.GetCurrent, aur.GetSoundPressure]:
 			common.test_connection_observers(testcase=self,
 			                                 inputs=[aur.SetThieleSmallParameters, aur.SetVoltage, aur.SetListenerDistance, aur.SetMediumDensity, aur.SetWarpFrequency, aur.SetRegularization],
-			                                 noinputs=[],
+			                                 noinputs=[aur.SetSaveSamples, aur.SetUseCython, aur.ResetSavedSamples],
 			                                 output=getter)
 

@@ -1,5 +1,5 @@
 # SuMPF - Sound using a Monkeyforest-like processing framework
-# Copyright (C) 2012-2014 Jonas Schulte-Coerne
+# Copyright (C) 2012-2015 Jonas Schulte-Coerne
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -126,7 +126,7 @@ def CheckOsSepUsage(line):
 def CheckLicense(lines):
 	license = []
 	license.append("# SuMPF - Sound using a Monkeyforest-like processing framework")
-	license.append("# Copyright (C) 2012-2014 Jonas Schulte-Coerne")
+	license.append("# Copyright (C) 2012-2015 Jonas Schulte-Coerne")
 	license.append("#")
 	license.append("# This program is free software: you can redistribute it and/or modify")
 	license.append("# it under the terms of the GNU General Public License as published by")

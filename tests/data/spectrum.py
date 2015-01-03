@@ -1,5 +1,5 @@
 # SuMPF - Sound using a Monkeyforest-like processing framework
-# Copyright (C) 2012-2014 Jonas Schulte-Coerne
+# Copyright (C) 2012-2015 Jonas Schulte-Coerne
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -15,6 +15,7 @@
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 import math
+import os
 import unittest
 import sumpf
 import _common as common
@@ -45,7 +46,13 @@ class TestSpectrum(unittest.TestCase):
 		self.assertEqual(self.spectrum.GetResolution(), 4800.0)			# test if resolution is set correctly
 		self.assertEqual(len(self.spectrum), len(self.samples1))		# test if length is computed correctly
 		magnitude = (tuple([abs(i) for i in self.samples1]), self.samples2)
-		self.assertEqual(self.spectrum.GetMagnitude(), magnitude)	# test if magnitude is computed correctly
+		if os.name == "nt":
+			spk_magnitude = self.spectrum.GetMagnitude()
+			for c in range(len(spk_magnitude)):
+				for s in range(len(spk_magnitude[c])):
+					self.assertAlmostEqual(spk_magnitude[c][s], magnitude[c][s])	# perform a windows specific test, because the calculations do not seem not run as precise as expected here
+		else:
+			self.assertEqual(self.spectrum.GetMagnitude(), magnitude)	# test if magnitude is computed correctly
 		phase = ((math.pi / 4.0,) * len(self.spectrum), (0.0,) * len(self.spectrum))
 		self.assertEqual(self.spectrum.GetPhase(), phase)				# test if phase is computed correctly
 		self.assertEqual(self.spectrum.GetLabels(), ("1", "2"))			# test if labels are set correctly

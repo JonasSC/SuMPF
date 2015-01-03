@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 # SuMPF - Sound using a Monkeyforest-like processing framework
-# Copyright (C) 2012-2014 Jonas Schulte-Coerne
+# Copyright (C) 2012-2015 Jonas Schulte-Coerne
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -35,8 +35,8 @@ for root, dirs, files in os.walk(path):
 			with open(os.path.join(root, filename), "r") as f:
 				lines = list(f.readlines())
 			for i in range(len(lines)):
-				if lines[i] == "# Copyright (C) 2012-2013 Jonas Schulte-Coerne\n":	# this is the original content that shall be replaced (do not forget the \n at the line endings)
-					lines[i] = "# Copyright (C) 2012-2014 Jonas Schulte-Coerne\n"	# this is the new content (do not forget the \n at the line endings)
+				if lines[i] == "# Copyright (C) 2012-2014 Jonas Schulte-Coerne\n":	# this is the original content that shall be replaced (do not forget the \n at the line endings)
+					lines[i] = "# Copyright (C) 2012-2015 Jonas Schulte-Coerne\n"	# this is the new content (do not forget the \n at the line endings)
 			with open(os.path.join(root, filename), "w") as f:
 				f.write("".join(lines))
 

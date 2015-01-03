@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 # SuMPF - Sound using a Monkeyforest-like processing framework
-# Copyright (C) 2012-2014 Jonas Schulte-Coerne
+# Copyright (C) 2012-2015 Jonas Schulte-Coerne
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -19,19 +19,34 @@
 import os
 from distutils.core import setup
 
+cython_available = False
+try:
+	import Cython.Build
+	cython_available = True
+except ImportError:
+	pass
+
 dirs = {}
 additional_files = {}
+cython_extensions = []
 for i in os.walk("."):
 	dirname = i[0].lstrip("./")
 	if dirname != "":
 		package = dirname.replace(os.sep, ".")
 		dirs[package] = dirname
 		for filename in i[2]:
+			if filename.endswith(".pyx"):
+				cython_extensions.append(os.path.join(dirname, filename))
 			if not filename.endswith(".py") and \
-			   not filename.endswith(".pyc"):
+			   not filename.endswith(".pyc") and \
+			   not filename.endswith(".c"):
 				if package not in additional_files:
 					additional_files[package] = []
 				additional_files[package].append(filename)
+
+ext_modules = []
+if cython_available:
+	ext_modules = Cython.Build.cythonize(cython_extensions)
 
 setup(name="SuMPF",
       version="0.10",
@@ -42,5 +57,6 @@ setup(name="SuMPF",
       packages=dirs.keys(),
       package_dir=dirs,
       package_data=additional_files,
-      py_modules=["sumpf"])
+      py_modules=["sumpf"],
+      ext_modules=ext_modules)
 

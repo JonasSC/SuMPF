@@ -7,3 +7,6 @@ __pycache__
 /documentation/moduledoc/
 /documentation/statistics.htm
 
+# ignore C sources that have been created by Cython
+source/_sumpf/_modules/_models/_thielesmallparameters/auralization_nonlinear_cython.c
+

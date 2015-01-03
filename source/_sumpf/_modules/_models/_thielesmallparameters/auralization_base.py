@@ -1,5 +1,5 @@
 # SuMPF - Sound using a Monkeyforest-like processing framework
-# Copyright (C) 2012-2014 Jonas Schulte-Coerne
+# Copyright (C) 2012-2015 Jonas Schulte-Coerne
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -194,5 +194,5 @@ class ThieleSmallParameterAuralization(object):
 		self.__acceleration = sumpf.Signal(channels=tuple(acceleration_channels), samplingrate=self._voltage.GetSamplingRate(), labels=tuple(acceleration_labels))
 		self.__current = sumpf.Signal(channels=tuple(current_channels), samplingrate=self._voltage.GetSamplingRate(), labels=tuple(current_labels))
 		self.__sound_pressure = sumpf.Signal(channels=tuple(sound_pressure_channels), samplingrate=self._voltage.GetSamplingRate(), labels=tuple(sound_pressure_labels))
-		self.__recalculate = False
+		self._recalculate = False
 
