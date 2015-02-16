@@ -14,6 +14,16 @@
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 
-from ._generators.signal import *
-from ._generators.spectrum import *
+from .arbitrarysignalgenerator import TestArbitrarySignalGenerator
+from .constantsignalgenerator import TestConstantSignalGenerator
+from .signalgenerator import TestSignalGenerator
+from .impulsegenerator import TestImpulseGenerator
+from .laguerrefunctiongenerator import TestLaguerreFunctionGenerator
+from .noisegenerator import TestNoiseGenerator
+from .silencegenerator import TestSilenceGenerator
+from .sinewavegenerator import TestSineWaveGenerator
+from .squarewavegenerator import TestSquareWaveGenerator
+from .sweepgenerator import TestSweepGenerator
+from .trianglewavegenerator import TestTriangleWaveGenerator
+from .windowgenerator import TestWindowGenerator
 

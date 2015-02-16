@@ -112,11 +112,12 @@ class TestLaguerreFunctionGenerator(unittest.TestCase):
 		time_laguerre = self.__GetOrdinaryLaguerreFunctions()
 		properties = sumpf.modules.ChannelDataProperties(signal_length=len(time_laguerre[0][0]), samplingrate=time_laguerre[0][0].GetSamplingRate())
 		frequency_laguerre = []
-		gen = sumpf.modules.FilterGenerator(resolution=properties.GetResolution(), length=properties.GetSpectrumLength())
+		gen = sumpf.modules.LaguerreFilterGenerator(resolution=properties.GetResolution(), length=properties.GetSpectrumLength())
 		for s in range(3):
 			frequency_laguerre.append([])
 			for o in [0, 1, 4]:
-				gen.SetFilter(sumpf.modules.FilterGenerator.LAGUERRE_FUNCTION(order=o, scaling_factor=10.0 * (s + 1)))
+				gen.SetOrder(o)
+				gen.SetScalingFactor(scaling_factor=10.0 * (s + 1.0))
 				function = sumpf.modules.InverseFourierTransform(spectrum=gen.GetSpectrum()).GetSignal()
 				frequency_laguerre[s].append(function * function.GetSamplingRate())
 		for a in range(len(time_laguerre)):

@@ -14,5 +14,28 @@
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 
-from ._filtergenerator.generator import FilterGenerator
+import math
+from .spectrumgenerator import SpectrumGenerator
+
+
+class DerivativeSpectrumGenerator(SpectrumGenerator):
+	"""
+	Objects of this class generate a spectrum with a magnitude, that raises
+	proportionally to the frequency. This filter can be used to calculate the
+	derivative of a signal in the frequency domain.
+	"""
+	def _GetSample(self, f):
+		"""
+		Defines the value for each sample
+		@param f: the frequency of the sample in Hz
+		@retval : the value of the generator function at the given frequency
+		"""
+		return 2.0j * math.pi * f / (self._resolution * 2.0 * (self._length - 1))
+
+	def _GetLabel(self):
+		"""
+		Defines the label.
+		@retval : a string label
+		"""
+		return "Derivative"
 

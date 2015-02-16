@@ -24,16 +24,18 @@ from _sumpf._base._connectors.baseconnectors import Connector, TypedConnector
 
 from _sumpf._data.channeldata import ChannelData
 
-from _sumpf._modules._generators.signalgenerator import SignalGenerator
-from _sumpf._modules._generators.spectrumgenerator import SpectrumGenerator
+from _sumpf._modules._generators._signal.signalgenerator import SignalGenerator
+from _sumpf._modules._generators._spectrum.spectrumgenerator import SpectrumGenerator
+
+from _sumpf._modules._generators._spectrum.filtergenerator import FilterFunction
 
 try:
-	from _sumpf._modules._generators.noisegenerator import Distribution
+	from _sumpf._modules._generators._signal.noisegenerator import Distribution
 except ImportError:
 	pass
 
 try:
-	from _sumpf._modules._generators.windowgenerator import WindowFunction
+	from _sumpf._modules._generators._signal.windowgenerator import WindowFunction
 except ImportError:
 	pass
 

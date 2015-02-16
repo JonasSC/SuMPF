@@ -14,6 +14,22 @@
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 
-from ._generators.signal import *
-from ._generators.spectrum import *
+from ._signal.arbitrarysignalgenerator import ArbitrarySignalGenerator
+from ._signal.constantsignalgenerator import ConstantSignalGenerator
+from ._signal.impulsegenerator import ImpulseGenerator
+from ._signal.laguerrefunctiongenerator import LaguerreFunctionGenerator
+from ._signal.silencegenerator import SilenceGenerator
+from ._signal.sinewavegenerator import SineWaveGenerator
+from ._signal.squarewavegenerator import SquareWaveGenerator
+from ._signal.sweepgenerator import SweepGenerator
+from ._signal.trianglewavegenerator import TriangleWaveGenerator
+
+try:
+	from ._signal.noisegenerator import NoiseGenerator
+except ImportError:
+	pass
+try:
+	from ._signal.windowgenerator import WindowGenerator
+except ImportError:
+	pass
 

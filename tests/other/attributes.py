@@ -38,7 +38,8 @@ class TestAttributes(unittest.TestCase):
 		def format_name(classpath, classname):
 			return ".".join([m.__name__ for m in classpath] + [classname])
 		fails = []
-		short_is_enough = ["AverageSpectrums", "ConjugateSpectrum",
+		short_is_enough = ["DelayFilterGenerator", "FilterGenerator",
+		                   "AverageSpectrums", "ConjugateSpectrum",
 		                   "RelabelSignal", "RelabelSpectrum",
 		                   "LogarithmSignal",
 		                   "SignalMean", "SpectrumMean",

@@ -14,6 +14,14 @@
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 
-from ._generators.signal import *
-from ._generators.spectrum import *
+from .spectrumgenerator import TestSpectrumGenerator
+
+from .constantspectrum import TestConstantSpectrumGenerator
+from .delayfilter import TestDelayFilterGenerator
+from .derivativespectrum import TestDerivativeSpectrumGenerator
+from .filtergenerator import TestFilterGenerator
+from .laguerrefilter import TestLaguerreFilterGenerator
+from .rectanglefilter import TestRectangleFilterGenerator
+from .slopespectrum import TestSlopeSpectrumGenerator
+from .weightingfilter import TestWeightingFilterGenerator
 

@@ -142,7 +142,7 @@ class SweepGenerator(SignalGenerator):
 			self.__offset = float(a) / float(self._samplingrate)
 		f0 = self.__start
 		fT = self.__stop
-		k = 0
+		k = 0.0
 		if self.__function == SweepGenerator.Exponential:
 			k = (fT / f0) ** (1.0 / T)
 		elif self.__function == SweepGenerator.Linear:

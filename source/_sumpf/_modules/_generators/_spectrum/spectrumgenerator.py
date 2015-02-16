@@ -24,7 +24,7 @@ class SpectrumGenerator(object):
 	Every derived generator must implement either the _GetSample or the
 	_GetSamples method.
 	"""
-	def __init__(self, resolution, length):
+	def __init__(self, resolution=None, length=None):
 		"""
 		@param resolution: the resolution of the created spectrum in Hz
 		@param length: the number of samples of the spectrum

@@ -86,15 +86,7 @@ class LaguerreFunctionGenerator(SignalGenerator):
 		Returns the label for the generated channel.
 		@retval : the string label
 		"""
-		order = str(self.__order)
-		if order.endswith("1") and not order.endswith("11"):
-			return "%sst order Laguerre" % order
-		elif order.endswith("2") and not order.endswith("12"):
-			return "%snd order Laguerre" % order
-		elif order.endswith("3") and not order.endswith("13"):
-			return "%srd order Laguerre" % order
-		else:
-			return "%sth order Laguerre" % order
+		return "%s order Laguerre" % sumpf.helper.counting_number(self.__order)
 
 	@sumpf.Input(int, "GetSignal")
 	def SetOrder(self, order):

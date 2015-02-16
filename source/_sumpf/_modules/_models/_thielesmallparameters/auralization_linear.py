@@ -20,6 +20,27 @@ import numpy	# the ThieleSmallParameterAuralizationLinear class needs NumPy for 
 from .auralization_base import ThieleSmallParameterAuralization
 
 
+class ExcursionFunction(sumpf.internal.FilterFunction):
+	"""
+	A class that generates the Laplace coefficients for a voltage-to-excursion
+	transfer function of a dynamic loudspeaker.
+	"""
+	def __init__(self, R, L, M, k, w, m, S):
+		"""
+		@param R, L, M, k, w, m, S: the Thiele-Small parameters
+		"""
+		self.__numerator = (M,)
+		self.__denominator = (R * k, L * k + R * w + M ** 2, L * w + R * m, L * m)
+
+	def GetCoefficients(self):
+		"""
+		Calculates the coefficients for the filter.
+		@retval : a list of tuples (a, b) where a and b are lists of coefficients
+		"""
+		return ((self.__numerator, self.__denominator),)
+
+
+
 class ThieleSmallParameterAuralizationLinear(ThieleSmallParameterAuralization):
 	"""
 	Synthesizes loudspeaker responses to a given input voltage signal.
@@ -44,18 +65,12 @@ class ThieleSmallParameterAuralizationLinear(ThieleSmallParameterAuralization):
 		rho = self._medium_density
 		# set up filters
 		spectrum = sumpf.modules.FourierTransform(signal=self._voltage).GetSpectrum()
-		numerator = (M,)
-		denominator = (R * k, L * k + R * w + M ** 2, L * w + R * m, L * m)
-		excursion_filter = sumpf.modules.FilterGenerator(filterfunction=sumpf.modules.FilterGenerator.FILTER_WITH_COEFFICIENTS(frequency=1.0 / (2.0 * math.pi),
-		                                                                                                                       coefficients=((numerator, denominator),),
-		                                                                                                                       transform=False),
+		excursion_filter = sumpf.modules.FilterGenerator(filterfunction=ExcursionFunction(R, L, M, k, w, m, S),
+		                                                 frequency=1.0 / (2.0 * math.pi),
+		                                                 transform=False,
 		                                                 resolution=spectrum.GetResolution(),
 		                                                 length=len(spectrum)).GetSpectrum()
-		derivative_filter = sumpf.modules.FilterGenerator(filterfunction=sumpf.modules.FilterGenerator.FILTER_WITH_COEFFICIENTS(frequency=1.0 / (2.0 * math.pi),
-		                                                                                                                        coefficients=(((0.0, 1.0), (1.0,)),),
-		                                                                                                                        transform=False),
-		                                                  resolution=spectrum.GetResolution(),
-		                                                  length=len(spectrum)).GetSpectrum()
+		derivative_filter = sumpf.modules.DerivativeSpectrumGenerator(resolution=spectrum.GetResolution(), length=len(spectrum)).GetSpectrum() * self._voltage.GetSamplingRate()
 		# calculate the output data for each channel
 		excursion_channels = []
 		velocity_channels = []
