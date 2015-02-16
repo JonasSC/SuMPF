@@ -76,10 +76,10 @@ class ThieleSmallParameterInterpretation(object):
 	             force_factor=None,
 	             suspension_stiffness=None,
 	             mechanical_damping=None,
-	             membrane_mass=None,
-	             membrane_area=None,
+	             diaphragm_mass=None,
+	             diaphragm_area=None,
 	             suspension_compliance=None,
-	             membrane_radius=None,
+	             diaphragm_radius=None,
 	             resonance_frequency=None,
 	             electrical_q_factor=None,
 	             mechanical_q_factor=None,
@@ -98,10 +98,10 @@ class ThieleSmallParameterInterpretation(object):
 		@param force_factor: a float value for the force factor in Tesla times meters
 		@param suspension_stiffness: a float value for the suspension stiffness in Newtons per meter
 		@param mechanical_damping: a float value for the mechanical damping in Newton times seconds per meter
-		@param membrane_mass: a float value for the combined mass of the membrane, the voice coil and the acoustic load in kilograms
-		@param membrane_area: a float value for the effective membrane area in square meters
+		@param diaphragm_mass: a float value for the combined mass of the diaphragm, the voice coil and the acoustic load in kilograms
+		@param diaphragm_area: a float value for the effective diaphragm area in square meters
 		@param suspension_compliance: a float value for the suspension compliance in meters per Newton
-		@param membrane_radius: a float value for the radius from which the effective membrane area can be calculated in meters
+		@param diaphragm_radius: a float value for the radius from which the effective diaphragm area can be calculated in meters
 		@param resonance_frequency: a float value for the resonance frequency in Hertz
 		@param electrical_q_factor: a float value for the electrical Q factor
 		@param mechanical_q_factor: a float value for the mechanical Q factor
@@ -118,10 +118,10 @@ class ThieleSmallParameterInterpretation(object):
 		self.__force_factor = force_factor
 		self.__suspension_stiffness = suspension_stiffness
 		self.__mechanical_damping = mechanical_damping
-		self.__membrane_mass = membrane_mass
-		self.__membrane_area = membrane_area
+		self.__diaphragm_mass = diaphragm_mass
+		self.__diaphragm_area = diaphragm_area
 		self.__suspension_compliance = suspension_compliance
-		self.__membrane_radius = membrane_radius
+		self.__diaphragm_radius = diaphragm_radius
 		self.__resonance_frequency = resonance_frequency
 		self.__electrical_q_factor = electrical_q_factor
 		self.__mechanical_q_factor = mechanical_q_factor
@@ -191,23 +191,23 @@ class ThieleSmallParameterInterpretation(object):
 		return self.__GetMechanicalDamping()
 
 	@sumpf.Output(float)
-	def GetMembraneMass(self):
+	def GetDiaphragmMass(self):
 		"""
-		Calculates and returns the combined mass of the membrane, the voice coil
+		Calculates and returns the combined mass of the diaphragm, the voice coil
 		and the acoustic load in kilograms from the parameters, that have been
 		passed to this object.
 		@retval : a float
 		"""
-		return self.__GetMembraneMass()
+		return self.__GetDiaphragmMass()
 
 	@sumpf.Output(float)
-	def GetMembraneArea(self):
+	def GetDiaphragmArea(self):
 		"""
-		Calculates and returns the effective membrane area in square meters from
+		Calculates and returns the effective diaphragm area in square meters from
 		the parameters, that have been passed to this object.
 		@retval : a float
 		"""
-		return self.__GetMembraneArea()
+		return self.__GetDiaphragmArea()
 
 	@sumpf.Output(float)
 	def GetSuspensionCompliance(self):
@@ -219,14 +219,14 @@ class ThieleSmallParameterInterpretation(object):
 		return self.__GetSuspensionCompliance()
 
 	@sumpf.Output(float)
-	def GetMembraneRadius(self):
+	def GetDiaphragmRadius(self):
 		"""
-		Calculates and returns the radius, from which the effective membrane area
+		Calculates and returns the radius, from which the effective diaphragm area
 		can be calculated, in meters from the parameters, that have been passed
 		to this object.
 		@retval : a float
 		"""
-		return self.__GetMembraneRadius()
+		return self.__GetDiaphragmRadius()
 
 	@sumpf.Output(float)
 	def GetResonanceFrequency(self):
@@ -297,7 +297,7 @@ class ThieleSmallParameterInterpretation(object):
 
 	@sumpf.Input(sumpf.ThieleSmallParameters, ("GetThieleSmallParameters", "GetVoiceCoilResistance",
 	"GetVoiceCoilInductance", "GetForceFactor", "GetSuspensionStiffness", "GetMechanicalDamping",
-	"GetMembraneMass", "GetMembraneArea", "GetSuspensionCompliance", "GetMembraneRadius",
+	"GetDiaphragmMass", "GetDiaphragmArea", "GetSuspensionCompliance", "GetDiaphragmRadius",
 	"GetResonanceFrequency", "GetElectricalQFactor", "GetMechanicalQFactor", "GetTotalQFactor",
 	"GetResonanceImpedance", "GetEfficiencyBandwidthProduct"))
 	def SetThieleSmallParameters(self, parameters):
@@ -309,8 +309,8 @@ class ThieleSmallParameterInterpretation(object):
 		self.__thiele_small_parameters = parameters
 
 	@sumpf.Input(float, ("GetThieleSmallParameters", "GetVoiceCoilResistance", "GetForceFactor",
-	"GetSuspensionStiffness", "GetMechanicalDamping", "GetMembraneMass", "GetMembraneArea",
-	"GetSuspensionCompliance", "GetMembraneRadius", "GetResonanceFrequency", "GetElectricalQFactor",
+	"GetSuspensionStiffness", "GetMechanicalDamping", "GetDiaphragmMass", "GetDiaphragmArea",
+	"GetSuspensionCompliance", "GetDiaphragmRadius", "GetResonanceFrequency", "GetElectricalQFactor",
 	"GetMechanicalQFactor", "GetTotalQFactor", "GetResonanceImpedance", "GetEfficiencyBandwidthProduct"))
 	def SetVoiceCoilResistance(self, value):
 		"""
@@ -330,8 +330,8 @@ class ThieleSmallParameterInterpretation(object):
 		self.__voicecoil_inductance = value
 
 	@sumpf.Input(float, ("GetThieleSmallParameters", "GetVoiceCoilResistance", "GetForceFactor",
-	"GetSuspensionStiffness", "GetMechanicalDamping", "GetMembraneMass", "GetMembraneArea",
-	"GetSuspensionCompliance", "GetMembraneRadius", "GetResonanceFrequency", "GetElectricalQFactor",
+	"GetSuspensionStiffness", "GetMechanicalDamping", "GetDiaphragmMass", "GetDiaphragmArea",
+	"GetSuspensionCompliance", "GetDiaphragmRadius", "GetResonanceFrequency", "GetElectricalQFactor",
 	"GetMechanicalQFactor", "GetTotalQFactor", "GetResonanceImpedance", "GetEfficiencyBandwidthProduct"))
 	def SetForceFactor(self, value):
 		"""
@@ -342,8 +342,8 @@ class ThieleSmallParameterInterpretation(object):
 		self.__force_factor = value
 
 	@sumpf.Input(float, ("GetThieleSmallParameters", "GetVoiceCoilResistance", "GetForceFactor",
-	"GetSuspensionStiffness", "GetMechanicalDamping", "GetMembraneMass", "GetMembraneArea",
-	"GetSuspensionCompliance", "GetMembraneRadius", "GetResonanceFrequency", "GetElectricalQFactor",
+	"GetSuspensionStiffness", "GetMechanicalDamping", "GetDiaphragmMass", "GetDiaphragmArea",
+	"GetSuspensionCompliance", "GetDiaphragmRadius", "GetResonanceFrequency", "GetElectricalQFactor",
 	"GetMechanicalQFactor", "GetTotalQFactor", "GetResonanceImpedance", "GetEfficiencyBandwidthProduct"))
 	def SetSuspensionStiffness(self, value):
 		"""
@@ -354,8 +354,8 @@ class ThieleSmallParameterInterpretation(object):
 		self.__suspension_stiffness = value
 
 	@sumpf.Input(float, ("GetThieleSmallParameters", "GetVoiceCoilResistance", "GetForceFactor",
-	"GetSuspensionStiffness", "GetMechanicalDamping", "GetMembraneMass", "GetMembraneArea",
-	"GetSuspensionCompliance", "GetMembraneRadius", "GetResonanceFrequency", "GetElectricalQFactor",
+	"GetSuspensionStiffness", "GetMechanicalDamping", "GetDiaphragmMass", "GetDiaphragmArea",
+	"GetSuspensionCompliance", "GetDiaphragmRadius", "GetResonanceFrequency", "GetElectricalQFactor",
 	"GetMechanicalQFactor", "GetTotalQFactor", "GetResonanceImpedance", "GetEfficiencyBandwidthProduct"))
 	def SetMechanicalDamping(self, value):
 		"""
@@ -366,33 +366,33 @@ class ThieleSmallParameterInterpretation(object):
 		self.__mechanical_damping = value
 
 	@sumpf.Input(float, ("GetThieleSmallParameters", "GetVoiceCoilResistance", "GetForceFactor",
-	"GetSuspensionStiffness", "GetMechanicalDamping", "GetMembraneMass", "GetMembraneArea",
-	"GetSuspensionCompliance", "GetMembraneRadius", "GetResonanceFrequency", "GetElectricalQFactor",
+	"GetSuspensionStiffness", "GetMechanicalDamping", "GetDiaphragmMass", "GetDiaphragmArea",
+	"GetSuspensionCompliance", "GetDiaphragmRadius", "GetResonanceFrequency", "GetElectricalQFactor",
 	"GetMechanicalQFactor", "GetTotalQFactor", "GetResonanceImpedance", "GetEfficiencyBandwidthProduct"))
-	def SetMembraneMass(self, value):
+	def SetDiaphragmMass(self, value):
 		"""
-		Specifies a value for the membrane mass including the masses of the voice
+		Specifies a value for the diaphragm mass including the masses of the voice
 		coil and the acoustic load. This parameter can be used to calculate other
 		parameters.
-		@param value: a float value for the combined membrane mass in kilograms
+		@param value: a float value for the combined diaphragm mass in kilograms
 		"""
-		self.__membrane_mass = value
+		self.__diaphragm_mass = value
 
 	@sumpf.Input(float, ("GetThieleSmallParameters", "GetVoiceCoilResistance", "GetForceFactor",
-	"GetSuspensionStiffness", "GetMechanicalDamping", "GetMembraneMass", "GetMembraneArea",
-	"GetSuspensionCompliance", "GetMembraneRadius", "GetResonanceFrequency", "GetElectricalQFactor",
+	"GetSuspensionStiffness", "GetMechanicalDamping", "GetDiaphragmMass", "GetDiaphragmArea",
+	"GetSuspensionCompliance", "GetDiaphragmRadius", "GetResonanceFrequency", "GetElectricalQFactor",
 	"GetMechanicalQFactor", "GetTotalQFactor", "GetResonanceImpedance", "GetEfficiencyBandwidthProduct"))
-	def SetMembraneArea(self, value):
+	def SetDiaphragmArea(self, value):
 		"""
-		Specifies a value for the effective membrane area from which other parameters
+		Specifies a value for the effective diaphragm area from which other parameters
 		can be calculated.
-		@param value: a float value for the effective membrane area in square meters
+		@param value: a float value for the effective diaphragm area in square meters
 		"""
-		self.__membrane_area = value
+		self.__diaphragm_area = value
 
 	@sumpf.Input(float, ("GetThieleSmallParameters", "GetVoiceCoilResistance", "GetForceFactor",
-	"GetSuspensionStiffness", "GetMechanicalDamping", "GetMembraneMass", "GetMembraneArea",
-	"GetSuspensionCompliance", "GetMembraneRadius", "GetResonanceFrequency", "GetElectricalQFactor",
+	"GetSuspensionStiffness", "GetMechanicalDamping", "GetDiaphragmMass", "GetDiaphragmArea",
+	"GetSuspensionCompliance", "GetDiaphragmRadius", "GetResonanceFrequency", "GetElectricalQFactor",
 	"GetMechanicalQFactor", "GetTotalQFactor", "GetResonanceImpedance", "GetEfficiencyBandwidthProduct"))
 	def SetSuspensionCompliance(self, value):
 		"""
@@ -403,20 +403,20 @@ class ThieleSmallParameterInterpretation(object):
 		self.__suspension_compliance = value
 
 	@sumpf.Input(float, ("GetThieleSmallParameters", "GetVoiceCoilResistance", "GetForceFactor",
-	"GetSuspensionStiffness", "GetMechanicalDamping", "GetMembraneMass", "GetMembraneArea",
-	"GetSuspensionCompliance", "GetMembraneRadius", "GetResonanceFrequency", "GetElectricalQFactor",
+	"GetSuspensionStiffness", "GetMechanicalDamping", "GetDiaphragmMass", "GetDiaphragmArea",
+	"GetSuspensionCompliance", "GetDiaphragmRadius", "GetResonanceFrequency", "GetElectricalQFactor",
 	"GetMechanicalQFactor", "GetTotalQFactor", "GetResonanceImpedance", "GetEfficiencyBandwidthProduct"))
-	def SetMembraneRadius(self, value):
+	def SetDiaphragmRadius(self, value):
 		"""
-		Specifies a value for the effective membrane radius from which the effective
-		membrane area can be calculated.
+		Specifies a value for the effective diaphragm radius from which the effective
+		diaphragm area can be calculated.
 		@param value: a float value for the radius in meters
 		"""
-		self.__membrane_radius = value
+		self.__diaphragm_radius = value
 
 	@sumpf.Input(float, ("GetThieleSmallParameters", "GetVoiceCoilResistance", "GetForceFactor",
-	"GetSuspensionStiffness", "GetMechanicalDamping", "GetMembraneMass", "GetMembraneArea",
-	"GetSuspensionCompliance", "GetMembraneRadius", "GetResonanceFrequency", "GetElectricalQFactor",
+	"GetSuspensionStiffness", "GetMechanicalDamping", "GetDiaphragmMass", "GetDiaphragmArea",
+	"GetSuspensionCompliance", "GetDiaphragmRadius", "GetResonanceFrequency", "GetElectricalQFactor",
 	"GetMechanicalQFactor", "GetTotalQFactor", "GetResonanceImpedance", "GetEfficiencyBandwidthProduct"))
 	def SetResonanceFrequency(self, value):
 		"""
@@ -427,8 +427,8 @@ class ThieleSmallParameterInterpretation(object):
 		self.__resonance_frequency = value
 
 	@sumpf.Input(float, ("GetThieleSmallParameters", "GetVoiceCoilResistance", "GetForceFactor",
-	"GetSuspensionStiffness", "GetMechanicalDamping", "GetMembraneMass", "GetMembraneArea",
-	"GetSuspensionCompliance", "GetMembraneRadius", "GetResonanceFrequency", "GetElectricalQFactor",
+	"GetSuspensionStiffness", "GetMechanicalDamping", "GetDiaphragmMass", "GetDiaphragmArea",
+	"GetSuspensionCompliance", "GetDiaphragmRadius", "GetResonanceFrequency", "GetElectricalQFactor",
 	"GetMechanicalQFactor", "GetTotalQFactor", "GetResonanceImpedance", "GetEfficiencyBandwidthProduct"))
 	def SetElectricalQFactor(self, value):
 		"""
@@ -439,8 +439,8 @@ class ThieleSmallParameterInterpretation(object):
 		self.__electrical_q_factor = value
 
 	@sumpf.Input(float, ("GetThieleSmallParameters", "GetVoiceCoilResistance", "GetForceFactor",
-	"GetSuspensionStiffness", "GetMechanicalDamping", "GetMembraneMass", "GetMembraneArea",
-	"GetSuspensionCompliance", "GetMembraneRadius", "GetResonanceFrequency", "GetElectricalQFactor",
+	"GetSuspensionStiffness", "GetMechanicalDamping", "GetDiaphragmMass", "GetDiaphragmArea",
+	"GetSuspensionCompliance", "GetDiaphragmRadius", "GetResonanceFrequency", "GetElectricalQFactor",
 	"GetMechanicalQFactor", "GetTotalQFactor", "GetResonanceImpedance", "GetEfficiencyBandwidthProduct"))
 	def SetMechanicalQFactor(self, value):
 		"""
@@ -451,8 +451,8 @@ class ThieleSmallParameterInterpretation(object):
 		self.__mechanical_q_factor = value
 
 	@sumpf.Input(float, ("GetThieleSmallParameters", "GetVoiceCoilResistance", "GetForceFactor",
-	"GetSuspensionStiffness", "GetMechanicalDamping", "GetMembraneMass", "GetMembraneArea",
-	"GetSuspensionCompliance", "GetMembraneRadius", "GetResonanceFrequency", "GetElectricalQFactor",
+	"GetSuspensionStiffness", "GetMechanicalDamping", "GetDiaphragmMass", "GetDiaphragmArea",
+	"GetSuspensionCompliance", "GetDiaphragmRadius", "GetResonanceFrequency", "GetElectricalQFactor",
 	"GetMechanicalQFactor", "GetTotalQFactor", "GetResonanceImpedance", "GetEfficiencyBandwidthProduct"))
 	def SetTotalQFactor(self, value):
 		"""
@@ -463,8 +463,8 @@ class ThieleSmallParameterInterpretation(object):
 		self.__total_q_factor = value
 
 	@sumpf.Input(float, ("GetThieleSmallParameters", "GetVoiceCoilResistance", "GetForceFactor",
-	"GetSuspensionStiffness", "GetMechanicalDamping", "GetMembraneMass", "GetMembraneArea",
-	"GetSuspensionCompliance", "GetMembraneRadius", "GetResonanceFrequency", "GetElectricalQFactor",
+	"GetSuspensionStiffness", "GetMechanicalDamping", "GetDiaphragmMass", "GetDiaphragmArea",
+	"GetSuspensionCompliance", "GetDiaphragmRadius", "GetResonanceFrequency", "GetElectricalQFactor",
 	"GetMechanicalQFactor", "GetTotalQFactor", "GetResonanceImpedance", "GetEfficiencyBandwidthProduct"))
 	def SetEquivalentComplianceVolume(self, value):
 		"""
@@ -475,8 +475,8 @@ class ThieleSmallParameterInterpretation(object):
 		self.__equivalent_compliance_volume = value
 
 	@sumpf.Input(float, ("GetThieleSmallParameters", "GetVoiceCoilResistance", "GetForceFactor",
-	"GetSuspensionStiffness", "GetMechanicalDamping", "GetMembraneMass", "GetMembraneArea",
-	"GetSuspensionCompliance", "GetMembraneRadius", "GetResonanceFrequency", "GetElectricalQFactor",
+	"GetSuspensionStiffness", "GetMechanicalDamping", "GetDiaphragmMass", "GetDiaphragmArea",
+	"GetSuspensionCompliance", "GetDiaphragmRadius", "GetResonanceFrequency", "GetElectricalQFactor",
 	"GetMechanicalQFactor", "GetTotalQFactor", "GetResonanceImpedance", "GetEfficiencyBandwidthProduct"))
 	def SetResonanceImpedance(self, value):
 		"""
@@ -487,8 +487,8 @@ class ThieleSmallParameterInterpretation(object):
 		self.__resonance_impedance = value
 
 	@sumpf.Input(float, ("GetThieleSmallParameters", "GetVoiceCoilResistance", "GetForceFactor",
-	"GetSuspensionStiffness", "GetMechanicalDamping", "GetMembraneMass", "GetMembraneArea",
-	"GetSuspensionCompliance", "GetMembraneRadius", "GetResonanceFrequency", "GetElectricalQFactor",
+	"GetSuspensionStiffness", "GetMechanicalDamping", "GetDiaphragmMass", "GetDiaphragmArea",
+	"GetSuspensionCompliance", "GetDiaphragmRadius", "GetResonanceFrequency", "GetElectricalQFactor",
 	"GetMechanicalQFactor", "GetTotalQFactor", "GetResonanceImpedance", "GetEfficiencyBandwidthProduct"))
 	def SetEfficiencyBandwidthProduct(self, value):
 		"""
@@ -499,8 +499,8 @@ class ThieleSmallParameterInterpretation(object):
 		self.__efficiency_bandwidth_product = value
 
 	@sumpf.Input(float, ("GetThieleSmallParameters", "GetVoiceCoilResistance", "GetForceFactor",
-	"GetSuspensionStiffness", "GetMechanicalDamping", "GetMembraneMass", "GetMembraneArea",
-	"GetSuspensionCompliance", "GetMembraneRadius", "GetResonanceFrequency", "GetElectricalQFactor",
+	"GetSuspensionStiffness", "GetMechanicalDamping", "GetDiaphragmMass", "GetDiaphragmArea",
+	"GetSuspensionCompliance", "GetDiaphragmRadius", "GetResonanceFrequency", "GetElectricalQFactor",
 	"GetMechanicalQFactor", "GetTotalQFactor", "GetResonanceImpedance", "GetEfficiencyBandwidthProduct"))
 	def SetMediumDensity(self, density):
 		"""
@@ -511,8 +511,8 @@ class ThieleSmallParameterInterpretation(object):
 		self.__medium_density = density
 
 	@sumpf.Input(float, ("GetThieleSmallParameters", "GetVoiceCoilResistance", "GetForceFactor",
-	"GetSuspensionStiffness", "GetMechanicalDamping", "GetMembraneMass", "GetMembraneArea",
-	"GetSuspensionCompliance", "GetMembraneRadius", "GetResonanceFrequency", "GetElectricalQFactor",
+	"GetSuspensionStiffness", "GetMechanicalDamping", "GetDiaphragmMass", "GetDiaphragmArea",
+	"GetSuspensionCompliance", "GetDiaphragmRadius", "GetResonanceFrequency", "GetElectricalQFactor",
 	"GetMechanicalQFactor", "GetTotalQFactor", "GetResonanceImpedance", "GetEfficiencyBandwidthProduct"))
 	def SetSpeedOfSound(self, speed):
 		"""
@@ -545,15 +545,15 @@ class ThieleSmallParameterInterpretation(object):
 				M = self.__GetForceFactor(callers)
 				k = self.__GetSuspensionStiffness(callers)
 				w = self.__GetMechanicalDamping(callers)
-				m = self.__GetMembraneMass(callers)
-				S = self.__GetMembraneArea(callers)
+				m = self.__GetDiaphragmMass(callers)
+				S = self.__GetDiaphragmArea(callers)
 				return sumpf.ThieleSmallParameters(voicecoil_resistance=R,
 				                                   voicecoil_inductance=L,
 				                                   force_factor=M,
 				                                   suspension_stiffness=k,
 				                                   mechanical_damping=w,
-				                                   membrane_mass=m,
-				                                   membrane_area=S)
+				                                   diaphragm_mass=m,
+				                                   diaphragm_area=S)
 			except ParameterNotSpecifiedError as e:
 				if callers[0] == "__GetThieleSmallParameters":
 					return self.__OnParameterNotSpecified(exception=e)
@@ -578,7 +578,7 @@ class ThieleSmallParameterInterpretation(object):
 				# try to calculate the voice coil resistance from the electrical q-factor
 				Qe = self.__GetElectricalQFactor(callers)
 				fr = self.__GetResonanceFrequency(callers)
-				m = self.__GetMembraneMass(callers)
+				m = self.__GetDiaphragmMass(callers)
 				M = self.__GetForceFactor(callers)
 				return (Qe * M ** 2) / (2.0 * math.pi * fr * m)
 			except ParameterNotSpecifiedError as e:
@@ -628,7 +628,7 @@ class ThieleSmallParameterInterpretation(object):
 				# try to calculate the force factor from the electrical q-factor
 				Qe = self.__GetElectricalQFactor(callers)
 				fr = self.__GetResonanceFrequency(callers)
-				m = self.__GetMembraneMass(callers)
+				m = self.__GetDiaphragmMass(callers)
 				R = self.__GetVoiceCoilResistance(callers)
 				return ((2.0 * math.pi * fr * m * R) / Qe) ** 0.5
 			except ParameterNotSpecifiedError as e:
@@ -681,7 +681,7 @@ class ThieleSmallParameterInterpretation(object):
 				# try to calculate the mechanical damping from the mechanical q-factor
 				Qms = self.__GetMechanicalQFactor(callers)
 				fr = self.__GetResonanceFrequency(callers)
-				m = self.__GetMembraneMass(callers)
+				m = self.__GetDiaphragmMass(callers)
 				return (2.0 * math.pi * fr * m) / Qms
 			except ParameterNotSpecifiedError as e:
 				if callers[0] == "__GetMechanicalDamping":
@@ -689,8 +689,8 @@ class ThieleSmallParameterInterpretation(object):
 				else:
 					raise e
 
-	@parameter_getter("membrane mass")
-	def __GetMembraneMass(self, callers=None):
+	@parameter_getter("diaphragm mass")
+	def __GetDiaphragmMass(self, callers=None):
 		"""
 		A private getter method that hides the "callers"-parameter from the public
 		API.
@@ -698,39 +698,39 @@ class ThieleSmallParameterInterpretation(object):
 		@param callers: a call stack as a list of getter functions that have been called to calculate the desired value
 		"""
 		# if possible, return the requested value immediately
-		if self.__membrane_mass is not None:
-			return self.__membrane_mass
+		if self.__diaphragm_mass is not None:
+			return self.__diaphragm_mass
 		elif self.__thiele_small_parameters is not None:
-			return self.__thiele_small_parameters.GetMembraneMass()
+			return self.__thiele_small_parameters.GetDiaphragmMass()
 		else:
 			try:
-				# try to calculate the membrane mass from the resonance frequency
+				# try to calculate the diaphragm mass from the resonance frequency
 				fr = self.__GetResonanceFrequency(callers)
 				n = self.__GetSuspensionCompliance(callers)
 				return 1.0 / (n * (2.0 * math.pi * fr) ** 2)
 			except ParameterNotSpecifiedError as e:
 				try:
-					# try to calculate the membrane mass from the mechanical q-factor
+					# try to calculate the diaphragm mass from the mechanical q-factor
 					Qms = self.__GetMechanicalQFactor(callers)
 					fr = self.__GetResonanceFrequency(callers)
 					w = self.__GetMechanicalDamping(callers)
 					return (Qms * w) / (2.0 * math.pi * fr)
 				except ParameterNotSpecifiedError:
 					try:
-						# try to calculate the membrane mass from the electrical q-factor
+						# try to calculate the diaphragm mass from the electrical q-factor
 						Qe = self.__GetElectricalQFactor(callers)
 						fr = self.__GetResonanceFrequency(callers)
 						R = self.__GetVoiceCoilResistance(callers)
 						M = self.__GetForceFactor(callers)
 						return (Qe * M ** 2) / (2.0 * math.pi * fr * R)
 					except ParameterNotSpecifiedError:
-						if callers[0] == "__GetMembraneMass":
+						if callers[0] == "__GetDiaphragmMass":
 							return self.__OnParameterNotSpecified(exception=e)
 						else:
 							raise e
 
-	@parameter_getter("membrane area")
-	def __GetMembraneArea(self, callers=None):
+	@parameter_getter("diaphragm area")
+	def __GetDiaphragmArea(self, callers=None):
 		"""
 		A private getter method that hides the "callers"-parameter from the public
 		API.
@@ -738,13 +738,13 @@ class ThieleSmallParameterInterpretation(object):
 		@param callers: a call stack as a list of getter functions that have been called to calculate the desired value
 		"""
 		# if possible, return the requested value immediately
-		if self.__membrane_area is not None:
-			return self.__membrane_area
+		if self.__diaphragm_area is not None:
+			return self.__diaphragm_area
 		elif self.__thiele_small_parameters is not None:
-			return self.__thiele_small_parameters.GetMembraneArea()
+			return self.__thiele_small_parameters.GetDiaphragmArea()
 		else:
 			try:
-				# try to calculate the membrane area from the equivalent compliance volume
+				# try to calculate the diaphragm area from the equivalent compliance volume
 				Vas = self.__GetEquivalentComplianceVolume(callers)
 				n = self.__GetSuspensionCompliance(callers)
 				rho = self.__medium_density
@@ -752,11 +752,11 @@ class ThieleSmallParameterInterpretation(object):
 				return (Vas / (rho * c ** 2 * n)) ** 0.5
 			except ParameterNotSpecifiedError as e:
 				try:
-					# try to calculate the membrane area from the membrane radius
-					r = self.__GetMembraneRadius(callers)
+					# try to calculate the diaphragm area from the diaphragm radius
+					r = self.__GetDiaphragmRadius(callers)
 					return math.pi * r ** 2
 				except ParameterNotSpecifiedError:
-					if callers[0] == "__GetMembraneArea":
+					if callers[0] == "__GetDiaphragmArea":
 						return self.__OnParameterNotSpecified(exception=e)
 					else:
 						raise e
@@ -780,13 +780,13 @@ class ThieleSmallParameterInterpretation(object):
 			try:
 				# try to calculate the suspension compliance from the resonance frequency
 				fr = self.__GetResonanceFrequency(callers)
-				m = self.__GetMembraneMass(callers)
+				m = self.__GetDiaphragmMass(callers)
 				return 1.0 / (m * (2.0 * math.pi * fr) ** 2)
 			except ParameterNotSpecifiedError as e:
 				try:
 					# try to calculate the suspension compliance from the equivalent compliance volume
 					Vas = self.__GetEquivalentComplianceVolume(callers)
-					S = self.__GetMembraneArea(callers)
+					S = self.__GetDiaphragmArea(callers)
 					rho = self.__medium_density
 					c = self.__speed_of_sound
 					return Vas / (rho * c ** 2 * S ** 2)
@@ -796,8 +796,8 @@ class ThieleSmallParameterInterpretation(object):
 					else:
 						raise e
 
-	@parameter_getter("membrane radius")
-	def __GetMembraneRadius(self, callers=None):
+	@parameter_getter("diaphragm radius")
+	def __GetDiaphragmRadius(self, callers=None):
 		"""
 		A private getter method that hides the "callers"-parameter from the public
 		API.
@@ -805,15 +805,15 @@ class ThieleSmallParameterInterpretation(object):
 		@param callers: a call stack as a list of getter functions that have been called to calculate the desired value
 		"""
 		# if possible, return the requested value immediately
-		if self.__membrane_radius is not None:
-			return self.__membrane_radius
+		if self.__diaphragm_radius is not None:
+			return self.__diaphragm_radius
 		else:
 			try:
-				# try to calculate the membrane radius from the membrane area
-				S = self.__GetMembraneArea(callers)
+				# try to calculate the diaphragm radius from the diaphragm area
+				S = self.__GetDiaphragmArea(callers)
 				return (S / math.pi) ** 0.5
 			except ParameterNotSpecifiedError as e:
-				if callers[0] == "__GetMembraneRadius":
+				if callers[0] == "__GetDiaphragmRadius":
 					return self.__OnParameterNotSpecified(exception=e)
 				else:
 					raise e
@@ -831,16 +831,16 @@ class ThieleSmallParameterInterpretation(object):
 			return self.__resonance_frequency
 		else:
 			try:
-				# try to calculate the resonance frequency from the suspension compliance and the membrane mass
+				# try to calculate the resonance frequency from the suspension compliance and the diaphragm mass
 				n = self.__GetSuspensionCompliance(callers)
-				m = self.__GetMembraneMass(callers)
+				m = self.__GetDiaphragmMass(callers)
 				return 1.0 / (2.0 * math.pi * (n * m) ** 0.5)
 			except ParameterNotSpecifiedError as e:
 				try:
 					# try to calculate the resonance frequency from the mechanical q-factor
 					Qms = self.__GetMechanicalQFactor(callers)
 					w = self.__GetMechanicalDamping(callers)
-					m = self.__GetMembraneMass(callers)
+					m = self.__GetDiaphragmMass(callers)
 					return Qms * w / (2.0 * math.pi * m)
 				except ParameterNotSpecifiedError:
 					try:
@@ -848,7 +848,7 @@ class ThieleSmallParameterInterpretation(object):
 						Qe = self.__GetElectricalQFactor(callers)
 						R = self.__GetVoiceCoilResistance(callers)
 						M = self.__GetForceFactor(callers)
-						m = self.__GetMembraneMass(callers)
+						m = self.__GetDiaphragmMass(callers)
 						return Qe * M ** 2 / (2.0 * math.pi * m * R)
 					except ParameterNotSpecifiedError:
 						if callers[0] == "__GetResonanceFrequency":
@@ -872,7 +872,7 @@ class ThieleSmallParameterInterpretation(object):
 				# try to calculate the electrical q-factor from the electrical parameters
 				R = self.__GetVoiceCoilResistance(callers)
 				M = self.__GetForceFactor(callers)
-				m = self.__GetMembraneMass(callers)
+				m = self.__GetDiaphragmMass(callers)
 				fr = self.__GetResonanceFrequency(callers)
 				return (2.0 * math.pi * fr * m * R) / (M ** 2)
 			except ParameterNotSpecifiedError as e:
@@ -915,7 +915,7 @@ class ThieleSmallParameterInterpretation(object):
 			try:
 				# try to calculate the mechanical q-factor from the mechanical parameters
 				w = self.__GetMechanicalDamping(callers)
-				m = self.__GetMembraneMass(callers)
+				m = self.__GetDiaphragmMass(callers)
 				fr = self.__GetResonanceFrequency(callers)
 				return (2.0 * math.pi * fr * m) / w
 			except ParameterNotSpecifiedError as e:
@@ -973,9 +973,9 @@ class ThieleSmallParameterInterpretation(object):
 			return self.__equivalent_compliance_volume
 		else:
 			try:
-				# try to calculate the equivalent compliance volume from the suspension compliance and the membrane area
+				# try to calculate the equivalent compliance volume from the suspension compliance and the diaphragm area
 				n = self.__GetSuspensionCompliance(callers)
-				S = self.__GetMembraneArea(callers)
+				S = self.__GetDiaphragmArea(callers)
 				rho = self.__medium_density
 				c = self.__speed_of_sound
 				return rho * (c * S) ** 2 * n

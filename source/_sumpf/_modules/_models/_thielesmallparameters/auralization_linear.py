@@ -23,8 +23,8 @@ from .auralization_base import ThieleSmallParameterAuralization
 class ThieleSmallParameterAuralizationLinear(ThieleSmallParameterAuralization):
 	"""
 	Synthesizes loudspeaker responses to a given input voltage signal.
-	These responses can be the membrane excursion, the membrane velocity, the
-	membrane acceleration, the input current and the generated sound pressure
+	These responses can be the diaphragm excursion, the diaphragm velocity, the
+	diaphragm acceleration, the input current and the generated sound pressure
 	at a given distance.
 
 	The simulation is implemented as an IIR-filter in the frequency domain.
@@ -35,17 +35,11 @@ class ThieleSmallParameterAuralizationLinear(ThieleSmallParameterAuralization):
 	def _Recalculate(self):
 		"""
 		Calculates the channels for the excursion, velocity and acceleration
-		of the membrane and for the input current and the generated sound pressure.
+		of the diaphragm and for the input current and the generated sound pressure.
 		@retval the channel data excursion_channels, velocity_channels, acceleration_channels, current_channels, sound_pressure_channels
 		"""
 		# get the Thiele Small parameters
-		R = self._thiele_small.GetVoiceCoilResistance()
-		m = self._thiele_small.GetMembraneMass()
-		L = self._thiele_small.GetVoiceCoilInductance()
-		M = self._thiele_small.GetForceFactor()
-		k = self._thiele_small.GetSuspensionStiffness()
-		w = self._thiele_small.GetMechanicalDamping()
-		S = self._thiele_small.GetMembraneArea()
+		R, L, M, k, w, m, S = self._thiele_small.GetAllParameters()
 		r = self._listener_distance
 		rho = self._medium_density
 		# set up filters
@@ -75,10 +69,10 @@ class ThieleSmallParameterAuralizationLinear(ThieleSmallParameterAuralization):
 			velocity_spectrum = excursion_spectrum * derivative_filter
 			velocity_channels.append(sumpf.modules.InverseFourierTransform(spectrum=velocity_spectrum).GetSignal().GetChannels()[0])
 			acceleration_spectrum = velocity_spectrum * derivative_filter
-			acceleration_channels.append(sumpf.modules.InverseFourierTransform(spectrum=acceleration_spectrum).GetSignal().GetChannels()[0])
+			acceleration_signal = sumpf.modules.InverseFourierTransform(spectrum=acceleration_spectrum).GetSignal()
+			acceleration_channels.append(acceleration_signal.GetChannels()[0])
 			current_spectrum = (k * excursion_spectrum + w * velocity_spectrum + m * acceleration_spectrum) / M
 			current_channels.append(sumpf.modules.InverseFourierTransform(spectrum=current_spectrum).GetSignal().GetChannels()[0])
-			sound_pressure_spectrum = acceleration_spectrum * rho * S / (4.0 * math.pi * r)
-			sound_pressure_channels.append(sumpf.modules.InverseFourierTransform(spectrum=sound_pressure_spectrum).GetSignal().GetChannels()[0])
+			sound_pressure_channels.append((acceleration_signal * (rho * S / (4.0 * math.pi * r))).GetChannels()[0])
 		return excursion_channels, velocity_channels, acceleration_channels, current_channels, sound_pressure_channels
 

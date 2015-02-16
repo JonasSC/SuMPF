@@ -88,7 +88,7 @@ class ThieleSmallParameterAuralization(object):
 	@sumpf.Output(sumpf.Signal, caching=False)
 	def GetExcursion(self):
 		"""
-		Calculates and returns a signal for the membrane excursion of the
+		Calculates and returns a signal for the diaphragm excursion of the
 		simulated loudspeaker, when it is excited with the given input voltage.
 		@retval : a Signal instance
 		"""
@@ -99,7 +99,7 @@ class ThieleSmallParameterAuralization(object):
 	@sumpf.Output(sumpf.Signal, caching=False)
 	def GetVelocity(self):
 		"""
-		Calculates and returns a signal for the membrane velocity of the
+		Calculates and returns a signal for the diaphragm velocity of the
 		simulated loudspeaker, when it is excited with the given input voltage.
 		@retval : a Signal instance
 		"""
@@ -110,7 +110,7 @@ class ThieleSmallParameterAuralization(object):
 	@sumpf.Output(sumpf.Signal, caching=False)
 	def GetAcceleration(self):
 		"""
-		Calculates and returns a signal for the membrane acceleration of the
+		Calculates and returns a signal for the diaphragm acceleration of the
 		simulated loudspeaker, when it is excited with the given input voltage.
 		@retval : a Signal instance
 		"""
@@ -136,9 +136,9 @@ class ThieleSmallParameterAuralization(object):
 		at the given listener distance by the simulated loudspeaker, when it is
 		excited with the given input voltage.
 		For this, the loudspeaker is assumed to be a perfect point sound source.
-		Not modeled parameters like the loudspeaker enclosure, the membrane breakup
-		modes or the loudspeaker's directivity might cause significant simulation
-		errors.
+		Not modeled parameters like the loudspeaker enclosure, the diaphragm's
+		breakup modes or the loudspeaker's directivity might cause significant
+		simulation errors.
 		The sound pressure signal is not delayed by the time, the sound takes to
 		travel the given listener distance.
 		@retval : a Signal instance
@@ -162,9 +162,9 @@ class ThieleSmallParameterAuralization(object):
 		computes and returns the channels of the simulated signals.
 		The calculated channels shall be returned as a tuple with its elements
 		in the following order:
-		 1) the channels for the membrane excursion
-		 2) the channels for the membrane velocity
-		 3) the channels for the membrane acceleration
+		 1) the channels for the diaphragm excursion
+		 2) the channels for the diaphragm velocity
+		 3) the channels for the diaphragm acceleration
 		 4) the channels for the input current
 		 5) the channels for the sound pressure
 		@retval : a tuple like described above

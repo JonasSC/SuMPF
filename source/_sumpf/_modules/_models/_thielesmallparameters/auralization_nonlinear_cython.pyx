@@ -20,7 +20,7 @@ import cython
 
 @cython.boundscheck(False)
 def recalculate_nonlinear_cython(voltage_channels, double sampling_rate,
-                                 R_function, L_function, M_function, k_function, w_function, m_function, S_function,
+                                 thiele_small_parameter_function,
                                  double listener_distance, double medium_density,
                                  double warp_frequency, double regularization,
                                  bint save_samples, saved_samples):
@@ -54,8 +54,8 @@ def recalculate_nonlinear_cython(voltage_channels, double sampling_rate,
 	cdef double _K2q = K ** 2 * q				# b3
 	cdef double _Kq2 = K * q ** 2
 	cdef double sound_pressure_factor = medium_density / (4.0 * math.pi * listener_distance)
-	cdef double f = 0.0
-	t = None
+	cdef double f = 1000.0
+	cdef double T = 20.0
 	# start the calculation
 	excursion_channels = []
 	velocity_channels = []
@@ -91,13 +91,7 @@ def recalculate_nonlinear_cython(voltage_channels, double sampling_rate,
 			x = excursion[i - 1]
 			v = velocity[i - 1]
 			# get the Thiele Small parameters
-			R = R_function(f, x, v, t)
-			L = L_function(f, x, v, t)
-			M = M_function(f, x, v, t)
-			k = k_function(f, x, v, t)
-			w = w_function(f, x, v, t)
-			m = m_function(f, x, v, t)
-			S = S_function(f, x, v, t)
+			R, L, M, k, w, m, S = thiele_small_parameter_function(f, x, v, T)
 			# precalculate some values for the excursion calculation
 			Lm = L * m
 			LwRm = L * w + R * m
@@ -136,7 +130,7 @@ def recalculate_nonlinear_cython(voltage_channels, double sampling_rate,
 
 #@cython.boundscheck(False)
 #def recalculate_nonlinear_cython_numpy(voltage_channels, double sampling_rate,
-#                                       R_function, L_function, M_function, k_function, w_function, m_function, S_function,
+#                                       thiele_small_parameter_function,
 #                                       double listener_distance, double medium_density,
 #                                       double warp_frequency, double regularization,
 #                                       bint save_samples, saved_samples):
@@ -186,13 +180,7 @@ def recalculate_nonlinear_cython(voltage_channels, double sampling_rate,
 #			x = output[1][c][i - 1]
 #			v = output[1][c][i - 1]
 #			# get the Thiele Small parameters
-#			R = R_function(f, x, v, t)
-#			L = L_function(f, x, v, t)
-#			M = M_function(f, x, v, t)
-#			k = k_function(f, x, v, t)
-#			w = w_function(f, x, v, t)
-#			m = m_function(f, x, v, t)
-#			S = S_function(f, x, v, t)
+#			R, L, M, k, w, m, S = thiele_small_parameter_function(f, x, v, t)
 #			# calculate the filter coefficients for the excursion calculation
 #			a[0] = M * q ** 3
 #			a[1] = 3.0 * M * q ** 2

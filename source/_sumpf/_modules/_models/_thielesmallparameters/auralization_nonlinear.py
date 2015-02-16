@@ -33,12 +33,12 @@ if sumpf.config.get("use_cython"):
 class ThieleSmallParameterAuralizationNonlinear(ThieleSmallParameterAuralization):
 	"""
 	Synthesizes loudspeaker responses for a given input voltage signal.
-	These responses can be the membrane excursion, the membrane velocity, the
-	membrane acceleration, the input current and the generated sound pressure
+	These responses can be the diaphragm excursion, the diaphragm velocity, the
+	diaphragm acceleration, the input current and the generated sound pressure
 	at a given distance.
 
 	This synthesis also simulates nonlinear effects, which are caused by loudspeaker
-	parameters that change with the membrane excursion or the membrane velocity.
+	parameters that change with the diaphragm excursion or the diaphragm velocity.
 	Frequency or temperature dependencies of parameters are not considered in
 	this simulation.
 
@@ -175,19 +175,14 @@ class ThieleSmallParameterAuralizationNonlinear(ThieleSmallParameterAuralization
 	def _Recalculate(self):
 		"""
 		Calculates the channels for the excursion, velocity and acceleration
-		of the membrane and for the input current and the generated sound pressure.
+		of the diaphragm and for the input current and the generated sound pressure.
 		@retval the channel data excursion_channels, velocity_channels, acceleration_channels, current_channels, sound_pressure_channels
 		"""
+		thiele_small_parameter_function = self._thiele_small.GetAllParameters
 		if self.__use_cython:
 			auralized, saved = recalculate_nonlinear_cython(voltage_channels=self._voltage.GetChannels(),
 			                                                sampling_rate=self._voltage.GetSamplingRate(),
-			                                                R_function=self._thiele_small.GetVoiceCoilResistance,
-			                                                L_function=self._thiele_small.GetVoiceCoilInductance,
-			                                                M_function=self._thiele_small.GetForceFactor,
-			                                                k_function=self._thiele_small.GetSuspensionStiffness,
-			                                                w_function=self._thiele_small.GetMechanicalDamping,
-			                                                m_function=self._thiele_small.GetMembraneMass,
-			                                                S_function=self._thiele_small.GetMembraneArea,
+			                                                thiele_small_parameter_function=thiele_small_parameter_function,
 			                                                listener_distance=self._listener_distance,
 			                                                medium_density=self._medium_density,
 			                                                warp_frequency=self.__warp_frequency,
@@ -203,7 +198,6 @@ class ThieleSmallParameterAuralizationNonlinear(ThieleSmallParameterAuralization
 			return auralized
 		else:
 			# make class variables local
-			thiele_small = self._thiele_small
 			saved_voltage = []
 			saved_excursion = []
 			saved_velocity = []
@@ -229,8 +223,8 @@ class ThieleSmallParameterAuralizationNonlinear(ThieleSmallParameterAuralization
 			_K2q = K ** 2 * q				# b3
 			_Kq2 = K * q ** 2
 			sound_pressure_factor = self._medium_density / (4.0 * math.pi * self._listener_distance)
-			f = 0.0
-			t = None
+			f = 1000.0
+			T = 20.0
 			# start the calculation
 			excursion_channels = []
 			velocity_channels = []
@@ -260,13 +254,7 @@ class ThieleSmallParameterAuralizationNonlinear(ThieleSmallParameterAuralization
 					x = excursion[i1]
 					v = velocity[i1]
 					# get the Thiele Small parameters
-					R = thiele_small.GetVoiceCoilResistance(f, x, v, t)
-					L = thiele_small.GetVoiceCoilInductance(f, x, v, t)
-					M = thiele_small.GetForceFactor(f, x, v, t)
-					k = thiele_small.GetSuspensionStiffness(f, x, v, t)
-					w = thiele_small.GetMechanicalDamping(f, x, v, t)
-					m = thiele_small.GetMembraneMass(f, x, v, t)
-					S = thiele_small.GetMembraneArea(f, x, v, t)
+					R, L, M, k, w, m, S = thiele_small_parameter_function(f, x, v, T)
 					# precalculate some values for the excursion calculation
 					Lm = L * m
 					LwRm = L * w + R * m

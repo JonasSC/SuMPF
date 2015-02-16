@@ -48,12 +48,12 @@ class TestThieleSmallParameterInterpretation(unittest.TestCase):
 		# the other parameters are set to 1.0, 2.0, 3.0 etc. (their index in the
 		# "other parameters"-tuple plus 1.0).
 		functions = [("SuspensionCompliance", ("SuspensionStiffness",), 1.0),
-		             ("MembraneRadius", ("MembraneArea",), (1.0 / math.pi) ** 0.5),
-		             ("ResonanceFrequency", ("SuspensionCompliance", "MembraneMass"), 1.0 / (2.0 * math.pi * 2.0 ** 0.5)),
-		             ("ElectricalQFactor", ("ResonanceFrequency", "MembraneMass", "VoiceCoilResistance", "ForceFactor"), 12.0 * math.pi / 16.0),
-		             ("MechanicalQFactor", ("ResonanceFrequency", "MembraneMass", "MechanicalDamping"), 4.0 * math.pi / 3.0),
+		             ("DiaphragmRadius", ("DiaphragmArea",), (1.0 / math.pi) ** 0.5),
+		             ("ResonanceFrequency", ("SuspensionCompliance", "DiaphragmMass"), 1.0 / (2.0 * math.pi * 2.0 ** 0.5)),
+		             ("ElectricalQFactor", ("ResonanceFrequency", "DiaphragmMass", "VoiceCoilResistance", "ForceFactor"), 12.0 * math.pi / 16.0),
+		             ("MechanicalQFactor", ("ResonanceFrequency", "DiaphragmMass", "MechanicalDamping"), 4.0 * math.pi / 3.0),
 		             ("TotalQFactor", ("ElectricalQFactor", "MechanicalQFactor"), 2.0 / 3.0),
-		             ("EquivalentComplianceVolume", ("MembraneArea", "SuspensionCompliance"), rho * c ** 2 * 2.0),
+		             ("EquivalentComplianceVolume", ("DiaphragmArea", "SuspensionCompliance"), rho * c ** 2 * 2.0),
 		             ("ResonanceImpedance", ("VoiceCoilResistance", "MechanicalQFactor", "ElectricalQFactor"), 1.0 + 2.0 / 3.0),
 		             ("EfficiencyBandwidthProduct", ("ResonanceFrequency", "ElectricalQFactor"), 0.5)]
 		for f in functions:
@@ -78,8 +78,8 @@ class TestThieleSmallParameterInterpretation(unittest.TestCase):
 		"""
 		all_parameters = ["ThieleSmallParameters", "VoiceCoilResistance",
 		                  "VoiceCoilInductance", "ForceFactor", "SuspensionStiffness",
-		                  "MechanicalDamping", "MembraneMass", "MembraneArea",
-		                  "SuspensionCompliance", "MembraneRadius", "ResonanceFrequency",
+		                  "MechanicalDamping", "DiaphragmMass", "DiaphragmArea",
+		                  "SuspensionCompliance", "DiaphragmRadius", "ResonanceFrequency",
 		                  "ElectricalQFactor", "MechanicalQFactor", "TotalQFactor",
 		                  "ResonanceImpedance", "EfficiencyBandwidthProduct"]
 		ts_int = sumpf.modules.ThieleSmallParameterInterpretation()
@@ -96,8 +96,8 @@ class TestThieleSmallParameterInterpretation(unittest.TestCase):
 		"""
 		all_parameters = set(["ThieleSmallParameters", "VoiceCoilResistance",
 		                      "VoiceCoilInductance", "ForceFactor", "SuspensionStiffness",
-		                      "MechanicalDamping", "MembraneMass", "MembraneArea",
-		                      "SuspensionCompliance", "MembraneRadius", "ResonanceFrequency",
+		                      "MechanicalDamping", "DiaphragmMass", "DiaphragmArea",
+		                      "SuspensionCompliance", "DiaphragmRadius", "ResonanceFrequency",
 		                      "ElectricalQFactor", "MechanicalQFactor", "TotalQFactor",
 		                      "ResonanceImpedance", "EfficiencyBandwidthProduct"])
 		additional_parameters = set(["MediumDensity", "SpeedOfSound"])

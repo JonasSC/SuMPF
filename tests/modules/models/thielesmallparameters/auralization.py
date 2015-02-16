@@ -188,8 +188,8 @@ class TestThieleSmallParameterAuralization(unittest.TestCase):
 		"""
 		Tests if the nonlinearities are produced as expected.
 		"""
-		def force_factor(frequency=0.0, membrane_excursion=0.0, membrane_velocity=0.0, voicecoil_temperature=20.0):
-			return 10.0 + 1000.0 * membrane_excursion - 1000000.0 * membrane_excursion ** 2
+		def force_factor(f=0.0, x=0.0, v=0.0, T=20.0):
+			return 10.0 + 1000.0 * x - 1000000.0 * x ** 2
 		ts = sumpf.ThieleSmallParameters(force_factor=force_factor)
 		sine = sumpf.modules.SineWaveGenerator(frequency=73.0, samplingrate=44100, length=2 ** 14).GetSignal()
 		linear = sumpf.modules.ThieleSmallParameterAuralizationLinear(thiele_small_parameters=ts, voltage_signal=sine).GetSoundPressure()
