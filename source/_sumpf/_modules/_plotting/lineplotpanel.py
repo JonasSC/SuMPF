@@ -63,6 +63,7 @@ class LinePlotPanel(wx.Panel):
 		self.SetSizer(self.__sizer)
 		self.__figure = sumpf.gui.run_in_mainloop(Figure)
 		self.__canvas = sumpf.gui.run_in_mainloop(ObservableFigureCanvas, parent=self, id=wx.ID_ANY, figure=self.__figure, draw_observers=[self.__OnCanvasDraw])
+		self.__canvas.mpl_connect('pick_event', self.__OnPick)
 		self.__toolbar = Toolbar(parent=self, canvas=self.__canvas, components=components)
 		self.__sizer.Add(self.__toolbar, 0, wx.LEFT | wx.EXPAND)
 		self.__sizer.Add(self.__canvas, 1, wx.EXPAND)
@@ -100,6 +101,7 @@ class LinePlotPanel(wx.Panel):
 				return "%.1f dB" % spl
 		self.__ytick_linformatter = ScalarFormatter()
 		self.__ytick_logformatter = FuncFormatter(dBlabel)
+		self.__picked = set()
 		self.__updating = False
 
 	def Layout(self):
@@ -117,6 +119,7 @@ class LinePlotPanel(wx.Panel):
 		"""
 		if layout != self.__layout:
 			self.__layout = layout
+			self.__picked = set()
 			self.__RebuildFigure()
 			self._SetData(data=self.__data, interval=self.__data_x_interval, labels=self.__labels)
 
@@ -463,6 +466,37 @@ class LinePlotPanel(wx.Panel):
 			                             shown=self.__shown_components,
 			                             move_plots_together=self.__move_plots_together)
 
+	def __OnPick(self, event):
+		"""
+		An event handler for the matplotlib event of clicking on a line.
+		If the line is not picked yet, this method adds its line number to the
+		self.__picked set and displays the line a bit thicker. Otherwise, it
+		removes the respective line number from the set and resets the line display
+		to normal thickness.
+		"""
+		def get_picked_line_number(line):
+			# returns the plot number and the line number in the plot
+			for p in self.__lines:
+				for c in self.__lines[p]:
+					for n in range(len(self.__lines[p][c])):
+						if self.__lines[p][c][n].HasLine(line):
+							return (p, n)
+			return None, None
+		picked = get_picked_line_number(event.artist)
+		if picked[0] is not None:
+			if picked in self.__picked:
+				for c in self.__lines[picked[0]]:
+					self.__lines[picked[0]][c][picked[1]].Normal()
+				self.__picked.remove(picked)
+			else:
+				for c in self.__lines[picked[0]]:
+					self.__lines[picked[0]][c][picked[1]].Bold()
+				self.__picked.add(picked)
+		if self.__show_legend:
+			for g in self.__plots:
+				g[self.__shown_components[0]].legend(loc='best')
+		self.__canvas.draw()
+
 	def __CalculateXData(self, data_interval, shown_interval, number_of_samples):
 		"""
 		Calculates and returns the x data for the plots and the line labels.
@@ -496,8 +530,12 @@ class LinePlotPanel(wx.Panel):
 					lines[i].SetData(x_data=x_data, y_data=lines_data[i], interval=self.__data_x_interval, label=self.__ordered_labels[g][c][i])
 				for i in range(len(lines), len(lines_data)):		# create new lines if necessary
 					lines.append(self.__linemanager_class(plot=plot, x_data=x_data, y_data=lines_data[i], interval=self.__data_x_interval, label=self.__ordered_labels[g][c][i]))
+					if (g, i) in self.__picked:
+						lines[i].Bold()
 				for i in range(len(lines_data), len(lines)):		# Delete surplus lines
 					lines[i].Delete()
+					if (g, i) in self.__picked:
+						self.__picked.remove((g, i))
 				del lines[len(lines_data):]
 		# restore settings
 		self.__updating = True

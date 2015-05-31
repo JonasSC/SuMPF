@@ -125,6 +125,28 @@ class LineManager(object):
 		self.__lines = []
 		self.__Plot()
 
+	def HasLine(self, line):
+		"""
+		Returns True, if the given matplotlib line object is managed by this instance.
+		@param line: a matplotlib Artist object
+		@retval : True if the given object is managed by this instance, False otherwise
+		"""
+		return line in self.__lines
+
+	def Bold(self):
+		"""
+		Displays all managed lines with an increased thickness.
+		"""
+		for l in self.__lines:
+			l.set_linewidth(2)
+
+	def Normal(self):
+		"""
+		Displays all managed lines with normal thickness.
+		"""
+		for l in self.__lines:
+			l.set_linewidth(1)
+
 	def Delete(self):
 		"""
 		Deletes the line from the plot.
@@ -192,12 +214,12 @@ class LineManager(object):
 		for i in range(len(self.__lines), len(y_data_list)):
 			line = None
 			if color is None:
-				line = self.__plot.plot(x_data, y_data_list[i], label=self.__label)[0]
+				line = self.__plot.plot(x_data, y_data_list[i], label=self.__label, picker=True)[0]
 				color = line.get_color()
 			else:
-				line = self.__plot.plot(x_data, y_data_list[i], color=color)[0]
+				line = self.__plot.plot(x_data, y_data_list[i], color=color, picker=True)[0]
 			self.__lines.append(line)
-		# Delete surplus lines
+		# delete surplus lines
 		for i in range(len(y_data_list), len(self.__lines)):
 			index = self.__plot.lines.index(self.__lines[i])
 			del self.__plot.lines[index]
