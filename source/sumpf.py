@@ -25,9 +25,9 @@ from _sumpf.data import *
 import _sumpf.internal as internal
 
 try:
-	import _sumpf.gui as gui
+    import _sumpf.gui as gui
 except ImportError:
-	pass
+    pass
 
 import _sumpf.modules as modules
 import _sumpf.examples as examples

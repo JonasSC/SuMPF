@@ -18,22 +18,22 @@ from .signalgenerator import SignalGenerator
 
 
 class SilenceGenerator(SignalGenerator):
-	"""
-	Generates a Signal whose data is a sequence of 0.0 samples with the given
-	length and the given sampling rate.
-	The resulting Signal will have one channel.
-	"""
-	def _GetSamples(self):
-		"""
-		Generates the samples of a Signal which are all 0.0 and returns them as a tuple.
-		@retval : a tuple of samples
-		"""
-		return (0.0,) * self._length
+    """
+    Generates a Signal whose data is a sequence of 0.0 samples with the given
+    length and the given sampling rate.
+    The resulting Signal will have one channel.
+    """
+    def _GetSamples(self):
+        """
+        Generates the samples of a Signal which are all 0.0 and returns them as a tuple.
+        @retval : a tuple of samples
+        """
+        return (0.0,) * self._length
 
-	def _GetLabel(self):
-		"""
-		Returns the label for the output Signal's channel.
-		@retval : a string label
-		"""
-		return "Silence"
+    def _GetLabel(self):
+        """
+        Returns the label for the output Signal's channel.
+        @retval : a string label
+        """
+        return "Silence"
 

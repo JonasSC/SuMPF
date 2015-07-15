@@ -20,45 +20,45 @@ import _common as common
 
 
 class TestCutSignal(unittest.TestCase):
-	"""
-	A test case for the CutSignal module.
-	"""
-	def test_function(self):
-		"""
-		Tests the function of the CutSignal module.
-		"""
-		signal = sumpf.Signal(channels=((1.0, 2.0, 3.0, 4.0, 5.0), (6.0, 7.0, 8.0, 9.0, 0.0)), samplingrate=12.0, labels=("1", None))
-		cut = sumpf.modules.CutSignal()
-		self.assertEqual(cut.GetOutput(), sumpf.Signal())
-		self.assertEqual(cut.GetOutputLength(), len(cut.GetOutput()))
-		cut = sumpf.modules.CutSignal(signal=signal, start=2, stop=(-1))
-		self.assertEqual(cut.GetOutput(), signal[2:-1])
-		self.assertEqual(cut.GetOutputLength(), len(cut.GetOutput()))
-		cut.SetStart(1)
-		cut.SetStop(sumpf.modules.CutSignal.END)
-		self.assertEqual(cut.GetOutput(), signal[1:])
-		self.assertEqual(cut.GetOutputLength(), len(cut.GetOutput()))
-		cut.SetStop(27)
-		self.assertEqual(cut.GetOutput(), signal[1:27])
-		self.assertEqual(cut.GetOutputLength(), len(cut.GetOutput()))
+    """
+    A test case for the CutSignal module.
+    """
+    def test_function(self):
+        """
+        Tests the function of the CutSignal module.
+        """
+        signal = sumpf.Signal(channels=((1.0, 2.0, 3.0, 4.0, 5.0), (6.0, 7.0, 8.0, 9.0, 0.0)), samplingrate=12.0, labels=("1", None))
+        cut = sumpf.modules.CutSignal()
+        self.assertEqual(cut.GetOutput(), sumpf.Signal())
+        self.assertEqual(cut.GetOutputLength(), len(cut.GetOutput()))
+        cut = sumpf.modules.CutSignal(signal=signal, start=2, stop=(-1))
+        self.assertEqual(cut.GetOutput(), signal[2:-1])
+        self.assertEqual(cut.GetOutputLength(), len(cut.GetOutput()))
+        cut.SetStart(1)
+        cut.SetStop(sumpf.modules.CutSignal.END)
+        self.assertEqual(cut.GetOutput(), signal[1:])
+        self.assertEqual(cut.GetOutputLength(), len(cut.GetOutput()))
+        cut.SetStop(27)
+        self.assertEqual(cut.GetOutput(), signal[1:27])
+        self.assertEqual(cut.GetOutputLength(), len(cut.GetOutput()))
 
-	def test_connectors(self):
-		"""
-		Tests if the connectors are properly decorated.
-		"""
-		cut = sumpf.modules.CutSignal()
-		self.assertEqual(cut.SetInput.GetType(), sumpf.Signal)
-		self.assertEqual(cut.SetStart.GetType(), int)
-		self.assertEqual(cut.SetStop.GetType(), int)
-		self.assertEqual(cut.SetInterval.GetType(), tuple)
-		self.assertEqual(cut.GetOutput.GetType(), sumpf.Signal)
-		self.assertEqual(cut.GetOutputLength.GetType(), int)
-		common.test_connection_observers(testcase=self,
-		                                 inputs=[cut.SetInput, cut.SetStart, cut.SetStop, cut.SetInterval],
-		                                 noinputs=[],
-		                                 output=cut.GetOutput)
-		common.test_connection_observers(testcase=self,
-		                                 inputs=[cut.SetInput, cut.SetStart, cut.SetStop, cut.SetInterval],
-		                                 noinputs=[],
-		                                 output=cut.GetOutputLength)
+    def test_connectors(self):
+        """
+        Tests if the connectors are properly decorated.
+        """
+        cut = sumpf.modules.CutSignal()
+        self.assertEqual(cut.SetInput.GetType(), sumpf.Signal)
+        self.assertEqual(cut.SetStart.GetType(), int)
+        self.assertEqual(cut.SetStop.GetType(), int)
+        self.assertEqual(cut.SetInterval.GetType(), tuple)
+        self.assertEqual(cut.GetOutput.GetType(), sumpf.Signal)
+        self.assertEqual(cut.GetOutputLength.GetType(), int)
+        common.test_connection_observers(testcase=self,
+                                         inputs=[cut.SetInput, cut.SetStart, cut.SetStop, cut.SetInterval],
+                                         noinputs=[],
+                                         output=cut.GetOutput)
+        common.test_connection_observers(testcase=self,
+                                         inputs=[cut.SetInput, cut.SetStart, cut.SetStop, cut.SetInterval],
+                                         noinputs=[],
+                                         output=cut.GetOutputLength)
 

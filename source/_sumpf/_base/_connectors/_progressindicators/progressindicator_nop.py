@@ -15,21 +15,21 @@
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 class ProgressIndicator_NOP(object):
-	"""
-	This class emulates a ProgressIndicator. It is used as the default progress
-	indicator in the Connectors, which is used, when the progress is not tracked.
-	"""
-	def Announce(self, connector):
-		"""
-		Does nothing.
-		"""
-		pass
+    """
+    This class emulates a ProgressIndicator. It is used as the default progress
+    indicator in the Connectors, which is used, when the progress is not tracked.
+    """
+    def Announce(self, connector):
+        """
+        Does nothing.
+        """
+        pass
 
-	def Report(self, connector):
-		"""
-		Does nothing.
-		"""
-		pass
+    def Report(self, connector):
+        """
+        Does nothing.
+        """
+        pass
 
 nop_progress_indicator = ProgressIndicator_NOP()
 

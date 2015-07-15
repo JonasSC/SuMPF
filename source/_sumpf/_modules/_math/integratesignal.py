@@ -17,70 +17,70 @@
 import sumpf
 
 try:
-	import numpy
+    import numpy
 except ImportError:
-	numpy = sumpf.helper.numpydummy
+    numpy = sumpf.helper.numpydummy
 
 
 
 class IntegrateSignal(object):
-	"""
-	A module for calculating the integral of a Signal.
-	This is done by summing up the areas of the rectangles that are defined by
-	the samples and the sampling rate. This method uses no interpolation between
-	the samples.
-	"""
-	NO_DC = None
+    """
+    A module for calculating the integral of a Signal.
+    This is done by summing up the areas of the rectangles that are defined by
+    the samples and the sampling rate. This method uses no interpolation between
+    the samples.
+    """
+    NO_DC = None
 
-	def __init__(self, signal=None, offset=0.0):
-		"""
-		@param signal: the input Signal
-		@param offset: an float offset that shall be added to the integrated signal, or NO_DC to avoid a dc-offset in the output Signal
-		"""
-		if signal is None:
-			self.__signal = sumpf.Signal()
-		else:
-			self.__signal = signal
-		self.__offset = offset
+    def __init__(self, signal=None, offset=0.0):
+        """
+        @param signal: the input Signal
+        @param offset: an float offset that shall be added to the integrated signal, or NO_DC to avoid a dc-offset in the output Signal
+        """
+        if signal is None:
+            self.__signal = sumpf.Signal()
+        else:
+            self.__signal = signal
+        self.__offset = offset
 
-	@sumpf.Input(sumpf.Signal, "GetOutput")
-	def SetInput(self, signal):
-		"""
-		Sets the input Signal.
-		@param signal: the input Signal
-		"""
-		self.__signal = signal
+    @sumpf.Input(sumpf.Signal, "GetOutput")
+    def SetInput(self, signal):
+        """
+        Sets the input Signal.
+        @param signal: the input Signal
+        """
+        self.__signal = signal
 
-	@sumpf.Input(float, "GetOutput")
-	def SetOffset(self, offset):
-		"""
-		Specifies an offset that shall be added to the output Signal's samples.
-		This offset can either be given as a float or it can be set to NO_DC in
-		which case, the offset of each channel will be chosen so that the average
-		of all the channel's samples is zero (this means that the channel has no
-		dc-offset).
-		@param offset: a float or NO_DC
-		"""
-		self.__offset = offset
+    @sumpf.Input(float, "GetOutput")
+    def SetOffset(self, offset):
+        """
+        Specifies an offset that shall be added to the output Signal's samples.
+        This offset can either be given as a float or it can be set to NO_DC in
+        which case, the offset of each channel will be chosen so that the average
+        of all the channel's samples is zero (this means that the channel has no
+        dc-offset).
+        @param offset: a float or NO_DC
+        """
+        self.__offset = offset
 
-	@sumpf.Output(sumpf.Signal)
-	def GetOutput(self):
-		"""
-		Returns the output Signal, which is the integral of the input Signal.
-		@retval : a Signal which is the integral of the input Signal
-		"""
-		result = []
-		offset = self.__offset
-		for c in self.__signal.GetChannels():
-			sample_sum = 0.0
-			integrated = []
-			for s in c:
-				sample_sum += s
-				integrated.append(sample_sum)
-			scaled = numpy.divide(integrated, self.__signal.GetSamplingRate())
-			if self.__offset == IntegrateSignal.NO_DC:
-				offset = -sum(scaled) / len(scaled)
-			shifted = numpy.add(scaled, offset)
-			result.append(tuple(shifted))
-		return sumpf.Signal(channels=result, samplingrate=self.__signal.GetSamplingRate(), labels=self.__signal.GetLabels())
+    @sumpf.Output(sumpf.Signal)
+    def GetOutput(self):
+        """
+        Returns the output Signal, which is the integral of the input Signal.
+        @retval : a Signal which is the integral of the input Signal
+        """
+        result = []
+        offset = self.__offset
+        for c in self.__signal.GetChannels():
+            sample_sum = 0.0
+            integrated = []
+            for s in c:
+                sample_sum += s
+                integrated.append(sample_sum)
+            scaled = numpy.divide(integrated, self.__signal.GetSamplingRate())
+            if self.__offset == IntegrateSignal.NO_DC:
+                offset = -sum(scaled) / len(scaled)
+            shifted = numpy.add(scaled, offset)
+            result.append(tuple(shifted))
+        return sumpf.Signal(channels=result, samplingrate=self.__signal.GetSamplingRate(), labels=self.__signal.GetLabels())
 

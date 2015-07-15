@@ -17,45 +17,45 @@
 import sumpf
 
 try:
-	import numpy
+    import numpy
 except ImportError:
-	numpy = sumpf.helper.numpydummy
+    numpy = sumpf.helper.numpydummy
 
 
 
 class RectifySignal(object):
-	"""
-	Rectifies a Signal by calculating the absolute value for each sample.
-	Output Signals of instances of this class will only have positive samples.
-	If you intend to play them back with the sound card, please note they have
-	a significant dc offset that needs to be removed first.
-	"""
-	def __init__(self, signal=None):
-		"""
-		@param signal: the input Signal
-		"""
-		if signal is None:
-			self.__signal = sumpf.Signal()
-		else:
-			self.__signal = signal
+    """
+    Rectifies a Signal by calculating the absolute value for each sample.
+    Output Signals of instances of this class will only have positive samples.
+    If you intend to play them back with the sound card, please note they have
+    a significant dc offset that needs to be removed first.
+    """
+    def __init__(self, signal=None):
+        """
+        @param signal: the input Signal
+        """
+        if signal is None:
+            self.__signal = sumpf.Signal()
+        else:
+            self.__signal = signal
 
-	@sumpf.Input(sumpf.Signal, "GetOutput")
-	def SetInput(self, signal):
-		"""
-		Sets the input Signal.
-		@param signal: the input Signal
-		"""
-		self.__signal = signal
+    @sumpf.Input(sumpf.Signal, "GetOutput")
+    def SetInput(self, signal):
+        """
+        Sets the input Signal.
+        @param signal: the input Signal
+        """
+        self.__signal = signal
 
-	@sumpf.Output(sumpf.Signal)
-	def GetOutput(self):
-		"""
-		Returns the output Signal, which is the sample wise logarithm of the input
-		Signal.
-		@retval : the logarithm Signal
-		"""
-		result = []
-		for c in self.__signal.GetChannels():
-			result.append(tuple(numpy.abs(c)))
-		return sumpf.Signal(channels=result, samplingrate=self.__signal.GetSamplingRate(), labels=self.__signal.GetLabels())
+    @sumpf.Output(sumpf.Signal)
+    def GetOutput(self):
+        """
+        Returns the output Signal, which is the sample wise logarithm of the input
+        Signal.
+        @retval : the logarithm Signal
+        """
+        result = []
+        for c in self.__signal.GetChannels():
+            result.append(tuple(numpy.abs(c)))
+        return sumpf.Signal(channels=result, samplingrate=self.__signal.GetSamplingRate(), labels=self.__signal.GetLabels())
 

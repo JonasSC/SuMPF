@@ -18,18 +18,18 @@ import sumpf
 
 
 class ConnectionTester(object):
-	def __init__(self):
-		self.i = 0
+    def __init__(self):
+        self.i = 0
 
-	@sumpf.Input(int, ["GetSignal", "GetSpectrum"])
-	def Start(self, index):
-		self.i = index
+    @sumpf.Input(int, ["GetSignal", "GetSpectrum"])
+    def Start(self, index):
+        self.i = index
 
-	@sumpf.Output(sumpf.Signal)
-	def GetSignal(self):
-		return sumpf.Signal(channels=((1.0 * self.i, 2.0 * self.i, 3.0 * self.i),), samplingrate=42.0)
+    @sumpf.Output(sumpf.Signal)
+    def GetSignal(self):
+        return sumpf.Signal(channels=((1.0 * self.i, 2.0 * self.i, 3.0 * self.i),), samplingrate=42.0)
 
-	@sumpf.Output(sumpf.Spectrum)
-	def GetSpectrum(self):
-		return sumpf.Spectrum(channels=((1.0 * self.i, 2.0 * self.i, 3.0 * self.i),), resolution=42.0)
+    @sumpf.Output(sumpf.Spectrum)
+    def GetSpectrum(self):
+        return sumpf.Spectrum(channels=((1.0 * self.i, 2.0 * self.i, 3.0 * self.i),), resolution=42.0)
 

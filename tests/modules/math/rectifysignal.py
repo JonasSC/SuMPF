@@ -20,31 +20,31 @@ import _common as common
 
 
 class TestRectifySignal(unittest.TestCase):
-	"""
-	A test case for the RectifySignal module.
-	"""
-	def test_calculation(self):
-		"""
-		Tests if the result is calculated correctly.
-		"""
-		signal = sumpf.Signal(channels=((1.0, -4.0, 5.0), (-10.0, 100.0, -512.0)), samplingrate=42.0, labels=(None, "3"))
-		result = sumpf.Signal(channels=((1.0, 4.0, 5.0), (10.0, 100.0, 512.0)), samplingrate=42.0, labels=(None, "3"))
-		rec = sumpf.modules.RectifySignal()
-		self.assertEqual(rec.GetOutput(), sumpf.Signal())
-		rec.SetInput(signal)
-		self.assertEqual(rec.GetOutput(), result)
-		rec = sumpf.modules.RectifySignal(signal=signal)
-		self.assertEqual(rec.GetOutput(), result)
+    """
+    A test case for the RectifySignal module.
+    """
+    def test_calculation(self):
+        """
+        Tests if the result is calculated correctly.
+        """
+        signal = sumpf.Signal(channels=((1.0, -4.0, 5.0), (-10.0, 100.0, -512.0)), samplingrate=42.0, labels=(None, "3"))
+        result = sumpf.Signal(channels=((1.0, 4.0, 5.0), (10.0, 100.0, 512.0)), samplingrate=42.0, labels=(None, "3"))
+        rec = sumpf.modules.RectifySignal()
+        self.assertEqual(rec.GetOutput(), sumpf.Signal())
+        rec.SetInput(signal)
+        self.assertEqual(rec.GetOutput(), result)
+        rec = sumpf.modules.RectifySignal(signal=signal)
+        self.assertEqual(rec.GetOutput(), result)
 
-	def test_connectors(self):
-		"""
-		Tests if the connectors are properly decorated.
-		"""
-		rec = sumpf.modules.RectifySignal()
-		self.assertEqual(rec.SetInput.GetType(), sumpf.Signal)
-		self.assertEqual(rec.GetOutput.GetType(), sumpf.Signal)
-		common.test_connection_observers(testcase=self,
-		                                 inputs=[rec.SetInput],
-		                                 noinputs=[],
-		                                 output=rec.GetOutput)
+    def test_connectors(self):
+        """
+        Tests if the connectors are properly decorated.
+        """
+        rec = sumpf.modules.RectifySignal()
+        self.assertEqual(rec.SetInput.GetType(), sumpf.Signal)
+        self.assertEqual(rec.GetOutput.GetType(), sumpf.Signal)
+        common.test_connection_observers(testcase=self,
+                                         inputs=[rec.SetInput],
+                                         noinputs=[],
+                                         output=rec.GetOutput)
 

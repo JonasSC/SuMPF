@@ -30,12 +30,12 @@ from _sumpf._modules._generators._spectrum.spectrumgenerator import SpectrumGene
 from _sumpf._modules._generators._spectrum.filtergenerator import FilterFunction
 
 try:
-	from _sumpf._modules._generators._signal.noisegenerator import Distribution
+    from _sumpf._modules._generators._signal.noisegenerator import Distribution
 except ImportError:
-	pass
+    pass
 
 try:
-	from _sumpf._modules._generators._signal.windowgenerator import WindowFunction
+    from _sumpf._modules._generators._signal.windowgenerator import WindowFunction
 except ImportError:
-	pass
+    pass
 

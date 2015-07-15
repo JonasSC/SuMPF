@@ -29,14 +29,14 @@ import os
 path = "../"
 
 for root, dirs, files in os.walk(path):
-	for filename in files:
-		if filename.endswith(".py"):
-			lines = None
-			with open(os.path.join(root, filename), "r") as f:
-				lines = list(f.readlines())
-			for i in range(len(lines)):
-				if lines[i] == "# Copyright (C) 2012-2014 Jonas Schulte-Coerne\n":	# this is the original content that shall be replaced (do not forget the \n at the line endings)
-					lines[i] = "# Copyright (C) 2012-2015 Jonas Schulte-Coerne\n"	# this is the new content (do not forget the \n at the line endings)
-			with open(os.path.join(root, filename), "w") as f:
-				f.write("".join(lines))
+    for filename in files:
+        if filename.endswith(".py"):
+            lines = None
+            with open(os.path.join(root, filename), "r") as f:
+                lines = list(f.readlines())
+            for i in range(len(lines)):
+                if lines[i] == "# Copyright (C) 2012-2014 Jonas Schulte-Coerne\n":  # this is the original content that shall be replaced (do not forget the \n at the line endings)
+                    lines[i] = "# Copyright (C) 2012-2015 Jonas Schulte-Coerne\n"   # this is the new content (do not forget the \n at the line endings)
+            with open(os.path.join(root, filename), "w") as f:
+                f.write("".join(lines))
 

@@ -15,12 +15,12 @@
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 try:
-	from ._fileio.signalfile import SignalFile
+    from ._fileio.signalfile import SignalFile
 except ImportError:
-	pass
+    pass
 
 try:
-	from ._fileio.spectrumfile import SpectrumFile
+    from ._fileio.spectrumfile import SpectrumFile
 except ImportError:
-	pass
+    pass
 

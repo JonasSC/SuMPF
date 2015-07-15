@@ -20,56 +20,56 @@ from .signalplotpanel import SignalPlotPanel
 
 
 class SignalPlotWindow(PlotWindow):
-	"""
-	A class whose instances create a window in which plots of Signals are shown.
-	It basically has the same properties as a SignalPlotPanel, but it comes with
-	its own window. This window is created every time, when the Show-method is
-	called and the window is currently not shown. This means that a closed
-	SignalPlotWindow can be shown again after closing.
-	"""
-	def __init__(self):
-		PlotWindow.__init__(self)
-		self.__signal = sumpf.Signal()
-		self.__log_y = False
+    """
+    A class whose instances create a window in which plots of Signals are shown.
+    It basically has the same properties as a SignalPlotPanel, but it comes with
+    its own window. This window is created every time, when the Show-method is
+    called and the window is currently not shown. This means that a closed
+    SignalPlotWindow can be shown again after closing.
+    """
+    def __init__(self):
+        PlotWindow.__init__(self)
+        self.__signal = sumpf.Signal()
+        self.__log_y = False
 
-	def _GetPanel(self):
-		"""
-		Returns a properly initialized plot panel instance.
-		@retval : a plot panel instance
-		"""
-		panel = SignalPlotPanel(parent=self._window)
-		panel.SetSignal(self.__signal)
-		if self.__log_y:
-			panel.LogarithmicY()
-		else:
-			panel.LinearY()
-		return panel
+    def _GetPanel(self):
+        """
+        Returns a properly initialized plot panel instance.
+        @retval : a plot panel instance
+        """
+        panel = SignalPlotPanel(parent=self._window)
+        panel.SetSignal(self.__signal)
+        if self.__log_y:
+            panel.LogarithmicY()
+        else:
+            panel.LinearY()
+        return panel
 
-	@sumpf.Input(sumpf.Signal)
-	def SetSignal(self, signal):
-		"""
-		Sets the Signal which shall be plotted.
-		@param signal: The Signal to plot
-		"""
-		self.__signal = signal
-		if self._panel is not None:
-			self._panel.SetSignal(signal)
+    @sumpf.Input(sumpf.Signal)
+    def SetSignal(self, signal):
+        """
+        Sets the Signal which shall be plotted.
+        @param signal: The Signal to plot
+        """
+        self.__signal = signal
+        if self._panel is not None:
+            self._panel.SetSignal(signal)
 
-	@sumpf.Trigger()
-	def LinearY(self):
-		"""
-		Shows the y axis linearly.
-		"""
-		self.__log_y = False
-		if self._panel is not None:
-			self._panel.LinearY()
+    @sumpf.Trigger()
+    def LinearY(self):
+        """
+        Shows the y axis linearly.
+        """
+        self.__log_y = False
+        if self._panel is not None:
+            self._panel.LinearY()
 
-	@sumpf.Trigger()
-	def LogarithmicY(self):
-		"""
-		Shows the y axis logarithmically.
-		"""
-		self.__log_y = True
-		if self._panel is not None:
-			self._panel.LogarithmicY()
+    @sumpf.Trigger()
+    def LogarithmicY(self):
+        """
+        Shows the y axis logarithmically.
+        """
+        self.__log_y = True
+        if self._panel is not None:
+            self._panel.LogarithmicY()
 

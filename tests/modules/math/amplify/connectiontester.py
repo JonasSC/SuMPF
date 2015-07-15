@@ -18,26 +18,26 @@ import sumpf
 
 
 class ConnectionTester(object):
-	def __init__(self):
-		self.triggered = False
+    def __init__(self):
+        self.triggered = False
 
-	@sumpf.Trigger()
-	def Trigger(self):
-		self.triggered = True
+    @sumpf.Trigger()
+    def Trigger(self):
+        self.triggered = True
 
-	@sumpf.Output(sumpf.Signal)
-	def GetSignal(self):
-		return sumpf.Signal(channels=((1.0, 2.0, 3.0),), samplingrate=42.0)
+    @sumpf.Output(sumpf.Signal)
+    def GetSignal(self):
+        return sumpf.Signal(channels=((1.0, 2.0, 3.0),), samplingrate=42.0)
 
-	@sumpf.Output(sumpf.Spectrum)
-	def GetSpectrum(self):
-		return sumpf.Spectrum(channels=((1.0, 2.0, 3.0),), resolution=42.0)
+    @sumpf.Output(sumpf.Spectrum)
+    def GetSpectrum(self):
+        return sumpf.Spectrum(channels=((1.0, 2.0, 3.0),), resolution=42.0)
 
-	@sumpf.Output(float)
-	def GetScalarFactor(self):
-		return 2.0
+    @sumpf.Output(float)
+    def GetScalarFactor(self):
+        return 2.0
 
-	@sumpf.Output(tuple)
-	def GetVectorialFactor(self):
-		return (1.0, 2.0, 3.0)
+    @sumpf.Output(tuple)
+    def GetVectorialFactor(self):
+        return (1.0, 2.0, 3.0)
 

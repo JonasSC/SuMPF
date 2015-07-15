@@ -19,46 +19,46 @@ import copy
 
 
 class AverageBase(object):
-	"""
-	Abstract base class for averaging classes.
-	"""
-	def __init__(self, values=[]):
-		"""
-		All parameters are optional.
-		@param values: a list of values of which the average shall be calculated.
-		"""
-		for v in values:
-			self.Add(v)
+    """
+    Abstract base class for averaging classes.
+    """
+    def __init__(self, values=[]):
+        """
+        All parameters are optional.
+        @param values: a list of values of which the average shall be calculated.
+        """
+        for v in values:
+            self.Add(v)
 
-	def Add(self, value):
-		"""
-		Method to add a value to the list of values which shall be averaged.
-		The value can be either a scalar value or a list.
-		@param value: the value that shall be added
-		"""
-		raise NotImplementedError("This method should have been overridden in a derived class")
+    def Add(self, value):
+        """
+        Method to add a value to the list of values which shall be averaged.
+        The value can be either a scalar value or a list.
+        @param value: the value that shall be added
+        """
+        raise NotImplementedError("This method should have been overridden in a derived class")
 
-	def GetAverage(self):
-		"""
-		Calculates the average and returns it.
-		Returns 0 if no values have been added.
-		Returns a float if float values have been added.
-		Returns a list if list values have been added.
-		@retval : the average all added values
-		"""
-		result = self._GetAverage()
-		if isinstance(result, collections.Iterable):
-			return list(result)
-		else:
-			return result
+    def GetAverage(self):
+        """
+        Calculates the average and returns it.
+        Returns 0 if no values have been added.
+        Returns a float if float values have been added.
+        Returns a list if list values have been added.
+        @retval : the average all added values
+        """
+        result = self._GetAverage()
+        if isinstance(result, collections.Iterable):
+            return list(result)
+        else:
+            return result
 
-	def _GetAverage(self):
-		"""
-		Virtual base method for calculating the average and returning it.
-		It is only called if self._values != [] and the return value is casted
-		to a list if necessary, so the overriding implementations do not need
-		to care about this.
-		@retval : the average all added values
-		"""
-		raise NotImplementedError("This method should have been overridden in a derived class")
+    def _GetAverage(self):
+        """
+        Virtual base method for calculating the average and returning it.
+        It is only called if self._values != [] and the return value is casted
+        to a list if necessary, so the overriding implementations do not need
+        to care about this.
+        @retval : the average all added values
+        """
+        raise NotImplementedError("This method should have been overridden in a derived class")
 

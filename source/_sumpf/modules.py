@@ -29,7 +29,7 @@ from ._modules.normalize import *
 from ._modules.channels import *
 
 try:
-	from ._modules.plotting import *
+    from ._modules.plotting import *
 except ImportError:
-	pass
+    pass
 

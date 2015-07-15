@@ -17,8 +17,8 @@
 from .dummyio import DummyIO
 
 try:
-	from .jackio import JackIO
-	JACK_IS_AVAILABLE = True
+    from .jackio import JackIO
+    JACK_IS_AVAILABLE = True
 except ImportError:
-	JACK_IS_AVAILABLE = False
+    JACK_IS_AVAILABLE = False
 

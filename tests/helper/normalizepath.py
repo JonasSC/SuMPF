@@ -20,21 +20,21 @@ import sumpf
 
 
 class TestNormalizePath(unittest.TestCase):
-	"""
-	A TestCase for the helper function for normalizing paths.
-	"""
-	def test_normalize_path(self):
-		tests = {}
-		if os.name in ["nt", "ce", "os2"]:
-			# perform a slightly different test for operating systems that use device letters
-			tests[os.path.join(os.sep, "a", "b", "c")] = os.path.join("C:", os.sep, "a", "b", "c")
-			tests[os.path.join(os.sep, "a", "b", "c", "")] = os.path.join("C:", os.sep, "a", "b", "c")
-		else:
-			tests[os.path.join(os.sep, "a", "b", "c")] = os.path.join(os.sep, "a", "b", "c")
-			tests[os.path.join(os.sep, "a", "b", "c", "")] = os.path.join(os.sep, "a", "b", "c")
-		tests[os.path.join("a", "b", "c")] = os.path.join(os.getcwd(), "a", "b", "c")
-		tests[os.path.join("	a", "b", "c ")] = os.path.join(os.getcwd(), "a", "b", "c")
-		tests[os.path.join("~", "a", "b", "c")] = os.path.join(os.path.expanduser("~"), "a", "b", "c")
-		for t in tests:
-			self.assertEqual(sumpf.helper.normalize_path(t), tests[t])
+    """
+    A TestCase for the helper function for normalizing paths.
+    """
+    def test_normalize_path(self):
+        tests = {}
+        if os.name in ["nt", "ce", "os2"]:
+            # perform a slightly different test for operating systems that use device letters
+            tests[os.path.join(os.sep, "a", "b", "c")] = os.path.join("C:", os.sep, "a", "b", "c")
+            tests[os.path.join(os.sep, "a", "b", "c", "")] = os.path.join("C:", os.sep, "a", "b", "c")
+        else:
+            tests[os.path.join(os.sep, "a", "b", "c")] = os.path.join(os.sep, "a", "b", "c")
+            tests[os.path.join(os.sep, "a", "b", "c", "")] = os.path.join(os.sep, "a", "b", "c")
+        tests[os.path.join("a", "b", "c")] = os.path.join(os.getcwd(), "a", "b", "c")
+        tests[os.path.join("    a", "b", "c ")] = os.path.join(os.getcwd(), "a", "b", "c")
+        tests[os.path.join("~", "a", "b", "c")] = os.path.join(os.path.expanduser("~"), "a", "b", "c")
+        for t in tests:
+            self.assertEqual(sumpf.helper.normalize_path(t), tests[t])
 

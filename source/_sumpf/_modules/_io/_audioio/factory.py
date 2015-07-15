@@ -18,17 +18,17 @@ from .modules import *
 
 
 def factory(playbackchannels=1, recordchannels=1):
-	"""
-	A factory function that creates and returns an instance of an appropriate
-	module that exchanges data with the sound card.
-	@param playbackchannels: the number of channels for playback
-	@param recordchannels: the number of channels for recording
-	"""
-	if JACK_IS_AVAILABLE:
-		import jack
-		try:
-			return JackIO(playbackchannels=playbackchannels, recordchannels=recordchannels)
-		except jack.NotConnectedError:
-			pass
-	return DummyIO(playbackchannels=playbackchannels, recordchannels=recordchannels)
+    """
+    A factory function that creates and returns an instance of an appropriate
+    module that exchanges data with the sound card.
+    @param playbackchannels: the number of channels for playback
+    @param recordchannels: the number of channels for recording
+    """
+    if JACK_IS_AVAILABLE:
+        import jack
+        try:
+            return JackIO(playbackchannels=playbackchannels, recordchannels=recordchannels)
+        except jack.NotConnectedError:
+            pass
+    return DummyIO(playbackchannels=playbackchannels, recordchannels=recordchannels)
 

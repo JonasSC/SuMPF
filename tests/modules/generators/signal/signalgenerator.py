@@ -19,49 +19,49 @@ import sumpf
 
 
 class Generator(sumpf.internal.SignalGenerator):
-	"""
-	An example class to test the SignalGenerator
-	"""
-	def _GetSample(self, t):
-		return 0.1
+    """
+    An example class to test the SignalGenerator
+    """
+    def _GetSample(self, t):
+        return 0.1
 
 
 
 class SignalReceiver(object):
-	"""
-	An example class that indicates, if it has received a Signal in it's SetSignal method.
-	"""
-	def __init__(self):
-		self.__received = False
+    """
+    An example class that indicates, if it has received a Signal in it's SetSignal method.
+    """
+    def __init__(self):
+        self.__received = False
 
-	@sumpf.Input(sumpf.Signal)
-	def SetSignal(self, signal):
-		self.__received = True
+    @sumpf.Input(sumpf.Signal)
+    def SetSignal(self, signal):
+        self.__received = True
 
-	def Reset(self):
-		self.__received = False
+    def Reset(self):
+        self.__received = False
 
-	def HasReceived(self):
-		return self.__received
+    def HasReceived(self):
+        return self.__received
 
 
 
 class TestSignalGenerator(unittest.TestCase):
-	def setUp(self):
-		self.gen = Generator(samplingrate=48000, length=10)
+    def setUp(self):
+        self.gen = Generator(samplingrate=48000, length=10)
 
-	def test_setter(self):
-		"""
-		Tests if the setter methods raise no errors and notify the GetSignal-connector correctly.
-		"""
-		rec = SignalReceiver()
-		sumpf.connect(self.gen.GetSignal, rec.SetSignal)
-		self.assertTrue(rec.HasReceived())		# checks the notification on initial connection
-		rec.Reset()
-		self.gen.SetSamplingRate(44100)
-		self.assertTrue(rec.HasReceived())		# checks the notification after SetSamplingRate
-		rec.Reset()
-		self.gen.SetLength(20)
-		self.assertTrue(rec.HasReceived())		# checks the notification after SetLength
-		rec.Reset()
+    def test_setter(self):
+        """
+        Tests if the setter methods raise no errors and notify the GetSignal-connector correctly.
+        """
+        rec = SignalReceiver()
+        sumpf.connect(self.gen.GetSignal, rec.SetSignal)
+        self.assertTrue(rec.HasReceived())      # checks the notification on initial connection
+        rec.Reset()
+        self.gen.SetSamplingRate(44100)
+        self.assertTrue(rec.HasReceived())      # checks the notification after SetSamplingRate
+        rec.Reset()
+        self.gen.SetLength(20)
+        self.assertTrue(rec.HasReceived())      # checks the notification after SetLength
+        rec.Reset()
 

@@ -17,16 +17,16 @@
 import os
 
 def normalize_path(path):
-	"""
-	normalizes a path by expanding all variables and home directories and then
-	converts it to an absolute path.
-	@param path: the path that shall be normalized as a string
-	@retval : the normalized path as a string
-	"""
-	path = path.strip()
-	path = os.path.expanduser(path)
-	path = os.path.expandvars(path)
-	path = os.path.abspath(path)
-	path = os.path.normpath(path)
-	return path
+    """
+    normalizes a path by expanding all variables and home directories and then
+    converts it to an absolute path.
+    @param path: the path that shall be normalized as a string
+    @retval : the normalized path as a string
+    """
+    path = path.strip()
+    path = os.path.expanduser(path)
+    path = os.path.expandvars(path)
+    path = os.path.abspath(path)
+    path = os.path.normpath(path)
+    return path
 

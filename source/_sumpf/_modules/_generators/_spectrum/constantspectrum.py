@@ -19,40 +19,40 @@ from .spectrumgenerator import SpectrumGenerator
 
 
 class ConstantSpectrumGenerator(SpectrumGenerator):
-	"""
-	Generates a Spectrum whose data is a sequence of constant samples with the
-	given length and the given resolution.
-	The resulting Spectrum will have one channel.
-	"""
-	def __init__(self, value=1.0, resolution=None, length=None):
-		"""
-		@param value: the constant float value of each sample
-		@param resolution: the resolution of the created spectrum in Hz
-		@param length: the number of samples of the spectrum
-		"""
-		SpectrumGenerator.__init__(self, resolution=resolution, length=length)
-		self.__value = value
+    """
+    Generates a Spectrum whose data is a sequence of constant samples with the
+    given length and the given resolution.
+    The resulting Spectrum will have one channel.
+    """
+    def __init__(self, value=1.0, resolution=None, length=None):
+        """
+        @param value: the constant float value of each sample
+        @param resolution: the resolution of the created spectrum in Hz
+        @param length: the number of samples of the spectrum
+        """
+        SpectrumGenerator.__init__(self, resolution=resolution, length=length)
+        self.__value = value
 
-	@sumpf.Input(float, "GetSpectrum")
-	def SetValue(self, value):
-		"""
-		Sets the constant value.
-		@param value: the constant float value of each sample
-		"""
-		self.__value = value
+    @sumpf.Input(float, "GetSpectrum")
+    def SetValue(self, value):
+        """
+        Sets the constant value.
+        @param value: the constant float value of each sample
+        """
+        self.__value = value
 
-	def _GetSample(self, f):
-		"""
-		Defines the value for each sample
-		@param f: the frequency of the sample in Hz
-		@retval : the value of the generator function at the given frequency
-		"""
-		return self.__value
+    def _GetSample(self, f):
+        """
+        Defines the value for each sample
+        @param f: the frequency of the sample in Hz
+        @retval : the value of the generator function at the given frequency
+        """
+        return self.__value
 
-	def _GetLabel(self):
-		"""
-		Defines the label.
-		@retval : a string label
-		"""
-		return "Constant"
+    def _GetLabel(self):
+        """
+        Defines the label.
+        @retval : a string label
+        """
+        return "Constant"
 

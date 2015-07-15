@@ -18,37 +18,37 @@ from .interface import InterfaceConfig
 
 
 class ParentConfig(InterfaceConfig):
-	"""
-	A class whose instance(s) can be given to root configurations that do not have
-	a parent config instance (like for example the system wide configuration).
-	A ParentConfig instance does not store any values. It always raises an error
-	when the Get or Set methods are called and it always returns False when the
-	Has method is called.
-	"""
-	def Get(self, name):
-		"""
-		Returns the value which is stored in the config under the given name.
-		This always returns an error, as a ParentConfig does not store any variables.
-		@param name: the name of the variable as a string
-		@retval : the value that is stored under the given name
-		"""
-		raise RuntimeError("A ParentConfig instance does not store any values. So the Get method cannot be called")
+    """
+    A class whose instance(s) can be given to root configurations that do not have
+    a parent config instance (like for example the system wide configuration).
+    A ParentConfig instance does not store any values. It always raises an error
+    when the Get or Set methods are called and it always returns False when the
+    Has method is called.
+    """
+    def Get(self, name):
+        """
+        Returns the value which is stored in the config under the given name.
+        This always returns an error, as a ParentConfig does not store any variables.
+        @param name: the name of the variable as a string
+        @retval : the value that is stored under the given name
+        """
+        raise RuntimeError("A ParentConfig instance does not store any values. So the Get method cannot be called")
 
-	def Set(self, name, value):
-		"""
-		Stores a value under the given variable name.
-		This always returns an error, as a ParentConfig does not store any variables.
-		@param name: the name of the variable as a string
-		@param value: the value that shall be stored under that name
-		"""
-		raise RuntimeError("A ParentConfig instance does not store any values. So the Set method cannot be called")
+    def Set(self, name, value):
+        """
+        Stores a value under the given variable name.
+        This always returns an error, as a ParentConfig does not store any variables.
+        @param name: the name of the variable as a string
+        @param value: the value that shall be stored under that name
+        """
+        raise RuntimeError("A ParentConfig instance does not store any values. So the Set method cannot be called")
 
-	def Has(self, name):
-		"""
-		Returns if this config has a variable with the given name.
-		Returns always False, as a ParentConfig does not store any variables.
-		@param name: the name of the variable as a string
-		@retval : False
-		"""
-		return False
+    def Has(self, name):
+        """
+        Returns if this config has a variable with the given name.
+        Returns always False, as a ParentConfig does not store any variables.
+        @param name: the name of the variable as a string
+        @retval : False
+        """
+        return False
 

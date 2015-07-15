@@ -20,30 +20,30 @@ import _common as common
 
 
 class TestSilenceGenerator(unittest.TestCase):
-	"""
-	A TestCase for the SilenceGenerator.
-	"""
-	def test_samples(self):
-		"""
-		Tests if the length and sampling rate are set correctly and all samples are 0.0.
-		"""
-		gen = sumpf.modules.SilenceGenerator(samplingrate=48000, length=10)
-		output = gen.GetSignal()
-		self.assertEqual(len(output), 10)
-		self.assertEqual(output.GetSamplingRate(), 48000)
-		self.assertEqual(output.GetLabels(), ("Silence",))
-		self.assertEqual(output.GetChannels(), ((0.0,) * 10,))
+    """
+    A TestCase for the SilenceGenerator.
+    """
+    def test_samples(self):
+        """
+        Tests if the length and sampling rate are set correctly and all samples are 0.0.
+        """
+        gen = sumpf.modules.SilenceGenerator(samplingrate=48000, length=10)
+        output = gen.GetSignal()
+        self.assertEqual(len(output), 10)
+        self.assertEqual(output.GetSamplingRate(), 48000)
+        self.assertEqual(output.GetLabels(), ("Silence",))
+        self.assertEqual(output.GetChannels(), ((0.0,) * 10,))
 
-	def test_connectors(self):
-		"""
-		Tests if the connectors are properly decorated.
-		"""
-		gen = sumpf.modules.SilenceGenerator()
-		self.assertEqual(gen.SetLength.GetType(), int)
-		self.assertEqual(gen.SetSamplingRate.GetType(), float)
-		self.assertEqual(gen.GetSignal.GetType(), sumpf.Signal)
-		common.test_connection_observers(testcase=self,
-		                                 inputs=[gen.SetLength, gen.SetSamplingRate],
-		                                 noinputs=[],
-		                                 output=gen.GetSignal)
+    def test_connectors(self):
+        """
+        Tests if the connectors are properly decorated.
+        """
+        gen = sumpf.modules.SilenceGenerator()
+        self.assertEqual(gen.SetLength.GetType(), int)
+        self.assertEqual(gen.SetSamplingRate.GetType(), float)
+        self.assertEqual(gen.GetSignal.GetType(), sumpf.Signal)
+        common.test_connection_observers(testcase=self,
+                                         inputs=[gen.SetLength, gen.SetSamplingRate],
+                                         noinputs=[],
+                                         output=gen.GetSignal)
 

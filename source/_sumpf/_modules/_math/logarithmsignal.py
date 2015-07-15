@@ -19,49 +19,49 @@ import sumpf
 
 
 class LogarithmSignal(object):
-	"""
-	Calculates the logarithm of a Signal.
-	This will be done by calculating the logarithm of each sample.
-	"""
-	def __init__(self, signal=None, base=10.0):
-		"""
-		@param signal: the input Signal
-		@param base: the float which shall be the base for the logarithm
-		"""
-		if signal is None:
-			self.__signal = sumpf.Signal(channels=((1.0, 1.0),))
-		else:
-			self.__signal = signal
-		self.__base = base
+    """
+    Calculates the logarithm of a Signal.
+    This will be done by calculating the logarithm of each sample.
+    """
+    def __init__(self, signal=None, base=10.0):
+        """
+        @param signal: the input Signal
+        @param base: the float which shall be the base for the logarithm
+        """
+        if signal is None:
+            self.__signal = sumpf.Signal(channels=((1.0, 1.0),))
+        else:
+            self.__signal = signal
+        self.__base = base
 
-	@sumpf.Input(sumpf.Signal, "GetOutput")
-	def SetInput(self, signal):
-		"""
-		Sets the input Signal.
-		@param signal: the input Signal
-		"""
-		self.__signal = signal
+    @sumpf.Input(sumpf.Signal, "GetOutput")
+    def SetInput(self, signal):
+        """
+        Sets the input Signal.
+        @param signal: the input Signal
+        """
+        self.__signal = signal
 
-	@sumpf.Input(float, "GetOutput")
-	def SetBase(self, base):
-		"""
-		Sets the base for the logarithm.
-		@param base: the float which shall be the base for the logarithm
-		"""
-		self.__base = base
+    @sumpf.Input(float, "GetOutput")
+    def SetBase(self, base):
+        """
+        Sets the base for the logarithm.
+        @param base: the float which shall be the base for the logarithm
+        """
+        self.__base = base
 
-	@sumpf.Output(sumpf.Signal)
-	def GetOutput(self):
-		"""
-		Returns the output Signal, which is the sample wise logarithm of the input
-		Signal.
-		@retval : the logarithm Signal
-		"""
-		result = []
-		for c in self.__signal.GetChannels():
-			channel = []
-			for s in c:
-				channel.append(math.log(s, self.__base))
-			result.append(tuple(channel))
-		return sumpf.Signal(channels=result, samplingrate=self.__signal.GetSamplingRate(), labels=self.__signal.GetLabels())
+    @sumpf.Output(sumpf.Signal)
+    def GetOutput(self):
+        """
+        Returns the output Signal, which is the sample wise logarithm of the input
+        Signal.
+        @retval : the logarithm Signal
+        """
+        result = []
+        for c in self.__signal.GetChannels():
+            channel = []
+            for s in c:
+                channel.append(math.log(s, self.__base))
+            result.append(tuple(channel))
+        return sumpf.Signal(channels=result, samplingrate=self.__signal.GetSamplingRate(), labels=self.__signal.GetLabels())
 

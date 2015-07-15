@@ -20,109 +20,109 @@ from .outputconnectors import OutputConnector
 from .triggerinputconnector import TriggerInputConnector
 
 def connect(a, b):
-	"""
-	Connects two methods that have been decorated with either Input or Output.
-	@param a, b: Should be one Input and one Output. The order is not important
-	"""
-	a.Connect(b)
-	try:
-		b.Connect(a)
-	except BaseException as e:
-		a.Disconnect(b)			# if connection fails, go back to a legal state
-		raise e
-	input = a
-	output = b
-	if not isinstance(input, InputConnector):
-		input = b
-		output = a
-	if not isinstance(input, TriggerInputConnector):
-		if output.IsActive():
-			input.NoticeAnnouncement(output)
-			input.NoticeValueChange(output)
+    """
+    Connects two methods that have been decorated with either Input or Output.
+    @param a, b: Should be one Input and one Output. The order is not important
+    """
+    a.Connect(b)
+    try:
+        b.Connect(a)
+    except BaseException as e:
+        a.Disconnect(b)         # if connection fails, go back to a legal state
+        raise e
+    input = a
+    output = b
+    if not isinstance(input, InputConnector):
+        input = b
+        output = a
+    if not isinstance(input, TriggerInputConnector):
+        if output.IsActive():
+            input.NoticeAnnouncement(output)
+            input.NoticeValueChange(output)
 
 def disconnect(a, b):
-	"""
-	Disconnects two methods that have been decorated with either Input or Output.
-	@param a, b: Should be one Input and one Output. The order is not important
-	"""
-	a.Disconnect(b)
-	b.Disconnect(a)
+    """
+    Disconnects two methods that have been decorated with either Input or Output.
+    @param a, b: Should be one Input and one Output. The order is not important
+    """
+    a.Disconnect(b)
+    b.Disconnect(a)
 
 def disconnect_all(obj):
-	"""
-	disconnects everything from the given object. The object can be either a
-	Connector instance or of any other type that has Connectors as attributes.
-	@param obj: the object from which everything shall be disconnected
-	"""
-	if isinstance(obj, Connector):
-		obj.DisconnectAll()
-	else:
-		for a in list(vars(obj).values()):
-			if isinstance(a, Connector):
-				a.DisconnectAll()
+    """
+    disconnects everything from the given object. The object can be either a
+    Connector instance or of any other type that has Connectors as attributes.
+    @param obj: the object from which everything shall be disconnected
+    """
+    if isinstance(obj, Connector):
+        obj.DisconnectAll()
+    else:
+        for a in list(vars(obj).values()):
+            if isinstance(a, Connector):
+                a.DisconnectAll()
 
 def deactivate_output(obj):
-	"""
-	Deactivates the notification of inputs that are connected to an instance's
-	outputs.
-	@param obj: An instance with output connectors or an output connector
-	"""
-	if isinstance(obj, OutputConnector):
-		obj.Deactivate()
-	else:
-		for a in list(vars(obj).values()):
-			if isinstance(a, OutputConnector):
-				a.Deactivate()
+    """
+    Deactivates the notification of inputs that are connected to an instance's
+    outputs.
+    @param obj: An instance with output connectors or an output connector
+    """
+    if isinstance(obj, OutputConnector):
+        obj.Deactivate()
+    else:
+        for a in list(vars(obj).values()):
+            if isinstance(a, OutputConnector):
+                a.Deactivate()
 
 def activate_output(obj):
-	"""
-	(Re)Activates the notification of inputs that are connected to an instance's
-	outputs.
-	@param obj: An instance with output connectors or an output connector
-	"""
-	if isinstance(obj, OutputConnector):
-		obj.Activate()
-	else:
-		for a in list(vars(obj).values()):
-			if isinstance(a, OutputConnector):
-				a.Activate()
+    """
+    (Re)Activates the notification of inputs that are connected to an instance's
+    outputs.
+    @param obj: An instance with output connectors or an output connector
+    """
+    if isinstance(obj, OutputConnector):
+        obj.Activate()
+    else:
+        for a in list(vars(obj).values()):
+            if isinstance(a, OutputConnector):
+                a.Activate()
 
 def destroy_connectors(obj):
-	"""
-	Destroys all connectors of an object, so the garbage collector has no
-	problems deleting the object.
-	@param obj: An instance with connectors
-	"""
-	disconnect_all(obj)
-	attributes = vars(obj)
-	for a in attributes:
-		if isinstance(attributes[a], Connector):
-			setattr(obj, a, None)
+    """
+    Destroys all connectors of an object, so the garbage collector has no
+    problems deleting the object.
+    @param obj: An instance with connectors
+    """
+    disconnect_all(obj)
+    attributes = vars(obj)
+    for a in attributes:
+        if isinstance(attributes[a], Connector):
+            setattr(obj, a, None)
 
 def set_multiple_values(pairs, progress_indicator=None):
-	"""
-	Calls multiple setter methods with the respective input parameter.
-	This is useful when changing multiple values in a processing chain of objects
-	that are connected through SuMPF's connectors. If the values were set by calling
-	the setter methods individually, each call would trigger a recalculation in
-	the processing chain. By combining the calls of the setter methods with this
-	function, the unnecessary recalculations are avoided.
-	The methods will be executed in the order in which they are found in the pairs
-	parameter list.
-	@param pairs: a list of tuples (SETTER_METHOD, VALUE), where SETTER_METHOD is the method that shall be called with VALUE as parameter
-	@param progress_indicator: an optional parameter to set a ProgressIndicator that tracks the progress of the calculations in the processing chain
-	"""
-	# set progress indicator
-	if progress_indicator is not None:
-		for p in pairs:
-			progress_indicator.AddMethod(p[0])
-	# announce
-	for p in pairs:
-		p[0].NoticeAnnouncement(p[0])
-	# set values
-	for p in pairs:
-		if len(p) == 2:
-			p[0](p[1])
-		else:
-			p[0]()
+    """
+    Calls multiple setter methods with the respective input parameter.
+    This is useful when changing multiple values in a processing chain of objects
+    that are connected through SuMPF's connectors. If the values were set by calling
+    the setter methods individually, each call would trigger a recalculation in
+    the processing chain. By combining the calls of the setter methods with this
+    function, the unnecessary recalculations are avoided.
+    The methods will be executed in the order in which they are found in the pairs
+    parameter list.
+    @param pairs: a list of tuples (SETTER_METHOD, VALUE), where SETTER_METHOD is the method that shall be called with VALUE as parameter
+    @param progress_indicator: an optional parameter to set a ProgressIndicator that tracks the progress of the calculations in the processing chain
+    """
+    # set progress indicator
+    if progress_indicator is not None:
+        for p in pairs:
+            progress_indicator.AddMethod(p[0])
+    # announce
+    for p in pairs:
+        p[0].NoticeAnnouncement(p[0])
+    # set values
+    for p in pairs:
+        if len(p) == 2:
+            p[0](p[1])
+        else:
+            p[0]()
 

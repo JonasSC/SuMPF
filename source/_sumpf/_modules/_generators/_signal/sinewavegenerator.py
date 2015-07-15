@@ -19,24 +19,24 @@ from .wavegenerator import WaveGenerator
 
 
 class SineWaveGenerator(WaveGenerator):
-	"""
-	A class whose instances generate a sine wave.
-	The amplitude of the sine wave will always be 1.0. It can be changed by
-	sending the resulting Signal through a sumpf.AmplifySignal module.
-	The resulting Signal will have one channel.
-	"""
-	def _GetSample(self, t):
-		"""
-		Calculates and returns the value of the sample at time t.
-		@param t: the time from the beginning of the signal in seconds
-		@retval : the value of the sine function at the given time
-		"""
-		return math.sin(2 * math.pi * self._frequency * t + self._phase)
+    """
+    A class whose instances generate a sine wave.
+    The amplitude of the sine wave will always be 1.0. It can be changed by
+    sending the resulting Signal through a sumpf.AmplifySignal module.
+    The resulting Signal will have one channel.
+    """
+    def _GetSample(self, t):
+        """
+        Calculates and returns the value of the sample at time t.
+        @param t: the time from the beginning of the signal in seconds
+        @retval : the value of the sine function at the given time
+        """
+        return math.sin(2 * math.pi * self._frequency * t + self._phase)
 
-	def _GetLabel(self):
-		"""
-		Returns the label for the generated channel.
-		@retval : the string label
-		"""
-		return "Sine"
+    def _GetLabel(self):
+        """
+        Returns the label for the generated channel.
+        @retval : the string label
+        """
+        return "Sine"
 

@@ -18,7 +18,7 @@ from ._statistics.mean import SignalMean, SpectrumMean
 from ._statistics.signalvariance import SignalVariance
 
 try:
-	from ._statistics.spectrumvariance import SpectrumVariance
+    from ._statistics.spectrumvariance import SpectrumVariance
 except ImportError:
-	pass
+    pass
 

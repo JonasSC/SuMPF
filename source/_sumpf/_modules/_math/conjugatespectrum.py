@@ -17,42 +17,42 @@
 import sumpf
 
 try:
-	import numpy
+    import numpy
 except ImportError:
-	numpy = sumpf.helper.numpydummy
+    numpy = sumpf.helper.numpydummy
 
 
 
 class ConjugateSpectrum(object):
-	"""
-	Calculates the complex conjugate of a given Spectrum.
-	"""
-	def __init__(self, spectrum=None):
-		"""
-		@param spectrum: the spectrum that shall be conjugated
-		"""
-		if spectrum is None:
-			self.__spectrum = sumpf.Spectrum()
-		else:
-			self.__spectrum = spectrum
+    """
+    Calculates the complex conjugate of a given Spectrum.
+    """
+    def __init__(self, spectrum=None):
+        """
+        @param spectrum: the spectrum that shall be conjugated
+        """
+        if spectrum is None:
+            self.__spectrum = sumpf.Spectrum()
+        else:
+            self.__spectrum = spectrum
 
-	@sumpf.Input(sumpf.Spectrum, "GetOutput")
-	def SetInput(self, spectrum):
-		"""
-		Sets the Spectrum that shall be conjugated.
-		@param spectrum: a Spectrum instance
-		"""
-		self.__spectrum = spectrum
+    @sumpf.Input(sumpf.Spectrum, "GetOutput")
+    def SetInput(self, spectrum):
+        """
+        Sets the Spectrum that shall be conjugated.
+        @param spectrum: a Spectrum instance
+        """
+        self.__spectrum = spectrum
 
-	@sumpf.Output(sumpf.Spectrum)
-	def GetOutput(self):
-		"""
-		Calculates and returns the complex conjugate of the input Spectrum.
-		@retval : a Spectrum instance
-		"""
-		result = []
-		for c in self.__spectrum.GetChannels():
-			channel = numpy.conjugate(c)
-			result.append(tuple(channel))
-		return sumpf.Spectrum(channels=result, resolution=self.__spectrum.GetResolution(), labels=self.__spectrum.GetLabels())
+    @sumpf.Output(sumpf.Spectrum)
+    def GetOutput(self):
+        """
+        Calculates and returns the complex conjugate of the input Spectrum.
+        @retval : a Spectrum instance
+        """
+        result = []
+        for c in self.__spectrum.GetChannels():
+            channel = numpy.conjugate(c)
+            result.append(tuple(channel))
+        return sumpf.Spectrum(channels=result, resolution=self.__spectrum.GetResolution(), labels=self.__spectrum.GetLabels())
 

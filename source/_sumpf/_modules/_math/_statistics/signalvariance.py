@@ -17,42 +17,42 @@
 import sumpf
 
 try:
-	import numpy
+    import numpy
 except ImportError:
-	numpy = sumpf.helper.numpydummy
+    numpy = sumpf.helper.numpydummy
 
 
 
 class SignalVariance(object):
-	"""
-	Calculates the variance for each channel of a Signal instance. The values
-	are returned as a tuple of floats.
-	"""
-	def __init__(self, signal=None):
-		"""
-		@param signal: the Signal instance for which the variance values shall be calculated
-		"""
-		if signal is None:
-			signal = sumpf.Signal()
-		self.__signal = signal
+    """
+    Calculates the variance for each channel of a Signal instance. The values
+    are returned as a tuple of floats.
+    """
+    def __init__(self, signal=None):
+        """
+        @param signal: the Signal instance for which the variance values shall be calculated
+        """
+        if signal is None:
+            signal = sumpf.Signal()
+        self.__signal = signal
 
-	@sumpf.Input(sumpf.Signal, "GetVariance")
-	def SetSignal(self, signal):
-		"""
-		Sets the Signal for which the variance values shall be calculated.
-		@param signal: the Signal instance for which the variance values shall be calculated
-		"""
-		self.__signal = signal
+    @sumpf.Input(sumpf.Signal, "GetVariance")
+    def SetSignal(self, signal):
+        """
+        Sets the Signal for which the variance values shall be calculated.
+        @param signal: the Signal instance for which the variance values shall be calculated
+        """
+        self.__signal = signal
 
-	@sumpf.Output(tuple)
-	def GetVariance(self):
-		"""
-		Calculates and returns a tuple of variance values. One value for each channel
-		of the input Signal.
-		@retval : a tuple of variance values
-		"""
-		result = []
-		for c in self.__signal.GetChannels():
-			result.append(numpy.var(c))
-		return tuple(result)
+    @sumpf.Output(tuple)
+    def GetVariance(self):
+        """
+        Calculates and returns a tuple of variance values. One value for each channel
+        of the input Signal.
+        @retval : a tuple of variance values
+        """
+        result = []
+        for c in self.__signal.GetChannels():
+            result.append(numpy.var(c))
+        return tuple(result)
 

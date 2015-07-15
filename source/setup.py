@@ -21,32 +21,32 @@ from distutils.core import setup
 
 cython_available = False
 try:
-	import Cython.Build
-	cython_available = True
+    import Cython.Build
+    cython_available = True
 except ImportError:
-	pass
+    pass
 
 dirs = {}
 additional_files = {}
 cython_extensions = []
 for i in os.walk("."):
-	dirname = i[0].lstrip("./")
-	if dirname != "":
-		package = dirname.replace(os.sep, ".")
-		dirs[package] = dirname
-		for filename in i[2]:
-			if filename.endswith(".pyx"):
-				cython_extensions.append(os.path.join(dirname, filename))
-			if not filename.endswith(".py") and \
-			   not filename.endswith(".pyc") and \
-			   not filename.endswith(".c"):
-				if package not in additional_files:
-					additional_files[package] = []
-				additional_files[package].append(filename)
+    dirname = i[0].lstrip("./")
+    if dirname != "":
+        package = dirname.replace(os.sep, ".")
+        dirs[package] = dirname
+        for filename in i[2]:
+            if filename.endswith(".pyx"):
+                cython_extensions.append(os.path.join(dirname, filename))
+            if not filename.endswith(".py") and \
+               not filename.endswith(".pyc") and \
+               not filename.endswith(".c"):
+                if package not in additional_files:
+                    additional_files[package] = []
+                additional_files[package].append(filename)
 
 ext_modules = []
 if cython_available:
-	ext_modules = Cython.Build.cythonize(cython_extensions)
+    ext_modules = Cython.Build.cythonize(cython_extensions)
 
 setup(name="SuMPF",
       version="0.11",

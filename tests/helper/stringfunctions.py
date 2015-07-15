@@ -19,28 +19,28 @@ import sumpf
 
 
 class TestStringFunctions(unittest.TestCase):
-	"""
-	A TestCase for the helper functions in the stringfunctions.py file.
-	"""
-	def test_counting_number(self):
-		pairs = [(1, "1st"),
-		         (2, "2nd"),
-		         (3, "3rd"),
-		         (4, "4th"),
-		         (10, "10th"),
-		         (11, "11th"),
-		         (12, "12th"),
-		         (13, "13th"),
-		         (31, "31st"),
-		         (43, "43rd"),
-		         (101, "101st"),
-		         (213, "213th"),
-		         (323, "323rd")]
-		for p in pairs:
-			self.assertEqual(sumpf.helper.counting_number(p[0]), p[1])
+    """
+    A TestCase for the helper functions in the stringfunctions.py file.
+    """
+    def test_counting_number(self):
+        pairs = [(1, "1st"),
+                 (2, "2nd"),
+                 (3, "3rd"),
+                 (4, "4th"),
+                 (10, "10th"),
+                 (11, "11th"),
+                 (12, "12th"),
+                 (13, "13th"),
+                 (31, "31st"),
+                 (43, "43rd"),
+                 (101, "101st"),
+                 (213, "213th"),
+                 (323, "323rd")]
+        for p in pairs:
+            self.assertEqual(sumpf.helper.counting_number(p[0]), p[1])
 
-	def test_leading_zeros(self):
-		self.assertEqual(sumpf.helper.leading_zeros(number=5, maximum=1), "5")
-		self.assertEqual(sumpf.helper.leading_zeros(number=3790, maximum=43e6), "00003790")
-		self.assertEqual(sumpf.helper.leading_zeros(number=90, maximum=3), "90")
+    def test_leading_zeros(self):
+        self.assertEqual(sumpf.helper.leading_zeros(number=5, maximum=1), "5")
+        self.assertEqual(sumpf.helper.leading_zeros(number=3790, maximum=43e6), "00003790")
+        self.assertEqual(sumpf.helper.leading_zeros(number=90, maximum=3), "90")
 

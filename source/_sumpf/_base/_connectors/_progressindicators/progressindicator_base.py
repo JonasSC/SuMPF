@@ -20,113 +20,113 @@ from ..baseconnectors import Connector
 
 
 class ProgressIndicator(object):
-	"""
-	Base class for progress indicators.
-	These progress indicators can be used to track the progress of a calculation
-	in a processing chain. It counts the number of involved methods and reports
-	the progress each time one of these methods has finished running.
+    """
+    Base class for progress indicators.
+    These progress indicators can be used to track the progress of a calculation
+    in a processing chain. It counts the number of involved methods and reports
+    the progress each time one of these methods has finished running.
 
-	Derived classes have to implement the _Filter method that is used to select
-	which methods shall be taken into account for tracking the progress. This is
-	useful, if for example all setter methods just set some state variables, while
-	the getter methods do the expensive calculations. In this case the setter
-	methods should be filtered out and the progress should be calculated from the
-	finished getter methods, to have a better estimate of the processing progress.
-	"""
-	def __init__(self, method=None, message=None):
-		"""
-		@param method: a method that starts the calculation of which the progress shall be tracked. This method must have been decorated to become a Connector.
-		@param message: the message that shall be passed by this ProgressIndicator, when none of the observed methods has finished yet
-		"""
-		self.__announcements = set()
-		self.__max_length = 0
-		if method is not None:
-			method.SetProgressIndicator(self)
-		self.__message = message
+    Derived classes have to implement the _Filter method that is used to select
+    which methods shall be taken into account for tracking the progress. This is
+    useful, if for example all setter methods just set some state variables, while
+    the getter methods do the expensive calculations. In this case the setter
+    methods should be filtered out and the progress should be calculated from the
+    finished getter methods, to have a better estimate of the processing progress.
+    """
+    def __init__(self, method=None, message=None):
+        """
+        @param method: a method that starts the calculation of which the progress shall be tracked. This method must have been decorated to become a Connector.
+        @param message: the message that shall be passed by this ProgressIndicator, when none of the observed methods has finished yet
+        """
+        self.__announcements = set()
+        self.__max_length = 0
+        if method is not None:
+            method.SetProgressIndicator(self)
+        self.__message = message
 
-	def AddMethod(self, method):
-		"""
-		Adds a method that starts a calculation, whose progress shall be tracked
-		by this ProgressIndicator.
-		@param method: a method that starts the calculation of which the progress shall be tracked. This method must have been decorated to become a Connector.
-		"""
-		method.SetProgressIndicator(self)
+    def AddMethod(self, method):
+        """
+        Adds a method that starts a calculation, whose progress shall be tracked
+        by this ProgressIndicator.
+        @param method: a method that starts the calculation of which the progress shall be tracked. This method must have been decorated to become a Connector.
+        """
+        method.SetProgressIndicator(self)
 
-	def Destroy(self):
-		"""
-		Destroys this ProgressIndicator instance, so it can be easily garbage
-		collected.
-		"""
-		sumpf.destroy_connectors(self)
+    def Destroy(self):
+        """
+        Destroys this ProgressIndicator instance, so it can be easily garbage
+        collected.
+        """
+        sumpf.destroy_connectors(self)
 
-	def _Filter(self, connector):
-		"""
-		This method has to be implemented in derived classes.
-		It shall return True, if the given connector shall be taken into account
-		for calculating the progress and False otherwise.
-		@param connector: the connector that shall be checked.
-		@retval : True if the connector shall be counted, False otherwise.
-		"""
-		raise NotImplementedError("This method should have been overridden in a derived class")
+    def _Filter(self, connector):
+        """
+        This method has to be implemented in derived classes.
+        It shall return True, if the given connector shall be taken into account
+        for calculating the progress and False otherwise.
+        @param connector: the connector that shall be checked.
+        @retval : True if the connector shall be counted, False otherwise.
+        """
+        raise NotImplementedError("This method should have been overridden in a derived class")
 
-	def Announce(self, connector):
-		"""
-		This method is called from a Connector, when it announces that it's value
-		will change during the current calculation. This way, the number of
-		calculation steps is counted.
-		@param connector: the connector whose value is about to change.
-		"""
-		if self._Filter(connector):
-			self.__announcements.add(connector)
-			self.__max_length = max(len(self.__announcements), self.__max_length)
+    def Announce(self, connector):
+        """
+        This method is called from a Connector, when it announces that it's value
+        will change during the current calculation. This way, the number of
+        calculation steps is counted.
+        @param connector: the connector whose value is about to change.
+        """
+        if self._Filter(connector):
+            self.__announcements.add(connector)
+            self.__max_length = max(len(self.__announcements), self.__max_length)
 
-	@Input(Connector, ["GetProgressAsTuple", "GetProgressAsFloat", "GetProgressAsPercentage"])
-	def Report(self, connector):
-		"""
-		This method is called form a Connector, when it has finished changing.
-		Calling this method automatically informs objects, that are connected to
-		the GetProgress... methods about the updated progress.
-		@param connector: the connector whose value has just changed.
-		"""
-		if self._Filter(connector):
-			try:
-				self.__announcements.remove(connector)
-				if self.__message is not None:
-					self.__message = "%s has just finished" % connector.GetName()
-			except KeyError:
-				pass
+    @Input(Connector, ["GetProgressAsTuple", "GetProgressAsFloat", "GetProgressAsPercentage"])
+    def Report(self, connector):
+        """
+        This method is called form a Connector, when it has finished changing.
+        Calling this method automatically informs objects, that are connected to
+        the GetProgress... methods about the updated progress.
+        @param connector: the connector whose value has just changed.
+        """
+        if self._Filter(connector):
+            try:
+                self.__announcements.remove(connector)
+                if self.__message is not None:
+                    self.__message = "%s has just finished" % connector.GetName()
+            except KeyError:
+                pass
 
-	@Output(tuple)
-	def GetProgressAsTuple(self):
-		"""
-		Returns the progress as a tuple (max, finished, message) of integers.
-		max is the number of methods that will run in total, while finished is the
-		number of methods that have finished running. message is either None or
-		a message that can be displayed in a progress dialog.
-		@retval : a tuple (max, finished, message) of integers
-		"""
-		return self.__max_length, self.__max_length - len(self.__announcements), self.__message
+    @Output(tuple)
+    def GetProgressAsTuple(self):
+        """
+        Returns the progress as a tuple (max, finished, message) of integers.
+        max is the number of methods that will run in total, while finished is the
+        number of methods that have finished running. message is either None or
+        a message that can be displayed in a progress dialog.
+        @retval : a tuple (max, finished, message) of integers
+        """
+        return self.__max_length, self.__max_length - len(self.__announcements), self.__message
 
-	@Output(float)
-	def GetProgressAsFloat(self):
-		"""
-		Returns the progress as a floating point number between 0.0 and 1.0.
-		0.0 means that the calculation is at the very beginning, while 1.0 says
-		that the calculation has finished.
-		@retval : the progress as a floating point number between 0.0 and 1.0.
-		"""
-		if self.__max_length == 0:
-			return 0.0
-		else:
-			return 1.0 - float(len(self.__announcements)) / float(self.__max_length)
+    @Output(float)
+    def GetProgressAsFloat(self):
+        """
+        Returns the progress as a floating point number between 0.0 and 1.0.
+        0.0 means that the calculation is at the very beginning, while 1.0 says
+        that the calculation has finished.
+        @retval : the progress as a floating point number between 0.0 and 1.0.
+        """
+        if self.__max_length == 0:
+            return 0.0
+        else:
+            return 1.0 - float(len(self.__announcements)) / float(self.__max_length)
 
-	@Output(int)
-	def GetProgressAsPercentage(self):
-		"""
-		Returns the progress as an integer number between 0 and 100. This can
-		be interpreted as the percentage, that says how much of the calculation
-		has been done so far.
-		@retval : the progress as an integer between 0 and 100, representing a percentage.
-		"""
-		return int(round(100.0 * self.GetProgressAsFloat()))
+    @Output(int)
+    def GetProgressAsPercentage(self):
+        """
+        Returns the progress as an integer number between 0 and 100. This can
+        be interpreted as the percentage, that says how much of the calculation
+        has been done so far.
+        @retval : the progress as an integer between 0 and 100, representing a percentage.
+        """
+        return int(round(100.0 * self.GetProgressAsFloat()))
 

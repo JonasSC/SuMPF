@@ -19,38 +19,38 @@ import sumpf
 
 
 class TestMultiInputData(unittest.TestCase):
-	"""
-	A TestCase for the MultiInputData class.
-	"""
-	def test_function(self):
-		# initialization
-		mid = sumpf.helper.MultiInputData()
-		self.assertEqual(mid.GetData(), [])
-		# adding
-		id1 = mid.Add(1)
-		self.assertEqual(mid.GetData(), [1])
-		id2 = mid.Add(2)
-		id3 = mid.Add(3)
-		self.assertEqual(mid.GetData(), [1, 2, 3])
-		self.assertNotEqual(id1, id2)
-		self.assertNotEqual(id1, id3)
-		self.assertNotEqual(id2, id3)
-		# replacing
-		mid.Replace(id2, 4)
-		self.assertEqual(mid.GetData(), [1, 4, 3])
-		# removing
-		mid.Remove(id1)
-		self.assertEqual(mid.GetData(), [4, 3])
-		mid.Remove(id3)
-		self.assertEqual(mid.GetData(), [4])
-		# adding again
-		id5 = mid.Add(5)
-		id6 = mid.Add(6)
-		self.assertEqual(mid.GetData(), [4, 5, 6])
-		self.assertNotEqual(id2, id5)
-		self.assertNotEqual(id2, id6)
-		self.assertNotEqual(id5, id6)
-		# clearing
-		mid.Clear()
-		self.assertEqual(mid.GetData(), [])
+    """
+    A TestCase for the MultiInputData class.
+    """
+    def test_function(self):
+        # initialization
+        mid = sumpf.helper.MultiInputData()
+        self.assertEqual(mid.GetData(), [])
+        # adding
+        id1 = mid.Add(1)
+        self.assertEqual(mid.GetData(), [1])
+        id2 = mid.Add(2)
+        id3 = mid.Add(3)
+        self.assertEqual(mid.GetData(), [1, 2, 3])
+        self.assertNotEqual(id1, id2)
+        self.assertNotEqual(id1, id3)
+        self.assertNotEqual(id2, id3)
+        # replacing
+        mid.Replace(id2, 4)
+        self.assertEqual(mid.GetData(), [1, 4, 3])
+        # removing
+        mid.Remove(id1)
+        self.assertEqual(mid.GetData(), [4, 3])
+        mid.Remove(id3)
+        self.assertEqual(mid.GetData(), [4])
+        # adding again
+        id5 = mid.Add(5)
+        id6 = mid.Add(6)
+        self.assertEqual(mid.GetData(), [4, 5, 6])
+        self.assertNotEqual(id2, id5)
+        self.assertNotEqual(id2, id6)
+        self.assertNotEqual(id5, id6)
+        # clearing
+        mid.Clear()
+        self.assertEqual(mid.GetData(), [])
 

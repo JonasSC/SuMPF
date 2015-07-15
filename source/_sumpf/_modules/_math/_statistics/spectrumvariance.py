@@ -19,35 +19,35 @@ import sumpf
 
 
 class SpectrumVariance(object):
-	"""
-	Calculates the variance for each channel of a Spectrum instance. The values
-	are returned as a tuple of complex numbers.
-	"""
-	def __init__(self, spectrum=None):
-		"""
-		@param spectrum: the Spectrum instance for which the variance values shall be calculated
-		"""
-		if spectrum is None:
-			spectrum = sumpf.Spectrum()
-		self.__spectrum = spectrum
+    """
+    Calculates the variance for each channel of a Spectrum instance. The values
+    are returned as a tuple of complex numbers.
+    """
+    def __init__(self, spectrum=None):
+        """
+        @param spectrum: the Spectrum instance for which the variance values shall be calculated
+        """
+        if spectrum is None:
+            spectrum = sumpf.Spectrum()
+        self.__spectrum = spectrum
 
-	@sumpf.Input(sumpf.Spectrum, "GetVariance")
-	def SetSpectrum(self, spectrum):
-		"""
-		Sets the Signal for which the variance values shall be calculated.
-		@param spectrum: the Spectrum instance for which the variance values shall be calculated
-		"""
-		self.__spectrum = spectrum
+    @sumpf.Input(sumpf.Spectrum, "GetVariance")
+    def SetSpectrum(self, spectrum):
+        """
+        Sets the Signal for which the variance values shall be calculated.
+        @param spectrum: the Spectrum instance for which the variance values shall be calculated
+        """
+        self.__spectrum = spectrum
 
-	@sumpf.Output(tuple)
-	def GetVariance(self):
-		"""
-		Calculates and returns a tuple of variance values. One value for each channel
-		of the input Spectrum.
-		@retval : a tuple of variance values
-		"""
-		result = []
-		for c in self.__spectrum.GetChannels():
-			result.append(numpy.var(c))
-		return tuple(result)
+    @sumpf.Output(tuple)
+    def GetVariance(self):
+        """
+        Calculates and returns a tuple of variance values. One value for each channel
+        of the input Spectrum.
+        @retval : a tuple of variance values
+        """
+        result = []
+        for c in self.__spectrum.GetChannels():
+            result.append(numpy.var(c))
+        return tuple(result)
 

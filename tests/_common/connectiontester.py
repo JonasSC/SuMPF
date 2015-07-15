@@ -19,68 +19,68 @@ import sumpf
 
 
 def test_connection_observers(testcase, inputs, noinputs, output):
-	"""
-	A function to test if an OutputConnector is affected by the correct inputs.
-	@param testcase: the TestCase instance which shall raise an error if something is not as expected
-	@param inputs: the inputs that shall affect the output
-	@param noinputs: the inputs that shall not affect the output
-	@param output: the output that shall be affected
-	"""
-	try:
-		# deep testing of connector dependencies
-		class ConnectionTester(object):
-			def __init__(self):
-				self.triggered = False
+    """
+    A function to test if an OutputConnector is affected by the correct inputs.
+    @param testcase: the TestCase instance which shall raise an error if something is not as expected
+    @param inputs: the inputs that shall affect the output
+    @param noinputs: the inputs that shall not affect the output
+    @param output: the output that shall be affected
+    """
+    try:
+        # deep testing of connector dependencies
+        class ConnectionTester(object):
+            def __init__(self):
+                self.triggered = False
 
-			@sumpf.Trigger()
-			def Trigger(self):
-				self.triggered = True
+            @sumpf.Trigger()
+            def Trigger(self):
+                self.triggered = True
 
-			def Untrigger(self):
-				result = self.triggered
-				self.triggered = False
-				return result
+            def Untrigger(self):
+                result = self.triggered
+                self.triggered = False
+                return result
 
-		def call_input_connector(connector):
-			if isinstance(connector, sumpf.internal.TypedConnector):
-				if connector.GetType() in [int, float, complex]:
-					try:
-						connector(connector.GetType()(2.0))					# try passing an even, non-zero value
-					except ValueError:
-						try:
-							connector(connector.GetType()(0.7))				# try passing a value between 0.0 and 1.0
-						except ValueError:
-							try:
-								connector(connector.GetType()(1.0))			# try passing one
-							except ValueError:
-								connector(connector.GetType()(0.0))			# try passing zero
-				elif not issubclass(i.GetType(), str) and issubclass(i.GetType(), collections.Iterable):
-					try:
-						connector(connector.GetType()([1, 2]))		# pass an iterable with two integers with ascending value to avoid raising errors
-					except IndexError:
-						connector(connector.GetType()([0]))			# if an IndexError is raised, pass an iterable with the index that most likely exists
-				else:
-					try:
-						connector(connector.GetType()())
-					except ValueError:
-						raise TypeError("Skip to shallow testing")
-			else:
-				i()
+        def call_input_connector(connector):
+            if isinstance(connector, sumpf.internal.TypedConnector):
+                if connector.GetType() in [int, float, complex]:
+                    try:
+                        connector(connector.GetType()(2.0))                 # try passing an even, non-zero value
+                    except ValueError:
+                        try:
+                            connector(connector.GetType()(0.7))             # try passing a value between 0.0 and 1.0
+                        except ValueError:
+                            try:
+                                connector(connector.GetType()(1.0))         # try passing one
+                            except ValueError:
+                                connector(connector.GetType()(0.0))         # try passing zero
+                elif not issubclass(i.GetType(), str) and issubclass(i.GetType(), collections.Iterable):
+                    try:
+                        connector(connector.GetType()([1, 2]))      # pass an iterable with two integers with ascending value to avoid raising errors
+                    except IndexError:
+                        connector(connector.GetType()([0]))         # if an IndexError is raised, pass an iterable with the index that most likely exists
+                else:
+                    try:
+                        connector(connector.GetType()())
+                    except ValueError:
+                        raise TypeError("Skip to shallow testing")
+            else:
+                i()
 
-		ct = ConnectionTester()
-		sumpf.connect(output, ct.Trigger)
-		for i in inputs:
-			call_input_connector(i)
-			testcase.assertTrue(ct.Untrigger())
-		for i in noinputs:
-			call_input_connector(i)
-			testcase.assertFalse(ct.Untrigger())
+        ct = ConnectionTester()
+        sumpf.connect(output, ct.Trigger)
+        for i in inputs:
+            call_input_connector(i)
+            testcase.assertTrue(ct.Untrigger())
+        for i in noinputs:
+            call_input_connector(i)
+            testcase.assertFalse(ct.Untrigger())
 
-	except TypeError:
-		# shallow testing of connector dependencies, when automatic creation of
-		# test parameters fails
-		for i in inputs:
-			testcase.assertIn(output, i.GetObservers())
-		for i in noinputs:
-			testcase.assertNotIn(output, i.GetObservers())
+    except TypeError:
+        # shallow testing of connector dependencies, when automatic creation of
+        # test parameters fails
+        for i in inputs:
+            testcase.assertIn(output, i.GetObservers())
+        for i in noinputs:
+            testcase.assertNotIn(output, i.GetObservers())
 

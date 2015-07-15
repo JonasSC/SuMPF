@@ -25,11 +25,11 @@ from ._signal.sweepgenerator import SweepGenerator
 from ._signal.trianglewavegenerator import TriangleWaveGenerator
 
 try:
-	from ._signal.noisegenerator import NoiseGenerator
+    from ._signal.noisegenerator import NoiseGenerator
 except ImportError:
-	pass
+    pass
 try:
-	from ._signal.windowgenerator import WindowGenerator
+    from ._signal.windowgenerator import WindowGenerator
 except ImportError:
-	pass
+    pass
 

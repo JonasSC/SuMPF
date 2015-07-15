@@ -18,25 +18,25 @@ from matplotlib.backends.backend_wxagg import FigureCanvasWxAgg
 
 
 class ObservableFigureCanvas(FigureCanvasWxAgg):
-	"""
-	A FigureCanvasWxAgg whose draw method can call back observer functions.
-	"""
-	def __init__(self, parent, id, figure, draw_observers=[]):
-		FigureCanvasWxAgg.__init__(self, parent=parent, id=id, figure=figure)
-		self.__draw_observers = draw_observers
-		self.__drawing = False
+    """
+    A FigureCanvasWxAgg whose draw method can call back observer functions.
+    """
+    def __init__(self, parent, id, figure, draw_observers=[]):
+        FigureCanvasWxAgg.__init__(self, parent=parent, id=id, figure=figure)
+        self.__draw_observers = draw_observers
+        self.__drawing = False
 
-	def draw(self, drawDC=None):
-		"""
-		Override of the FigureCanvasWxAgg's draw method that calls the registered
-		observer methods before the actual drawing.
-		If the observer methods themselves call this method, their calls are skipped
-		to avoid infinite loops.
-		"""
-		if not self.__drawing:
-			self.__drawing = True
-			for o in self.__draw_observers:
-				o()
-			FigureCanvasWxAgg.draw(self, drawDC=drawDC)
-			self.__drawing = False
+    def draw(self, drawDC=None):
+        """
+        Override of the FigureCanvasWxAgg's draw method that calls the registered
+        observer methods before the actual drawing.
+        If the observer methods themselves call this method, their calls are skipped
+        to avoid infinite loops.
+        """
+        if not self.__drawing:
+            self.__drawing = True
+            for o in self.__draw_observers:
+                o()
+            FigureCanvasWxAgg.draw(self, drawDC=drawDC)
+            self.__drawing = False
 

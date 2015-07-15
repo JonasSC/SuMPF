@@ -19,12 +19,12 @@ from signalchain import SignalChain
 from guiwindow import GuiWindow
 
 def mainfunction():
-	create_config()
-	signalchain = SignalChain()
-	window = GuiWindow(signalchain=signalchain)
-	window.Show()
-	window.Join()
+    create_config()
+    signalchain = SignalChain()
+    window = GuiWindow(signalchain=signalchain)
+    window.Show()
+    window.Join()
 
 if __name__ == "__main__":
-	mainfunction()
+    mainfunction()
 

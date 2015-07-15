@@ -20,22 +20,22 @@ import sumpf
 
 
 def call_delete_method():
-	"""
-	Checks if the instance has a delete method and calls it if it is so.
-	"""
-	for obj in gc.garbage:
-		if hasattr(obj, "Delete"):
-			getattr(obj, "Delete")()
+    """
+    Checks if the instance has a delete method and calls it if it is so.
+    """
+    for obj in gc.garbage:
+        if hasattr(obj, "Delete"):
+            getattr(obj, "Delete")()
 
 def destroy_connector_references():
-	"""
-	A garbage collector function that helps to delete objects with connectors. Normally this is not
-	needed, but when the object has a destructor method, the garbage collector does not know in
-	which order it shall delete the object and the connector. This garbage collector function breaks
-	this dependency cycle.
-	"""
-	for obj in gc.garbage:
-		sumpf.destroy_connectors(obj)
+    """
+    A garbage collector function that helps to delete objects with connectors. Normally this is not
+    needed, but when the object has a destructor method, the garbage collector does not know in
+    which order it shall delete the object and the connector. This garbage collector function breaks
+    this dependency cycle.
+    """
+    for obj in gc.garbage:
+        sumpf.destroy_connectors(obj)
 
 
 destroyer_functions = [call_delete_method, destroy_connector_references]

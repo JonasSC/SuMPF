@@ -24,17 +24,17 @@ from .checks import CheckNewlinesBeforeClasses
 
 
 class TestTestCodingStyle(BaseCodingStyleTestCase):
-	"""
-	Some coding style tests are rather complex, so these tests can be tested here.
-	"""
+    """
+    Some coding style tests are rather complex, so these tests can be tested here.
+    """
 
-	def test_newline_before_classes(self):
-		"""
-		Tests test_newline_before_classes.
-		"""
-		testfile_dir = os.path.join(sumpf.config.get("test_dir"), "codingstyle", "testfiles", "CheckNewlinesBeforeClasses")
-		function = ForEachFile(WithEnding="pass", Do=ProcessContent(With=SplitLines(For=CheckNewlinesBeforeClasses)))
-		self.EvaluateResult(function(testfile_dir))
-		function = ForEachFile(WithEnding="fail", Do=ProcessContent(With=SplitLines(For=ExpectFailure(In=CheckNewlinesBeforeClasses))))
-		self.EvaluateResult(function(testfile_dir))
+    def test_newline_before_classes(self):
+        """
+        Tests test_newline_before_classes.
+        """
+        testfile_dir = os.path.join(sumpf.config.get("test_dir"), "codingstyle", "testfiles", "CheckNewlinesBeforeClasses")
+        function = ForEachFile(WithEnding="pass", Do=ProcessContent(With=SplitLines(For=CheckNewlinesBeforeClasses)))
+        self.EvaluateResult(function(testfile_dir))
+        function = ForEachFile(WithEnding="fail", Do=ProcessContent(With=SplitLines(For=ExpectFailure(In=CheckNewlinesBeforeClasses))))
+        self.EvaluateResult(function(testfile_dir))
 

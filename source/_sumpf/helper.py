@@ -30,7 +30,7 @@ from ._helper import average
 from ._helper import numpydummy
 
 try:
-	from ._helper.sumpfmath import differentiate_fft, differentiate_spline
+    from ._helper.sumpfmath import differentiate_fft, differentiate_spline
 except ImportError:
-	pass
+    pass
 

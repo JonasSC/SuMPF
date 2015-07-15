@@ -26,27 +26,27 @@ from ._math.logarithmsignal import LogarithmSignal
 from ._math.rectifysignal import RectifySignal
 
 try:
-	from ._math.convolvesignals import ConvolveSignals
+    from ._math.convolvesignals import ConvolveSignals
 except ImportError:
-	pass
+    pass
 try:
-	from ._math.correlatesignals import CorrelateSignals
+    from ._math.correlatesignals import CorrelateSignals
 except ImportError:
-	pass
+    pass
 try:
-	from ._math.fouriertransform import FourierTransform, InverseFourierTransform
+    from ._math.fouriertransform import FourierTransform, InverseFourierTransform
 except ImportError:
-	pass
+    pass
 try:
-	from ._math.resamplesignal import ResampleSignal
+    from ._math.resamplesignal import ResampleSignal
 except ImportError:
-	pass
+    pass
 try:
-	from ._math.rootmeansquare import RootMeanSquare
+    from ._math.rootmeansquare import RootMeanSquare
 except ImportError:
-	pass
+    pass
 try:
-	from ._math.shortfouriertransform import ShortFourierTransform
+    from ._math.shortfouriertransform import ShortFourierTransform
 except ImportError:
-	pass
+    pass
 

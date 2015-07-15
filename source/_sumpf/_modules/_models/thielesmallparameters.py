@@ -18,7 +18,7 @@ from ._thielesmallparameters.interpretation import ThieleSmallParameterInterpret
 from ._thielesmallparameters.auralization_nonlinear import ThieleSmallParameterAuralizationNonlinear
 
 try:
-	from ._thielesmallparameters.auralization_linear import ThieleSmallParameterAuralizationLinear
+    from ._thielesmallparameters.auralization_linear import ThieleSmallParameterAuralizationLinear
 except ImportError:
-	pass
+    pass
 

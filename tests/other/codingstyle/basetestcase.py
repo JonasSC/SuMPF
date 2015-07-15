@@ -17,10 +17,10 @@
 import unittest
 
 class BaseCodingStyleTestCase(unittest.TestCase):
-	def EvaluateResult(self, result):
-		if result is not None:
-			message = result[0]
-			if result[1] != "":
-				message += " [" + result[1] + "]"
-			self.fail(message)
+    def EvaluateResult(self, result):
+        if result is not None:
+            message = result[0]
+            if result[1] != "":
+                message += " [" + result[1] + "]"
+            self.fail(message)
 

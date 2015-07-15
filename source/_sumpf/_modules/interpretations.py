@@ -17,17 +17,17 @@
 from ._interpretations.energydecaycurvefromimpulseresponse import EnergyDecayCurveFromImpulseResponse
 
 try:
-	from ._interpretations.findharmonicimpulseresponse import FindHarmonicImpulseResponse
+    from ._interpretations.findharmonicimpulseresponse import FindHarmonicImpulseResponse
 except ImportError:
-	pass
+    pass
 
 try:
-	from ._interpretations.regularizedspectruminversion import RegularizedSpectrumInversion
+    from ._interpretations.regularizedspectruminversion import RegularizedSpectrumInversion
 except ImportError:
-	pass
+    pass
 
 try:
-	from ._interpretations.signalenvelope import SignalEnvelope
+    from ._interpretations.signalenvelope import SignalEnvelope
 except ImportError:
-	pass
+    pass
 

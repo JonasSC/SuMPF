@@ -20,38 +20,38 @@ import _common as common
 
 
 class TestNormalizeSpectrumToFrequency(unittest.TestCase):
-	"""
-	A TestCase for the NormalizeSpectrumToFrequency module.
-	"""
-	def test_functionality(self):
-		"""
-		Tests the functionality of the NormalizeSpectrumToFrequency module.
-		"""
-		# test data
-		spectrum = sumpf.Spectrum(channels=((1.0, 2.0, 3.0), (4.0, 1.0, 0.0)), resolution=1000.0, labels=("one", "two"))
-		norm1000 = sumpf.Spectrum(channels=((0.5, 1.0, 1.5), (4.0, 1.0, 0.0)), resolution=1000.0, labels=("one", "two"))
-		norm500 = sumpf.Spectrum(channels=((2.0 / 3.0, 4.0 / 3.0, 2.0), (8.0 / 5.0, 2.0 / 5.0, 0.0)), resolution=1000.0, labels=("one", "two"))
-		# the actual tests
-		nrm = sumpf.modules.NormalizeSpectrumToFrequency()
-		self.assertEqual(nrm.GetOutput(), sumpf.Spectrum())
-		nrm = sumpf.modules.NormalizeSpectrumToFrequency(input=norm1000, frequency=500)
-		self.assertEqual(nrm.GetOutput(), norm500)
-		nrm = sumpf.modules.NormalizeSpectrumToFrequency(input=spectrum)
-		nrm.SetInput(spectrum)
-		self.assertEqual(nrm.GetOutput(), norm1000)
-		nrm.SetFrequency(500)
-		self.assertEqual(nrm.GetOutput(), norm500)
+    """
+    A TestCase for the NormalizeSpectrumToFrequency module.
+    """
+    def test_functionality(self):
+        """
+        Tests the functionality of the NormalizeSpectrumToFrequency module.
+        """
+        # test data
+        spectrum = sumpf.Spectrum(channels=((1.0, 2.0, 3.0), (4.0, 1.0, 0.0)), resolution=1000.0, labels=("one", "two"))
+        norm1000 = sumpf.Spectrum(channels=((0.5, 1.0, 1.5), (4.0, 1.0, 0.0)), resolution=1000.0, labels=("one", "two"))
+        norm500 = sumpf.Spectrum(channels=((2.0 / 3.0, 4.0 / 3.0, 2.0), (8.0 / 5.0, 2.0 / 5.0, 0.0)), resolution=1000.0, labels=("one", "two"))
+        # the actual tests
+        nrm = sumpf.modules.NormalizeSpectrumToFrequency()
+        self.assertEqual(nrm.GetOutput(), sumpf.Spectrum())
+        nrm = sumpf.modules.NormalizeSpectrumToFrequency(input=norm1000, frequency=500)
+        self.assertEqual(nrm.GetOutput(), norm500)
+        nrm = sumpf.modules.NormalizeSpectrumToFrequency(input=spectrum)
+        nrm.SetInput(spectrum)
+        self.assertEqual(nrm.GetOutput(), norm1000)
+        nrm.SetFrequency(500)
+        self.assertEqual(nrm.GetOutput(), norm500)
 
-	def test_connectors(self):
-		"""
-		Tests if the connectors are properly decorated.
-		"""
-		nrm = sumpf.modules.NormalizeSpectrumToFrequency()
-		self.assertEqual(nrm.SetInput.GetType(), sumpf.Spectrum)
-		self.assertEqual(nrm.SetFrequency.GetType(), float)
-		self.assertEqual(nrm.GetOutput.GetType(), sumpf.Spectrum)
-		common.test_connection_observers(testcase=self,
-		                                 inputs=[nrm.SetInput, nrm.SetFrequency],
-		                                 noinputs=[],
-		                                 output=nrm.GetOutput)
+    def test_connectors(self):
+        """
+        Tests if the connectors are properly decorated.
+        """
+        nrm = sumpf.modules.NormalizeSpectrumToFrequency()
+        self.assertEqual(nrm.SetInput.GetType(), sumpf.Spectrum)
+        self.assertEqual(nrm.SetFrequency.GetType(), float)
+        self.assertEqual(nrm.GetOutput.GetType(), sumpf.Spectrum)
+        common.test_connection_observers(testcase=self,
+                                         inputs=[nrm.SetInput, nrm.SetFrequency],
+                                         noinputs=[],
+                                         output=nrm.GetOutput)
 

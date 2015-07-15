@@ -17,58 +17,58 @@
 from .base import AverageBase
 
 try:
-	import numpy
+    import numpy
 except ImportError:
-	# This is a dirty import that has to be made cleaner one day
-	# Do not remove the comment line below, because it is needed by a unit test
-	# sumpf.helper.numpydummy
-	import _sumpf._helper.numpydummy as numpy
+    # This is a dirty import that has to be made cleaner one day
+    # Do not remove the comment line below, because it is needed by a unit test
+    # sumpf.helper.numpydummy
+    import _sumpf._helper.numpydummy as numpy
 
 
 
 class SumDirectly(AverageBase):
-	"""
-	The classical algorithm to calculate an average. All values are summed up directly
-	when they are added to the averager. The final result is calculated by dividing
-	this sum by the number of added values.
+    """
+    The classical algorithm to calculate an average. All values are summed up directly
+    when they are added to the averager. The final result is calculated by dividing
+    this sum by the number of added values.
 
-	Advantages of this method:
-		- Both adding a value to the averager and calculating the final result
-		are relatively simple operations
-		- Since only the sum of all elements is stored, the memory consumption
-		of this algorithm is low.
-	Disadvantages:
-		- It uses no "tricks" to reduce errors that are caused by limited floating
-		point precision.
-	"""
-	def __init__(self, values=[]):
-		"""
-		All parameters are optional.
-		@param values: a list of values of which the average shall be calculated.
-		"""
-		self.__sum = None
-		self.__count = 0
-		AverageBase.__init__(self, values=values)
+    Advantages of this method:
+        - Both adding a value to the averager and calculating the final result
+        are relatively simple operations
+        - Since only the sum of all elements is stored, the memory consumption
+        of this algorithm is low.
+    Disadvantages:
+        - It uses no "tricks" to reduce errors that are caused by limited floating
+        point precision.
+    """
+    def __init__(self, values=[]):
+        """
+        All parameters are optional.
+        @param values: a list of values of which the average shall be calculated.
+        """
+        self.__sum = None
+        self.__count = 0
+        AverageBase.__init__(self, values=values)
 
-	def Add(self, value):
-		"""
-		Method to add a value to the list of values which shall be averaged.
-		The value can be either a scalar value or a list.
-		@param value: the value that shall be added
-		"""
-		if self.__sum is None:
-			self.__sum = value
-		else:
-			self.__sum = numpy.add(self.__sum, value)
-		self.__count += 1
+    def Add(self, value):
+        """
+        Method to add a value to the list of values which shall be averaged.
+        The value can be either a scalar value or a list.
+        @param value: the value that shall be added
+        """
+        if self.__sum is None:
+            self.__sum = value
+        else:
+            self.__sum = numpy.add(self.__sum, value)
+        self.__count += 1
 
-	def _GetAverage(self):
-		"""
-		Calculates the average and returns it.
-		@retval : the average all added values
-		"""
-		if self.__sum is None:
-			return 0.0
-		else:
-			return numpy.divide(self.__sum, float(self.__count))
+    def _GetAverage(self):
+        """
+        Calculates the average and returns it.
+        @retval : the average all added values
+        """
+        if self.__sum is None:
+            return 0.0
+        else:
+            return numpy.divide(self.__sum, float(self.__count))
 

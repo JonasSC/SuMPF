@@ -19,7 +19,7 @@ from .connectiontester import test_connection_observers
 from .libutils import lib_available, unload_lib, unload_sumpf, make_lib_unavailable
 
 try:
-	from .testquestionnaire import TestQuestionnaire
+    from .testquestionnaire import TestQuestionnaire
 except ImportError:
-	pass
+    pass
 
