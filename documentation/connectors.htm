@@ -83,8 +83,9 @@
 				<td class="subsection">Garbage Collection</td>
 				<td colspan="2" class="text">
 					The decorated methods are replaced by an object that holds a
-					reference to the instance, of which the method is a member,
-					while the instance has of course a reference to the method.
+					(weak) reference to the instance, of which the method is a
+					member, while the instance has of course a reference to the
+					method (see also <a href="#connectors_in_constructor">below</a>).
 					<br />
 					Normally, these circular references can be garbage collected
 					as usual. But if the instance has a destructor method
@@ -101,6 +102,34 @@
 					<span class="code">destroy_connectors</span> function with the
 					object, you want to delete, as parameter. After that a normal
 					call of gc.collect will work as well.
+				</td>
+			</tr>
+			<tr>
+				<td class="subsection"><a name="connectors_in_constructor">Calling connectors in the constructor</a></td>
+				<td colspan="2" class="text">
+					Calling methods, that are decorated as connectors in the
+					constructor is forbidden. <br />
+					This is due to the fact, that the actual connector only holds
+					a weak reference to its instance, to avoid circular references
+					and reduce the number of times, when the garbage collector
+					has to be invoked. But in case, a method is called directly
+					after instantiating a class, without storing this instance
+					somewhere (e.g. <nobr><span class="code">value = Class().Connector()</span></nobr>),
+					the reference counter of the instance would be zero before
+					entering the connector method, so that it was deleted and the
+					weak reference of the connector method to the instance would
+					be invalid, during the run of the method. To avoid this, the
+					first time, the connector is accessed, a proxy connector is
+					created, that holds a hard reference to the instance. If the
+					connector is now accessed within the constructor, this proxy
+					object would be wasted in there, so that direct method calls
+					without storing a reference to the instance would become impossible
+					again.<br />
+					A unit test has been written, that checks, if a Connector
+					method is called from the constructor. This unit test does
+					not test, if the constructor calls a regular method, which
+					then calls a Connector. Obviously, this can also lead to
+					premature deletion of the instance.
 				</td>
 			</tr>
 			<tr>

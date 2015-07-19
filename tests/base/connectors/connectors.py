@@ -31,6 +31,9 @@ class TestConnectors(unittest.TestCase):
         self.obj1 = ExampleClass()
         self.obj2 = ExampleClass()
 
+    def tearDown(self):
+        sumpf.collect_garbage()
+
     def test_setter_and_getter(self):
         """
         Tests if the getter and setter methods work as expected.
@@ -202,12 +205,12 @@ class TestConnectors(unittest.TestCase):
         """
         Tests if the caching of values is working.
         """
-        self.assertEqual(type(self.obj1.GetValue2).__name__, "CachingOutputConnector")  # GetValue should always cache
-        self.assertEqual(type(self.obj1.GetText).__name__, "NotCachingOutputConnector") # GetText should never cache
+        self.assertEqual(type(self.obj1.GetValue2.GetConnector()).__name__, "CachingOutputConnector")   # GetValue should always cache
+        self.assertEqual(type(self.obj1.GetText.GetConnector()).__name__, "NotCachingOutputConnector")  # GetText should never cache
         self.obj1.SetValue2(1)
-        self.assertEqual(self.obj1.GetValue2(), 2)                                      # setter with observers should work normally
+        self.assertEqual(self.obj1.GetValue2(), 2)                                       # setter with observers should work normally
         self.obj1.SetValueNoUpdate(2)
-        self.assertEqual(self.obj1.GetValue2(), 2)                                      # setter without observers should not trigger recalculation of cached values
+        self.assertEqual(self.obj1.GetValue2(), 2)                                       # setter without observers should not trigger recalculation of cached values
 
     def test_disconnect_all(self):
         """
@@ -340,19 +343,27 @@ class TestConnectors(unittest.TestCase):
         """
         Checks that Connectors do not inhibit clean object deletion.
         """
+        # deletion without explicit garbage collection
+        gc.collect()
+        rel = sumpf.modules.RelabelSignal()
+        rel.SetInput(sumpf.Signal())
+        del rel
+        self.assertEqual(gc.collect(), 0)
+        # sumpf.collect_garbage
         sumpf.connect(self.obj1.GetValue, self.obj2.SetValue)
         sumpf.connect(self.obj2.GetText, self.obj1.SetText)
         sumpf.disconnect_all(self.obj1)
         gc.collect()
         current_instance_count = ExampleClass.instance_count
+        sumpf.destroy_connectors(self.obj1)
         del self.obj1
         gc.collect()
         if ExampleClass.instance_count != current_instance_count - 1:
             for o in gc.garbage:
                 if isinstance(o, ExampleClass):
                     collected = sumpf.collect_garbage()
-                    self.assertIsInstance(collected, int)               # sumpf.collect_garbage shall return the integer number of collected items
-                    self.assertEqual(gc.garbage, [])                    # garbage collection should have removed all garbage
+                    self.assertIsInstance(collected, int)  # sumpf.collect_garbage shall return the integer number of collected items
+                    self.assertEqual(gc.garbage, [])       # garbage collection should have removed all garbage
                     return
             self.fail("The object has neither been deleted, nor has it been marked as garbage")
 

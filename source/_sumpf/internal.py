@@ -21,6 +21,7 @@ Normally they should not be needed elsewhere.
 """
 
 from _sumpf._base._connectors.baseconnectors import Connector, TypedConnector
+from _sumpf._base._connectors.connectorproxy import ConnectorProxy
 
 from _sumpf._data.channeldata import ChannelData
 

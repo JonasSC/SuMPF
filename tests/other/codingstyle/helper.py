@@ -72,10 +72,10 @@ class ProcessContent(object):
         self.__function = With
 
     def __call__(self, path):
-        f = open(path, 'r')
-        content = f.read()
-        f.close()
-        return self.__function(content)
+        with open(path, 'r') as f:
+            content = f.read()
+            result = self.__function(content)
+        return result
 
 
 

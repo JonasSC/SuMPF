@@ -45,11 +45,8 @@ class ConvolveSignals(object):
         if mode is None:
             mode = ConvolveSignals.FULL
         self.__signal1 = signal1
-        if signal2.IsEmpty():
-            self.__signal2 = signal2
-        else:
-            self.SetInput2(signal2)
-        self.SetConvolutionMode(mode)
+        self.__signal2 = signal2
+        self.__SetConvolutionMode(mode)
         self.__shift = shift
 
     @sumpf.Input(sumpf.Signal, "GetOutput")
@@ -88,9 +85,7 @@ class ConvolveSignals(object):
         See help(numpy.convolve) for more details.
         @param mode: one of the modes from the description
         """
-        if mode not in ["full", "same", "valid", "spectrum"]:
-            raise ValueError("Unrecognized Mode: " + str(mode))
-        self.__mode = mode
+        self.__SetConvolutionMode(mode)
 
     @sumpf.Output(sumpf.Signal)
     def GetOutput(self):
@@ -116,4 +111,14 @@ class ConvolveSignals(object):
                 channels.append(channel)
                 labels.append("Convolution " + str(c + 1))
             return sumpf.Signal(channels=channels, samplingrate=self.__signal1.GetSamplingRate(), labels=labels)
+
+    def __SetConvolutionMode(self, mode):
+        """
+        A private helper method to avoid, that the connector SetConvolutionMode
+        is called in the constructor.
+        @param mode: one of the modes from the description
+        """
+        if mode not in ["full", "same", "valid", "spectrum"]:
+            raise ValueError("Unrecognized Mode: " + str(mode))
+        self.__mode = mode
 

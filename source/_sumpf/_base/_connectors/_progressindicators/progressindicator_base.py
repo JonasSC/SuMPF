@@ -17,6 +17,7 @@
 import sumpf
 from ..decorators import Input, Output
 from ..baseconnectors import Connector
+from ..connectorproxy import ConnectorProxy
 
 
 class ProgressIndicator(object):
@@ -76,8 +77,11 @@ class ProgressIndicator(object):
         calculation steps is counted.
         @param connector: the connector whose value is about to change.
         """
-        if self._Filter(connector):
-            self.__announcements.add(connector)
+        c = connector
+        if isinstance(connector, ConnectorProxy):
+            c = connector.GetConnector()
+        if self._Filter(c):
+            self.__announcements.add(c)
             self.__max_length = max(len(self.__announcements), self.__max_length)
 
     @Input(Connector, ["GetProgressAsTuple", "GetProgressAsFloat", "GetProgressAsPercentage"])
@@ -99,11 +103,11 @@ class ProgressIndicator(object):
     @Output(tuple)
     def GetProgressAsTuple(self):
         """
-        Returns the progress as a tuple (max, finished, message) of integers.
+        Returns the progress as a tuple (max, finished, message).
         max is the number of methods that will run in total, while finished is the
         number of methods that have finished running. message is either None or
         a message that can be displayed in a progress dialog.
-        @retval : a tuple (max, finished, message) of integers
+        @retval : a tuple (max, finished, message)
         """
         return self.__max_length, self.__max_length - len(self.__announcements), self.__message
 

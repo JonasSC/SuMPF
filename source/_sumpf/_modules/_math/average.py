@@ -32,7 +32,6 @@ class AverageChannelData(object):
         self.__index = 0
         self.__number = 1
         self._lastdataset = None    # used in the derived classes
-        sumpf.deactivate_output(self.TriggerDataCreation)
 
     def _AddDataSet(self, dataset):
         """
@@ -165,7 +164,7 @@ class AverageSignals(AverageChannelData):
         """
         AverageChannelData.__init__(self)
         for s in signals:
-            self.AddInput(s)
+            self.__AddInput(s)
 
     @sumpf.Input(sumpf.Signal)
     def AddInput(self, signal):
@@ -173,10 +172,7 @@ class AverageSignals(AverageChannelData):
         Adds a Signal to the set of Signals over which shall be averaged.
         @param signal: a Signal over which shall also be averaged
         """
-        if self._lastdataset is not None:
-            if signal.GetSamplingRate() != self._lastdataset.GetSamplingRate():
-                raise ValueError("The given Signal has a different sampling rate than the other Signals")
-        self._AddDataSet(signal)
+        self.__AddInput(signal)
 
     @sumpf.Trigger("GetOutput")
     def Start(self):
@@ -201,6 +197,17 @@ class AverageSignals(AverageChannelData):
                 signal = sumpf.Signal(samplingrate=self._lastdataset.GetSamplingRate())
         return signal
 
+    def __AddInput(self, signal):
+        """
+        A private helper method to avoid, that the connector AddInput is called
+        in the constructor.
+        @param signal: a Signal over which shall also be averaged
+        """
+        if self._lastdataset is not None:
+            if signal.GetSamplingRate() != self._lastdataset.GetSamplingRate():
+                raise ValueError("The given Signal has a different sampling rate than the other Signals")
+        self._AddDataSet(signal)
+
 
 
 class AverageSpectrums(AverageChannelData):
@@ -214,7 +221,7 @@ class AverageSpectrums(AverageChannelData):
         """
         AverageChannelData.__init__(self)
         for s in spectrums:
-            self.AddInput(s)
+            self.__AddInput(s)
 
     @sumpf.Input(sumpf.Spectrum)
     def AddInput(self, spectrum):
@@ -222,10 +229,7 @@ class AverageSpectrums(AverageChannelData):
         Adds a Spectrum to the set of Spectrums over which shall be averaged.
         @param spectrum: a Spectrum over which shall also be averaged
         """
-        if self._lastdataset is not None:
-            if spectrum.GetResolution() != self._lastdataset.GetResolution():
-                raise ValueError("The given Spectrum has a different resolution than the other Spectrums")
-        self._AddDataSet(spectrum)
+        self.__AddInput(spectrum)
 
     @sumpf.Trigger("GetOutput")
     def Start(self):
@@ -249,4 +253,15 @@ class AverageSpectrums(AverageChannelData):
             except ValueError:
                 spectrum = sumpf.Spectrum(resolution=self._lastdataset.GetResolution())
         return spectrum
+
+    def __AddInput(self, spectrum):
+        """
+        A private helper method to avoid, that the connector AddInput is called
+        in the constructor.
+        @param spectrum: a Spectrum over which shall also be averaged
+        """
+        if self._lastdataset is not None:
+            if spectrum.GetResolution() != self._lastdataset.GetResolution():
+                raise ValueError("The given Spectrum has a different resolution than the other Spectrums")
+        self._AddDataSet(spectrum)
 

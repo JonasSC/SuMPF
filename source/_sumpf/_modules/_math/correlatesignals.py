@@ -59,11 +59,8 @@ class CorrelateSignals(object):
         if mode is None:
             mode = CorrelateSignals.FULL
         self.__signal1 = signal1
-        if signal2.IsEmpty():
-            self.__signal2 = signal2
-        else:
-            self.SetInput2(signal2)
-        self.SetCorrelationMode(mode)
+        self.__signal2 = signal2
+        self.__SetCorrelationMode(mode)
         self.__shift = shift
 
     @sumpf.Input(sumpf.Signal, "GetOutput")
@@ -106,9 +103,7 @@ class CorrelateSignals(object):
         See help(numpy.convolve) for more details.
         @param mode: one of the modes from the description
         """
-        if mode not in ["full", "same", "valid", "spectrum"]:
-            raise ValueError("Unrecognized Mode: " + str(mode))
-        self.__mode = mode
+        self.__SetCorrelationMode(mode)
 
     @sumpf.Input(bool, "GetOutput")
     def SetShift(self, shift):
@@ -168,4 +163,14 @@ class CorrelateSignals(object):
                     shift = -(len(self.__signal2) // 2)
                 result = sumpf.modules.ShiftSignal(signal=result, shift=shift, circular=True).GetOutput()
             return result
+
+    def __SetCorrelationMode(self, mode):
+        """
+        A private helper method to avoid, that the connector SetCorrelationMode
+        is called in the constructor.
+        @param mode: one of the modes from the description
+        """
+        if mode not in ["full", "same", "valid", "spectrum"]:
+            raise ValueError("Unrecognized Mode: " + str(mode))
+        self.__mode = mode
 

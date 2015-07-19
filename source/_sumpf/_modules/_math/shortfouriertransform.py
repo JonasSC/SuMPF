@@ -45,7 +45,7 @@ class ShortFourierTransform(object):
             signal = sumpf.Signal()
         self.__signal = signal
         self.__window = window
-        self.SetOverlap(overlap)
+        self.__SetOverlap(overlap)
 
     @sumpf.Input(sumpf.Signal, "GetSpectrum")
     def SetSignal(self, signal):
@@ -80,12 +80,7 @@ class ShortFourierTransform(object):
            with the block length to calculate the number of samples of the overlap
         @param overlap: an integer number of samples by which the blocks shall overlap, or a float that specifies the overlap a factor of the block length
         """
-        if overlap < 0.0:
-            raise ValueError("The overlap has to be greater than zero")
-        elif isinstance(overlap, float) and overlap >= 1.0:
-            raise ValueError("The overlap has to be less than the window length")
-        else:
-            self.__overlap = overlap
+        self.__SetOverlap(overlap)
 
     @sumpf.Output(sumpf.Spectrum)
     def GetSpectrum(self):
@@ -128,4 +123,17 @@ class ShortFourierTransform(object):
         return sumpf.Spectrum(channels=channels,
                               resolution=resolution,
                               labels=self.__signal.GetLabels())
+
+    def __SetOverlap(self, overlap):
+        """
+        A private helper method to avoid, that the connector SetChannelCount is
+        called in the constructor.
+        @param overlap: an integer number of samples by which the blocks shall overlap, or a float that specifies the overlap a factor of the block length
+        """
+        if overlap < 0.0:
+            raise ValueError("The overlap has to be greater than zero")
+        elif isinstance(overlap, float) and overlap >= 1.0:
+            raise ValueError("The overlap has to be less than the window length")
+        else:
+            self.__overlap = overlap
 

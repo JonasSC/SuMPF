@@ -107,7 +107,7 @@ class Connector(object):
         of the decorated method.
         @retval : a string CLASSNAME.METHODNAME
         """
-        return ".".join((self._instance.__class__.__name__ , self._method.__name__))
+        return ".".join((self._instance.__class__.__name__, self._method.__name__))
 
 
 

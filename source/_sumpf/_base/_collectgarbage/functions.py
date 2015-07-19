@@ -25,8 +25,10 @@ def collect_garbage():
     @retval : the number of garbage collected items
     """
     result = gc.collect()
-    for destroyer in objects.destroyer_functions:
-        destroyer()
-    del gc.garbage[:]
-    return result + gc.collect()
+    if gc.garbage:
+        for destroyer in objects.destroyer_functions:
+            destroyer()
+        del gc.garbage[:]
+        result += gc.collect()
+    return result
 

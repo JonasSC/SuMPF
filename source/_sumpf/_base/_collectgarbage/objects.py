@@ -29,10 +29,10 @@ def call_delete_method():
 
 def destroy_connector_references():
     """
-    A garbage collector function that helps to delete objects with connectors. Normally this is not
-    needed, but when the object has a destructor method, the garbage collector does not know in
-    which order it shall delete the object and the connector. This garbage collector function breaks
-    this dependency cycle.
+    A garbage collector function that helps to delete objects with connectors.
+    Normally this is not needed, but when the object has a destructor method, the
+    garbage collector does not know in which order it shall delete the object and
+    the connector. This garbage collector function breaks this dependency cycle.
     """
     for obj in gc.garbage:
         sumpf.destroy_connectors(obj)

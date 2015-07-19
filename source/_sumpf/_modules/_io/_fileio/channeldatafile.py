@@ -39,7 +39,7 @@ class ChannelDataFile(object):
         if filename is None:
             self._filename = None
         else:
-            self.SetFilename(filename)
+            self.__SetFilename(filename)
 
     @staticmethod
     def GetFormats():
@@ -68,20 +68,7 @@ class ChannelDataFile(object):
         current data will be saved to that file.
         @param filename: None or a string value of a path and filename preferably without the file ending
         """
-        filename = sumpf.helper.normalize_path(filename)
-        delim = "." + self.__format.ending
-        split = filename.split(delim)
-        if len(split) <= 1:
-            self._filename = filename
-        else:
-            self._filename = delim.join(split[0:-1])
-        if self.__format.Exists(self._filename):
-            if self._data.IsEmpty() or self.__format.read_only:
-                self._Load()
-            else:
-                self._Save()
-        elif not self.__format.read_only:
-            self._Save()
+        self.__SetFilename(filename)
 
     def SetFormat(self, format):
         """
@@ -116,4 +103,25 @@ class ChannelDataFile(object):
         """
         if self._filename is not None:
             self.__format.Save(self._filename, self._data)
+
+    def __SetFilename(self, filename):
+        """
+        A private helper method to avoid, that the connector SetFilename is called
+        in the constructor.
+        @param filename: None or a string value of a path and filename preferably without the file ending
+        """
+        filename = sumpf.helper.normalize_path(filename)
+        delim = "." + self.__format.ending
+        split = filename.split(delim)
+        if len(split) <= 1:
+            self._filename = filename
+        else:
+            self._filename = delim.join(split[0:-1])
+        if self.__format.Exists(self._filename):
+            if self._data.IsEmpty() or self.__format.read_only:
+                self._Load()
+            else:
+                self._Save()
+        elif not self.__format.read_only:
+            self._Save()
 

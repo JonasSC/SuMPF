@@ -18,9 +18,9 @@ import sumpf
 
 from .basetestcase import BaseCodingStyleTestCase
 from .checks import CheckWhitespaceAtLineEnd, CheckNewlineAtFileend, CheckNewlinesBeforeClasses, \
-                   CheckLineEndStyle, CheckNoneComparison, CheckBoolComparison, \
-                   CheckWrongDocstringKeywords, CheckPassUsage, CheckOsSepUsage, \
-                   CheckLicense
+                    CheckLineEndStyle, CheckNoneComparison, CheckBoolComparison, \
+                    CheckWrongDocstringKeywords, CheckPassUsage, CheckOsSepUsage, \
+                    CheckLicense
 from .helper import ForEachFile, ProcessContent, SplitLines, IterateOverLines, StripComments
 
 

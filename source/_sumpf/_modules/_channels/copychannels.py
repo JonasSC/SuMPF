@@ -28,7 +28,7 @@ class CopyChannelDataChannels(object):
         @param channelcount: the integer number of channels of the output data set
         """
         self._input = input
-        self.SetChannelCount(channelcount)
+        self.__SetChannelCount(channelcount)
 
     def GetOutput(self):
         """
@@ -72,6 +72,14 @@ class CopyChannelDataChannels(object):
             input channels := A, B, C
             channel count := 8
             output channels := A, B, C, A, B, C, A, B
+        @param channelcount: the integer number of channels of the output data set
+        """
+        self.__SetChannelCount(channelcount)
+
+    def __SetChannelCount(self, channelcount):
+        """
+        A private helper method to avoid, that the connector SetChannelCount is
+        called in the constructor.
         @param channelcount: the integer number of channels of the output data set
         """
         channelcount = int(channelcount)

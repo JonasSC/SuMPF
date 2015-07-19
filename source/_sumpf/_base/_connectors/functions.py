@@ -18,27 +18,31 @@ from .baseconnectors import Connector
 from .baseinputconnectors import InputConnector
 from .outputconnectors import OutputConnector
 from .triggerinputconnector import TriggerInputConnector
+from .connectorproxy import ConnectorProxy
 
 def connect(a, b):
     """
     Connects two methods that have been decorated with either Input or Output.
     @param a, b: Should be one Input and one Output. The order is not important
     """
-    a.Connect(b)
+    inp = a
+    if isinstance(a, ConnectorProxy):
+        inp = a.GetConnector()
+    outp = b
+    if isinstance(b, ConnectorProxy):
+        outp = b.GetConnector()
+    if not isinstance(inp, InputConnector):
+        inp, outp = outp, inp
+    inp.Connect(outp)
     try:
-        b.Connect(a)
+        outp.Connect(inp)
     except BaseException as e:
-        a.Disconnect(b)         # if connection fails, go back to a legal state
+        inp.Disconnect(outp)         # if connection fails, go back to a legal state
         raise e
-    input = a
-    output = b
-    if not isinstance(input, InputConnector):
-        input = b
-        output = a
-    if not isinstance(input, TriggerInputConnector):
-        if output.IsActive():
-            input.NoticeAnnouncement(output)
-            input.NoticeValueChange(output)
+    if not isinstance(inp, TriggerInputConnector):
+        if outp.IsActive():
+            inp.NoticeAnnouncement(outp)
+            inp.NoticeValueChange(outp)
 
 def disconnect(a, b):
     """
@@ -54,11 +58,11 @@ def disconnect_all(obj):
     Connector instance or of any other type that has Connectors as attributes.
     @param obj: the object from which everything shall be disconnected
     """
-    if isinstance(obj, Connector):
+    if isinstance(obj, (Connector, ConnectorProxy)):
         obj.DisconnectAll()
     else:
         for a in list(vars(obj).values()):
-            if isinstance(a, Connector):
+            if isinstance(a, (Connector, ConnectorProxy)):
                 a.DisconnectAll()
 
 def deactivate_output(obj):
@@ -71,8 +75,11 @@ def deactivate_output(obj):
         obj.Deactivate()
     else:
         for a in list(vars(obj).values()):
-            if isinstance(a, OutputConnector):
-                a.Deactivate()
+            c = a
+            if isinstance(a, ConnectorProxy):
+                c = a.GetConnector()
+            if isinstance(c, OutputConnector):
+                c.Deactivate()
 
 def activate_output(obj):
     """
@@ -84,8 +91,11 @@ def activate_output(obj):
         obj.Activate()
     else:
         for a in list(vars(obj).values()):
-            if isinstance(a, OutputConnector):
-                a.Activate()
+            c = a
+            if isinstance(a, ConnectorProxy):
+                c = a.GetConnector()
+            if isinstance(c, OutputConnector):
+                c.Activate()
 
 def destroy_connectors(obj):
     """
@@ -96,7 +106,7 @@ def destroy_connectors(obj):
     disconnect_all(obj)
     attributes = vars(obj)
     for a in attributes:
-        if isinstance(attributes[a], Connector):
+        if isinstance(attributes[a], (Connector, ConnectorProxy)):
             setattr(obj, a, None)
 
 def set_multiple_values(pairs, progress_indicator=None):

@@ -45,21 +45,21 @@ class ChannelDataProperties(object):
         # set length and sampling rate according to constructor arguments
         if signal_length is not None:
             self.__SetSignalLength(signal_length)
-            if spectrum_length not in [None, self.GetSpectrumLength()]:
+            if spectrum_length not in [None, self.__length // 2 + 1]:
                 raise ValueError("The given lengths for signals and spectrums contradict each other.")
         elif spectrum_length is not None:
             self.__SetSpectrumLength(spectrum_length)
         if samplingrate is not None:
             self.__SetSamplingRate(samplingrate)
             if resolution is not None:
-                if round(self.GetSamplingRate() / resolution) != self.GetSamplingRate() / resolution:
+                if round(self.__samplingrate / resolution) != self.__samplingrate / resolution:
                     raise ValueError("The given combination of sampling rate and frequency resolution does not result in an integer signal length")
                 else:
                     if signal_length is not None or spectrum_length is not None:
-                        if self.GetSignalLength() != int(self.GetSamplingRate() / resolution):
+                        if self.__length != int(self.__samplingrate / resolution):
                             raise ValueError("The given length(s) contradict the given sampling rate or frequency resolution.")
                     else:
-                        self.__SetSignalLength(int(self.GetSamplingRate() / resolution))
+                        self.__SetSignalLength(int(self.__samplingrate / resolution))
         elif resolution is not None:
             self.__SetResolution(resolution)
 
@@ -129,7 +129,7 @@ class ChannelDataProperties(object):
     def GetResolution(self):
         """
         Returns the resolution for Spectrums.
-        @retval : the resolution for Spectrums
+        @retval : the resolution for Spectrums as a float
         """
         return self.__samplingrate / self.__length
 
@@ -140,7 +140,7 @@ class ChannelDataProperties(object):
         is transformed to the frequency domain.
         The sampling rate is assumed to be constant, so the resolution for
         Spectrums changes as well.
-        @param length: the length for Signals
+        @param length: the length for Signals as an integer
         """
         if length % 2 != 0:
             raise ValueError("The signal length has to be even, otherwise a sample will be lost in a fourier transform")
@@ -149,7 +149,7 @@ class ChannelDataProperties(object):
     def __SetSamplingRate(self, samplingrate):
         """
         Private method for setting the sampling rate for Signals.
-        @param samplingrate: the sampling rate for Signals
+        @param samplingrate: the sampling rate for Signals as a number
         """
         self.__samplingrate = float(samplingrate)
 
@@ -158,7 +158,7 @@ class ChannelDataProperties(object):
         Private method for setting the length for Spectrums.
         The resolution is assumed to be constant, so the sampling rate for
         Signals changes as well.
-        @param length: the length for Spectrums
+        @param length: the length for Spectrums as an integer
         """
         resolution = self.__samplingrate / self.__length    # here, self.__length is the old Signal length
         self.__length = int((length - 1) * 2)
@@ -167,7 +167,7 @@ class ChannelDataProperties(object):
     def __SetResolution(self, resolution):
         """
         Private method for setting the resolution for Spectrums.
-        @param resolution: the resolution for Spectrums
+        @param resolution: the resolution for Spectrums as a float
         """
         self.__samplingrate = round(resolution * self.__length, 7)  # The resolution is rounded to get "clean" sampling rates that work well with sound card interfaces
 

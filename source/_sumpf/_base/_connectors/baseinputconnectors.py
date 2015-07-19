@@ -16,6 +16,7 @@
 
 from .baseconnectors import Connector, TypedConnector
 from . import outputconnectors
+from .connectorproxy import ConnectorProxy
 from ._progressindicators.progressindicator_nop import nop_progress_indicator
 
 
@@ -33,7 +34,11 @@ class InputConnector(Connector):
         Connector.__init__(self, instance, method)
         self.__observers = []
         for o in observers:
-            self.__observers.append(getattr(self._instance, o))
+            method = getattr(self._instance, o)
+            if isinstance(method, ConnectorProxy):
+                self.__observers.append(method.GetConnector())
+            else:
+                self.__observers.append(method)
         self._progress_indicator = nop_progress_indicator
 
     def _Announce(self):

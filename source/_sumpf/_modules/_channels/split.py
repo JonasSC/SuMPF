@@ -31,7 +31,7 @@ class SplitChannelData(object):
         """
         self._input = data
         self.__channels = []
-        self.SetOutputChannels(channels)
+        self.__SetOutputChannels(channels)
 
     def GetOutput(self):
         """
@@ -70,16 +70,7 @@ class SplitChannelData(object):
         Sets the channels of the input data set that shall be copied to the output.
         @param channels: a flag like type(self).ALL or an integer or a tuple of integers that are the indexes of the selected input data set's channels
         """
-        if channels == SplitChannelData.ALL:
-            self.__all = True
-        else:
-            self.__all = False
-            if isinstance(channels, int):
-                channels = (channels,)
-            for i in channels:
-                if i < 0:
-                    raise IndexError("Negative indices are not possible")
-            self.__channels = channels
+        return self.__SetOutputChannels(channels)
 
     def _GetChannelsAndLabels(self):
         """
@@ -96,6 +87,23 @@ class SplitChannelData(object):
                 channels.append(self._input.GetChannels()[i])
                 labels.append(self._input.GetLabels()[i])
             return channels, labels
+
+    def __SetOutputChannels(self, channels):
+        """
+        A private helper method to avoid, that the connector SetOutputChannels
+        is called in the constructor.
+        @param channels: a flag like type(self).ALL or an integer or a tuple of integers that are the indexes of the selected input data set's channels
+        """
+        if channels == SplitChannelData.ALL:
+            self.__all = True
+        else:
+            self.__all = False
+            if isinstance(channels, int):
+                channels = (channels,)
+            for i in channels:
+                if i < 0:
+                    raise IndexError("Negative indices are not possible")
+            self.__channels = channels
 
 
 
