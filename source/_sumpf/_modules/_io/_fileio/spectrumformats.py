@@ -34,6 +34,8 @@ else:
     import importlib.util
     if importlib.util.find_spec("oct2py") is not None:
         oct2py_available = True
+    basestring = str
+
 
 spectrumformats = []
 

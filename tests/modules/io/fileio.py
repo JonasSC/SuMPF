@@ -201,10 +201,10 @@ class TestFileIO(unittest.TestCase):
         assertions test, if SuMPF treats the oct2py convenience instance like it
         is supposed to, which is obviously not the case.
         """
-        import psutil
+        import psutil   # import this here, so it is only imported, when it's available
         def get_running_octave_instances():
             result = []
-            for p in psutil.get_process_list():
+            for p in psutil.process_iter():
                 process_name = None
                 try:
                     process_name = p.name()
