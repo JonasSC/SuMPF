@@ -43,7 +43,7 @@ class TestAttributes(unittest.TestCase):
         short_is_enough = ["DelayFilterGenerator", "FilterGenerator",
                            "AverageSpectrums", "ConjugateSpectrum",
                            "RelabelSignal", "RelabelSpectrum",
-                           "LogarithmSignal",
+                           "ClipSignal", "LogarithmSignal",
                            "SignalMean", "SpectrumMean",
                            "SignalVariance", "SpectrumVariance"]
         for p, m, c, f, v in sumpf.helper.walk_module(sumpf):

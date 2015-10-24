@@ -18,3 +18,8 @@ from ._normalize.normalizesignal import NormalizeSignal
 from ._normalize.normalizespectrumtoaverage import NormalizeSpectrumToAverage
 from ._normalize.normalizespectrumtofrequency import NormalizeSpectrumToFrequency
 
+try:
+    from ._normalize.clipsignal import ClipSignal
+except ImportError:
+    pass
+
