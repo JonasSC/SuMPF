@@ -38,7 +38,7 @@ class MergeChannelData(object):
         self._on_length_conflict = on_length_conflict
         self._data = sumpf.helper.MultiInputData()
         for d in datasets:
-            self.AddInput(d)
+            self._AddInput(d)
 
     def AddInput(self, data):
         """
