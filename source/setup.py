@@ -49,7 +49,7 @@ if cython_available:
     ext_modules = Cython.Build.cythonize(cython_extensions)
 
 setup(name="SuMPF",
-      version="0.11",
+      version="0.12",
       description="Sound using a Monkeyforest-like processing framework",
       author="Jonas Schulte-Coerne",
       author_email="jonas@schulte-coerne.de",
