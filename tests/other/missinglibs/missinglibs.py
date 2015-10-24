@@ -35,21 +35,23 @@ class TestMissingLibs(unittest.TestCase):
         Tests if the correct signal formats are unavailable when audiolab and
         oct2py are missing.
         """
-        process = MissingLibProcess(libnames=["scikits", "oct2py"],
+        process = MissingLibProcess(libnames=["soundfile", "scikits", "oct2py"],
                                     function=MissingLibProcess.FILE_FORMATS,
-                                    formats=["AIFF_FLOAT", "AIFF_INT", "FLAC", "WAV_FLOAT", "WAV_INT", "ITA_AUDIO", "MATLAB"],
+                                    formats=["AIFF_FLOAT", "AIFF_INT", "FLAC", "WAV_DOUBLE", "WAV_FLOAT", "WAV_INT", "ITA_AUDIO", "MATLAB"],
                                     data_type="Signal")
         process.start()
         process.join()
         result = process.namespace.result
         not_unavailable = process.namespace.not_unavailable
-        if "scikits" in not_unavailable:
+        if "soundfile" in not_unavailable:
+            self.fail("PySoundFile could not be made unavailable")
+        elif "scikits" in not_unavailable:
             self.fail("scikits could not be made unavailable")
         elif "oct2py" in not_unavailable:
             self.fail("oct2py could not be made unavailable")
         elif True in list(result.values()):
             format_name = list(result.keys())[list(result.values()).index(True)]
-            self.fail(format_name + " is still available, when scikits and oct2py are not available")
+            self.fail(format_name + " is still available, when PySoundFile, scikits and oct2py are not available")
 
     def test_spectrum_formats(self):
         """
@@ -80,6 +82,7 @@ class TestMissingLibs(unittest.TestCase):
         libs["numpy"] = "sumpf.helper.numpydummy"
         libs["oct2py"] = None
         libs["scikits"] = None  # both scikits.audiolab and scikits.samplerate
+        libs["soundfile"] = None
         libs["wx"] = None
         exceptions = [("ResampleSignal", "scikits")]
         for l in libs:

@@ -22,10 +22,15 @@ import numpy
 import sumpf
 
 try:
-    import scikits.audiolab as audiolab
-    audiolab_available = True
+    import soundfile
+    soundfile_available = True
 except ImportError:
-    audiolab_available = False
+    soundfile_available = False
+    try:
+        import scikits.audiolab as audiolab
+        audiolab_available = True
+    except ImportError:
+        audiolab_available = False
 
 oct2py_available = False
 if sys.version_info.major == 2:
@@ -45,6 +50,11 @@ from .fileformat import FileFormat
 
 
 signalformats = []
+
+
+#########
+# NumPy #
+#########
 
 
 class NUMPY_NPZ(FileFormat):
@@ -81,8 +91,111 @@ class NUMPY_NPZ(FileFormat):
 signalformats.insert(0, NUMPY_NPZ)  # Make NUMPY_NPZ the default format, if no other format is available
 
 
+###############
+# PySoundFile #
+###############
 
-if audiolab_available:
+if soundfile_available:
+    class SoundFileFileFormat(FileFormat):
+        """
+        An abstract base class for file formats that are available through
+        the PySoundFile library.
+        """
+        format = None
+        encoding = None
+
+        @classmethod
+        def Load(cls, filename):
+            data, samplingrate = soundfile.read(file="%s.%s" % (filename, cls.ending))
+            return sumpf.Signal(channels=numpy.transpose(data),
+                                samplingrate=samplingrate,
+                                labels=[str(" ".join([filename.split(os.sep)[-1], str(c + 1)])) for c in range(len(data))])
+
+        @classmethod
+        def Save(cls, filename, data):
+            d = numpy.transpose(data.GetChannels())
+            soundfile.write(data=d,
+                            file="%s.%s" % (filename, cls.ending),
+                            samplerate=int(round(data.GetSamplingRate())),
+                            subtype=cls.encoding,
+                            format=cls.format)
+
+
+
+    class AIFF_FLOAT(SoundFileFileFormat):
+        """
+        File format class for the Apple aiff format.
+        This one uses 32bit float samples.
+        """
+        ending = "aif"
+        format = "AIFF"
+        encoding = "FLOAT"
+
+
+
+    class AIFF_INT(SoundFileFileFormat):
+        """
+        File format class for the Apple aiff format.
+        This one uses 24bit integer samples.
+        """
+        ending = "aif"
+        format = "AIFF"
+        encoding = "PCM_24"
+
+
+
+    class FLAC(SoundFileFileFormat):
+        """
+        File format class for the flac format.
+        This one uses 24bit integer samples.
+        """
+        ending = "flac"
+        format = "FLAC"
+        encoding = "PCM_24"
+
+
+
+    class WAV_DOUBLE(SoundFileFileFormat):
+        """
+        File format class for the wav format.
+        This one uses 64bit float samples.
+        """
+        ending = "wav"
+        format = "WAV"
+        encoding = "DOUBLE"
+
+
+
+    class WAV_FLOAT(SoundFileFileFormat):
+        """
+        File format class for the wav format.
+        This one uses 32bit float samples.
+        """
+        ending = "wav"
+        format = "WAV"
+        encoding = "FLOAT"
+
+
+
+    class WAV_INT(SoundFileFileFormat):
+        """
+        File format class for the wav format.
+        This one uses 24bit integer samples.
+        """
+        ending = "wav"
+        format = "WAV"
+        encoding = "PCM_24"
+
+    signalformats.insert(0, WAV_FLOAT)  # make WAV_FLOAT the default format
+    signalformats.extend([AIFF_FLOAT, AIFF_INT, FLAC, WAV_DOUBLE, WAV_INT])
+
+
+
+####################
+# scikits.audiolab #
+####################
+
+elif audiolab_available:    # if PySoundFile is not installed, check for scikits.audiolab
     class AudioLabFileFormat(FileFormat):
         """
         An abstract base class for file formats that are available through
@@ -127,8 +240,6 @@ if audiolab_available:
         format = "aiff"
         encoding = "float32"
 
-    signalformats.append(AIFF_FLOAT)
-
 
 
     class AIFF_INT(AudioLabFileFormat):
@@ -139,8 +250,6 @@ if audiolab_available:
         ending = "aif"
         format = "aiff"
         encoding = "pcm24"
-
-    signalformats.append(AIFF_INT)
 
 
 
@@ -153,8 +262,6 @@ if audiolab_available:
         format = "flac"
         encoding = "pcm24"
 
-    signalformats.append(FLAC)
-
 
 
     class WAV_FLOAT(AudioLabFileFormat):
@@ -165,8 +272,6 @@ if audiolab_available:
         ending = "wav"
         format = "wav"
         encoding = "float32"
-
-    signalformats.insert(0, WAV_FLOAT)  # make WAV_FLOAT the default format
 
 
 
@@ -179,66 +284,15 @@ if audiolab_available:
         format = "wav"
         encoding = "pcm24"
 
-    signalformats.append(WAV_INT)
+    signalformats.insert(0, WAV_FLOAT)  # make WAV_FLOAT the default format
+    signalformats.extend([AIFF_FLOAT, AIFF_INT, FLAC, WAV_INT])
 
 
+##########
+# oct2py #
+##########
 
 if oct2py_available:
-    class ITA_AUDIO(FileFormat):
-        """
-        File format class for the format used by the ITA-Toolbox from the Institute
-        of Technical Acoustics, RWTH Aachen University.
-        http://www.ita-toolbox.org
-        This class can only read itaAudio files. Writing is not possible.
-
-        Importing itaAudio files is done with the help of the oct2py library.
-        In the current Implementation, SuMPF closes oct2py's convenience instance,
-        if it has not been created before reading or writing a file. This has
-        the side effect, that the convenience instance has to be restarted before
-        it is usable, when a file was read or written with oct2py, before oct2py
-        had been imported anywhere else.
-        Sadly this is necessary, because if the convenience instance were not closed,
-        a probably unused process of Octave would remain active until the Python
-        interpreter is closed.
-        """
-        ending = "ita"
-        read_only = True
-
-        @classmethod
-        def Load(cls, filename):
-            filename = "%s.%s" % (filename, cls.ending)
-            # retrieve the Matlab data through octave
-            path_of_this_file = sumpf.helper.normalize_path(inspect.getfile(inspect.currentframe()))
-            terminate_convenience_instance = "oct2py" not in sys.modules
-            import oct2py
-            with oct2py.Oct2Py() as octave:
-                octave.addpath(os.sep.join(path_of_this_file.split(os.sep)[0:-1]))
-                samples, samplingrate, domain, names, units = octave.read_ita_file(filename)
-            if terminate_convenience_instance:
-                oct2py.octave.exit()                    # stop the convenience instance to avoid an unused instance of Octave
-            channels = tuple(numpy.transpose(samples))
-            # create channel labels
-            labels = []
-            for i in range(len(names)):
-                if i < len(units):
-                    labels.append(str("%s [%s]" % (names[i], units[i])))
-                else:
-                    labels.append(str(names[i]))
-            # transform to the time domain, if necessary
-            if domain == "time":
-                return sumpf.Signal(channels=channels, samplingrate=samplingrate, labels=labels)
-            elif domain == "freq":
-                spectrum = sumpf.Spectrum(channels=channels,
-                                          resolution=sumpf.modules.ChannelDataProperties(spectrum_length=len(channels[0]), samplingrate=samplingrate).GetResolution(),
-                                          labels=labels)
-                return sumpf.modules.InverseFourierTransform(spectrum=spectrum).GetSignal()
-            else:
-                raise RuntimeError("Unknown domain: %s" % domain)
-
-    signalformats.append(ITA_AUDIO)
-
-
-
     class MATLAB(FileFormat):
         """
         File format class for the import and export of Octave/Matlab mat-files.
@@ -367,5 +421,58 @@ if oct2py_available:
             if terminate_convenience_instance:
                 oct2py.octave.exit()                    # stop the convenience instance to avoid an unused instance of Octave
 
-    signalformats.append(MATLAB)
+
+
+    class ITA_AUDIO(FileFormat):
+        """
+        File format class for the format used by the ITA-Toolbox from the Institute
+        of Technical Acoustics, RWTH Aachen University.
+        http://www.ita-toolbox.org
+        This class can only read itaAudio files. Writing is not possible.
+
+        Importing itaAudio files is done with the help of the oct2py library.
+        In the current Implementation, SuMPF closes oct2py's convenience instance,
+        if it has not been created before reading or writing a file. This has
+        the side effect, that the convenience instance has to be restarted before
+        it is usable, when a file was read or written with oct2py, before oct2py
+        had been imported anywhere else.
+        Sadly this is necessary, because if the convenience instance were not closed,
+        a probably unused process of Octave would remain active until the Python
+        interpreter is closed.
+        """
+        ending = "ita"
+        read_only = True
+
+        @classmethod
+        def Load(cls, filename):
+            filename = "%s.%s" % (filename, cls.ending)
+            # retrieve the Matlab data through octave
+            path_of_this_file = sumpf.helper.normalize_path(inspect.getfile(inspect.currentframe()))
+            terminate_convenience_instance = "oct2py" not in sys.modules
+            import oct2py
+            with oct2py.Oct2Py() as octave:
+                octave.addpath(os.sep.join(path_of_this_file.split(os.sep)[0:-1]))
+                samples, samplingrate, domain, names, units = octave.read_ita_file(filename)
+            if terminate_convenience_instance:
+                oct2py.octave.exit()                    # stop the convenience instance to avoid an unused instance of Octave
+            channels = tuple(numpy.transpose(samples))
+            # create channel labels
+            labels = []
+            for i in range(len(names)):
+                if i < len(units):
+                    labels.append(str("%s [%s]" % (names[i], units[i])))
+                else:
+                    labels.append(str(names[i]))
+            # transform to the time domain, if necessary
+            if domain == "time":
+                return sumpf.Signal(channels=channels, samplingrate=samplingrate, labels=labels)
+            elif domain == "freq":
+                spectrum = sumpf.Spectrum(channels=channels,
+                                          resolution=sumpf.modules.ChannelDataProperties(spectrum_length=len(channels[0]), samplingrate=samplingrate).GetResolution(),
+                                          labels=labels)
+                return sumpf.modules.InverseFourierTransform(spectrum=spectrum).GetSignal()
+            else:
+                raise RuntimeError("Unknown domain: %s" % domain)
+
+    signalformats.extend([MATLAB, ITA_AUDIO])
 

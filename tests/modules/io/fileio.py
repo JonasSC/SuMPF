@@ -40,7 +40,14 @@ class TestFileIO(unittest.TestCase):
         signal2 = sumpf.Signal(channels=((-0.1, -0.2, -0.3), (-0.4, -0.5, -0.6), (-0.7, -0.8, -0.9)), samplingrate=25.0, labels=("three", "four", "five"))
         formats = {}#                                 exact,labels,float samplingrate
         formats[sumpf.modules.SignalFile.NUMPY_NPZ] = (True, True, True)
-        if common.lib_available("scikits.audiolab"):
+        if common.lib_available("soundfile"):
+            formats[sumpf.modules.SignalFile.AIFF_FLOAT] = (False, False, False)
+            formats[sumpf.modules.SignalFile.AIFF_INT] = (False, False, False)
+            formats[sumpf.modules.SignalFile.FLAC] = (False, False, False)
+            formats[sumpf.modules.SignalFile.WAV_DOUBLE] = (True, False, False)
+            formats[sumpf.modules.SignalFile.WAV_INT] = (False, False, False)
+            formats[sumpf.modules.SignalFile.WAV_FLOAT] = (False, False, False)
+        elif common.lib_available("scikits.audiolab"):
             formats[sumpf.modules.SignalFile.AIFF_FLOAT] = (False, False, False)
             formats[sumpf.modules.SignalFile.AIFF_INT] = (False, False, False)
             formats[sumpf.modules.SignalFile.FLAC] = (False, False, False)

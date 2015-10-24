@@ -189,17 +189,21 @@
 				</td>
 			</tr>
 			<tr>
-				<td class="subsection"><a href="http://www.ar.media.kyoto-u.ac.jp/members/david/softwares/audiolab/">scikits.audiolab</a></td>
+				<td class="subsection">
+					<a href="https://github.com/bastibe/PySoundFile">PySoundFile</a><br />
+					<a href="http://www.ar.media.kyoto-u.ac.jp/members/david/softwares/audiolab/">scikits.audiolab</a>
+				</td>
 				<td colspan="2" class="text">
-					scikits.audiolab is a Python interface for the
-					<a href="http://www.mega-nerd.com/libsndfile/">libsndfile</a>
-					library. It provides functionality to read and write audio
+					PySoundFile and scikits.audiolab is a Python interfaces for
+					the <a href="http://www.mega-nerd.com/libsndfile/">libsndfile</a>
+					library. They provide functionality to read and write audio
 					files in many different formats.<br />
-					SuMPF uses it to read and write Signal files from and to common
-					audio files such as wav, aiff and flac.<br />
-					If scikits.audiolab is missing, Signals can only be written
-					to a NumPy npz file.<br />
-					scikits.audiolab depends on NumPy.<br />
+					SuMPF uses them to read and write Signal files from and to
+					common audio files such as wav, aiff and flac. It first checks
+					for PySoundFile and if that is not available, it tries to
+					fall back to scikits.audiolab.<br />
+					Both PySoundFile and scikits.audiolab require NumPy to be
+					installed.<br />
 					<br />
 					If scikits.audiolab cannot be installed through the operating
 					system, it can be installed with easy_install.<br />
@@ -207,9 +211,6 @@
 					user on the system. To install it in your home directory to
 					somewhere like "~/.local/lib/python..." use the command
 					<nobr>"easy_install --user scikits.audiolab"</nobr><br />
-					<br />
-					On Windows make sure to get an audiolab-version that is compatible
-					with Python 2.7.
 				</td>
 			</tr>
 			<tr>
