@@ -183,6 +183,33 @@ class Bandstop(FilterFunction):
         return [([a0, a1, a2], [b0, b1, b2])]
 
 
+
+class TransferFunction(FilterFunction):
+    """
+    Takes two sequences of coefficients, that define a transfer function as a
+    fraction in the laplace domain.
+    The resulting transfer function G(s) is computed as follows:
+      a0, a1, a2, ..., an = numerator   # the numerator sequence as it is passed to the constructor
+      b0, b1, b2, ..., bn = denominator # the denominator sequence as it is passed to the constructor
+      G(s) = (a0 + a1*s + a2*s**2 + ... + an*s**n) / (b0 + b1*s + b2*s**2 + ... + bn*s**n)
+    """
+    def __init__(self, numerator=[1.0], denominator=[1.0]):
+        """
+        @param numerator: a sequence of coefficients for the numerator polynomial
+        @param denominator: a sequence of coefficients for the denominator polynomial
+        """
+        self.__numerator = numerator
+        self.__denominator = denominator
+
+    def GetCoefficients(self):
+        """
+        Returns the coefficients for the filter.
+        @retval : a list of tuples (a, b) where a and b are lists of coefficients
+        """
+        return [(self.__numerator, self.__denominator)]
+
+
+
 #######################
 # the generator class #
 #######################
@@ -197,6 +224,7 @@ class FilterGenerator(FilterWithCoefficients):
     CHEBYCHEV1 = Chebychev1
     BANDPASS = Bandpass
     BANDSTOP = Bandstop
+    TRANSFERFUNCTION = TransferFunction
 
     def __init__(self, filterfunction=None, frequency=1000.0, transform=False, resolution=None, length=None):
         """

@@ -69,6 +69,22 @@ class TestFilterGenerator(unittest.TestCase):
         self.assertAlmostEqual(channel[45], 1.0 / math.sqrt(2.0), 1)        # gain at lower cutoff frequency should be sqrt(2)
         self.assertAlmostEqual(channel[55], 1.0 / math.sqrt(2.0), 1)        # gain at upper cutoff frequency should be sqrt(2)
 
+    def test_transferfunction(self):
+        """
+        Tests the generation of a filter by its laplace transfer function.
+        """
+        for f in [sumpf.modules.FilterGenerator.BUTTERWORTH, sumpf.modules.FilterGenerator.BESSEL, sumpf.modules.FilterGenerator.CHEBYCHEV1, sumpf.modules.FilterGenerator.BANDPASS, sumpf.modules.FilterGenerator.BANDSTOP]:
+            filterfunction = f()
+            numerator, denominator = filterfunction.GetCoefficients()[0]
+            transferfunction = sumpf.modules.FilterGenerator.TRANSFERFUNCTION(numerator, denominator)
+            for cutoff in (1.0, 1000.0):
+                resolution = cutoff / 10.0
+                length = 20
+                for highpass in (False, True):
+                    f_filter = sumpf.modules.FilterGenerator(filterfunction=filterfunction, frequency=cutoff, transform=highpass, resolution=resolution, length=length).GetSpectrum()
+                    tf_filter = sumpf.modules.FilterGenerator(filterfunction=transferfunction, frequency=cutoff, transform=highpass, resolution=resolution, length=length).GetSpectrum()
+                    self.assertEqual(f_filter.GetChannels(), tf_filter.GetChannels())
+
     def test_connectors(self):
         """
         Tests if the connectors are properly decorated.
