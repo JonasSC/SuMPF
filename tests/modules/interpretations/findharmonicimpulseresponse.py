@@ -20,12 +20,12 @@ import sumpf
 import _common as common
 
 
-@unittest.skipUnless(sumpf.config.get("run_long_tests"), "Long tests are skipped")
 @unittest.skipUnless(common.lib_available("numpy"), "These tests require the library 'numpy' to be available.")
 class TestFindHarmonicImpulseResponse(unittest.TestCase):
     """
     A TestCase for the FindHarmonicImpulseResponse module.
     """
+    @unittest.skipUnless(sumpf.config.get("run_long_tests"), "Long tests are skipped")
     def test_impulse_response_length(self):
         """
         Tests if the cut out impulse responses are resampled correctly.
@@ -61,6 +61,7 @@ class TestFindHarmonicImpulseResponse(unittest.TestCase):
             self.assertEqual(len(harmonic), l)
             self.assertEqual(harmonic.GetSamplingRate(), sr / o)
 
+    @unittest.skipUnless(sumpf.config.get("run_long_tests"), "Long tests are skipped")
     def test_harmonic_frequency_response(self):
         """
         Tests if the frequency response of the cut out harmonics look realistic.
@@ -97,6 +98,12 @@ class TestFindHarmonicImpulseResponse(unittest.TestCase):
             maximum = htf.GetMagnitude()[0].index(max(htf.GetMagnitude()[0])) * htf.GetResolution()
             self.assertLess(abs(reference_maximum - maximum), htf.GetResolution())
 
+    def test_none_labels(self):
+        impulse_response = sumpf.Signal(channels=((1.0, 0.0, 0.0, 0.0, 1.0),), samplingrate=1.0, labels=(None,))
+        hir = sumpf.modules.FindHarmonicImpulseResponse(impulse_response=impulse_response, harmonic_order=2, sweep_start_frequency=100.0, sweep_stop_frequency=200.0).GetHarmonicImpulseResponse()
+        self.assertEqual(hir.GetLabels(), ("Impulse Response (2nd harmonic)",))
+
+    @unittest.skipUnless(sumpf.config.get("run_long_tests"), "Long tests are skipped")
     def test_errors(self):
         """
         tests if all errors are raised as expected
@@ -105,6 +112,7 @@ class TestFindHarmonicImpulseResponse(unittest.TestCase):
         fhi = sumpf.modules.FindHarmonicImpulseResponse()
         self.assertRaises(ValueError, fhi.SetHarmonicOrder, 1)
 
+    @unittest.skipUnless(sumpf.config.get("run_long_tests"), "Long tests are skipped")
     def test_connectors(self):
         """
         Tests if the connectors are properly decorated.

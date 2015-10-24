@@ -141,7 +141,10 @@ class FindHarmonicImpulseResponse(object):
         labels = []
         affix = " (%s harmonic)" % sumpf.helper.counting_number(self.__harmonic_order)
         for l in self.__impulse_response.GetLabels():
-            labels.append(l + affix)
+            if l is None:
+                labels.append("Impulse Response" + affix)
+            else:
+                labels.append(l + affix)
         # crop to the impulse response of the wanted harmonic
         cropped = self.__impulse_response[harmonic_start_sample:harmonic_stop_sample]
         harmonic = sumpf.Signal(channels=cropped.GetChannels(), samplingrate=cropped.GetSamplingRate() / self.__harmonic_order, labels=tuple(labels))
