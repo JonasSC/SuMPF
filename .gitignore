@@ -6,6 +6,7 @@ __pycache__
 /documentation/doxygen/
 /documentation/moduledoc/
 /documentation/statistics.htm
+/documentation/findmodule/modules.js
 
 # ignore C sources that have been created by Cython
 source/_sumpf/_modules/_models/_thielesmallparameters/auralization_nonlinear_cython.c

@@ -23,6 +23,7 @@ mrproper:	clean
 	rm -rf documentation/doxygen
 	rm -rf documentation/moduledoc
 	rm -f documentation/statistics.htm
+	rm -f documentation/findmodule/modules.js
 
 test_quick:
 	# runs the quick standard tests of SuMPF's test suite with the default
@@ -74,6 +75,7 @@ doc:
 	doxygen tools/Doxyfile
 	export PYTHONPATH="$$PYTHONPATH":"`pwd`/source" && python tools/moduledoc.py -o documentation/moduledoc/ -d documentation/doxygen/html/ -m sumpf -s documentation/header.js
 	python tools/statistics.py -f documentation/statistics.htm
+	export PYTHONPATH="$$PYTHONPATH":"`pwd`/source" && python tools/findmodule.py -f documentation/findmodule/modules.js -d ../doxygen/html
 
 install_examples:
 	# installs the examples of SuMPF as executable programs on the system.

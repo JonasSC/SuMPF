@@ -34,6 +34,8 @@
 			<tr>
 				<td class="subsection">ModuleDoc</td>
 				<td class="text">
+					ModuleDoc gives an overview about wich object can be found
+					in which module of SuMPF.<br />
 					While doxygen is great for documenting classes, I have not
 					got it working for the functions and python submodules of
 					SuMPF. So their docstrings have been extracted by the self
@@ -41,9 +43,21 @@
 					ModuleDoc only documents accessable components of a module.
 					For example, it does not show abstract base classes that
 					cannot be accessed by importing the module.<br />
-					The documentation can be found <a href="moduledoc/sumpf.htm">here</a>.
+					The documentation can be found <a href="moduledoc/sumpf.htm">here</a>.<br />
 					If the documentation is not there yet, it might need to be
 					built with ModuleDoc. This can be done with the provided
+					<a href="installation.htm#Makefile">Makefile</a>.
+				</td>
+			</tr>
+			<tr>
+				<td class="subsection">FindModule</td>
+				<td class="text">
+					FindModule is a search functionality to find a signal processing
+					class by the properties of its connectors.<br />
+					The search page can be found <a href="findmodule/findmodule.htm">here</a>.<br />
+					FindModule requires, that a class index has been compiled into
+					a javascript file. If the search page is empty, this index
+					has to be created by building the documentation with the
 					<a href="installation.htm#Makefile">Makefile</a>.
 				</td>
 			</tr>
@@ -105,9 +119,10 @@
 				<td class="text">
 					Monkeyforest is a cool measurement system from
 					<a href="http://www.four-audio.com">Four Audio</a>. I had
-					the honour to use it in a lab at the university and was so
-					impressed by the possibilities of acoustical measurements,
+					the honour to use it in a lab course at the university and was
+					so impressed by the possibilities of acoustical measurements,
 					that I wanted to have such a system as well.<br />
+					<br />
 					Monkeyforest has two significant drawbacks though:
 					<ul>
 						<li>It is not free software, which, in my opinion, disqualifies it for productive work.</li>
