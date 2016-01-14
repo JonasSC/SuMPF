@@ -62,10 +62,13 @@ class CopyChannelDataChannels(object):
         """
         self._input = input
 
-    @sumpf.Input(int, "GetOutput")
+    @sumpf.Input((int, sumpf.internal.ChannelData), "GetOutput")
     def SetChannelCount(self, channelcount):
         """
         Sets the number of channels of the output data set.
+        This can be done either by specifying the integer number of channels or
+        by passing a ChannelData instance (e.g. Signal or Spectrum), whose channel
+        count will be used.
         If the input data set has multiple channels, all the channels will be
         copied until the channel count is reached.
         An example:
@@ -82,7 +85,10 @@ class CopyChannelDataChannels(object):
         called in the constructor.
         @param channelcount: the integer number of channels of the output data set
         """
-        channelcount = int(channelcount)
+        if isinstance(channelcount, sumpf.internal.ChannelData):
+            channelcount = len(channelcount.GetChannels())
+        else:
+            channelcount = int(channelcount)
         if channelcount >= 1:
             self.__channelcount = channelcount
         else:
@@ -94,6 +100,10 @@ class CopySignalChannels(CopyChannelDataChannels):
     """
     Copies the channels of an input Signal to create an output Signal with a
     given number of channels.
+
+    The number of channels can either be specified as an integer number or by
+    passing a ChannelData instance (e.g. Signal or Spectrum), whose channel count
+    will be used.
 
     If the Signal has multiple channels, all these channels will be copied in
     the correct order. This order will be repeated if necessary until the desired
@@ -140,6 +150,10 @@ class CopySpectrumChannels(CopyChannelDataChannels):
     """
     Copies the channels of an input Spectrum to create an output Spectrum with a
     given number of channels.
+
+    The number of channels can either be specified as an integer number or by
+    passing a ChannelData instance (e.g. Signal or Spectrum), whose channel count
+    will be used.
 
     If the Spectrum has multiple channels, all these channels will be copied in
     the correct order. This order will be repeated if necessary until the desired
