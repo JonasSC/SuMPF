@@ -38,7 +38,7 @@ class TriggerInputConnector(InputConnector):
         @param args, kwargs: parameters with which the replaced method has been called
         """
         self._Announce()
-        result = self._method(self._instance, *args, **kwargs)
+        result = self._method(self._instance(), *args, **kwargs)
         self.__value_change_announced = False
         self._Report()
         return result
@@ -59,7 +59,7 @@ class TriggerInputConnector(InputConnector):
         This method is called by a connected output when it has changed
         @param connector: The OutputConnector instance that has changed
         """
-        self._method(self._instance)
+        self._method(self._instance())
         self.__value_change_announced = False
         self._Report()
 

@@ -130,7 +130,7 @@ class NotCachingOutputConnector(OutputConnector):
         """
         By making the object callable, it mimics the replaced method.
         """
-        return self._method(self._instance, *args, **kwargs)
+        return self._method(self._instance(), *args, **kwargs)
 
 
 
@@ -154,7 +154,7 @@ class CachingOutputConnector(OutputConnector):
         By making the object callable, it mimics the replaced method.
         """
         if not self.__cache_is_valid:
-            self.__cached_value = self._method(self._instance, *args, **kwargs)
+            self.__cached_value = self._method(self._instance(), *args, **kwargs)
             self.__cache_is_valid = True
         return self.__cached_value
 

@@ -313,3 +313,19 @@ class ProgressTester(object):
             if self.count_outputs:
                 self.progress = (self.progress[0], self.progress[1] + 1, self.progress[2])
 
+
+
+class MacroTestClass(object):
+    def __init__(self):
+        self.__amplifier = sumpf.modules.AmplifySignal()
+        fft = sumpf.modules.FourierTransform()
+        sumpf.connect(self.__amplifier.GetOutput, fft.SetSignal)
+        self.__inversion = sumpf.modules.RegularizedSpectrumInversion()
+        sumpf.connect(fft.GetSpectrum, self.__inversion.SetSpectrum)
+        self.SetSignal = self.__amplifier.SetInput
+        self.GetInversion = self.__inversion.GetOutput
+
+    def Destroy(self):
+        sumpf.disconnect_all(self.__amplifier)
+        sumpf.disconnect_all(self.__inversion)
+

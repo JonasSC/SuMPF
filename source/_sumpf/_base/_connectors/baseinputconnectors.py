@@ -34,7 +34,7 @@ class InputConnector(Connector):
         Connector.__init__(self, instance, method)
         self.__observers = []
         for o in observers:
-            method = getattr(self._instance, o)
+            method = getattr(self._instance(), o)
             if isinstance(method, ConnectorProxy):
                 self.__observers.append(method.GetConnector())
             else:

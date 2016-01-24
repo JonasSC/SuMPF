@@ -38,7 +38,7 @@ class SingleInputConnector(TypedInputConnector):
         @param args, kwargs: parameters with which the replaced method has been called
         """
         self._Announce()
-        result = self._method(self._instance, *args, **kwargs)
+        result = self._method(self._instance(), *args, **kwargs)
         self.__value_change_announced = False
         self._Report()
         return result
@@ -62,7 +62,7 @@ class SingleInputConnector(TypedInputConnector):
         """
         value = connector()
         self._progress_indicator.Report(connector)
-        self._method(self._instance, value)
+        self._method(self._instance(), value)
         self.__value_change_announced = False
         self._Report()
 

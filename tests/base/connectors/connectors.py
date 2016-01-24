@@ -20,7 +20,7 @@ import unittest
 import sumpf
 
 import _common as common
-from .exampleclasses import ExampleClass, SetMultipleValuesTestClass
+from .exampleclasses import ExampleClass, SetMultipleValuesTestClass, MacroTestClass
 
 
 class TestConnectors(unittest.TestCase):
@@ -366,6 +366,20 @@ class TestConnectors(unittest.TestCase):
                     self.assertEqual(gc.garbage, [])       # garbage collection should have removed all garbage
                     return
             self.fail("The object has neither been deleted, nor has it been marked as garbage")
+
+    @unittest.skipUnless(common.lib_available("numpy"), "This test requires the library 'numpy' to be available.")
+    def test_macro(self):
+        """
+        Tests for undesired deletions of weakly referenced signal processing objects.
+        """
+        sumpf.collect_garbage() # collect garbage from tests, that might have failed before
+        # check if the signal processing chain works, even when not all processing objects are stored in persistent variables
+        macro = MacroTestClass()
+        macro.SetSignal(sumpf.Signal())
+        # check if the non-persistently stored objects are deleted by reference counting, when all connections to them are disconnected
+        macro.Destroy()
+        del macro
+        self.assertEqual(gc.collect(), 0)   # the objects should have been deleted by reference counting, rather than the garbage collector
 
     @unittest.skipUnless(sumpf.config.get("run_long_tests"), "Long tests are skipped")
     @unittest.skipUnless(common.lib_available("numpy"), "This test requires the library 'numpy' to be available.")

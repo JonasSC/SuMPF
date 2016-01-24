@@ -14,6 +14,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 
+import weakref
 import sumpf
 
 
@@ -26,8 +27,9 @@ class Connector(object):
     chain to be updated.
     """
     def __init__(self, instance, method):
-        self.__doc__ = method.__doc__       # This way the docstring of the decorated method remains the same
-        self._instance = instance
+        self.__doc__ = method.__doc__           # This way the docstring of the decorated method remains the same
+        self._instance = weakref.ref(instance)  # the weak reference avoids reference counting errors due to circular references
+        self.__strong_reference = None          # stores a strong reference to the instance, when the connector is connected; this allows to create signal processing chains, without storing all processing objects persistently
         self._method = method
         self._connections = []
 
@@ -68,6 +70,7 @@ class Connector(object):
         """
         self.CheckConnection(connector)
         self._connections.append(connector)
+        self.__strong_reference = self._instance()
 
     def Disconnect(self, connector):
         """
@@ -76,6 +79,8 @@ class Connector(object):
         @param connector: the connector from which this connector shall be disconnected
         """
         self._connections.remove(connector)
+        if len(self._connections) == 0:
+            self.__strong_reference = None
 
     def DisconnectAll(self):
         """
@@ -107,7 +112,7 @@ class Connector(object):
         of the decorated method.
         @retval : a string CLASSNAME.METHODNAME
         """
-        return ".".join((self._instance.__class__.__name__, self._method.__name__))
+        return ".".join((self._instance().__class__.__name__, self._method.__name__))
 
 
 

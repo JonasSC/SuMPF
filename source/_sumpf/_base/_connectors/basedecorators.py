@@ -14,7 +14,6 @@
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 
-import weakref
 from .connectorproxy import ConnectorProxy
 
 
@@ -58,7 +57,7 @@ class ConnectorDecorator(object):
         @param instance: the instance of which a method shall be replaced
         @param instance_type: the type of the instance
         """
-        connector = self._GetConnector(weakref.proxy(instance))
+        connector = self._GetConnector(instance)
         setattr(instance, self._method.__name__, connector)
         return ConnectorProxy(connector=connector, instance=instance)
 
