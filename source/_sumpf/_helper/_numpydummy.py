@@ -32,93 +32,58 @@ def get_iterable_depth(container):
     else:
         return 0
 
-def add(a, b):
-    """
-    an alternative for numpy.add
-    """
+def algebra_base(a, b, function):
     result = []
     da = get_iterable_depth(a)
     db = get_iterable_depth(b)
     if da == 0 and db == 0:
-        result = a + b
+        result = function(a, b)
     elif da < db:
         for i in b:
-            result.append(add(a, i))
+            result.append(algebra_base(a, i, function))
         return result
     elif da > db:
         for i in a:
-            result.append(add(i, b))
+            result.append(algebra_base(i, b, function))
         return result
     else:
-        for i in range(min(len(a), len(b))):
-            result.append(add(a[i], b[i]))
+        for i in range(max(len(a), len(b))):
+            result.append(algebra_base(a[i % len(a)], b[i % len(b)], function))
     return result
+
+def add(a, b):
+    """
+    an alternative for numpy.add
+    """
+    return algebra_base(a, b, function=lambda c, d: c + d)
 
 def subtract(a, b):
     """
     an alternative for numpy.subtract
     """
-    result = []
-    da = get_iterable_depth(a)
-    db = get_iterable_depth(b)
-    if da == 0 and db == 0:
-        result = a - b
-    elif da < db:
-        for i in b:
-            result.append(subtract(a, i))
-        return result
-    elif da > db:
-        for i in a:
-            result.append(subtract(i, b))
-        return result
-    else:
-        for i in range(min(len(a), len(b))):
-            result.append(subtract(a[i], b[i]))
-    return result
+    return algebra_base(a, b, function=lambda c, d: c - d)
 
 def multiply(a, b):
     """
     an alternative for numpy.multiply
     """
-    result = []
-    da = get_iterable_depth(a)
-    db = get_iterable_depth(b)
-    if da == 0 and db == 0:
-        result = a * b
-    elif da < db:
-        for i in b:
-            result.append(multiply(a, i))
-        return result
-    elif da > db:
-        for i in a:
-            result.append(multiply(i, b))
-        return result
-    else:
-        for i in range(min(len(a), len(b))):
-            result.append(multiply(a[i], b[i]))
-    return result
+    return algebra_base(a, b, function=lambda c, d: c * d)
 
 def divide(a, b):
     """
     an alternative for numpy.divide
     """
-    result = []
-    da = get_iterable_depth(a)
-    db = get_iterable_depth(b)
-    if da == 0 and db == 0:
-        result = a / b
-    elif da < db:
-        for i in b:
-            result.append(divide(a, i))
-        return result
-    elif da > db:
-        for i in a:
-            result.append(divide(i, b))
-        return result
-    else:
-        for i in range(min(len(a), len(b))):
-            result.append(divide(a[i], b[i]))
-    return result
+    return algebra_base(a, b, function=lambda c, d: c / d)
+
+def true_divide(a, b):
+    """
+    an alternative for numpy.true_divide
+    """
+    def function(c, d):
+        if isinstance(c, int):
+            c = float(c)
+        return c / d
+    return algebra_base(a, b, function)
 
 def abs(x):
     """
@@ -190,4 +155,51 @@ def var(a):
     """
     squared = multiply(a, a)
     return mean(squared) - mean(a) ** 2
+
+def shape(a):
+    """
+    an alternative to numpy.shape
+    """
+    if isinstance(a, collections.Iterable):
+        if len(a) == 0:
+            return (0,)
+        else:
+            return (len(a),) + shape(a[0])
+    else:
+        return ()
+
+def prod(a):
+    """
+    an alternative to numpy.prod
+    """
+    if isinstance(a, collections.Iterable):
+        result = 1.0
+        for b in a:
+            result *= prod(b)
+        return result
+    else:
+        return a
+
+def nonzero(a):
+    """
+    an alternative to numpy.nonzero
+    """
+    if isinstance(a, collections.Iterable):
+        if len(a) == 0:
+            return ((),)
+        else:
+            def recursion(array, path):
+                result = []
+                for i, b in enumerate(array):
+                    if isinstance(b, collections.Iterable):
+                        result.extend(recursion(b, path=path + (i,)))
+                    elif b != 0.0:
+                        result.append(path + (i,))
+                return tuple(result)
+            return tuple(zip(*recursion(a, ())))
+    else:
+        if a != 0:
+            return ((0,),)
+        else:
+            return ((),)
 

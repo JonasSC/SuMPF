@@ -32,18 +32,15 @@ class TestNumpyDummy(unittest.TestCase):
     A TestCase for the numpydummy functions.
     """
     def setUp(self):
-        self.arrayvalues = []
-        self.arrayvalues.append((1.0, -0.1))
-        self.arrayvalues.append(((1.0, -2.0, 3.0),
-                                 (0.1, -0.2, 0.3)))
-        self.arrayvalues.append((
-                                 ((1.0, -2.0, 3.0),
-                                  (4.0, -5.0, 6.0),
-                                  (7.0, -8.0, 9.0)),
-                                 ((0.1, -0.2, 0.3),
-                                  (0.4, -0.5, 0.6),
-                                  (0.7, -0.8, 0.9)),
-                               ))
+        self.arrayvalues = [(1.0, -0.1),
+                            ((1.0, -2.0, 3.0),
+                             (0.1, -0.2, 0.3)),
+                            (((1.0, -2.0, 3.0),
+                              (4.0, -5.0, 6.0),
+                              (7.0, -8.0, 9.0)),
+                             ((0.1, -0.2, 0.3),
+                              (0.4, -0.5, 0.6),
+                              (0.7, -0.8, 0.9)))]
         self.complexvalues = (2.0, 1.4j, 2.3 + 4.7j, 6.3j + 1.2)
 
     def __Compare(self, result_numpy, result_numpydummy, a_index, b_index):
@@ -62,6 +59,11 @@ class TestNumpyDummy(unittest.TestCase):
                 self.fail(str(result_numpy) + " != " + str(result_numpydummy) + "    (" + str(a_index) + " " + str(b_index) + ")")
 
     def test_add(self):
+        a = [(1, 2), (3, 4)]
+        b = [(5, 6)]
+        n = numpy.add(a, b)
+        d = sumpf.helper.numpydummy.add(a, b)
+        self.assertEqual(numpy.linalg.norm(numpy.subtract(n, d)), 0)
         for a in range(len(self.arrayvalues)):
             for b in range(len(self.arrayvalues)):
                 r1 = numpy.add(self.arrayvalues[a][0], self.arrayvalues[b][1])
@@ -69,6 +71,11 @@ class TestNumpyDummy(unittest.TestCase):
                 self.__Compare(r1, r2, a, b)
 
     def test_subtract(self):
+        a = [(1, 2), (3, 4)]
+        b = [(5, 6)]
+        n = numpy.subtract(a, b)
+        d = sumpf.helper.numpydummy.subtract(a, b)
+        self.assertEqual(numpy.linalg.norm(numpy.subtract(n, d)), 0)
         for a in range(len(self.arrayvalues)):
             for b in range(len(self.arrayvalues)):
                 r1 = numpy.subtract(self.arrayvalues[a][0], self.arrayvalues[b][1])
@@ -76,6 +83,11 @@ class TestNumpyDummy(unittest.TestCase):
                 self.__Compare(r1, r2, a, b)
 
     def test_multiply(self):
+        a = [(1, 2), (3, 4)]
+        b = [(5, 6)]
+        n = numpy.multiply(a, b)
+        d = sumpf.helper.numpydummy.multiply(a, b)
+        self.assertEqual(numpy.linalg.norm(numpy.subtract(n, d)), 0)
         for a in range(len(self.arrayvalues)):
             for b in range(len(self.arrayvalues)):
                 r1 = numpy.multiply(self.arrayvalues[a][0], self.arrayvalues[b][1])
@@ -83,10 +95,27 @@ class TestNumpyDummy(unittest.TestCase):
                 self.__Compare(r1, r2, a, b)
 
     def test_divide(self):
+        a = [(1, 2), (3, 4)]
+        b = [(5, 6)]
+        n = numpy.divide(a, b)
+        d = sumpf.helper.numpydummy.divide(a, b)
+        self.assertEqual(numpy.linalg.norm(numpy.subtract(n, d)), 0)
         for a in range(len(self.arrayvalues)):
             for b in range(len(self.arrayvalues)):
                 r1 = numpy.divide(self.arrayvalues[a][0], self.arrayvalues[b][1])
                 r2 = sumpf.helper.numpydummy.divide(self.arrayvalues[a][0], self.arrayvalues[b][1])
+                self.__Compare(r1, r2, a, b)
+
+    def test_true_divide(self):
+        a = [(1, 2), (3, 4)]
+        b = [(5, 6)]
+        n = numpy.true_divide(a, b)
+        d = sumpf.helper.numpydummy.true_divide(a, b)
+        self.assertEqual(numpy.linalg.norm(numpy.subtract(n, d)), 0)
+        for a in range(len(self.arrayvalues)):
+            for b in range(len(self.arrayvalues)):
+                r1 = numpy.true_divide(self.arrayvalues[a][0], self.arrayvalues[b][1])
+                r2 = sumpf.helper.numpydummy.true_divide(self.arrayvalues[a][0], self.arrayvalues[b][1])
                 self.__Compare(r1, r2, a, b)
 
     def test_abs(self):
@@ -140,4 +169,25 @@ class TestNumpyDummy(unittest.TestCase):
         from_dummy = sumpf.helper.numpydummy.var(values)
         from_numpy = numpy.var(values)
         self.assertAlmostEqual(from_dummy, from_numpy)
+
+    def test_shape(self):
+        self.__Compare(numpy.shape(self.arrayvalues[0][0]), sumpf.helper.numpydummy.shape(self.arrayvalues[0][0]), 0, 0)
+        self.__Compare(numpy.shape([]), sumpf.helper.numpydummy.shape([]), 0, 0)
+        for i, a in enumerate(self.arrayvalues):
+            self.__Compare(numpy.shape(a), sumpf.helper.numpydummy.shape(a), i, i)
+
+    def test_prod(self):
+        self.__Compare(numpy.prod(self.arrayvalues[0][0]), sumpf.helper.numpydummy.prod(self.arrayvalues[0][0]), 0, 0)
+        self.__Compare(numpy.prod([]), sumpf.helper.numpydummy.prod([]), 0, 0)
+        for i, a in enumerate(self.arrayvalues):
+            self.__Compare(numpy.prod(a), sumpf.helper.numpydummy.prod(a), i, i)
+
+    def test_nonzero(self):
+        self.__Compare(numpy.nonzero(0.0), sumpf.helper.numpydummy.nonzero(0.0), 0, 0)
+        self.__Compare(numpy.nonzero(self.arrayvalues[0][0]), sumpf.helper.numpydummy.nonzero(self.arrayvalues[0][0]), 0, 0)
+        self.__Compare(numpy.nonzero([]), sumpf.helper.numpydummy.nonzero([]), 0, 0)
+        for i, a in enumerate(self.arrayvalues):
+            self.__Compare(numpy.nonzero(a), sumpf.helper.numpydummy.nonzero(a), i, i)
+            b = numpy.multiply(a, (0.0, 2.4, 0.0)[0:numpy.shape(a)[-1]])
+            self.__Compare(numpy.nonzero(b), sumpf.helper.numpydummy.nonzero(b), i, i)
 

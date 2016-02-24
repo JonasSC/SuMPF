@@ -20,5 +20,6 @@ library. The functions are far slower than their NumPy equivalents. They are onl
 if NumPy is not available.
 """
 
-from ._numpydummy import float32, add, subtract, multiply, divide, abs, angle, conjugate, zeros, mean, var
+from ._numpydummy import float32, add, subtract, multiply, divide, true_divide, \
+                         abs, angle, conjugate, zeros, mean, var, shape, prod, nonzero
 
