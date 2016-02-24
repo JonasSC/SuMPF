@@ -79,7 +79,9 @@ class Signal(ChannelData):
         @param other: the Signal to which this Signal shall be compared
         @retval : True if Signals are equal, False otherwise
         """
-        if self.GetSamplingRate() != other.GetSamplingRate():
+        if not isinstance(other, Signal):
+            return False
+        elif self.GetSamplingRate() != other.GetSamplingRate():
             return False
         else:
             return ChannelData.__eq__(self, other)
@@ -115,13 +117,25 @@ class Signal(ChannelData):
         @param other: the Signal that shall be added to this one
         @retval : a Signal instance that is the sum of this Signal and the other one
         """
-        self.__CheckOtherSignal(other)
-        channels = []
-        labels = []
-        for i in range(len(self.GetChannels())):
-            channels.append(tuple(numpy.add(self.GetChannels()[i], other.GetChannels()[i])))
-            labels.append("Sum %i" % (i + 1))
-        return Signal(channels=tuple(channels), samplingrate=self.GetSamplingRate(), labels=tuple(labels))
+        if isinstance(other, (int, float)):
+            channels = numpy.add(self.GetChannels(), other)
+            labels = self.GetLabels()
+        else:
+            self.__CheckOtherSignal(other)
+            if other.IsEmpty():
+                channels = self.GetChannels()
+            else:
+                channels = numpy.add(self.GetChannels(), other.GetChannels())
+            labels = tuple(["Sum %i" % (i + 1) for i in range(len(channels))])
+        return Signal(channels=channels, samplingrate=self.GetSamplingRate(), labels=labels)
+
+    def __radd__(self, other):
+        """
+        This method is for adding a scalar value to this Signal's samples.
+        @param other: a value which shall be added to the Signal
+        @retval : a Signal instance whose samples are this Signal's samples added with the value
+        """
+        return self +other
 
     def __sub__(self, other):
         """
@@ -136,13 +150,29 @@ class Signal(ChannelData):
         @param other: the Signal that shall be subtracted from this one
         @retval : a Signal instance that is the difference of this Signal and the other one
         """
-        self.__CheckOtherSignal(other)
-        channels = []
-        labels = []
-        for i in range(len(self.GetChannels())):
-            channels.append(tuple(numpy.subtract(self.GetChannels()[i], other.GetChannels()[i])))
-            labels.append("Difference %i" % (i + 1))
-        return Signal(channels=tuple(channels), samplingrate=self.GetSamplingRate(), labels=tuple(labels))
+        if isinstance(other, (int, float)):
+            channels = numpy.subtract(self.GetChannels(), other)
+            labels = self.GetLabels()
+        else:
+            self.__CheckOtherSignal(other)
+            if other.IsEmpty():
+                channels = self.GetChannels()
+            else:
+                if self.IsEmpty():
+                    channels = numpy.subtract(0.0, other.GetChannels())
+                else:
+                    channels = numpy.subtract(self.GetChannels(), other.GetChannels())
+                labels = tuple([" %i" % (i + 1) for i in range(max(len(self.GetChannels()), len(other.GetChannels())))])
+            labels = tuple(["Difference %i" % (i + 1) for i in range(len(channels))])
+        return Signal(channels=channels, samplingrate=self.GetSamplingRate(), labels=labels)
+
+    def __rsub__(self, other):
+        """
+        This method is for subtracting this Signal's samples from a scalar value.
+        @param other: a value from which this Signal's samples shall be subtracted
+        @retval : a Signal instance whose samples are the value minus this Signal's samples
+        """
+        return Signal(channels=numpy.subtract(other, self.GetChannels()), samplingrate=self.GetSamplingRate(), labels=self.GetLabels())
 
     def __mul__(self, other):
         """
@@ -158,18 +188,17 @@ class Signal(ChannelData):
         @param other: the Signal or a factor that shall be multiplied with this one
         @retval : a Signal instance that is the product of this Signal and the other one
         """
-        channels = []
-        labels = []
         if isinstance(other, (int, float)):
-            for c in self.GetChannels():
-                channels.append(tuple(numpy.multiply(c, other)))
+            channels = numpy.multiply(self.GetChannels(), other)
             labels = self.GetLabels()
         else:
             self.__CheckOtherSignal(other)
-            for i in range(len(self.GetChannels())):
-                channels.append(tuple(numpy.multiply(self.GetChannels()[i], other.GetChannels()[i])))
-                labels.append("Product %i" % (i + 1))
-        return Signal(channels=tuple(channels), samplingrate=self.GetSamplingRate(), labels=tuple(labels))
+            if other.IsEmpty():
+                channels = self.GetChannels()
+            else:
+                channels = numpy.multiply(self.GetChannels(), other.GetChannels())
+            labels = tuple(["Product %i" % (i + 1) for i in range(len(channels))])
+        return Signal(channels=channels, samplingrate=self.GetSamplingRate(), labels=labels)
 
     def __rmul__(self, other):
         """
@@ -192,23 +221,42 @@ class Signal(ChannelData):
         @param other: the Signal by that this one shall be divided
         @retval : a Signal instance that is the quotient of this Signal and the other one
         """
-        channels = []
-        labels = []
+        selfvalue = self.GetChannels()
         if isinstance(other, (int, float)):
             if other == 0.0:
                 raise ZeroDivisionError("Signal division by zero")
-            for c in self.GetChannels():
-                channels.append(tuple(numpy.divide(c, other)))
             labels = self.GetLabels()
+            othervalue = other
         else:
             self.__CheckOtherSignal(other)
-            for i in range(len(self.GetChannels())):
-                otherchannel = other.GetChannels()[i]
-                if min(otherchannel) == 0.0 == max(otherchannel):
+            if self.IsEmpty():
+                selfvalue = 0.0
+            elif len(other) != len(self):
+                raise ValueError("The other Signal has a different length")
+            othervalue = other.GetChannels()
+            for c in othervalue:
+                if numpy.prod(numpy.shape(numpy.nonzero(c))) == 0:
                     raise ZeroDivisionError("Signal division by a Signal with only 0.0-samples")
-                channels.append(tuple(numpy.divide(self.GetChannels()[i], otherchannel)))
-                labels.append("Quotient %i" % (i + 1))
-        return Signal(channels=tuple(channels), samplingrate=self.GetSamplingRate(), labels=tuple(labels))
+            labels = tuple(["Quotient %i" % (i + 1) for i in range(max(len(self.GetChannels()), len(othervalue)))])
+        channels = numpy.true_divide(selfvalue, othervalue)
+        return Signal(channels=channels, samplingrate=self.GetSamplingRate(), labels=labels)
+
+    def __rtruediv__(self, other):
+        """
+        This method is for dividing a scalar value by the samples of this Signal.
+        @param other: a value which shall be divided
+        @retval : a Signal instance whose samples are the value divided by this Signal's samples
+        """
+        for c in self.GetChannels():
+            if numpy.prod(numpy.shape(numpy.nonzero(c))) == 0:
+                raise ZeroDivisionError("Signal division by a Signal with only 0.0-samples")
+        return Signal(channels=numpy.true_divide(other, self.GetChannels()), samplingrate=self.GetSamplingRate(), labels=self.GetLabels())
+
+    def __rdiv__(self, other):
+        """
+        The same as __rtruediv__. For backwards compatibility with Python 2.
+        """
+        return self.__rtruediv__(other)
 
     def __CheckOtherSignal(self, other):
         """
@@ -217,10 +265,11 @@ class Signal(ChannelData):
         An error is raised, when the Signals are not compatible.
         @param other: the other Signal that shall be compared to this one
         """
-        if len(other) != len(self):
-            raise ValueError("The other Signal has a different length")
         if other.GetSamplingRate() != self.GetSamplingRate():
             raise ValueError("The other Signal has a different sampling rate")
-        if len(other.GetChannels()) != len(self.GetChannels()):
+        if len(other.GetChannels()) != len(self.GetChannels()) and 1 not in (len(other.GetChannels()), len(self.GetChannels())):
             raise ValueError("The other Signal has a different number of channels")
+        if not (self.IsEmpty() or other.IsEmpty()):
+            if len(other) != len(self):
+                raise ValueError("The other Signal has a different length")
 

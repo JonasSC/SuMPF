@@ -79,12 +79,15 @@ class ChannelData(object):
         @param other: the data set to which this data set shall be compared
         @retval : True if data sets are equal, False otherwise
         """
-        if self.GetChannels() != other.GetChannels():
+        if self.GetLabels() != other.GetLabels():
             return False
-        elif self.GetLabels() != other.GetLabels():
+        elif len(self.GetChannels()) != len(other.GetChannels()):
             return False
-        else:
-            return True
+        elif len(self) != len(other):
+            return False
+        elif self.GetChannels() != other.GetChannels():
+            return False
+        return True
 
     def __ne__(self, other):
         """

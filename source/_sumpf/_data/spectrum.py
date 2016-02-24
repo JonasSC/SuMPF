@@ -123,7 +123,9 @@ class Spectrum(ChannelData):
         @param other: the Spectrum to which this Spectrum shall be compared
         @retval : True if Spectrums are equal, False otherwise
         """
-        if self.GetResolution() != other.GetResolution():
+        if not isinstance(other, Spectrum):
+            return False
+        elif self.GetResolution() != other.GetResolution():
             return False
         else:
             return ChannelData.__eq__(self, other)
@@ -139,13 +141,25 @@ class Spectrum(ChannelData):
             other = sumpf.Spectrum(channels = ((5, 6), (7, 8)))
             self + other == sumpf.Spectrum(channels=((1+5, 2+6), (3+7, 4+8)))
         """
-        self.__CheckOtherSpectrum(other)
-        channels = []
-        labels = []
-        for i in range(len(self.GetChannels())):
-            channels.append(tuple(numpy.add(self.GetChannels()[i], other.GetChannels()[i])))
-            labels.append("Sum %i" % (i + 1))
-        return Spectrum(channels=tuple(channels), resolution=self.GetResolution(), labels=tuple(labels))
+        if isinstance(other, (int, float, complex)):
+            channels = numpy.add(self.GetChannels(), other)
+            labels = self.GetLabels()
+        else:
+            self.__CheckOtherSpectrum(other)
+            if other.IsEmpty():
+                channels = self.GetChannels()
+            else:
+                channels = numpy.add(self.GetChannels(), other.GetChannels())
+            labels = tuple(["Sum %i" % (i + 1) for i in range(len(channels))])
+        return Spectrum(channels=channels, resolution=self.GetResolution(), labels=labels)
+
+    def __radd__(self, other):
+        """
+        This method is for adding a scalar value to this Spectrum's samples.
+        @param other: a value which shall be added to the Spectrum
+        @retval : a Spectrum instance whose samples are this Spectrum's samples added with the value
+        """
+        return self +other
 
     def __sub__(self, other):
         """
@@ -158,13 +172,28 @@ class Spectrum(ChannelData):
             other = sumpf.Spectrum(channels = ((5, 6), (7, 8)))
             self - other == sumpf.Spectrum(channels=((1-5, 2-6), (3-7, 4-8)))
         """
-        self.__CheckOtherSpectrum(other)
-        channels = []
-        labels = []
-        for i in range(len(self.GetChannels())):
-            channels.append(tuple(numpy.subtract(self.GetChannels()[i], other.GetChannels()[i])))
-            labels.append("Difference %i" % (i + 1))
-        return Spectrum(channels=tuple(channels), resolution=self.GetResolution(), labels=tuple(labels))
+        if isinstance(other, (int, float, complex)):
+            channels = numpy.subtract(self.GetChannels(), other)
+            labels = self.GetLabels()
+        else:
+            self.__CheckOtherSpectrum(other)
+            if other.IsEmpty():
+                channels = self.GetChannels()
+            else:
+                if self.IsEmpty():
+                    channels = numpy.subtract(0.0, other.GetChannels())
+                else:
+                    channels = numpy.subtract(self.GetChannels(), other.GetChannels())
+            labels = tuple(["Difference %i" % (i + 1) for i in range(len(channels))])
+        return Spectrum(channels=channels, resolution=self.GetResolution(), labels=labels)
+
+    def __rsub__(self, other):
+        """
+        This method is for subtracting this Spectrum's samples from a scalar value.
+        @param other: a value from which this Spectrum's samples shall be subtracted
+        @retval : a Spectrum instance whose samples are the value minus this Spectrum's samples
+        """
+        return Spectrum(channels=numpy.subtract(other, self.GetChannels()), resolution=self.GetResolution(), labels=self.GetLabels())
 
     def __mul__(self, other):
         """
@@ -180,18 +209,17 @@ class Spectrum(ChannelData):
         @param other: the Spectrum or a factor that shall be multiplied with this one
         @retval : a Spectrum instance that is the product of this Spectrum and the other one
         """
-        channels = []
-        labels = []
-        if isinstance(other, (int, float)):
-            for c in self.GetChannels():
-                channels.append(tuple(numpy.multiply(c, other)))
+        if isinstance(other, (int, float, complex)):
+            channels = numpy.multiply(self.GetChannels(), other)
             labels = self.GetLabels()
         else:
             self.__CheckOtherSpectrum(other)
-            for i in range(len(self.GetChannels())):
-                channels.append(tuple(numpy.multiply(self.GetChannels()[i], other.GetChannels()[i])))
-                labels.append("Product %i" % (i + 1))
-        return Spectrum(channels=tuple(channels), resolution=self.GetResolution(), labels=tuple(labels))
+            if other.IsEmpty():
+                channels = self.GetChannels()
+            else:
+                channels = numpy.multiply(self.GetChannels(), other.GetChannels())
+            labels = tuple(["Product %i" % (i + 1) for i in range(len(channels))])
+        return Spectrum(channels=channels, resolution=self.GetResolution(), labels=labels)
 
     def __rmul__(self, other):
         """
@@ -212,24 +240,42 @@ class Spectrum(ChannelData):
             other = sumpf.Spectrum(channels = ((5, 6), (7, 8)))
             self / other == sumpf.Spectrum(channels=((1/5, 2/6), (3/7, 4/8)))
         """
-        channels = []
-        labels = []
-        if isinstance(other, (int, float)):
+        selfvalue = self.GetChannels()
+        if isinstance(other, (int, float, complex)):
             if other == 0.0:
                 raise ZeroDivisionError("Spectrum division by zero")
-            for c in self.GetChannels():
-                channels.append(tuple(numpy.divide(c, other)))
             labels = self.GetLabels()
+            othervalue = other
         else:
             self.__CheckOtherSpectrum(other)
-            otherchannels = other.GetChannels()
-            othermagnitude = other.GetMagnitude()
-            for i in range(len(self.GetChannels())):
-                if min(othermagnitude[i]) == 0.0 == max(othermagnitude[i]):
+            if self.IsEmpty():
+                selfvalue = 0.0
+            elif len(other) != len(self):
+                raise ValueError("The other Spectrum has a different length")
+            othervalue = other.GetChannels()
+            for c in other.GetChannels():
+                if numpy.prod(numpy.shape(numpy.nonzero(c))) == 0:
                     raise ZeroDivisionError("Spectrum division by a Spectrum with only 0.0-samples")
-                channels.append(tuple(numpy.divide(self.GetChannels()[i], otherchannels[i])))
-                labels.append("Quotient %i" % (i + 1))
-        return Spectrum(channels=tuple(channels), resolution=self.GetResolution(), labels=tuple(labels))
+            labels = tuple(["Quotient %i" % (i + 1) for i in range(max(len(self.GetChannels()), len(othervalue)))])
+        channels = numpy.true_divide(selfvalue, othervalue)
+        return Spectrum(channels=channels, resolution=self.GetResolution(), labels=labels)
+
+    def __rtruediv__(self, other):
+        """
+        This method is for dividing a scalar value by the samples of this Spectrum.
+        @param other: a value which shall be divided
+        @retval : a Spectrum instance whose samples are the value divided by this Spectrum's samples
+        """
+        for c in self.GetChannels():
+            if numpy.prod(numpy.shape(numpy.nonzero(c))) == 0:
+                raise ZeroDivisionError("Spectrum division by a Spectrum with only 0.0-samples")
+        return Spectrum(channels=numpy.true_divide(other, self.GetChannels()), resolution=self.GetResolution(), labels=self.GetLabels())
+
+    def __rdiv__(self, other):
+        """
+        The same as __rtruediv__. For backwards compatibility with Python 2.
+        """
+        return self.__rtruediv__(other)
 
     def __CheckOtherSpectrum(self, other):
         """
@@ -238,10 +284,11 @@ class Spectrum(ChannelData):
         An error is raised, when the Spectrums are not compatible.
         @param other: the other Spectrum that shall be compared to this one
         """
-        if len(other) != len(self):
-            raise ValueError("The other Spectrum has a different length")
         if other.GetResolution() != self.GetResolution():
             raise ValueError("The other Spectrum has a different resolution")
-        if len(other.GetChannels()) != len(self.GetChannels()):
+        if len(other.GetChannels()) != len(self.GetChannels()) and 1 not in (len(other.GetChannels()), len(self.GetChannels())):
             raise ValueError("The other Spectrum has a different number of channels")
+        if not (self.IsEmpty() or other.IsEmpty()):
+            if len(other) != len(self):
+                raise ValueError("The other Spectrum has a different length (expected %s, got %s)" % (len(self), len(other)))
 

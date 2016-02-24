@@ -160,52 +160,152 @@ class TestSpectrum(unittest.TestCase):
         # algebra
         spectrum1 = sumpf.Spectrum(channels=(self.samples2, self.samples1), resolution=4800.0, labels=("1", "2"))
         spectrum2 = sumpf.Spectrum(channels=(self.samples1,), resolution=4800.0, labels=("3", "4"))
-        spectrum3 = sumpf.Spectrum(channels=((1.0 + 4.2j,) * 12, (2.0,) * 12), resolution=4800.0, labels=("5", "6"))
-        spectrum4 = sumpf.Spectrum(channels=((1.0,) * 10, (2.0 + 2.3j,) * 10), resolution=4410.0, labels=("7", "8"))
-        spectrum5 = sumpf.Spectrum(channels=((0.0,) * 10, (0.0,) * 10), resolution=4800.0, labels=("9", "0"))
+        spectrum3 = sumpf.Spectrum(channels=(self.samples1, self.samples2, self.samples1), resolution=4800.0, labels=("5", "6"))
+        spectrum4 = sumpf.Spectrum(channels=((1.0 + 4.2j,) * 12, (2.0,) * 12), resolution=4800.0, labels=("7", "8"))
+        spectrum5 = sumpf.Spectrum(channels=((1.0,) * 10, (2.0 + 2.3j,) * 10), resolution=4410.0, labels=("9", "10"))
+        spectrum6 = sumpf.Spectrum(channels=((0.0,) * 10, (0.0,) * 10), resolution=4800.0, labels=("11", "12"))
+        spectrum7 = sumpf.Spectrum(channels=((0.0, 0.0),) * 2, resolution=4800.0)
+        spectrum8 = sumpf.Spectrum(channels=((0.0, 0.0),) * 3, resolution=4800.0)
+        spectrum9 = sumpf.Spectrum(channels=((0.0, 0.0),) * 2, resolution=4410.0)
         # __add__
         self.assertEqual(self.spectrum + spectrum1,
-                         sumpf.Spectrum(channels=(numpy.add(self.samples1, self.samples2),
-                                                  numpy.add(self.samples2, self.samples1)),
+                         sumpf.Spectrum(channels=(numpy.add(self.samples1, self.samples2), numpy.add(self.samples2, self.samples1)),
                                         resolution=4800.0,
-                                        labels=("Sum 1", "Sum 2")))
-        self.assertRaises(ValueError, self.spectrum.__add__, spectrum3) # adding a Spectrum with a different length should fail
-        self.assertRaises(ValueError, self.spectrum.__add__, spectrum4) # adding a Spectrum with a different sampling rate should fail
-        self.assertRaises(ValueError, self.spectrum.__add__, spectrum2) # adding a Spectrum with less channels should fail
-        self.assertRaises(ValueError, spectrum2.__add__, self.spectrum) # adding a Spectrum with more channels should fail
+                                        labels=("Sum 1", "Sum 2"))) # adding spectrums with the same number of channels
+        self.assertEqual(self.spectrum + spectrum2,
+                         sumpf.Spectrum(channels=(numpy.add(self.samples1, self.samples1), numpy.add(self.samples2, self.samples1)),
+                                        resolution=4800.0,
+                                        labels=("Sum 1", "Sum 2"))) # adding with a spectrum, that has only one channel
+        self.assertEqual(spectrum2 + spectrum1,
+                         sumpf.Spectrum(channels=(numpy.add(self.samples2, self.samples1), numpy.add(self.samples1, self.samples1)),
+                                        resolution=4800.0,
+                                        labels=("Sum 1", "Sum 2"))) # adding with a spectrum, that has only one channel
+        self.assertEqual(self.spectrum + spectrum7,
+                         sumpf.Spectrum(channels=self.spectrum.GetChannels(),
+                                        resolution=4800.0,
+                                        labels=("Sum 1", "Sum 2"))) # adding with an empty spectrum, that has more than one channels and the wrong length
+        for number in (-2.0, -2.7 + 4.1j, 3, 5 - 1j):
+            self.assertEqual(self.spectrum + number,
+                             sumpf.Spectrum(channels=(numpy.add(self.samples1, number), numpy.add(self.samples2, number)),
+                                            resolution=4800.0,
+                                            labels=self.spectrum.GetLabels()))  # adding with a number
+            self.assertEqual(number + self.spectrum,
+                             sumpf.Spectrum(channels=(numpy.add(self.samples1, number), numpy.add(self.samples2, number)),
+                                            resolution=4800.0,
+                                            labels=self.spectrum.GetLabels()))  # adding with a number
+        def add(a, b):
+            return a + b
+        self.assertRaises(ValueError, add, *(self.spectrum, spectrum3)) # adding a Spectrum with a different number of channels should fail, if none of the channel counts is one
+        self.assertRaises(ValueError, add, *(self.spectrum, spectrum4)) # adding a Spectrum with a different length should fail
+        self.assertRaises(ValueError, add, *(self.spectrum, spectrum5)) # adding a Spectrum with a different sampling rate should fail
+        self.assertRaises(ValueError, add, *(self.spectrum, spectrum8)) # adding a Spectrum with a different number of channels should fail, even if the Spectrum is empty
+        self.assertRaises(ValueError, add, *(self.spectrum, spectrum9)) # adding a Spectrum with a different sampling rate should fail, even if the Spectrum is empty
         # __sub__
         self.assertEqual(self.spectrum - spectrum1,
-                         sumpf.Spectrum(channels=(numpy.subtract(self.samples1, self.samples2),
-                                                  numpy.subtract(self.samples2, self.samples1)),
+                         sumpf.Spectrum(channels=(numpy.subtract(self.samples1, self.samples2), numpy.subtract(self.samples2, self.samples1)),
                                         resolution=4800.0,
-                                        labels=("Difference 1", "Difference 2")))
-        self.assertRaises(ValueError, self.spectrum.__sub__, spectrum3) # subtracting a Spectrum with a different length should fail
-        self.assertRaises(ValueError, self.spectrum.__sub__, spectrum4) # subtracting a Spectrum with a different sampling rate should fail
-        self.assertRaises(ValueError, self.spectrum.__sub__, spectrum2) # subtracting a Spectrum with less channels should fail
-        self.assertRaises(ValueError, spectrum2.__sub__, self.spectrum) # subtracting a Spectrum with more channels should fail
+                                        labels=("Difference 1", "Difference 2")))   # subtracting spectrums with the same number of channels
+        self.assertEqual(self.spectrum - spectrum2,
+                         sumpf.Spectrum(channels=(numpy.subtract(self.samples1, self.samples1), numpy.subtract(self.samples2, self.samples1)),
+                                        resolution=4800.0,
+                                        labels=("Difference 1", "Difference 2")))   # subtracting a spectrum, that has only one channel
+        self.assertEqual(spectrum2 - spectrum1,
+                         sumpf.Spectrum(channels=(numpy.subtract(self.samples1, self.samples2), numpy.subtract(self.samples1, self.samples1)),
+                                        resolution=4800.0,
+                                        labels=("Difference 1", "Difference 2")))   # subtracting from a spectrum, that has only one channel
+        self.assertEqual(self.spectrum - spectrum7,
+                         sumpf.Spectrum(channels=self.spectrum.GetChannels(),
+                                        resolution=4800.0,
+                                        labels=("Difference 1", "Difference 2")))   # subtracting an empty spectrum, that has more than one channels and the wrong length
+        self.assertEqual(spectrum7 - self.spectrum,
+                         sumpf.Spectrum(channels=numpy.subtract(0.0, self.spectrum.GetChannels()),
+                                        resolution=4800.0,
+                                        labels=("Difference 1", "Difference 2")))   # subtracting from an empty spectrum, that has more than one channels and the wrong length
+        for number in (-2.0, -2.7 + 4.1j, 3, 5 - 1j):
+            self.assertEqual(self.spectrum - number,
+                             sumpf.Spectrum(channels=(numpy.subtract(self.samples1, number), numpy.subtract(self.samples2, number)),
+                                            resolution=4800.0,
+                                            labels=self.spectrum.GetLabels()))  # subtracting a number
+            self.assertEqual(number - self.spectrum,
+                             sumpf.Spectrum(channels=(numpy.subtract(number, self.samples1), numpy.subtract(number, self.samples2)),
+                                            resolution=4800.0,
+                                            labels=self.spectrum.GetLabels()))  # subtracting from a number
+        def sub(a, b):
+            return a - b
+        self.assertRaises(ValueError, sub, *(self.spectrum, spectrum3)) # subtracting a Spectrum with a different number of channels should fail, if none of the channel counts is one
+        self.assertRaises(ValueError, sub, *(self.spectrum, spectrum4)) # subtracting a Spectrum with a different length should fail
+        self.assertRaises(ValueError, sub, *(self.spectrum, spectrum5)) # subtracting a Spectrum with a different sampling rate should fail
+        self.assertRaises(ValueError, sub, *(self.spectrum, spectrum8)) # subtracting a Spectrum with a different number of channels should fail, even if the Spectrum is empty
+        self.assertRaises(ValueError, sub, *(self.spectrum, spectrum9)) # subtracting a Spectrum with a different sampling rate should fail, even if the Spectrum is empty
+        self.assertRaises(ValueError, sub, *(spectrum8, self.spectrum)) # subtracting from a Spectrum with a different number of channels should fail, even if the Spectrum is empty
+        self.assertRaises(ValueError, sub, *(spectrum9, self.spectrum)) # subtracting from a Spectrum with a different sampling rate should fail, even if the Spectrum is empty
         # __mul__
         self.assertEqual(self.spectrum * spectrum1,
-                         sumpf.Spectrum(channels=(numpy.multiply(self.samples1, self.samples2),
-                                                  numpy.multiply(self.samples2, self.samples1)),
+                         sumpf.Spectrum(channels=(numpy.multiply(self.samples1, self.samples2), numpy.multiply(self.samples2, self.samples1)),
                                         resolution=4800.0,
-                                        labels=("Product 1", "Product 2")))
-        self.assertEqual(self.spectrum * 5.2, sumpf.modules.AmplifySpectrum(input=self.spectrum, factor=5.2).GetOutput())
-        self.assertEqual(4 * self.spectrum, sumpf.modules.AmplifySpectrum(input=self.spectrum, factor=4.0).GetOutput())
-        self.assertRaises(ValueError, self.spectrum.__mul__, spectrum3) # multiplying with a Spectrum with a different length should fail
-        self.assertRaises(ValueError, self.spectrum.__mul__, spectrum4) # multiplying with a Spectrum with a different sampling rate should fail
-        self.assertRaises(ValueError, self.spectrum.__mul__, spectrum2) # multiplying with a Spectrum with less channels should fail
-        self.assertRaises(ValueError, spectrum2.__mul__, self.spectrum) # multiplying with a Spectrum with more channels should fail
+                                        labels=("Product 1", "Product 2"))) # multiplying spectrums with the same number of channels
+        self.assertEqual(self.spectrum * spectrum2,
+                         sumpf.Spectrum(channels=(numpy.multiply(self.samples1, self.samples1), numpy.multiply(self.samples2, self.samples1)),
+                                        resolution=4800.0,
+                                        labels=("Product 1", "Product 2"))) # multiplying with a spectrum, that has only one channel
+        self.assertEqual(spectrum2 * spectrum1,
+                         sumpf.Spectrum(channels=(numpy.multiply(self.samples2, self.samples1), numpy.multiply(self.samples1, self.samples1)),
+                                        resolution=4800.0,
+                                        labels=("Product 1", "Product 2"))) # multiplying with a spectrum, that has only one channel
+        self.assertEqual(self.spectrum * spectrum7,
+                         sumpf.Spectrum(channels=self.spectrum.GetChannels(),
+                                        resolution=4800.0,
+                                        labels=("Product 1", "Product 2"))) # multiplying with an empty spectrum, that has more than one channels and the wrong length
+        for number in (-2.0, -2.7 + 4.1j, 3, 5 - 1j):
+            self.assertEqual(self.spectrum * number,
+                             sumpf.Spectrum(channels=(numpy.multiply(self.samples1, number), numpy.multiply(self.samples2, number)),
+                                            resolution=4800.0,
+                                            labels=self.spectrum.GetLabels()))  # multiplying with a number
+            self.assertEqual(number * self.spectrum,
+                             sumpf.Spectrum(channels=(numpy.multiply(self.samples1, number), numpy.multiply(self.samples2, number)),
+                                            resolution=4800.0,
+                                            labels=self.spectrum.GetLabels()))  # multiplying with a number
+        def mul(a, b):
+            return a * b
+        self.assertRaises(ValueError, mul, *(self.spectrum, spectrum3)) # multiplying a Spectrum with a different number of channels should fail, if none of the channel counts is one
+        self.assertRaises(ValueError, mul, *(self.spectrum, spectrum4)) # multiplying a Spectrum with a different length should fail
+        self.assertRaises(ValueError, mul, *(self.spectrum, spectrum5)) # multiplying a Spectrum with a different sampling rate should fail
+        self.assertRaises(ValueError, mul, *(self.spectrum, spectrum8)) # multiplying a Spectrum with a different number of channels should fail, even if the Spectrum is empty
+        self.assertRaises(ValueError, mul, *(self.spectrum, spectrum9)) # multiplying a Spectrum with a different sampling rate should fail, even if the Spectrum is empty
         # __truediv__
         self.assertEqual(self.spectrum / spectrum1,
-                         sumpf.Spectrum(channels=(numpy.divide(self.samples1, self.samples2),
-                                                  numpy.divide(self.samples2, self.samples1)),
+                         sumpf.Spectrum(channels=(numpy.true_divide(self.samples1, self.samples2), numpy.true_divide(self.samples2, self.samples1)),
                                         resolution=4800.0,
-                                        labels=("Quotient 1", "Quotient 2")))
-        self.assertEqual(self.spectrum / 2.0, sumpf.modules.AmplifySpectrum(input=self.spectrum, factor=0.5).GetOutput())
-        self.assertRaises(ValueError, self.spectrum.__truediv__, spectrum3)         # dividing by a Spectrum with a different length should fail
-        self.assertRaises(ValueError, self.spectrum.__truediv__, spectrum4)         # dividing by a Spectrum with a different sampling rate should fail
-        self.assertRaises(ValueError, self.spectrum.__truediv__, spectrum2)         # dividing by a Spectrum with less channels should fail
-        self.assertRaises(ValueError, spectrum2.__truediv__, self.spectrum)         # dividing by a Spectrum with more channels should fail
-        self.assertRaises(ZeroDivisionError, self.spectrum.__truediv__, spectrum5)  # dividing by a Spectrum with a channel with only zero values should fail
-        self.assertRaises(ZeroDivisionError, self.spectrum.__truediv__, 0.0)        # dividing by zero should fail
+                                        labels=("Quotient 1", "Quotient 2")))   # dividing spectrums with the same number of channels
+        self.assertEqual(self.spectrum / spectrum2,
+                         sumpf.Spectrum(channels=(numpy.true_divide(self.samples1, self.samples1), numpy.true_divide(self.samples2, self.samples1)),
+                                        resolution=4800.0,
+                                        labels=("Quotient 1", "Quotient 2")))   # dividing by a spectrum, that has only one channel
+        self.assertEqual(spectrum2 / spectrum1,
+                         sumpf.Spectrum(channels=(numpy.true_divide(self.samples1, self.samples2), numpy.true_divide(self.samples1, self.samples1)),
+                                        resolution=4800.0,
+                                        labels=("Quotient 1", "Quotient 2")))   # dividing a spectrum, that has only one channel
+        self.assertEqual(spectrum7 / self.spectrum,
+                         sumpf.Spectrum(channels=numpy.true_divide(0.0, self.spectrum.GetChannels()),
+                                        resolution=4800.0,
+                                        labels=("Quotient 1", "Quotient 2")))   # dividing an empty spectrum, that has more than one channels and the wrong length
+        for number in (-2.0, -2.7 + 4.1j, 3, 5 - 1j):
+            self.assertEqual(self.spectrum / number,
+                             sumpf.Spectrum(channels=numpy.true_divide((self.samples1, self.samples2), number),
+                                            resolution=4800.0,
+                                            labels=self.spectrum.GetLabels()))  # dividing by a number
+            self.assertEqual(number / self.spectrum,
+                             sumpf.Spectrum(channels=numpy.true_divide(number, (self.samples1, self.samples2)),
+                                            resolution=4800.0,
+                                            labels=self.spectrum.GetLabels()))  # dividing a number
+        def div(a, b):
+            return a / b
+        self.assertRaises(ValueError, div, *(self.spectrum, spectrum3))         # dividing by a Spectrum with a different number of channels should fail, if none of the channel counts is one
+        self.assertRaises(ValueError, div, *(self.spectrum, spectrum4))         # dividing by a Spectrum with a different length should fail
+        self.assertRaises(ValueError, div, *(self.spectrum, spectrum5))         # dividing by a Spectrum with a different sampling rate should fail
+        self.assertRaises(ValueError, div, *(spectrum8, self.spectrum))         # dividing a Spectrum with a different number of channels should fail, even if the Spectrum is empty
+        self.assertRaises(ValueError, div, *(spectrum9, self.spectrum))         # dividing a Spectrum with a different sampling rate should fail, even if the Spectrum is empty
+        self.assertRaises(ZeroDivisionError, div, *(self.spectrum, spectrum6))  # dividing a Spectrum by a Spectrum with a channel with only zero values should fail
+        self.assertRaises(ZeroDivisionError, div, *(9.5 + 4.6j, spectrum8))     # dividing a scalar by a Spectrum with a channel with only zero values should fail
+        self.assertRaises(ZeroDivisionError, div, *(self.spectrum, 0.0))        # dividing by zero should fail
 
