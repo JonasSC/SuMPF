@@ -30,7 +30,7 @@ class TestConvertFile(unittest.TestCase):
     """
 
     @unittest.skipUnless(sumpf.config.get("run_long_tests"), "Long tests are skipped")
-    @unittest.skipUnless(common.lib_available("scikits.audiolab"), "This test requires the library 'scikits.audiolab'")
+    @unittest.skipUnless(common.lib_available("soundfile") or common.lib_available("scikits.audiolab"), "This test requires the library 'scikits.audiolab'")
     def test_convert_file(self):
         """
         Tests if the ConvertFile example works as documented.
