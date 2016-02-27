@@ -139,8 +139,8 @@ class TestAudioIO(unittest.TestCase):
                 self.assertEqual(aio.GetRecordedSignal.GetType(), sumpf.Signal)
                 self.assertEqual(aio.GetSamplingRate.GetType(), float)
                 common.test_connection_observers(testcase=self,
-                                                 inputs=[aio.Start],
-                                                 noinputs=[aio.SetRecordLength, aio.SetPlaybackSignal],
+                                                 inputs=[aio.Start, aio.SetRecordLength, aio.SetPlaybackSignal],
+                                                 noinputs=[],
                                                  output=aio.GetRecordedSignal)
             finally:
                 aio.Delete()

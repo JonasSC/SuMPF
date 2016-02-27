@@ -41,7 +41,7 @@ class BaseIO(object):
         self._recordchannels = recordchannels
         self._record_length = BaseIO.SAME_AS_PLAYBACK
         self._playback = sumpf.Signal(samplingrate=self.GetSamplingRate())
-        self._record = sumpf.modules.CopySignalChannels(input=sumpf.Signal(samplingrate=self.GetSamplingRate()), channelcount=recordchannels).GetOutput()
+        self._record = None
         # state variables
         self._recording = False     # this variable shall be polled regularly during the recording process. If it is False, the recording shall be interrupted.
         self.__recording_lock = threading.Lock()
@@ -56,7 +56,7 @@ class BaseIO(object):
         sumpf.destroy_connectors(self)
         BaseIO.__instance = None
 
-    @sumpf.Input(int)
+    @sumpf.Input(int, "GetRecordedSignal")
     def SetRecordLength(self, length):
         """
         Sets the length in samples how long shall be recorded.
@@ -67,7 +67,7 @@ class BaseIO(object):
         """
         self._record_length = int(length)
 
-    @sumpf.Input(sumpf.Signal)
+    @sumpf.Input(sumpf.Signal, "GetRecordedSignal")
     def SetPlaybackSignal(self, signal):
         """
         Sets the Signal for playback.
@@ -87,7 +87,19 @@ class BaseIO(object):
         Returns the recorded Signal
         @retval : the recorded Signal
         """
-        return self._record
+        if self._record is None:
+            if self._record_length == BaseIO.SAME_AS_PLAYBACK:
+                record_length = len(self._playback)
+            elif self._record_length == BaseIO.WAIT_FOR_STOP:
+                record_length = 2
+            else:
+                record_length = self._record_length
+            silence = sumpf.modules.SilenceGenerator(samplingrate=self.GetSamplingRate(), length=record_length).GetSignal()
+            copied = sumpf.modules.CopySignalChannels(input=silence, channelcount=self._recordchannels).GetOutput()
+            relabeled = sumpf.modules.RelabelSignal(input=copied, labels=self._GetLabels()).GetOutput()
+            return relabeled
+        else:
+            return self._record
 
     def GetSamplingRate(self):
         """
@@ -181,4 +193,10 @@ class BaseIO(object):
         @param capture_port: a string name of a capture port
         """
         raise NotImplementedError("This method should have been overridden in a derived class")
+
+    def _GetLabels(self):
+        """
+        Generates the labels for the recorded Signal.
+        """
+        return ["Recorded " + str(i + 1) for i in range(self._recordchannels)]
 

@@ -122,15 +122,13 @@ class JackIO(BaseIO):
         self.__PlayAndRecord(playbuffer, "while not recording")
         # create output Signal
         channels = []
-        labels = []
         for c in range(self._recordchannels):
             channel = []
             for b in range(self.__periods, len(record)):
                 for s in record[b][c]:
                     channel.append(s)
             channels.append(tuple(channel[0:record_length]))
-            labels.append("Recorded " + str(c))
-        self._record = sumpf.Signal(channels=channels, samplingrate=self.GetSamplingRate(), labels=labels)
+        self._record = sumpf.Signal(channels=channels, samplingrate=self.GetSamplingRate(), labels=self._GetLabels())
 
     def __PlayAndRecord(self, playbuffer, errormessage=""):
         """
