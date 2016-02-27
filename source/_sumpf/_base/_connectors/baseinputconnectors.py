@@ -14,6 +14,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 
+import collections
 from .baseconnectors import Connector, TypedConnector
 from . import outputconnectors
 from .connectorproxy import ConnectorProxy
@@ -149,10 +150,13 @@ class TypedInputConnector(InputConnector, TypedConnector):
         """
         InputConnector.CheckConnection(self, connector)
         # Check for incompatible data types
-        if isinstance(self.GetType(), tuple):
-            if connector.GetType() not in self.GetType():
-                raise TypeError("The input expects a different data type than the output delivers")
-        else:
-            if not issubclass(connector.GetType(), self.GetType()):
-                raise TypeError("The input expects a different data type than the output delivers")
+        if self.GetType() is not None and connector.GetType() is not None:
+            if isinstance(self.GetType(), collections.Iterable):
+                input_data_types = self.GetType()
+            else:
+                input_data_types = (self.GetType(),)
+            for t in input_data_types:
+                if issubclass(connector.GetType(), t):
+                    return
+            raise TypeError("The input expects a different data type than the output delivers")
 

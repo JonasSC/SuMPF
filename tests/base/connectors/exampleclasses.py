@@ -96,6 +96,20 @@ class ExampleClass(object):
         """
         self.text = text
 
+    @sumpf.Output(None)
+    def GetArbitrary(self):
+        """
+        An output, whose data_type is not specified, so it can be connected to input connectors with any data_type
+        """
+        return None
+
+    @sumpf.Input(None)
+    def SetArbitrary(self, value):
+        """
+        An input, whose data_type is not specified, so it can receive values from output connectors with any data_type
+        """
+        pass
+
     @sumpf.Input(int, ["GetValue", "GetText"])
     def ComputeValueAndText(self, value):
         """

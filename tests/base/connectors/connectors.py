@@ -97,9 +97,31 @@ class TestConnectors(unittest.TestCase):
         self.obj1.SetValue(9)
         self.assertTrue(self.obj2.triggered)                    # Triggers should work as well
         self.obj1.SetText(text="Hallo Welt")                    # Keyword arguments should be possible
-        sumpf.connect(self.obj1.GetFloat, self.obj2.SetValue2)  # This Input shall be connectable to both floats...
+
+    def test_connector_types(self):
+        """
+        Tests around the typing of connectors
+        """
+        # single data_type
+        sumpf.connect(self.obj1.GetValue, self.obj2.SetValue)                                   # this Input shall be connectable to integers ...
+        sumpf.disconnect(self.obj1.GetValue, self.obj2.SetValue)
+        self.assertRaises(TypeError, sumpf.connect, *(self.obj1.GetFloat, self.obj2.SetValue))  # ... and only to integers
+        # an explicit list of multiple data_types
+        sumpf.connect(self.obj1.GetFloat, self.obj2.SetValue2)                                  # this Input shall be connectable to both floats...
         sumpf.disconnect(self.obj1.GetFloat, self.obj2.SetValue2)
-        sumpf.connect(self.obj1.GetValue, self.obj2.SetValue2)  # ... and integers.
+        sumpf.connect(self.obj1.GetValue, self.obj2.SetValue2)                                  # ... and integers.
+        sumpf.disconnect(self.obj1.GetValue, self.obj2.SetValue2)
+        # arbitrary data_types
+        sumpf.connect(self.obj1.GetText, self.obj2.SetArbitrary)                                # this Input shall be connectable to Outputs with any data type
+        sumpf.disconnect(self.obj1.GetText, self.obj2.SetArbitrary)
+        sumpf.connect(self.obj1.GetFloat, self.obj2.SetArbitrary)
+        sumpf.disconnect(self.obj1.GetFloat, self.obj2.SetArbitrary)
+        sumpf.connect(self.obj1.GetArbitrary, self.obj2.SetValue)                               # this Output shall be connectable to Inputs with any data type
+        sumpf.disconnect(self.obj1.GetArbitrary, self.obj2.SetValue)
+        sumpf.connect(self.obj1.GetArbitrary, self.obj2.SetText)
+        sumpf.disconnect(self.obj1.GetArbitrary, self.obj2.SetText)
+        sumpf.connect(self.obj1.GetArbitrary, self.obj2.AddItemReplace)
+        sumpf.disconnect(self.obj1.GetArbitrary, self.obj2.AddItemReplace)
 
     def test_non_replacing_multi_input(self):
         """
