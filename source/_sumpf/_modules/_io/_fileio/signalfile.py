@@ -25,8 +25,8 @@ class SignalFile(ChannelDataFile):
 
     If NumPy is available, this class can read and write Signals in NumPy's
     npz-format.
-    If scikits.audiolab is available, this class supports wav, aif and flac as
-    well.
+    If PySoundFile or scikits.audiolab is available, this class supports wav,
+    aiff and flac as well.
     If oct2py is available, this class can read (but not write) itaAudio-files
     that have been created with the ITA-Toolbox from the Institute of Technical
     Acoustics, RWTH Aachen University.
@@ -84,7 +84,8 @@ class SignalFile(ChannelDataFile):
         @param signal: the Signal that shall be saved
         """
         self._data = signal
-        self._Save()
+        if self._PerformAction():
+            self._Save()
 
     @sumpf.Input(str, ["GetSignal", "GetLength", "GetSamplingRate"])
     def SetFilename(self, filename):
@@ -115,6 +116,20 @@ class SignalFile(ChannelDataFile):
         """
         ChannelDataFile.SetFormat(self, format)
 
+    def _PerformAction(self):
+        """
+        Checks the input connectors and returns True, when reloading or saving
+        the given file is necessary.
+        @retval : True or False
+        """
+        pending = 0
+        if self.GetSignal.ExpectsInputFrom(self.SetSignal):
+            pending += 1
+        if self.GetSignal.ExpectsInputFrom(self.SetFilename):
+            pending += 1
+        if self.GetSignal.ExpectsInputFrom(self.SetFormat):
+            pending += 1
+        return pending <= 1
 
 for c in signalformats:
     setattr(SignalFile, c.__name__, c)

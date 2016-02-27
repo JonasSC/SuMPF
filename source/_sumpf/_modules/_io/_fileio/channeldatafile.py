@@ -39,7 +39,7 @@ class ChannelDataFile(object):
         if filename is None:
             self._filename = None
         else:
-            self.__SetFilename(filename)
+            self.__SetFilename(filename, perform_action=True)
 
     @staticmethod
     def GetFormats():
@@ -79,14 +79,23 @@ class ChannelDataFile(object):
         @param format: a subclass of FileFormat that specifies the desired format of the file
         """
         self.__format = format
-        if self._filename is not None:
-            if self.__format.Exists(self._filename):
-                if self._data.IsEmpty() or self.__format.read_only:
-                    self._Load()
-                else:
+        if self._PerformAction():
+            if self._filename is not None:
+                if self.__format.Exists(self._filename):
+                    if self._data.IsEmpty() or self.__format.read_only:
+                        self._Load()
+                    else:
+                        self._Save()
+                elif not self.__format.read_only:
                     self._Save()
-            elif not self.__format.read_only:
-                self._Save()
+
+    def _PerformAction(self):
+        """
+        An abstract method for checking the input connectors and returning True,
+        when reloading or saving the given file is necessary.
+        @retval : True or False
+        """
+        raise NotImplementedError("This method should have been overridden in a derived class")
 
     def _Load(self):
         """
@@ -104,11 +113,12 @@ class ChannelDataFile(object):
         if self._filename is not None:
             self.__format.Save(self._filename, self._data)
 
-    def __SetFilename(self, filename):
+    def __SetFilename(self, filename, perform_action=None):
         """
         A private helper method to avoid, that the connector SetFilename is called
         in the constructor.
         @param filename: None or a string value of a path and filename preferably without the file ending
+        @param perform_action: optional. Must be set to True, when called from the constructor to prevent the weakly referenced instances in the connectors from being deleted (because the connectors are accessed from within the constructor)
         """
         filename = sumpf.helper.normalize_path(filename)
         delim = "." + self.__format.ending
@@ -117,11 +127,12 @@ class ChannelDataFile(object):
             self._filename = filename
         else:
             self._filename = delim.join(split[0:-1])
-        if self.__format.Exists(self._filename):
-            if self._data.IsEmpty() or self.__format.read_only:
-                self._Load()
-            else:
+        if perform_action or self._PerformAction():
+            if self.__format.Exists(self._filename):
+                if self._data.IsEmpty() or self.__format.read_only:
+                    self._Load()
+                else:
+                    self._Save()
+            elif not self.__format.read_only:
                 self._Save()
-        elif not self.__format.read_only:
-            self._Save()
 

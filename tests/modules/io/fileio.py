@@ -87,6 +87,8 @@ class TestFileIO(unittest.TestCase):
                 fileio.SetFormat(f)
                 output = fileio.GetSignal()
                 self.__CompareSignals(output, signal2, format_info, "TestFileIO1")          # creating an empty file module and the giving it the filename and the format should have loaded the file into the empty module
+                output2 = sumpf.modules.SignalFile(filename=filename1, format=f).GetSignal()
+                self.assertEqual(output, output2)                                           # loading the Signal without storing the SignalFile instance must be possible
                 tmpio = sumpf.modules.SignalFile(filename=filename2e, signal=signal1, format=f)
                 fileio.SetFilename(filename2e)
                 output = fileio.GetSignal()
@@ -146,6 +148,8 @@ class TestFileIO(unittest.TestCase):
                 self.assertEqual(output.GetChannels(), spectrum2.GetChannels())                 # changing the data set should have triggered a rewrite of the file
                 self.assertEqual(output.GetResolution(), spectrum2.GetResolution())             # creating an empty file module and the giving it the filename and the format should have loaded the file into the empty module
                 self.assertEqual(output.GetLabels(), spectrum2.GetLabels())                     #
+                output2 = sumpf.modules.SpectrumFile(filename=filename1, format=f).GetSpectrum()
+                self.assertEqual(output, output2)                                               # loading the Signal without storing the SignalFile instance must be possible
                 tmpio = sumpf.modules.SpectrumFile(filename=filename2e, spectrum=spectrum1, format=f)
                 fileio.SetFilename(filename2e)
                 output = fileio.GetSpectrum()

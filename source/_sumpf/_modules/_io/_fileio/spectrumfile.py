@@ -114,6 +114,21 @@ class SpectrumFile(ChannelDataFile):
         """
         ChannelDataFile.SetFormat(self, format)
 
+    def _PerformAction(self):
+        """
+        Checks the input connectors and returns True, when reloading or saving
+        the given file is necessary.
+        @retval : True or False
+        """
+        pending = 0
+        if self.GetSpectrum.ExpectsInputFrom(self.SetSpectrum):
+            pending += 1
+        if self.GetSpectrum.ExpectsInputFrom(self.SetFilename):
+            pending += 1
+        if self.GetSpectrum.ExpectsInputFrom(self.SetFormat):
+            pending += 1
+        return pending <= 1
+
 
 for c in spectrumformats:
     setattr(SpectrumFile, c.__name__, c)

@@ -20,6 +20,7 @@ import os
 import sys
 import numpy
 import sumpf
+from .fileformat import FileFormat
 
 try:
     import soundfile
@@ -33,20 +34,29 @@ except ImportError:
         audiolab_available = False
 
 oct2py_available = False
+# "try: import oct2py" is not possible, because of oct2py's convenience instance of octave
 if sys.version_info.major == 2:
     import imp
     try:
-        imp.find_module("oct2py")
-        oct2py_available = True
+        f, p, d = imp.find_module("oct2py")
+        if not p.endswith("SuMPF/tests/_common/unavailable_libs/oct2py/oct2py.py"): # check if the found module is the dummy module from the unittests
+            oct2py_available = True
     except ImportError:
         pass
+    else:
+        if f is not None:
+            f.close()
+        del f
+        del p
+        del d
 else:
     import importlib.util
-    if importlib.util.find_spec("oct2py") is not None:
+    spec = importlib.util.find_spec("oct2py")
+    if not (spec is None or spec.origin.endswith("SuMPF/tests/_common/unavailable_libs/oct2py/oct2py.py")): # check if the found module is the dummy module from the unittests
         oct2py_available = True
+    del spec
     basestring = str
 
-from .fileformat import FileFormat
 
 
 signalformats = []
@@ -107,7 +117,11 @@ if soundfile_available:
         @classmethod
         def Load(cls, filename):
             data, samplingrate = soundfile.read(file="%s.%s" % (filename, cls.ending))
-            return sumpf.Signal(channels=numpy.transpose(data),
+            if numpy.size(data) == len(data):   # single channel files are imported into a one dimensional row array, so len and size are the same. These need not be transposed
+                channels = (data,)
+            else:
+                channels = numpy.transpose(data)
+            return sumpf.Signal(channels=channels,
                                 samplingrate=samplingrate,
                                 labels=[str(" ".join([filename.split(os.sep)[-1], str(c + 1)])) for c in range(len(data))])
 
