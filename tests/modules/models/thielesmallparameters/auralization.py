@@ -98,16 +98,16 @@ class TestThieleSmallParameterAuralization(unittest.TestCase):
         sumpf.connect(auralization_linear.GetSoundPressure, linear_fft.SetSignal)
         nonlinear_fft = sumpf.modules.FourierTransform()
         sumpf.connect(auralization_nonlinear.GetSoundPressure, nonlinear_fft.SetSignal)
-        difference = sumpf.modules.SubtractSpectrums()
-        sumpf.connect(linear_fft.GetSpectrum, difference.SetInput1)
-        sumpf.connect(nonlinear_fft.GetSpectrum, difference.SetInput2)
-        square = sumpf.modules.MultiplySpectrums()
-        sumpf.connect(difference.GetOutput, square.SetInput1)
-        sumpf.connect(difference.GetOutput, square.SetInput2)
-        channel = tuple(numpy.abs(square.GetOutput().GetChannels()[0]))
+        difference = sumpf.modules.Subtract()
+        sumpf.connect(linear_fft.GetSpectrum, difference.SetValue1)
+        sumpf.connect(nonlinear_fft.GetSpectrum, difference.SetValue2)
+        square = sumpf.modules.Multiply()
+        sumpf.connect(difference.GetResult, square.SetValue1)
+        sumpf.connect(difference.GetResult, square.SetValue2)
+        channel = tuple(numpy.abs(square.GetResult().GetChannels()[0]))
         self.assertLess(channel.index(min(channel[0:300])), 50)             # the simulation should be precise at 0Hz
         auralization_nonlinear.SetWarpFrequency(4000.0)
-        channel = tuple(numpy.abs(square.GetOutput().GetChannels()[0]))
+        channel = tuple(numpy.abs(square.GetResult().GetChannels()[0]))
         self.assertLessEqual(channel.index(min(channel)), 5)                # the simulation should still be precise at 0Hz
         self.assertLess(abs(4000 - channel.index(min(channel[50:]))), 20)   # the error should have a minimum around 4000Hz
 

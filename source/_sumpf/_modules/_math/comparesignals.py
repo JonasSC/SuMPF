@@ -17,15 +17,27 @@
 import sumpf
 
 
-class SignalAlgebra(object):
+class CompareSignals(object):
     """
-    A base class for calculations with two Signal instances.
+    A comparator for two Signals.
+    This works a bit like an open loop operational amplifier with the first Signal
+    being connected to the +input and the second Signal to the -input. If the
+    first input Signal is greater than the second Signal, the respective sample
+    of the output Signal will be 1.0. If it is smaller, the sample will be -1.0.
+    And wherever both input Signals have an equal value, the output will be 0.0.
+
+    The input Signals must have the same length, sampling rate and channel count.
+
+    The two input Signals will be compared channel per channel and sample per sample:
+        signal1 = sumpf.Signal(channels = ((0, 2), (3, 4)))
+        signal2 = sumpf.Signal(channels = ((1, 2), (2, 5)))
+        compare(signal1, signal2) == sumpf.Signal(channels=((-1, 0), (1, -1)))
     """
     def __init__(self, signal1=None, signal2=None):
         """
         All parameters are optional
-        @param signal1: the first Signal-instance for the calculation
-        @param signal2: the second Signal-instance for the calculation
+        @param signal1: the first Signal-instance for the comparison
+        @param signal2: the second Signal-instance for the comparison
         """
         if signal1 is None:
             self.__signal1 = sumpf.Signal()
@@ -39,23 +51,23 @@ class SignalAlgebra(object):
     @sumpf.Input(sumpf.Signal, "GetOutput")
     def SetInput1(self, signal):
         """
-        Sets the first Signal for the calculation.
-        @param signal: the first Signal-instance for the calculation
+        Sets the first Signal for the comparison.
+        @param signal: the first Signal-instance for the comparison
         """
         self.__signal1 = signal
 
     @sumpf.Input(sumpf.Signal, "GetOutput")
     def SetInput2(self, signal):
         """
-        Sets the second Signal for the calculation.
-        @param signal: the second Signal-instance for the calculation
+        Sets the second Signal for the comparison.
+        @param signal: the second Signal-instance for the comparison
         """
         self.__signal2 = signal
 
     @sumpf.Output(sumpf.Signal)
     def GetOutput(self):
         """
-        Calculates and returns the Signal resulting from the calculation.
+        Calculates and returns the Signal resulting from the comparison.
         Before the calculation, the input Signals are checked for compatibility.
         If the Signals are incompatible and both not empty, a ValueError is raised.
         If the Signals are incompatible and one Signal is empty, an empty Signal
@@ -64,6 +76,7 @@ class SignalAlgebra(object):
         """
         signal1 = self.__signal1
         signal2 = self.__signal2
+        # checks
         if signal1.GetSamplingRate() != signal2.GetSamplingRate():
             if signal1.IsEmpty() or signal2.IsEmpty():
                 return sumpf.Signal()
@@ -80,13 +93,21 @@ class SignalAlgebra(object):
             else:
                 raise ValueError("The Signals do not have the same length (Signal1: %i, Signal2: %i)" % (len(signal1), len(signal2)))
         else:
-            return self._Calculate(signal1, signal2)
-
-    def _Calculate(self, signal1, signal2):
-        """
-        Abstract method that shall be overwritten with the actual calculation.
-        @param signal1: the first Signal for the calculation
-        @param signal2: the second Signal for the calculation
-        """
-        raise NotImplementedError("This method should have been overridden in a derived class")
+        # the actual comparison
+            signal1_channels = signal1.GetChannels()
+            signal2_channels = signal2.GetChannels()
+            result_channels = []
+            result_labels = []
+            for i in range(len(signal1_channels)):
+                channel = []
+                for j in range(len(signal1_channels[i])):
+                    if signal1_channels[i][j] < signal2_channels[i][j]:
+                        channel.append(-1.0)
+                    elif signal1_channels[i][j] == signal2_channels[i][j]:
+                        channel.append(0.0)
+                    else:
+                        channel.append(1.0)
+                result_channels.append(tuple(channel))
+                result_labels.append("Comparison %i" % (i + 1))
+            return sumpf.Signal(channels=tuple(result_channels), samplingrate=signal1.GetSamplingRate(), labels=tuple(result_labels))
 

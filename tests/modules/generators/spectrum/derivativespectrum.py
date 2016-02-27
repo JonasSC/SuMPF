@@ -38,11 +38,11 @@ class TestDerivativeSpectrumGenerator(unittest.TestCase):
         filtergenerator = sumpf.modules.DerivativeSpectrumGenerator()
         sumpf.connect(properties.GetResolution, filtergenerator.SetResolution)
         sumpf.connect(properties.GetSpectrumLength, filtergenerator.SetLength)
-        multiply = sumpf.modules.MultiplySpectrums()
-        sumpf.connect(fft.GetSpectrum, multiply.SetInput1)
-        sumpf.connect(filtergenerator.GetSpectrum, multiply.SetInput2)
+        multiply = sumpf.modules.Multiply()
+        sumpf.connect(fft.GetSpectrum, multiply.SetValue1)
+        sumpf.connect(filtergenerator.GetSpectrum, multiply.SetValue2)
         ifft = sumpf.modules.InverseFourierTransform()
-        sumpf.connect(multiply.GetOutput, ifft.SetSpectrum)
+        sumpf.connect(multiply.GetResult, ifft.SetSpectrum)
         # compare the result with the helper.differentiate_fft method
         filterderivative = ifft.GetSignal().GetChannels()[0]
         functionderivative = sumpf.helper.differentiate_fft(generator.GetSignal().GetChannels()[0])

@@ -15,10 +15,11 @@
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 from .amplify import *
-from .algebra import *
 from .average import *
 from .statistics import *
 
+from .algebra import TestAlgebra
+from .comparesignals import TestCompareSignals
 from .conjugatespectrum import TestConjugateSpectrum
 from .convolvesignals import TestConvolveSignals
 from .correlatesignals import TestCorrelateSignals
