@@ -69,7 +69,7 @@ class TestThieleSmallParameters(unittest.TestCase):
             self.assertEqual(getattr(ts, names[n])(), float(i) + 0.6)
             self.assertEqual(getattr(ts, names[n])(f=440.1, x=0.6, v=4.03, T=29.4), 474.13 + float(i))
             # test values that depend on the loudspeaker's state with a functools.partial object
-            kwargs = {n: functools.partial(testfunction, i=float(i))}
+            kwargs = {n: functools.partial(testfunction, float(i))}
             ts = sumpf.ThieleSmallParameters(**kwargs)
             self.assertEqual(getattr(ts, names[n])(), 2.0 * float(i) + 1.4)
             self.assertEqual(getattr(ts, names[n])(f=440.1, x=0.6, v=4.03, T=29.4), 474.13 + 2.0 * float(i))

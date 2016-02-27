@@ -17,37 +17,50 @@
 import collections
 import functools
 import inspect
+import sys
 
+if sys.version_info.major == 2:
+    def get_argspec(function):
+        if inspect.isfunction(function):
+            return inspect.getargspec(function)
+        elif isinstance(function, functools.partial):
+            original_argspec = get_argspec(function.func)
+            names = list(original_argspec[0] or [])
+            defaults = list(original_argspec[3] or [])
+            if function.args != []:
+                names = names[len(function.args):]
+                defaults = defaults[-len(names):]
+            for a in function.keywords or []:
+                if a in names:
+                    index = names.index(a)
+                    if index > len(names) - len(defaults):
+                        del defaults[index + len(names) - len(defaults)]
+                    del names[index]
+            return inspect.ArgSpec(args=names, varargs=original_argspec[1], keywords=original_argspec[2], defaults=defaults)
+        elif hasattr(function, "__call__"):
+            result = inspect.getargspec(function.__call__)
+            result.args.remove("self")
+            return  result
 
-def get_argspec(function):
-    """
-    A small wrapper for inspect.getargspec that also works with functools.partial
-    objects and callable instances.
-    This function might move to the helper section, to be available from outside
-    SuMPF as soon as it is properly tested
-    @param function: a callable object
-    @retval : the argspec like inspect.getargspec would return (without self, when function is a method)
-    """
-    if inspect.isfunction(function):
-        return inspect.getargspec(function)
-    elif isinstance(function, functools.partial):
-        original_argspec = get_argspec(function.func)
-        names = list(original_argspec[0] or [])
-        defaults = list(original_argspec[3] or [])
-        if function.args != []:
-            names = names[len(function.args):]
-            defaults = defaults[-len(names):]
-        for a in function.keywords or []:
-            if a in names:
-                index = names.index(a)
-                if index > len(names) - len(defaults):
-                    del defaults[index + len(names) - len(defaults)]
-                del names[index]
-        return inspect.ArgSpec(args=names, varargs=original_argspec[1], keywords=original_argspec[2], defaults=defaults)
-    elif hasattr(function, "__call__"):
-        result = inspect.getargspec(function.__call__)
-        result.args.remove("self")
-        return result
+    def get_callable(function):
+        argspec = get_argspec(function)
+        if argspec.args == ["f", "x", "v", "T"] and argspec.defaults is not None and len(argspec.defaults) == 4:
+            return function
+        else:
+            return lambda f = 1000.0, x = 0.0, v = 0.0, T = 20.0: function(f, x, v, T)
+else:
+    def get_callable(function):
+        signature = inspect.signature(function)
+        if tuple(signature.parameters.keys()) == ("f", "x", "v", "T") and inspect.Parameter.empty not in [p.default for p in signature.parameters.values()]:
+            return function
+        else:
+            return lambda f = 1000.0, x = 0.0, v = 0.0, T = 20.0: function(f, x, v, T)
+
+def get_parameter(parameter):
+    if isinstance(parameter, collections.Callable):
+        return get_callable(parameter)
+    else:
+        return lambda f = 1000.0, x = 0.0, v = 0.0, T = 20.0: parameter
 
 
 
@@ -134,11 +147,7 @@ class ThieleSmallParameters(object):
         if self.__combined_parameter_definition:
             # GetAllParameters
             doc_all = self.GetAllParameters.__doc__
-            argspec = get_argspec(all_parameters)
-            if argspec.args == ["f", "x", "v", "T"] and argspec.defaults is not None and len(argspec.defaults) == 4:
-                self.GetAllParameters = all_parameters
-            else:
-                self.GetAllParameters = lambda f = 1000.0, x = 0.0, v = 0.0, T = 20.0: all_parameters(f, x, v, T)
+            self.GetAllParameters = get_callable(all_parameters)
             self.GetVoiceCoilResistance = lambda f = 1000.0, x = 0.0, v = 0.0, T = 20.0: all_parameters(f, x, v, T)[0]
             self.GetVoiceCoilInductance = lambda f = 1000.0, x = 0.0, v = 0.0, T = 20.0: all_parameters(f, x, v, T)[1]
             self.GetForceFactor = lambda f = 1000.0, x = 0.0, v = 0.0, T = 20.0: all_parameters(f, x, v, T)[2]
@@ -149,69 +158,13 @@ class ThieleSmallParameters(object):
             self.GetAllParameters.__name__ = "GetAllParameters"
             self.GetAllParameters.__doc__ = doc_all
         else:
-            # GetVoiceCoilResistance
-            if isinstance(voicecoil_resistance, collections.Callable):
-                argspec = get_argspec(voicecoil_resistance)
-                if argspec.args == ["f", "x", "v", "T"] and argspec.defaults is not None and len(argspec.defaults) == 4:
-                    self.GetVoiceCoilResistance = voicecoil_resistance
-                else:
-                    self.GetVoiceCoilResistance = lambda f = 1000.0, x = 0.0, v = 0.0, T = 20.0: voicecoil_resistance(f, x, v, T)
-            else:
-                self.GetVoiceCoilResistance = lambda f = 1000.0, x = 0.0, v = 0.0, T = 20.0: voicecoil_resistance
-            # GetVoiceCoilInductance
-            if isinstance(voicecoil_inductance, collections.Callable):
-                argspec = get_argspec(voicecoil_inductance)
-                if argspec.args == ["f", "x", "v", "T"] and argspec.defaults is not None and len(argspec.defaults) == 4:
-                    self.GetVoiceCoilInductance = voicecoil_inductance
-                else:
-                    self.GetVoiceCoilInductance = lambda f = 1000.0, x = 0.0, v = 0.0, T = 20.0: voicecoil_inductance(f, x, v, T)
-            else:
-                self.GetVoiceCoilInductance = lambda f = 1000.0, x = 0.0, v = 0.0, T = 20.0: voicecoil_inductance
-            # GetForceFactor
-            if isinstance(force_factor, collections.Callable):
-                argspec = get_argspec(force_factor)
-                if argspec.args == ["f", "x", "v", "T"] and argspec.defaults is not None and len(argspec.defaults) == 4:
-                    self.GetForceFactor = force_factor
-                else:
-                    self.GetForceFactor = lambda f = 1000.0, x = 0.0, v = 0.0, T = 20.0: force_factor(f, x, v, T)
-            else:
-                self.GetForceFactor = lambda f = 1000.0, x = 0.0, v = 0.0, T = 20.0: force_factor
-            # GetSuspensionStiffness
-            if isinstance(suspension_stiffness, collections.Callable):
-                argspec = get_argspec(suspension_stiffness)
-                if argspec.args == ["f", "x", "v", "T"] and argspec.defaults is not None and len(argspec.defaults) == 4:
-                    self.GetSuspensionStiffness = suspension_stiffness
-                else:
-                    self.GetSuspensionStiffness = lambda f = 1000.0, x = 0.0, v = 0.0, T = 20.0: suspension_stiffness(f, x, v, T)
-            else:
-                self.GetSuspensionStiffness = lambda f = 1000.0, x = 0.0, v = 0.0, T = 20.0: suspension_stiffness
-            # GetMechanicalDamping
-            if isinstance(mechanical_damping, collections.Callable):
-                argspec = get_argspec(mechanical_damping)
-                if argspec.args == ["f", "x", "v", "T"] and argspec.defaults is not None and len(argspec.defaults) == 4:
-                    self.GetMechanicalDamping = mechanical_damping
-                else:
-                    self.GetMechanicalDamping = lambda f = 1000.0, x = 0.0, v = 0.0, T = 20.0: mechanical_damping(f, x, v, T)
-            else:
-                self.GetMechanicalDamping = lambda f = 1000.0, x = 0.0, v = 0.0, T = 20.0: mechanical_damping
-            # GetDiaphragmMass
-            if isinstance(diaphragm_mass, collections.Callable):
-                argspec = get_argspec(diaphragm_mass)
-                if argspec.args == ["f", "x", "v", "T"] and argspec.defaults is not None and len(argspec.defaults) == 4:
-                    self.GetDiaphragmMass = diaphragm_mass
-                else:
-                    self.GetDiaphragmMass = lambda f = 1000.0, x = 0.0, v = 0.0, T = 20.0: diaphragm_mass(f, x, v, T)
-            else:
-                self.GetDiaphragmMass = lambda f = 1000.0, x = 0.0, v = 0.0, T = 20.0: diaphragm_mass
-            # GetDiaphragmArea
-            if isinstance(diaphragm_area, collections.Callable):
-                argspec = get_argspec(diaphragm_area)
-                if argspec.args == ["f", "x", "v", "T"] and argspec.defaults is not None and len(argspec.defaults) == 4:
-                    self.GetDiaphragmArea = diaphragm_area
-                else:
-                    self.GetDiaphragmArea = lambda f = 1000.0, x = 0.0, v = 0.0, T = 20.0: diaphragm_area(f, x, v, T)
-            else:
-                self.GetDiaphragmArea = lambda f = 1000.0, x = 0.0, v = 0.0, T = 20.0: diaphragm_area
+            self.GetVoiceCoilResistance = get_parameter(voicecoil_resistance)
+            self.GetVoiceCoilInductance = get_parameter(voicecoil_inductance)
+            self.GetForceFactor = get_parameter(force_factor)
+            self.GetSuspensionStiffness = get_parameter(suspension_stiffness)
+            self.GetMechanicalDamping = get_parameter(mechanical_damping)
+            self.GetDiaphragmMass = get_parameter(diaphragm_mass)
+            self.GetDiaphragmArea = get_parameter(diaphragm_area)
         # restore the method's names and documentation
         self.GetVoiceCoilResistance.__name__ = "GetVoiceCoilResistance"
         self.GetVoiceCoilInductance.__name__ = "GetVoiceCoilInductance"

@@ -17,6 +17,7 @@
 import collections
 import fractions
 import math
+import sys
 import unittest
 import sumpf
 import _common as common
@@ -76,7 +77,10 @@ class TestWeightingFilterGenerator(unittest.TestCase):
         frequencies.sort()
         gcd = int(frequencies[-1] * 10)
         for f in frequencies[0:-1]:
-            gcd = fractions.gcd(int(f * 10), gcd)
+            if sys.version_info.major == 2:
+                gcd = fractions.gcd(int(f * 10), gcd)
+            else:
+                gcd = math.gcd(int(f * 10), gcd)
         resolution = gcd / 10.0
         # get magnitude data of the weighting functions
         magnitudes = []
