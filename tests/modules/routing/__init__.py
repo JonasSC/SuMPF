@@ -14,11 +14,6 @@
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 
-from ._channels.concatenatesignals import ConcatenateSignals
-from ._channels.copychannels import CopySignalChannels, CopySpectrumChannels
-from ._channels.cutsignal import CutSignal
-from ._channels.merge import MergeSignals, MergeSpectrums
-from ._channels.reversesignal import ReverseSignal
-from ._channels.shiftsignal import ShiftSignal
-from ._channels.split import SplitSignal, SplitSpectrum
+from .passthrough import TestPassThrough
+from .select import TestSelect
 

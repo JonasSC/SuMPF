@@ -23,4 +23,5 @@ from .metadata import *
 from .models import *
 from .normalize import *
 from .plotting import *
+from .routing import *
 
