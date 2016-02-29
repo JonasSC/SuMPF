@@ -17,3 +17,5 @@
 from ._generators.signal import *
 from ._generators.spectrum import *
 
+from ._generators.interval import CreateInterval
+
