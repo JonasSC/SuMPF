@@ -161,13 +161,23 @@ class TestSignal(unittest.TestCase):
                              sumpf.Signal(channels=(numpy.add(self.samples1, number), numpy.add(self.samples2, number)),
                                           samplingrate=4410.0,
                                           labels=self.signal.GetLabels()))  # adding with a number
+        self.assertEqual(self.signal + [12.3, 9],
+                         sumpf.Signal(channels=(numpy.add(self.samples1, 12.3), numpy.add(self.samples2, 9)),
+                                      samplingrate=4410.0,
+                                      labels=self.signal.GetLabels()))  # adding with a list
+        self.assertEqual((12.3, 9) + self.signal,
+                         sumpf.Signal(channels=(numpy.add(self.samples1, 12.3), numpy.add(self.samples2, 9)),
+                                      samplingrate=4410.0,
+                                      labels=self.signal.GetLabels()))  # adding with a tuple
         def add(a, b):
             return a + b
-        self.assertRaises(ValueError, add, *(self.signal, signal3)) # adding a Signal with a different number of channels should fail, if none of the channel counts is one
-        self.assertRaises(ValueError, add, *(self.signal, signal4)) # adding a Signal with a different length should fail
-        self.assertRaises(ValueError, add, *(self.signal, signal5)) # adding a Signal with a different sampling rate should fail
-        self.assertRaises(ValueError, add, *(self.signal, signal8)) # adding a Signal with a different number of channels should fail, even if the Signal is empty
-        self.assertRaises(ValueError, add, *(self.signal, signal9)) # adding a Signal with a different sampling rate should fail, even if the Signal is empty
+        self.assertRaises(ValueError, add, *(self.signal, signal3))             # adding a Signal with a different number of channels should fail, if none of the channel counts is one
+        self.assertRaises(ValueError, add, *(self.signal, signal4))             # adding a Signal with a different length should fail
+        self.assertRaises(ValueError, add, *(self.signal, signal5))             # adding a Signal with a different sampling rate should fail
+        self.assertRaises(ValueError, add, *(self.signal, signal8))             # adding a Signal with a different number of channels should fail, even if the Signal is empty
+        self.assertRaises(ValueError, add, *(self.signal, signal9))             # adding a Signal with a different sampling rate should fail, even if the Signal is empty
+        self.assertRaises(ValueError, add, *(self.signal, (1.0, -2.0, 3.0)))    # adding a Signal with a tuple of wrong length should fail
+        self.assertRaises(ValueError, add, *((-2.0,), self.signal))             # adding a Signal with a tuple of wrong length should fail
         # __sub__
         self.assertEqual(self.signal - signal1,
                          sumpf.Signal(channels=(numpy.subtract(self.samples1, self.samples2), numpy.subtract(self.samples2, self.samples1)),
@@ -198,15 +208,25 @@ class TestSignal(unittest.TestCase):
                              sumpf.Signal(channels=(numpy.subtract(number, self.samples1), numpy.subtract(number, self.samples2)),
                                           samplingrate=4410.0,
                                           labels=self.signal.GetLabels()))  # subtracting from a number
+        self.assertEqual(self.signal - [12.3, 9],
+                         sumpf.Signal(channels=(numpy.subtract(self.samples1, 12.3), numpy.subtract(self.samples2, 9)),
+                                      samplingrate=4410.0,
+                                      labels=self.signal.GetLabels()))  # subtracting a list
+        self.assertEqual((12.3, 9) - self.signal,
+                         sumpf.Signal(channels=(numpy.subtract(12.3, self.samples1), numpy.subtract(9, self.samples2)),
+                                      samplingrate=4410.0,
+                                      labels=self.signal.GetLabels()))  # subtracting from a tuple
         def sub(a, b):
             return a - b
-        self.assertRaises(ValueError, sub, *(self.signal, signal3)) # subtracting a Signal with a different number of channels should fail, if none of the channel counts is one
-        self.assertRaises(ValueError, sub, *(self.signal, signal4)) # subtracting a Signal with a different length should fail
-        self.assertRaises(ValueError, sub, *(self.signal, signal5)) # subtracting a Signal with a different sampling rate should fail
-        self.assertRaises(ValueError, sub, *(self.signal, signal8)) # subtracting a Signal with a different number of channels should fail, even if the Signal is empty
-        self.assertRaises(ValueError, sub, *(self.signal, signal9)) # subtracting a Signal with a different sampling rate should fail, even if the Signal is empty
-        self.assertRaises(ValueError, sub, *(signal8, self.signal)) # subtracting from a Signal with a different number of channels should fail, even if the Signal is empty
-        self.assertRaises(ValueError, sub, *(signal9, self.signal)) # subtracting from a Signal with a different sampling rate should fail, even if the Signal is empty
+        self.assertRaises(ValueError, sub, *(self.signal, signal3))             # subtracting a Signal with a different number of channels should fail, if none of the channel counts is one
+        self.assertRaises(ValueError, sub, *(self.signal, signal4))             # subtracting a Signal with a different length should fail
+        self.assertRaises(ValueError, sub, *(self.signal, signal5))             # subtracting a Signal with a different sampling rate should fail
+        self.assertRaises(ValueError, sub, *(self.signal, signal8))             # subtracting a Signal with a different number of channels should fail, even if the Signal is empty
+        self.assertRaises(ValueError, sub, *(self.signal, signal9))             # subtracting a Signal with a different sampling rate should fail, even if the Signal is empty
+        self.assertRaises(ValueError, sub, *(signal8, self.signal))             # subtracting from a Signal with a different number of channels should fail, even if the Signal is empty
+        self.assertRaises(ValueError, sub, *(signal9, self.signal))             # subtracting from a Signal with a different sampling rate should fail, even if the Signal is empty
+        self.assertRaises(ValueError, sub, *(self.signal, (1.0, -2.0, 3.0)))    # subtracting a tuple of wrong length from a Signal should fail
+        self.assertRaises(ValueError, sub, *((-2.0,), self.signal))             # subtracting a Signal from a tuple of wrong length should fail
         # __mul__
         self.assertEqual(self.signal * signal1,
                          sumpf.Signal(channels=(numpy.multiply(self.samples1, self.samples2), numpy.multiply(self.samples2, self.samples1)),
@@ -233,13 +253,23 @@ class TestSignal(unittest.TestCase):
                              sumpf.Signal(channels=(numpy.multiply(self.samples1, number), numpy.multiply(self.samples2, number)),
                                           samplingrate=4410.0,
                                           labels=self.signal.GetLabels()))  # multiplying with a number
+        self.assertEqual(self.signal * [12.3, 9],
+                         sumpf.Signal(channels=(numpy.multiply(self.samples1, 12.3), numpy.multiply(self.samples2, 9)),
+                                      samplingrate=4410.0,
+                                      labels=self.signal.GetLabels()))  # multiplying with a list
+        self.assertEqual((12.3, 9) * self.signal,
+                         sumpf.Signal(channels=(numpy.multiply(self.samples1, 12.3), numpy.multiply(self.samples2, 9)),
+                                      samplingrate=4410.0,
+                                      labels=self.signal.GetLabels()))  # multiplying with a tuple
         def mul(a, b):
             return a * b
-        self.assertRaises(ValueError, mul, *(self.signal, signal3)) # multiplying a Signal with a different number of channels should fail, if none of the channel counts is one
-        self.assertRaises(ValueError, mul, *(self.signal, signal4)) # multiplying a Signal with a different length should fail
-        self.assertRaises(ValueError, mul, *(self.signal, signal5)) # multiplying a Signal with a different sampling rate should fail
-        self.assertRaises(ValueError, mul, *(self.signal, signal8)) # multiplying a Signal with a different number of channels should fail, even if the Signal is empty
-        self.assertRaises(ValueError, mul, *(self.signal, signal9)) # multiplying a Signal with a different sampling rate should fail, even if the Signal is empty
+        self.assertRaises(ValueError, mul, *(self.signal, signal3))             # multiplying a Signal with a different number of channels should fail, if none of the channel counts is one
+        self.assertRaises(ValueError, mul, *(self.signal, signal4))             # multiplying a Signal with a different length should fail
+        self.assertRaises(ValueError, mul, *(self.signal, signal5))             # multiplying a Signal with a different sampling rate should fail
+        self.assertRaises(ValueError, mul, *(self.signal, signal8))             # multiplying a Signal with a different number of channels should fail, even if the Signal is empty
+        self.assertRaises(ValueError, mul, *(self.signal, signal9))             # multiplying a Signal with a different sampling rate should fail, even if the Signal is empty
+        self.assertRaises(ValueError, mul, *(self.signal, (1.0, -2.0, 3.0)))    # multiplying a Signal with a tuple of wrong length should fail
+        self.assertRaises(ValueError, mul, *((-2.0,), self.signal))             # multiplying a Signal with a tuple of wrong length should fail
         # __truediv__
         self.assertEqual(self.signal / signal1,
                          sumpf.Signal(channels=(numpy.true_divide(self.samples1, self.samples2), numpy.true_divide(self.samples2, self.samples1)),
@@ -266,14 +296,25 @@ class TestSignal(unittest.TestCase):
                              sumpf.Signal(channels=(numpy.true_divide(number, self.samples1), numpy.true_divide(number, self.samples2)),
                                           samplingrate=4410.0,
                                           labels=self.signal.GetLabels()))  # dividing a number
+        self.assertEqual(self.signal / [12.3, 9],
+                         sumpf.Signal(channels=(numpy.true_divide(self.samples1, 12.3), numpy.true_divide(self.samples2, 9)),
+                                      samplingrate=4410.0,
+                                      labels=self.signal.GetLabels()))  # dividing by a list
+        self.assertEqual((12.3, 9) / self.signal,
+                         sumpf.Signal(channels=(numpy.true_divide(12.3, self.samples1), numpy.true_divide(9, self.samples2)),
+                                      samplingrate=4410.0,
+                                      labels=self.signal.GetLabels()))  # dividing a tuple
         def div(a, b):
             return a / b
-        self.assertRaises(ValueError, div, *(self.signal, signal3)) # dividing by a Signal with a different number of channels should fail, if none of the channel counts is one
-        self.assertRaises(ValueError, div, *(self.signal, signal4)) # dividing by a Signal with a different length should fail
-        self.assertRaises(ValueError, div, *(self.signal, signal5)) # dividing by a Signal with a different sampling rate should fail
-        self.assertRaises(ValueError, div, *(signal8, self.signal)) # dividing a Signal with a different number of channels should fail, even if the Signal is empty
-        self.assertRaises(ValueError, div, *(signal9, self.signal)) # dividing a Signal with a different sampling rate should fail, even if the Signal is empty
-        self.assertRaises(ZeroDivisionError, div, *(self.signal, signal6))  # dividing a Signal by a Signal with a channel with only zero values should fail
-        self.assertRaises(ZeroDivisionError, div, *(4.3, signal9))  # dividing a scalar by a Signal with a channel with only zero values should fail
-        self.assertRaises(ZeroDivisionError, div, *(self.signal, 0.0))  # dividing by zero should fail
+        self.assertRaises(ValueError, div, *(self.signal, signal3))             # dividing by a Signal with a different number of channels should fail, if none of the channel counts is one
+        self.assertRaises(ValueError, div, *(self.signal, signal4))             # dividing by a Signal with a different length should fail
+        self.assertRaises(ValueError, div, *(self.signal, signal5))             # dividing by a Signal with a different sampling rate should fail
+        self.assertRaises(ValueError, div, *(signal8, self.signal))             # dividing a Signal with a different number of channels should fail, even if the Signal is empty
+        self.assertRaises(ValueError, div, *(signal9, self.signal))             # dividing a Signal with a different sampling rate should fail, even if the Signal is empty
+        self.assertRaises(ValueError, div, *(self.signal, (1.0, -2.0, 3.0)))    # dividing a Signal by a tuple of wrong length should fail
+        self.assertRaises(ValueError, div, *((-2.0,), self.signal))             # dividing a tuple of wrong length by a Signal should fail
+        self.assertRaises(ZeroDivisionError, div, *(self.signal, signal6))      # dividing a Signal by a Signal with a channel with only zero values should fail
+        self.assertRaises(ZeroDivisionError, div, *(4.3, signal9))              # dividing a scalar by a Signal with a channel with only zero values should fail
+        self.assertRaises(ZeroDivisionError, div, *(self.signal, 0.0))          # dividing by zero should fail
+        self.assertRaises(ZeroDivisionError, div, *(self.signal, (4.2, 0.0)))   # dividing by a tuple with a zero should fail
 

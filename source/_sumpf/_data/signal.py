@@ -14,6 +14,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 
+import collections
 import sumpf
 from .channeldata import ChannelData
 
@@ -120,6 +121,11 @@ class Signal(ChannelData):
         if isinstance(other, (int, float)):
             channels = numpy.add(self.GetChannels(), other)
             labels = self.GetLabels()
+        elif isinstance(other, collections.Iterable):
+            if len(other) != len(self.GetChannels()):
+                raise ValueError("The given tuple's length does not equal the number of channels")
+            channels = [numpy.add(a, c) for a, c in zip(self.GetChannels(), other)]
+            labels = self.GetLabels()
         else:
             self.__CheckOtherSignal(other)
             if other.IsEmpty():
@@ -153,6 +159,11 @@ class Signal(ChannelData):
         if isinstance(other, (int, float)):
             channels = numpy.subtract(self.GetChannels(), other)
             labels = self.GetLabels()
+        elif isinstance(other, collections.Iterable):
+            if len(other) != len(self.GetChannels()):
+                raise ValueError("The given tuple's length does not equal the number of channels")
+            channels = [numpy.subtract(a, c) for a, c in zip(self.GetChannels(), other)]
+            labels = self.GetLabels()
         else:
             self.__CheckOtherSignal(other)
             if other.IsEmpty():
@@ -172,7 +183,13 @@ class Signal(ChannelData):
         @param other: a value from which this Signal's samples shall be subtracted
         @retval : a Signal instance whose samples are the value minus this Signal's samples
         """
-        return Signal(channels=numpy.subtract(other, self.GetChannels()), samplingrate=self.GetSamplingRate(), labels=self.GetLabels())
+        if isinstance(other, collections.Iterable):
+            if len(other) != len(self.GetChannels()):
+                raise ValueError("The given tuple's length does not equal the number of channels")
+            channels = [numpy.subtract(c, a) for a, c in zip(self.GetChannels(), other)]
+        else:
+            channels = numpy.subtract(other, self.GetChannels())
+        return Signal(channels=channels, samplingrate=self.GetSamplingRate(), labels=self.GetLabels())
 
     def __mul__(self, other):
         """
@@ -190,6 +207,11 @@ class Signal(ChannelData):
         """
         if isinstance(other, (int, float)):
             channels = numpy.multiply(self.GetChannels(), other)
+            labels = self.GetLabels()
+        elif isinstance(other, collections.Iterable):
+            if len(other) != len(self.GetChannels()):
+                raise ValueError("The given tuple's length does not equal the number of channels")
+            channels = [numpy.multiply(a, c) for a, c in zip(self.GetChannels(), other)]
             labels = self.GetLabels()
         else:
             self.__CheckOtherSignal(other)
@@ -226,19 +248,26 @@ class Signal(ChannelData):
             if other == 0.0:
                 raise ZeroDivisionError("Signal division by zero")
             labels = self.GetLabels()
-            othervalue = other
+            channels = numpy.true_divide(selfvalue, other)
+        elif isinstance(other, collections.Iterable):
+            if len(other) != len(self.GetChannels()):
+                raise ValueError("The given tuple's length does not equal the number of channels")
+            for f in other:
+                if f == 0:
+                    raise ZeroDivisionError("Signal division by a zero")
+            channels = [numpy.true_divide(a, c) for a, c in zip(self.GetChannels(), other)]
+            labels = self.GetLabels()
         else:
             self.__CheckOtherSignal(other)
             if self.IsEmpty():
                 selfvalue = 0.0
             elif len(other) != len(self):
                 raise ValueError("The other Signal has a different length")
-            othervalue = other.GetChannels()
-            for c in othervalue:
+            for c in other.GetChannels():
                 if numpy.prod(numpy.shape(numpy.nonzero(c))) == 0:
                     raise ZeroDivisionError("Signal division by a Signal with only 0.0-samples")
-            labels = tuple(["Quotient %i" % (i + 1) for i in range(max(len(self.GetChannels()), len(othervalue)))])
-        channels = numpy.true_divide(selfvalue, othervalue)
+            channels = numpy.true_divide(selfvalue, other.GetChannels())
+            labels = tuple(["Quotient %i" % (i + 1) for i in range(max(len(self.GetChannels()), len(other.GetChannels())))])
         return Signal(channels=channels, samplingrate=self.GetSamplingRate(), labels=labels)
 
     def __rtruediv__(self, other):
@@ -250,7 +279,13 @@ class Signal(ChannelData):
         for c in self.GetChannels():
             if numpy.prod(numpy.shape(numpy.nonzero(c))) == 0:
                 raise ZeroDivisionError("Signal division by a Signal with only 0.0-samples")
-        return Signal(channels=numpy.true_divide(other, self.GetChannels()), samplingrate=self.GetSamplingRate(), labels=self.GetLabels())
+        if isinstance(other, collections.Iterable):
+            if len(other) != len(self.GetChannels()):
+                raise ValueError("The given tuple's length does not equal the number of channels")
+            channels = [numpy.true_divide(c, a) for a, c in zip(self.GetChannels(), other)]
+        else:
+            channels = numpy.true_divide(other, self.GetChannels())
+        return Signal(channels=channels, samplingrate=self.GetSamplingRate(), labels=self.GetLabels())
 
     def __rdiv__(self, other):
         """

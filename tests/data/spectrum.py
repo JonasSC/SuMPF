@@ -193,13 +193,23 @@ class TestSpectrum(unittest.TestCase):
                              sumpf.Spectrum(channels=(numpy.add(self.samples1, number), numpy.add(self.samples2, number)),
                                             resolution=4800.0,
                                             labels=self.spectrum.GetLabels()))  # adding with a number
+        self.assertEqual(self.spectrum + [12.3, 9],
+                         sumpf.Spectrum(channels=(numpy.add(self.samples1, 12.3), numpy.add(self.samples2, 9)),
+                                        resolution=4800.0,
+                                        labels=self.spectrum.GetLabels()))  # adding a list
+        self.assertEqual((12.3, 9) + self.spectrum,
+                         sumpf.Spectrum(channels=(numpy.add(12.3, self.samples1), numpy.add(9, self.samples2)),
+                                        resolution=4800.0,
+                                        labels=self.spectrum.GetLabels()))  # adding a tuple
         def add(a, b):
             return a + b
-        self.assertRaises(ValueError, add, *(self.spectrum, spectrum3)) # adding a Spectrum with a different number of channels should fail, if none of the channel counts is one
-        self.assertRaises(ValueError, add, *(self.spectrum, spectrum4)) # adding a Spectrum with a different length should fail
-        self.assertRaises(ValueError, add, *(self.spectrum, spectrum5)) # adding a Spectrum with a different sampling rate should fail
-        self.assertRaises(ValueError, add, *(self.spectrum, spectrum8)) # adding a Spectrum with a different number of channels should fail, even if the Spectrum is empty
-        self.assertRaises(ValueError, add, *(self.spectrum, spectrum9)) # adding a Spectrum with a different sampling rate should fail, even if the Spectrum is empty
+        self.assertRaises(ValueError, add, *(self.spectrum, spectrum3))         # adding a Spectrum with a different number of channels should fail, if none of the channel counts is one
+        self.assertRaises(ValueError, add, *(self.spectrum, spectrum4))         # adding a Spectrum with a different length should fail
+        self.assertRaises(ValueError, add, *(self.spectrum, spectrum5))         # adding a Spectrum with a different sampling rate should fail
+        self.assertRaises(ValueError, add, *(self.spectrum, spectrum8))         # adding a Spectrum with a different number of channels should fail, even if the Spectrum is empty
+        self.assertRaises(ValueError, add, *(self.spectrum, spectrum9))         # adding a Spectrum with a different sampling rate should fail, even if the Spectrum is empty
+        self.assertRaises(ValueError, add, *(self.spectrum, (1.0, -2.0, 3.0)))  # adding a Spectrum with a tuple of wrong length should fail
+        self.assertRaises(ValueError, add, *((-2.0,), self.spectrum))           # adding a Spectrum with a tuple of wrong length should fail
         # __sub__
         self.assertEqual(self.spectrum - spectrum1,
                          sumpf.Spectrum(channels=(numpy.subtract(self.samples1, self.samples2), numpy.subtract(self.samples2, self.samples1)),
@@ -230,15 +240,25 @@ class TestSpectrum(unittest.TestCase):
                              sumpf.Spectrum(channels=(numpy.subtract(number, self.samples1), numpy.subtract(number, self.samples2)),
                                             resolution=4800.0,
                                             labels=self.spectrum.GetLabels()))  # subtracting from a number
+        self.assertEqual(self.spectrum - [12.3, 9],
+                         sumpf.Spectrum(channels=(numpy.subtract(self.samples1, 12.3), numpy.subtract(self.samples2, 9)),
+                                        resolution=4800.0,
+                                        labels=self.spectrum.GetLabels()))  # subtracting a list
+        self.assertEqual((12.3, 9) - self.spectrum,
+                         sumpf.Spectrum(channels=(numpy.subtract(12.3, self.samples1), numpy.subtract(9, self.samples2)),
+                                        resolution=4800.0,
+                                        labels=self.spectrum.GetLabels()))  # subtracting from a tuple
         def sub(a, b):
             return a - b
-        self.assertRaises(ValueError, sub, *(self.spectrum, spectrum3)) # subtracting a Spectrum with a different number of channels should fail, if none of the channel counts is one
-        self.assertRaises(ValueError, sub, *(self.spectrum, spectrum4)) # subtracting a Spectrum with a different length should fail
-        self.assertRaises(ValueError, sub, *(self.spectrum, spectrum5)) # subtracting a Spectrum with a different sampling rate should fail
-        self.assertRaises(ValueError, sub, *(self.spectrum, spectrum8)) # subtracting a Spectrum with a different number of channels should fail, even if the Spectrum is empty
-        self.assertRaises(ValueError, sub, *(self.spectrum, spectrum9)) # subtracting a Spectrum with a different sampling rate should fail, even if the Spectrum is empty
-        self.assertRaises(ValueError, sub, *(spectrum8, self.spectrum)) # subtracting from a Spectrum with a different number of channels should fail, even if the Spectrum is empty
-        self.assertRaises(ValueError, sub, *(spectrum9, self.spectrum)) # subtracting from a Spectrum with a different sampling rate should fail, even if the Spectrum is empty
+        self.assertRaises(ValueError, sub, *(self.spectrum, spectrum3))         # subtracting a Spectrum with a different number of channels should fail, if none of the channel counts is one
+        self.assertRaises(ValueError, sub, *(self.spectrum, spectrum4))         # subtracting a Spectrum with a different length should fail
+        self.assertRaises(ValueError, sub, *(self.spectrum, spectrum5))         # subtracting a Spectrum with a different sampling rate should fail
+        self.assertRaises(ValueError, sub, *(self.spectrum, spectrum8))         # subtracting a Spectrum with a different number of channels should fail, even if the Spectrum is empty
+        self.assertRaises(ValueError, sub, *(self.spectrum, spectrum9))         # subtracting a Spectrum with a different sampling rate should fail, even if the Spectrum is empty
+        self.assertRaises(ValueError, sub, *(spectrum8, self.spectrum))         # subtracting from a Spectrum with a different number of channels should fail, even if the Spectrum is empty
+        self.assertRaises(ValueError, sub, *(spectrum9, self.spectrum))         # subtracting from a Spectrum with a different sampling rate should fail, even if the Spectrum is empty
+        self.assertRaises(ValueError, sub, *(self.spectrum, (1.0, -2.0, 3.0)))  # subtracting a tuple of wrong length from a Spectrum should fail
+        self.assertRaises(ValueError, sub, *((-2.0,), self.spectrum))           # subtracting a Spectrum from a tuple of wrong length should fail
         # __mul__
         self.assertEqual(self.spectrum * spectrum1,
                          sumpf.Spectrum(channels=(numpy.multiply(self.samples1, self.samples2), numpy.multiply(self.samples2, self.samples1)),
@@ -265,13 +285,23 @@ class TestSpectrum(unittest.TestCase):
                              sumpf.Spectrum(channels=(numpy.multiply(self.samples1, number), numpy.multiply(self.samples2, number)),
                                             resolution=4800.0,
                                             labels=self.spectrum.GetLabels()))  # multiplying with a number
+        self.assertEqual(self.spectrum * [12.3, 9],
+                         sumpf.Spectrum(channels=(numpy.multiply(self.samples1, 12.3), numpy.multiply(self.samples2, 9)),
+                                        resolution=4800.0,
+                                        labels=self.spectrum.GetLabels()))  # multiplying with a list
+        self.assertEqual((12.3, 9) * self.spectrum,
+                         sumpf.Spectrum(channels=(numpy.multiply(12.3, self.samples1), numpy.multiply(9, self.samples2)),
+                                        resolution=4800.0,
+                                        labels=self.spectrum.GetLabels()))  # multiplying with a tuple
         def mul(a, b):
             return a * b
-        self.assertRaises(ValueError, mul, *(self.spectrum, spectrum3)) # multiplying a Spectrum with a different number of channels should fail, if none of the channel counts is one
-        self.assertRaises(ValueError, mul, *(self.spectrum, spectrum4)) # multiplying a Spectrum with a different length should fail
-        self.assertRaises(ValueError, mul, *(self.spectrum, spectrum5)) # multiplying a Spectrum with a different sampling rate should fail
-        self.assertRaises(ValueError, mul, *(self.spectrum, spectrum8)) # multiplying a Spectrum with a different number of channels should fail, even if the Spectrum is empty
-        self.assertRaises(ValueError, mul, *(self.spectrum, spectrum9)) # multiplying a Spectrum with a different sampling rate should fail, even if the Spectrum is empty
+        self.assertRaises(ValueError, mul, *(self.spectrum, spectrum3))         # multiplying a Spectrum with a different number of channels should fail, if none of the channel counts is one
+        self.assertRaises(ValueError, mul, *(self.spectrum, spectrum4))         # multiplying a Spectrum with a different length should fail
+        self.assertRaises(ValueError, mul, *(self.spectrum, spectrum5))         # multiplying a Spectrum with a different sampling rate should fail
+        self.assertRaises(ValueError, mul, *(self.spectrum, spectrum8))         # multiplying a Spectrum with a different number of channels should fail, even if the Spectrum is empty
+        self.assertRaises(ValueError, mul, *(self.spectrum, spectrum9))         # multiplying a Spectrum with a different sampling rate should fail, even if the Spectrum is empty
+        self.assertRaises(ValueError, mul, *(self.spectrum, (1.0, -2.0, 3.0)))  # multiplying a Spectrum with a tuple of wrong length should fail
+        self.assertRaises(ValueError, mul, *((-2.0,), self.spectrum))           # multiplying a Spectrum with a tuple of wrong length should fail
         # __truediv__
         self.assertEqual(self.spectrum / spectrum1,
                          sumpf.Spectrum(channels=(numpy.true_divide(self.samples1, self.samples2), numpy.true_divide(self.samples2, self.samples1)),
@@ -298,6 +328,14 @@ class TestSpectrum(unittest.TestCase):
                              sumpf.Spectrum(channels=numpy.true_divide(number, (self.samples1, self.samples2)),
                                             resolution=4800.0,
                                             labels=self.spectrum.GetLabels()))  # dividing a number
+        self.assertEqual(self.spectrum / [12.3, 9],
+                         sumpf.Spectrum(channels=(numpy.true_divide(self.samples1, 12.3), numpy.true_divide(self.samples2, 9)),
+                                        resolution=4800.0,
+                                        labels=self.spectrum.GetLabels()))  # dividing by a list
+        self.assertEqual((12.3, 9) / self.spectrum,
+                         sumpf.Spectrum(channels=(numpy.true_divide(12.3, self.samples1), numpy.true_divide(9, self.samples2)),
+                                        resolution=4800.0,
+                                        labels=self.spectrum.GetLabels()))  # dividing a tuple
         def div(a, b):
             return a / b
         self.assertRaises(ValueError, div, *(self.spectrum, spectrum3))         # dividing by a Spectrum with a different number of channels should fail, if none of the channel counts is one
@@ -305,7 +343,10 @@ class TestSpectrum(unittest.TestCase):
         self.assertRaises(ValueError, div, *(self.spectrum, spectrum5))         # dividing by a Spectrum with a different sampling rate should fail
         self.assertRaises(ValueError, div, *(spectrum8, self.spectrum))         # dividing a Spectrum with a different number of channels should fail, even if the Spectrum is empty
         self.assertRaises(ValueError, div, *(spectrum9, self.spectrum))         # dividing a Spectrum with a different sampling rate should fail, even if the Spectrum is empty
+        self.assertRaises(ValueError, div, *(self.spectrum, (1.0, -2.0, 3.0)))  # dividing a Spectrum by a tuple of wrong length should fail
+        self.assertRaises(ValueError, div, *((-2.0,), self.spectrum))           # dividing a tuple of wrong length by a Spectrum should fail
         self.assertRaises(ZeroDivisionError, div, *(self.spectrum, spectrum6))  # dividing a Spectrum by a Spectrum with a channel with only zero values should fail
         self.assertRaises(ZeroDivisionError, div, *(9.5 + 4.6j, spectrum8))     # dividing a scalar by a Spectrum with a channel with only zero values should fail
         self.assertRaises(ZeroDivisionError, div, *(self.spectrum, 0.0))        # dividing by zero should fail
+        self.assertRaises(ZeroDivisionError, div, *(self.spectrum, (4.2, 0.0))) # dividing by a tuple with a zero should fail
 

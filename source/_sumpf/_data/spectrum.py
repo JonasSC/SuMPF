@@ -14,6 +14,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 
+import collections
 import math
 
 import sumpf
@@ -144,6 +145,11 @@ class Spectrum(ChannelData):
         if isinstance(other, (int, float, complex)):
             channels = numpy.add(self.GetChannels(), other)
             labels = self.GetLabels()
+        elif isinstance(other, collections.Iterable):
+            if len(other) != len(self.GetChannels()):
+                raise ValueError("The given tuple's length does not equal the number of channels")
+            channels = [numpy.add(a, c) for a, c in zip(self.GetChannels(), other)]
+            labels = self.GetLabels()
         else:
             self.__CheckOtherSpectrum(other)
             if other.IsEmpty():
@@ -175,6 +181,11 @@ class Spectrum(ChannelData):
         if isinstance(other, (int, float, complex)):
             channels = numpy.subtract(self.GetChannels(), other)
             labels = self.GetLabels()
+        elif isinstance(other, collections.Iterable):
+            if len(other) != len(self.GetChannels()):
+                raise ValueError("The given tuple's length does not equal the number of channels")
+            channels = [numpy.subtract(a, c) for a, c in zip(self.GetChannels(), other)]
+            labels = self.GetLabels()
         else:
             self.__CheckOtherSpectrum(other)
             if other.IsEmpty():
@@ -193,7 +204,13 @@ class Spectrum(ChannelData):
         @param other: a value from which this Spectrum's samples shall be subtracted
         @retval : a Spectrum instance whose samples are the value minus this Spectrum's samples
         """
-        return Spectrum(channels=numpy.subtract(other, self.GetChannels()), resolution=self.GetResolution(), labels=self.GetLabels())
+        if isinstance(other, collections.Iterable):
+            if len(other) != len(self.GetChannels()):
+                raise ValueError("The given tuple's length does not equal the number of channels")
+            channels = [numpy.subtract(c, a) for a, c in zip(self.GetChannels(), other)]
+        else:
+            channels = numpy.subtract(other, self.GetChannels())
+        return Spectrum(channels=channels, resolution=self.GetResolution(), labels=self.GetLabels())
 
     def __mul__(self, other):
         """
@@ -211,6 +228,11 @@ class Spectrum(ChannelData):
         """
         if isinstance(other, (int, float, complex)):
             channels = numpy.multiply(self.GetChannels(), other)
+            labels = self.GetLabels()
+        elif isinstance(other, collections.Iterable):
+            if len(other) != len(self.GetChannels()):
+                raise ValueError("The given tuple's length does not equal the number of channels")
+            channels = [numpy.multiply(a, c) for a, c in zip(self.GetChannels(), other)]
             labels = self.GetLabels()
         else:
             self.__CheckOtherSpectrum(other)
@@ -245,19 +267,26 @@ class Spectrum(ChannelData):
             if other == 0.0:
                 raise ZeroDivisionError("Spectrum division by zero")
             labels = self.GetLabels()
-            othervalue = other
+            channels = numpy.true_divide(selfvalue, other)
+        elif isinstance(other, collections.Iterable):
+            if len(other) != len(self.GetChannels()):
+                raise ValueError("The given tuple's length does not equal the number of channels")
+            for f in other:
+                if f == 0:
+                    raise ZeroDivisionError("Signal division by a zero")
+            channels = [numpy.true_divide(a, c) for a, c in zip(self.GetChannels(), other)]
+            labels = self.GetLabels()
         else:
             self.__CheckOtherSpectrum(other)
             if self.IsEmpty():
                 selfvalue = 0.0
             elif len(other) != len(self):
                 raise ValueError("The other Spectrum has a different length")
-            othervalue = other.GetChannels()
             for c in other.GetChannels():
                 if numpy.prod(numpy.shape(numpy.nonzero(c))) == 0:
                     raise ZeroDivisionError("Spectrum division by a Spectrum with only 0.0-samples")
-            labels = tuple(["Quotient %i" % (i + 1) for i in range(max(len(self.GetChannels()), len(othervalue)))])
-        channels = numpy.true_divide(selfvalue, othervalue)
+            channels = numpy.true_divide(selfvalue, other.GetChannels())
+            labels = tuple(["Quotient %i" % (i + 1) for i in range(max(len(self.GetChannels()), len(other.GetChannels())))])
         return Spectrum(channels=channels, resolution=self.GetResolution(), labels=labels)
 
     def __rtruediv__(self, other):
@@ -268,8 +297,14 @@ class Spectrum(ChannelData):
         """
         for c in self.GetChannels():
             if numpy.prod(numpy.shape(numpy.nonzero(c))) == 0:
-                raise ZeroDivisionError("Spectrum division by a Spectrum with only 0.0-samples")
-        return Spectrum(channels=numpy.true_divide(other, self.GetChannels()), resolution=self.GetResolution(), labels=self.GetLabels())
+                raise ZeroDivisionError("Signal division by a Signal with only 0.0-samples")
+        if isinstance(other, collections.Iterable):
+            if len(other) != len(self.GetChannels()):
+                raise ValueError("The given tuple's length does not equal the number of channels")
+            channels = [numpy.true_divide(c, a) for a, c in zip(self.GetChannels(), other)]
+        else:
+            channels = numpy.true_divide(other, self.GetChannels())
+        return Spectrum(channels=channels, resolution=self.GetResolution(), labels=self.GetLabels())
 
     def __rdiv__(self, other):
         """
