@@ -92,7 +92,7 @@ class SignalChain(object):
         self.__properties = sumpf.modules.ChannelDataProperties()
         self.__silence_duration = sumpf.modules.DurationToLength(duration=sumpf.config.get("sweep_duration"), even_length=True)
         sumpf.connect(self.__properties.GetSamplingRate, self.__silence_duration.SetSamplingRate)
-        self.__silence = sumpf.modules.SilenceGenerator()
+        self.__silence = sumpf.modules.ConstantSignalGenerator(value=0.0)
         sumpf.connect(self.__silence_duration.GetLength, self.__silence.SetLength)
         sumpf.connect(self.__properties.GetSamplingRate, self.__silence.SetSamplingRate)
         self.__sweep_duration = sumpf.modules.DurationToLength(duration=sumpf.config.get("silence_duration"), even_length=True)
@@ -106,11 +106,11 @@ class SignalChain(object):
         self.__apply_fade = sumpf.modules.Multiply()
         sumpf.connect(self.__generator.GetSignal, self.__apply_fade.SetValue1)
         sumpf.connect(self.__fade_sweep.GetSignal, self.__apply_fade.SetValue2)
-        self.__amplifier = sumpf.modules.AmplifySignal()
-        sumpf.connect(self.__apply_fade.GetResult, self.__amplifier.SetInput)
+        self.__amplifier = sumpf.modules.Multiply()
+        sumpf.connect(self.__apply_fade.GetResult, self.__amplifier.SetValue1)
         # recording
         self.__concatenation = sumpf.modules.ConcatenateSignals()
-        sumpf.connect(self.__amplifier.GetOutput, self.__concatenation.SetInput1)
+        sumpf.connect(self.__amplifier.GetResult, self.__concatenation.SetInput1)
         sumpf.connect(self.__silence.GetSignal, self.__concatenation.SetInput2)
         sumpf.connect(self.__concatenation.GetOutputLength, self.__properties.SetSignalLength)
         self.__playback_fft = sumpf.modules.FourierTransform()
@@ -276,7 +276,7 @@ class SignalChain(object):
             method_pairs.append((self.__generator.SetInterval, (fade_length, -fade_length)))
             method_pairs.append((self.__fade_sweep.SetRaiseInterval, (0, fade_length)))
             method_pairs.append((self.__fade_sweep.SetFallInterval, (-fade_length, -1)))
-        method_pairs.append((self.__amplifier.SetAmplificationFactor, amplitude))
+        method_pairs.append((self.__amplifier.SetValue2, amplitude))
         method_pairs.append((self.__average.SetNumber, averages))
         method_pairs.append((self.__average.Start,))
         # apply settings and start recording
@@ -333,7 +333,7 @@ class SignalChain(object):
             sumpf.activate_output(self.__properties)
             self.__sweep_duration.SetDuration(sweep_length / self.__properties.GetSamplingRate())
             self.__silence_duration.SetDuration((total_length - sweep_length) / self.__properties.GetSamplingRate())
-            self.__record_fft.SetSignal(sumpf.modules.SilenceGenerator(samplingrate=self.__properties.GetSamplingRate(), length=total_length).GetSignal())
+            self.__record_fft.SetSignal(sumpf.modules.ConstantSignalGenerator(value=0.0, samplingrate=self.__properties.GetSamplingRate(), length=total_length).GetSignal())
             sumpf.activate_output(self.__concatenation.GetOutput)
         loaded = None
         ending = filename.split(".")[-1]

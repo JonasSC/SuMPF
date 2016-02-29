@@ -87,25 +87,25 @@ class TestMergeSignals(unittest.TestCase):
         # in this scenario, all input Signals change their sampling rate to the
         # same value, so no error should be raised.
         prp = sumpf.modules.ChannelDataProperties(signal_length=100, samplingrate=42)
-        gen1 = sumpf.modules.SilenceGenerator()
+        gen1 = sumpf.modules.ConstantSignalGenerator(value=0.0)
         sumpf.connect(prp.GetSignalLength, gen1.SetLength)
         sumpf.connect(prp.GetSamplingRate, gen1.SetSamplingRate)
-        gen2 = sumpf.modules.SilenceGenerator()
+        gen2 = sumpf.modules.ConstantSignalGenerator(value=0.0)
         sumpf.connect(prp.GetSignalLength, gen2.SetLength)
         sumpf.connect(prp.GetSamplingRate, gen2.SetSamplingRate)
         mrg = sumpf.modules.MergeSignals()
         sumpf.connect(gen1.GetSignal, mrg.AddInput)
         sumpf.connect(gen2.GetSignal, mrg.AddInput)
-        amp = sumpf.modules.AmplifySignal()
-        sumpf.connect(mrg.GetOutput, amp.SetInput)
+        pt = sumpf.modules.PassThroughSignal()
+        sumpf.connect(mrg.GetOutput, pt.SetSignal)
         prp.SetSamplingRate(23)     # this command changes the sampling rate
         # in this scenario, all input Signals are changed, but the sampling rate
         # changes to different values, so this should raise an error.
         prp = sumpf.modules.ChannelDataProperties(signal_length=100, samplingrate=42)
-        gen1 = sumpf.modules.SilenceGenerator()
+        gen1 = sumpf.modules.ConstantSignalGenerator(value=0.0)
         sumpf.connect(prp.GetSignalLength, gen1.SetLength)
         sumpf.connect(prp.GetSamplingRate, gen1.SetSamplingRate)
-        gen2 = sumpf.modules.SilenceGenerator()
+        gen2 = sumpf.modules.ConstantSignalGenerator(value=0.0)
         sumpf.connect(prp.GetSignalLength, gen2.SetLength)
         gen2.SetSamplingRate(prp.GetSamplingRate())
         sel = sumpf.modules.SelectSignal(selection=1)
@@ -116,8 +116,8 @@ class TestMergeSignals(unittest.TestCase):
         mrg = sumpf.modules.MergeSignals()
         sumpf.connect(gen1.GetSignal, mrg.AddInput)
         sumpf.connect(sel.GetOutput, mrg.AddInput)
-        amp = sumpf.modules.AmplifySignal()
-        sumpf.connect(mrg.GetOutput, amp.SetInput)
+        pt = sumpf.modules.PassThroughSignal()
+        sumpf.connect(mrg.GetOutput, pt.SetSignal)
         self.assertFalse(tst.triggered)
         self.assertRaises(RuntimeError, prp.SetSamplingRate, 23)    # this command changes the sampling rate
         self.assertTrue(tst.triggered)                          # make sure that all input Signals have changed

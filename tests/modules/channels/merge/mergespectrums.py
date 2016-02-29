@@ -96,8 +96,8 @@ class TestMergeSpectrums(unittest.TestCase):
         mrg = sumpf.modules.MergeSpectrums()
         sumpf.connect(gen1.GetSpectrum, mrg.AddInput)
         sumpf.connect(gen2.GetSpectrum, mrg.AddInput)
-        amp = sumpf.modules.AmplifySpectrum()
-        sumpf.connect(mrg.GetOutput, amp.SetInput)
+        pt = sumpf.modules.PassThroughSpectrum()
+        sumpf.connect(mrg.GetOutput, pt.SetSpectrum)
         prp.SetResolution(23)       # this command changes the resolution
         # in this scenario, all input Spectrums are changed, but the resolution
         # changes to different values, so this should raise an error.
@@ -116,8 +116,8 @@ class TestMergeSpectrums(unittest.TestCase):
         mrg = sumpf.modules.MergeSpectrums()
         sumpf.connect(gen1.GetSpectrum, mrg.AddInput)
         sumpf.connect(sel.GetOutput, mrg.AddInput)
-        amp = sumpf.modules.AmplifySpectrum()
-        sumpf.connect(mrg.GetOutput, amp.SetInput)
+        pt = sumpf.modules.PassThroughSpectrum()
+        sumpf.connect(mrg.GetOutput, pt.SetSpectrum)
         self.assertFalse(tst.triggered)
         self.assertRaises(RuntimeError, prp.SetResolution, 23)  # this command changes the resolution
         self.assertTrue(tst.triggered)                          # make sure that all input Spectrums have changed

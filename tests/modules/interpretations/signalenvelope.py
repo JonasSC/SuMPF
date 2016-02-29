@@ -55,7 +55,7 @@ class TestSignalEnvelope(unittest.TestCase):
         carrier_merger.AddInput(carrier2)
         multichannel_carrier = sumpf.modules.CopySignalChannels(input=carrier_merger.GetOutput(), channelcount=modulations.GetNumberOfOutputChannels()).GetOutput()
         # setup offset Signals
-        zero_offset = sumpf.modules.SilenceGenerator(samplingrate=samplingrate, length=length).GetSignal()
+        zero_offset = sumpf.modules.ConstantSignalGenerator(value=0.0, samplingrate=samplingrate, length=length).GetSignal()
         constant_offset = sumpf.Signal(channels=((0.1,) * length, (-0.2,) * length, (-1.8,) * length), samplingrate=samplingrate)
         low_frequency_offset_merger = sumpf.modules.MergeSignals()
         low_frequency_offset_merger.AddInput(0.2 * sumpf.modules.SineWaveGenerator(frequency=0.21, phase=-1.5, samplingrate=samplingrate, length=length).GetSignal())

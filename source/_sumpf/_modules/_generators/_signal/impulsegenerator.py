@@ -30,7 +30,7 @@ class ImpulseGenerator(SignalGenerator):
     resulting frequency might not be exactly as specified, but the gaps between
     the impulses do all have the same length.
     The amplitude of the impulses will always be one. It can be changed by
-    sending the resulting Signal through a sumpf.AmplifySignal module.
+    sending the resulting Signal through a sumpf.Multiply module.
     The resulting Signal will have one channel.
     """
     def __init__(self, delay=0.0, frequency=0.0, samplingrate=None, length=None):

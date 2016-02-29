@@ -79,7 +79,7 @@ class TestAudioIO(unittest.TestCase):
             self.assertEqual(len(aio.GetInputs()), 1)   # the number of inputs shall be 1 if no constructor parameter is given
         finally:
             aio.Delete()
-        gen = sumpf.modules.SilenceGenerator(length=2 ** 14 - 5)
+        gen = sumpf.modules.ConstantSignalGenerator(value=0.0, length=2 ** 14 - 5)
         cpy = sumpf.modules.CopySignalChannels(channelcount=1)
         sumpf.connect(gen.GetSignal, cpy.SetInput)
         aio = sumpf.modules.audioio.factory(playbackchannels=2, recordchannels=3)

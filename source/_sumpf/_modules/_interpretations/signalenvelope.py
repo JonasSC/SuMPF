@@ -116,7 +116,7 @@ class SignalEnvelope(object):
         half_wave = flat_signal + sign * rectified
         unscaled_envelope = self.__CalculateUnscaledEnvelope(rectified_signal=half_wave)
         scaling_factors = self.__GetScalingFactors(original=half_wave, envelope=unscaled_envelope, sign=sign)
-        envelope = sumpf.modules.AmplifySignal(input=unscaled_envelope, factor=scaling_factors).GetOutput()
+        envelope = sumpf.modules.Multiply(value1=unscaled_envelope, value2=scaling_factors).GetResult()
         # add the low frequency offset back to the Signal
         result = envelope + offset_signal
         # delete the last sample if one has been appended before

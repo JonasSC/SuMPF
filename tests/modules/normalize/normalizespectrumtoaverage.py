@@ -25,7 +25,7 @@ class TestNormalizeSpectrumToAverage(unittest.TestCase):
     """
     def setUp(self):
         self.spectrum = sumpf.Spectrum(channels=((1.0, 2.0, 3.0), (1.0, 1.0, 1.0)), resolution=17.0, labels=("one", "two"))
-        self.amp = sumpf.modules.AmplifySpectrum(input=self.spectrum)
+        self.amp = sumpf.modules.Multiply(value1=self.spectrum)
 
     def test_get_set(self):
         """
@@ -37,25 +37,25 @@ class TestNormalizeSpectrumToAverage(unittest.TestCase):
         nrm.SetInput(self.spectrum)
         self.assertEqual(nrm.GetOutput().GetLabels(), self.spectrum.GetLabels())                    # the output's labels should have been copied from the input
         nrm.SetOrder(1)
-        self.amp.SetAmplificationFactor(6.0 / 9.0)
+        self.amp.SetValue2(6.0 / 9.0)
         self.assertEqual(nrm.GetOutput().GetResolution(), 17.0)                                     # the resolution should have been taken from input Spectrums
-        self.assertEqual(nrm.GetOutput().GetChannels(), self.amp.GetOutput().GetChannels())         # the normalization should have been done correctly
+        self.assertEqual(nrm.GetOutput().GetChannels(), self.amp.GetResult().GetChannels())         # the normalization should have been done correctly
         nrm.SetIndividual(True)
-        self.amp.SetAmplificationFactor(0.5)
-        self.assertEqual(nrm.GetOutput().GetChannels()[0], self.amp.GetOutput().GetChannels()[0])   # individual normalization should have been done correctly for the first channel
+        self.amp.SetValue2(0.5)
+        self.assertEqual(nrm.GetOutput().GetChannels()[0], self.amp.GetResult().GetChannels()[0])   # individual normalization should have been done correctly for the first channel
         self.assertEqual(nrm.GetOutput().GetChannels()[1], self.spectrum.GetChannels()[1])          # individual normalization should have been done correctly for the first channel
         nrm.SetIndividual(False)
         nrm.SetOrder(2)
-        self.amp.SetAmplificationFactor(1.0 / ((17.0 / 6.0) ** 0.5))
-        self.assertEqual(nrm.GetOutput().GetChannels(), self.amp.GetOutput().GetChannels())         # the normalization of order 2 should have been done correctly
+        self.amp.SetValue2(1.0 / ((17.0 / 6.0) ** 0.5))
+        self.assertEqual(nrm.GetOutput().GetChannels(), self.amp.GetResult().GetChannels())         # the normalization of order 2 should have been done correctly
 
     def test_constructor(self):
         """
         Tests if setting the data via the constructor works.
         """
         nrm = sumpf.modules.NormalizeSpectrumToAverage(input=self.spectrum, order=2, individual=True)
-        self.amp.SetAmplificationFactor(1.0 / ((14.0 / 3.0) ** 0.5))
-        self.assertEqual(nrm.GetOutput().GetChannels()[0], self.amp.GetOutput().GetChannels()[0])   # individual normalization should have been done correctly for the first channel
+        self.amp.SetValue2(1.0 / ((14.0 / 3.0) ** 0.5))
+        self.assertEqual(nrm.GetOutput().GetChannels()[0], self.amp.GetResult().GetChannels()[0])   # individual normalization should have been done correctly for the first channel
         self.assertEqual(nrm.GetOutput().GetChannels()[1], self.spectrum.GetChannels()[1])          # individual normalization should have been done correctly for the first channel
 
     def test_special_cases(self):

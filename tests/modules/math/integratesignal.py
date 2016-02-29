@@ -42,15 +42,15 @@ class TestIntegrateSignal(unittest.TestCase):
         """
         noise = sumpf.modules.NoiseGenerator(distribution=sumpf.modules.NoiseGenerator.RedNoise(), length=900, samplingrate=1000.0)
         noise.Seed(13)
-        cache = sumpf.modules.AmplifySignal()   # avoid regeneration of the random noise Signal even if caching is turned off
-        sumpf.connect(noise.GetSignal, cache.SetInput)
+        cache = sumpf.modules.PassThroughSignal()   # avoid regeneration of the random noise Signal even if caching is turned off
+        sumpf.connect(noise.GetSignal, cache.SetSignal)
         integral = sumpf.modules.IntegrateSignal()
-        sumpf.connect(cache.GetOutput, integral.SetInput)
+        sumpf.connect(cache.GetSignal, integral.SetInput)
         derivative = sumpf.modules.DifferentiateSignal()
         sumpf.connect(integral.GetOutput, derivative.SetInput)
-        common.compare_signals_almost_equal(testcase=self, signal1=cache.GetOutput(), signal2=derivative.GetOutput(), places=2)
+        common.compare_signals_almost_equal(testcase=self, signal1=cache.GetSignal(), signal2=derivative.GetOutput(), places=2)
         integral.SetOffset(129.874)
-        common.compare_signals_almost_equal(testcase=self, signal1=cache.GetOutput(), signal2=derivative.GetOutput(), places=2)
+        common.compare_signals_almost_equal(testcase=self, signal1=cache.GetSignal(), signal2=derivative.GetOutput(), places=2)
 
     def test_connectors(self):
         """

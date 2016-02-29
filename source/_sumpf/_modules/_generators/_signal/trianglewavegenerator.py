@@ -36,7 +36,7 @@ class TriangleWaveGenerator(WaveGenerator):
     the falling edge of the wave can be adjusted, for example to create a sawtooth
     wave.
     The amplitude of the triangle wave will always be 1.0. It can be changed by
-    sending the resulting Signal through a AmplifySignal module.
+    sending the resulting Signal through a Multiply module.
     The resulting Signal will have one channel.
     """
     def __init__(self, raising=0.5, frequency=None, phase=0.0, samplingrate=None, length=None):

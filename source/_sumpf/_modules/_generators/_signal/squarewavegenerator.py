@@ -39,7 +39,7 @@ class SquareWaveGenerator(WaveGenerator):
     This causes variations from the desired duty cycle, that become higher
     with high frequencies, where one period has less samples.
     The amplitude of the square wave will always be 1.0. It can be changed by
-    sending the resulting Signal through a AmplifySignal module.
+    sending the resulting Signal through a Multiply module.
     The resulting Signal will have one channel.
     """
     def __init__(self, dutycycle=0.5, frequency=None, phase=0.0, samplingrate=None, length=None):

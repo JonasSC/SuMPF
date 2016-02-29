@@ -18,7 +18,6 @@ from ._signal.arbitrarysignalgenerator import ArbitrarySignalGenerator
 from ._signal.constantsignalgenerator import ConstantSignalGenerator
 from ._signal.impulsegenerator import ImpulseGenerator
 from ._signal.laguerrefunctiongenerator import LaguerreFunctionGenerator
-from ._signal.silencegenerator import SilenceGenerator
 from ._signal.sinewavegenerator import SineWaveGenerator
 from ._signal.squarewavegenerator import SquareWaveGenerator
 from ._signal.sweepgenerator import SweepGenerator

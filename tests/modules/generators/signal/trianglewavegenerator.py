@@ -38,7 +38,7 @@ class TestTriangleWaveGenerator(unittest.TestCase):
         signal = self.gen.GetSignal()
         self.assertEqual(signal.GetLabels(), ("Triangle",))     # the label of the channel should be as expected
         diff = sumpf.modules.DifferentiateSignal(signal=signal).GetOutput()
-        ddiff = sumpf.modules.AmplifySignal(input=diff, factor=1.0 / (4 * self.frequency)).GetOutput()
+        ddiff = sumpf.modules.Multiply(value1=diff, value2=1.0 / (4 * self.frequency)).GetResult()
         dsamples = ddiff.GetChannels()[0]
         for i in range(len(dsamples)):
             r1 = float(i) * self.frequency / float(self.samplingrate)

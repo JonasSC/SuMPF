@@ -51,7 +51,7 @@ class WindowGenerator(SignalGenerator):
     multiplied with a sound Signal, to fade in or out the sound Signal without creating
     much unwanted distortion.
     The maximum of the window function will always be 1.0. It can be changed by
-    sending the resulting Signal through a sumpf.AmplifySignal module.
+    sending the resulting Signal through a sumpf.Multiply module.
     The resulting Signal will have one channel.
     """
     def __init__(self, raise_interval=None, fall_interval=None, function=None, samplingrate=None, length=None):

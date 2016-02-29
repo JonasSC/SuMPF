@@ -22,7 +22,7 @@ class SineWaveGenerator(WaveGenerator):
     """
     A class whose instances generate a sine wave.
     The amplitude of the sine wave will always be 1.0. It can be changed by
-    sending the resulting Signal through a sumpf.AmplifySignal module.
+    sending the resulting Signal through a sumpf.Multiply module.
     The resulting Signal will have one channel.
     """
     def _GetSample(self, t):

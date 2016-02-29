@@ -23,7 +23,7 @@ class EnergyDecayCurveFromImpulseResponse(object):
     impulse response.
     To get the dB curve, in which the linear slope can be found, that is used to
     calculate the reverberation time, the output of this class has to be processed
-    by a LogarithmSignal module and then by a AmplifySignal module with a factor
+    by a LogarithmSignal module and then by a Multiply module with a factor
     of 10.
     The output of this module is an energy Signal, rather than a sound pressure
     Signal, so it does not have negative samples. Please do not attempt to play

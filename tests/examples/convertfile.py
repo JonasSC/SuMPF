@@ -41,10 +41,10 @@ class TestConvertFile(unittest.TestCase):
             pathT = os.path.join(tempdir, filename) + "T"
             pathF = os.path.join(tempdir, filename) + "F"
             gen = sumpf.modules.SineWaveGenerator()
-            amp = sumpf.modules.AmplifySignal(input=gen.GetSignal(), factor=0.6)
+            amp = sumpf.modules.Multiply(value1=gen.GetSignal(), value2=0.6)
             mrg = sumpf.modules.MergeSignals()
             mrg.AddInput(gen.GetSignal())
-            mrg.AddInput(amp.GetOutput())
+            mrg.AddInput(amp.GetResult())
             signal = mrg.GetOutput()
             fft = sumpf.modules.FourierTransform(signal=signal)
             ifft = sumpf.modules.InverseFourierTransform(spectrum=fft.GetSpectrum())

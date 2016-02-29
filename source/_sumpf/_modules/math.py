@@ -17,7 +17,6 @@
 from ._math.algebra import *
 from ._math.statistics import *
 
-from ._math.amplify import AmplifySignal, AmplifySpectrum
 from ._math.average import AverageSignals, AverageSpectrums
 from ._math.comparesignals import CompareSignals
 from ._math.conjugatespectrum import ConjugateSpectrum

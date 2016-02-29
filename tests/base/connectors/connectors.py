@@ -418,8 +418,8 @@ class TestConnectors(unittest.TestCase):
         apply_fade = sumpf.modules.Multiply()
         sumpf.connect(generator.GetSignal, apply_fade.SetValue1)
         sumpf.connect(fade_sweep.GetSignal, apply_fade.SetValue2)
-        amplify = sumpf.modules.AmplifySignal(factor=0.9)
-        sumpf.connect(apply_fade.GetResult, amplify.SetInput)
+        amplify = sumpf.modules.Multiply(value1=0.9)
+        sumpf.connect(apply_fade.GetResult, amplify.SetValue2)
         propertiesX = sumpf.modules.ChannelDataProperties(samplingrate=44100)
         sumpf.connect(propertiesX.GetSamplingRate, properties.SetSamplingRate)
 

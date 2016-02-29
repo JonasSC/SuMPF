@@ -99,8 +99,8 @@ class TestShortFourierTransform(unittest.TestCase):
         self.assertRaises(ValueError, fft.GetSpectrum)
         fft.SetOverlap(0.5)
         # test wrong sampling rates
-        signal = sumpf.modules.SilenceGenerator(length=18, samplingrate=33).GetSignal()
-        window = sumpf.modules.SilenceGenerator(length=20, samplingrate=34).GetSignal()
+        signal = sumpf.modules.ConstantSignalGenerator(value=0.0, length=18, samplingrate=33).GetSignal()
+        window = sumpf.modules.ConstantSignalGenerator(value=0.0, length=20, samplingrate=34).GetSignal()
         fft.SetSignal(signal)
         fft.GetSpectrum()
         fft.SetWindow(window)

@@ -26,7 +26,7 @@ class SweepGenerator(SignalGenerator):
     the start frequency to the stop frequency. Such a Signal is known as sweep
     or chirp.
     The amplitude of the sweep will always be one. It can be changed by
-    sending the resulting Signal through a sumpf.AmplifySignal module.
+    sending the resulting Signal through a sumpf.Multiply module.
     The resulting Signal will have one channel.
     """
     def __init__(self, start_frequency=20.0, stop_frequency=20000.0, function=None, interval=None, samplingrate=None, length=None):
