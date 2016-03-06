@@ -82,7 +82,7 @@ class TestFindHarmonicImpulseResponse(unittest.TestCase):
         # "measure" the system's impulse response
         sweep = sumpf.modules.SweepGenerator(start_frequency=f0,
                                              stop_frequency=fT,
-                                             function=sumpf.modules.SweepGenerator.Exponential,
+                                             function=sumpf.modules.SweepGenerator.EXPONENTIAL,
                                              samplingrate=44100.0,
                                              length=T * 44100.0).GetSignal()
         excitation_spectrum = sumpf.modules.FourierTransform(sweep).GetSpectrum()

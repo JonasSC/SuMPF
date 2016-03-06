@@ -260,9 +260,9 @@ class SignalChain(object):
         method_pairs.append((self.__generator.SetStartFrequency, start_frequency))
         method_pairs.append((self.__generator.SetStopFrequency, stop_frequency))
         if exponential:
-            method_pairs.append((self.__generator.SetSweepFunction, sumpf.modules.SweepGenerator.Exponential))
+            method_pairs.append((self.__generator.SetSweepFunction, sumpf.modules.SweepGenerator.EXPONENTIAL))
         else:
-            method_pairs.append((self.__generator.SetSweepFunction, sumpf.modules.SweepGenerator.Linear))
+            method_pairs.append((self.__generator.SetSweepFunction, sumpf.modules.SweepGenerator.LINEAR))
         if sweep_duration is not None:
             method_pairs.append((self.__sweep_duration.SetDuration, sweep_duration))
         if silence_duration is not None:

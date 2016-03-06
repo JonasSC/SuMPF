@@ -20,6 +20,101 @@ import sumpf
 from .signalgenerator import SignalGenerator
 
 
+class SweepFunction(object):
+    """
+    A base class, that defines the interface for different functions by which the
+    frequency of a sweep increases with time.
+    """
+    @staticmethod
+    def precompute_values(f0, fT, T):
+        """
+        This static method is called before actually generating the sweep. It
+        precomputes and returns values, that are independent of the sample, so
+        that their use increases the computation speed of the individual samples.
+        @param f0: the start frequency of the sweep in Hz as a float
+        @param f0: the stop frequency of the sweep in Hz as a float
+        @param T: the duration, that it takes the sweep to go from the start to the stop frequency, in seconds as a float
+        @retval : a tuple of precomputed values
+        """
+        raise NotImplementedError("This method should have been overridden in a derived class")
+
+    @staticmethod
+    def compute_sample(t, *precomputed):
+        """
+        This static method is called to compute each individual sample.
+        @param t: the time of the sample in seconds as a float
+        @param *precomputed: the parameters, that have been precomputed by the precompute_values method
+        @retval : the computed sample
+        """
+        raise NotImplementedError("This method should have been overridden in a derived class")
+
+
+
+class LinearIncrease(SweepFunction):
+    """
+    This class defines a linear increase of the sweep's frequency over time.
+    """
+    @staticmethod
+    def precompute_values(f0, fT, T):
+        """
+        This static method is called before actually generating the sweep. It
+        precomputes and returns values, that are independent of the sample, so
+        that their use increases the computation speed of the individual samples.
+        @param f0: the start frequency of the sweep in Hz as a float
+        @param f0: the stop frequency of the sweep in Hz as a float
+        @param T: the duration, that it takes the sweep to go from the start to the stop frequency, in seconds as a float
+        @retval : a tuple of precomputed values
+        """
+        k = (fT - f0) / T
+        return (2.0 * math.pi * f0, 2.0 * math.pi * k / 2.0)
+
+    @staticmethod
+    def compute_sample(t, *precomputed):
+        """
+        This static method is called to compute each individual sample.
+        @param t: the time of the sample in seconds as a float
+        @param *precomputed: the parameters, that have been precomputed by the precompute_values method
+        @retval : the computed sample
+        """
+        x = precomputed[0] * t + precomputed[1] * (t ** 2)
+        return math.sin(x)
+
+
+
+class ExponentialIncrease(SweepFunction):
+    """
+    This class defines an exponential increase of the sweep's frequency over time.
+    """
+    @staticmethod
+    def precompute_values(f0, fT, T):
+        """
+        This static method is called before actually generating the sweep. It
+        precomputes and returns values, that are independent of the sample, so
+        that their use increases the computation speed of the individual samples.
+        @param f0: the start frequency of the sweep in Hz as a float
+        @param f0: the stop frequency of the sweep in Hz as a float
+        @param T: the duration, that it takes the sweep to go from the start to the stop frequency, in seconds as a float
+        @retval : a tuple of precomputed values
+        """
+        k = (fT / f0) ** (1.0 / T)
+        l = math.log(k, math.e)
+        f = 2.0 * math.pi * f0 / l
+        return (k, f)
+
+    @staticmethod
+    def compute_sample(t, *precomputed):
+        """
+        This static method is called to compute each individual sample.
+        @param t: the time of the sample in seconds as a float
+        @param *precomputed: the parameters, that have been precomputed by the precompute_values method
+        @retval : the computed sample
+        """
+        k, f = precomputed
+        e = (k ** t) - 1.0
+        return math.sin(f * e)
+
+
+
 class SweepGenerator(SignalGenerator):
     """
     A class whose instances generate a sine wave that sweeps its frequency from
@@ -29,11 +124,15 @@ class SweepGenerator(SignalGenerator):
     sending the resulting Signal through a sumpf.Multiply module.
     The resulting Signal will have one channel.
     """
-    def __init__(self, start_frequency=20.0, stop_frequency=20000.0, function=None, interval=None, samplingrate=None, length=None):
+
+    LINEAR = LinearIncrease
+    EXPONENTIAL = ExponentialIncrease
+
+    def __init__(self, start_frequency=20.0, stop_frequency=20000.0, function=EXPONENTIAL, interval=None, samplingrate=None, length=None):
         """
         @param start_frequency: the frequency at the beginning in Hz
         @param stop_frequency: the frequency at the end in Hz
-        @param function: a function with the parameters (x, start, stop). See SweepGenerator.Exponential for details
+        @param function: one of the flags for the SweepGenerators frequency increase functions (e.g. LINEAR or EXPONENTIAL)
         @param interval: None or a tuple (start, stop) that defines the interval of samples in which shall be swept through the frequencies. See SetInterval for details
         @param samplingrate: the sampling rate in Hz
         @param length: the number of samples of the signal
@@ -41,12 +140,9 @@ class SweepGenerator(SignalGenerator):
         SignalGenerator.__init__(self, samplingrate=samplingrate, length=length)
         self.__start = float(start_frequency)
         self.__stop = float(stop_frequency)
-        if function is None:
-            self.__function = SweepGenerator.Exponential
-        else:
-            self.__function = function
+        self.__function = function
         self.__interval = interval
-        self.__increase_rate = None
+        self.__precomputed = None
         self.__offset = 0.0
 
     def _GetSamples(self):
@@ -54,7 +150,7 @@ class SweepGenerator(SignalGenerator):
         Generates the samples of the Sweep and returns them as a tuple.
         @retval : a tuple of samples
         """
-        self.__CalculateIncreaseRate()
+        self.__PrecomputeValues()
         return SignalGenerator._GetSamples(self)
 
     def _GetSample(self, t):
@@ -63,7 +159,7 @@ class SweepGenerator(SignalGenerator):
         @param t: the time from the beginning of the signal in seconds
         @retval : the value of the sweep function at the given time
         """
-        return self.__function(t - self.__offset, self.__start, self.__increase_rate)
+        return self.__function.compute_sample(t - self.__offset, *self.__precomputed)
 
     def _GetLabel(self):
         """
@@ -118,11 +214,11 @@ class SweepGenerator(SignalGenerator):
         """
         self.__interval = interval
 
-    def __CalculateIncreaseRate(self):
+    def __PrecomputeValues(self):
         """
-        Calculates the increase rate for the sweep and stores it.
-        This way the increase rate does not need to be calculated for each
-        sample individually.
+        Calculates the precomputable values for the sweep and stores them.
+        This way these values do not need to be calculated for each sample
+        individually.
         This method is called directly before the sweep is generated.
         """
         T = 0.0
@@ -142,37 +238,5 @@ class SweepGenerator(SignalGenerator):
             self.__offset = float(a) / float(self._samplingrate)
         f0 = self.__start
         fT = self.__stop
-        k = 0.0
-        if self.__function == SweepGenerator.Exponential:
-            k = (fT / f0) ** (1.0 / T)
-        elif self.__function == SweepGenerator.Linear:
-            k = (fT - f0) / T
-        self.__increase_rate = k
-
-    @staticmethod
-    def Exponential(t, f0, k):
-        """
-        The sweep function for an exponential increase of frequency.
-        This function can be used with a SweepGenerator's SetSweepFunction-method.
-        @param t: the time from the beginning of the signal in seconds
-        @param f0: the start frequency in Hz
-        @param k: the increase rate of the sweep
-        """
-        e = (k ** t) - 1
-        l = math.log(k, math.e)
-        x = 2.0 * math.pi * f0 * e / l
-        return math.sin(x)
-
-    @staticmethod
-    def Linear(t, f0, k):
-        """
-        The sweep function for a linear increase of frequency.
-        This function can be used with a SweepGenerator's SetSweepFunction-method.
-        @param t: the time from the beginning of the signal in seconds
-        @param f0: the start frequency in Hz
-        @param k: the increase rate of the sweep
-        """
-        s = f0 + (t * k / 2.0)
-        x = 2.0 * math.pi * t * s
-        return math.sin(x)
+        self.__precomputed = self.__function.precompute_values(f0, fT, T)
 

@@ -87,7 +87,7 @@ class TestThieleSmallParameterAuralization(unittest.TestCase):
         """
         thiele_small_parameters = sumpf.ThieleSmallParameters()
         properties = sumpf.modules.ChannelDataProperties(spectrum_length=20000, resolution=1.0)
-        excitation_voltage = sumpf.modules.SweepGenerator(start_frequency=1.0, stop_frequency=19000.0, function=sumpf.modules.SweepGenerator.Linear)
+        excitation_voltage = sumpf.modules.SweepGenerator(start_frequency=1.0, stop_frequency=19000.0, function=sumpf.modules.SweepGenerator.LINEAR)
         sumpf.connect(properties.GetSamplingRate, excitation_voltage.SetSamplingRate)
         sumpf.connect(properties.GetSignalLength, excitation_voltage.SetLength)
         auralization_linear = sumpf.modules.ThieleSmallParameterAuralizationLinear(thiele_small_parameters=thiele_small_parameters)
@@ -119,7 +119,7 @@ class TestThieleSmallParameterAuralization(unittest.TestCase):
         transform at half the sampling frequency.
         """
         thiele_small_parameters = sumpf.ThieleSmallParameters()
-        excitation_voltage = sumpf.modules.SweepGenerator(start_frequency=10.0, stop_frequency=10000.0, function=sumpf.modules.SweepGenerator.Linear, samplingrate=44100.0, length=2 ** 16).GetSignal()
+        excitation_voltage = sumpf.modules.SweepGenerator(start_frequency=10.0, stop_frequency=10000.0, function=sumpf.modules.SweepGenerator.LINEAR, samplingrate=44100.0, length=2 ** 16).GetSignal()
         auralization_nonregularized = sumpf.modules.ThieleSmallParameterAuralizationNonlinear(voltage_signal=excitation_voltage, thiele_small_parameters=thiele_small_parameters, regularization=0.0).GetSoundPressure()
         nonregularized_spectrum = sumpf.modules.FourierTransform(signal=auralization_nonregularized).GetSpectrum()
         auralization_regularized = sumpf.modules.ThieleSmallParameterAuralizationNonlinear(voltage_signal=excitation_voltage, thiele_small_parameters=thiele_small_parameters, regularization=0.01).GetSoundPressure()
@@ -134,7 +134,7 @@ class TestThieleSmallParameterAuralization(unittest.TestCase):
         Tests if saving the last samples of the recently auralized signal works as expected.
         """
         thiele_small_parameters = sumpf.ThieleSmallParameters()
-        sweep1 = sumpf.modules.SweepGenerator(start_frequency=10.0, stop_frequency=10000.0, function=sumpf.modules.SweepGenerator.Linear, samplingrate=44100.0, length=2 ** 8).GetSignal()
+        sweep1 = sumpf.modules.SweepGenerator(start_frequency=10.0, stop_frequency=10000.0, function=sumpf.modules.SweepGenerator.LINEAR, samplingrate=44100.0, length=2 ** 8).GetSignal()
         sweep2 = sumpf.modules.ConcatenateSignals(signal1=sweep1, signal2=sweep1).GetOutput()
         auralization = sumpf.modules.ThieleSmallParameterAuralizationNonlinear(thiele_small_parameters=thiele_small_parameters,
                                                                                voltage_signal=sweep1,
@@ -159,7 +159,7 @@ class TestThieleSmallParameterAuralization(unittest.TestCase):
     @unittest.skipUnless(common.lib_available("cython"), "This test requires the library 'cython' to be available.")
     def test_cython(self):
         thiele_small_parameters = sumpf.ThieleSmallParameters()
-        sweep = sumpf.modules.SweepGenerator(start_frequency=10.0, stop_frequency=10000.0, function=sumpf.modules.SweepGenerator.Linear, samplingrate=44100.0, length=2 ** 2).GetSignal()
+        sweep = sumpf.modules.SweepGenerator(start_frequency=10.0, stop_frequency=10000.0, function=sumpf.modules.SweepGenerator.LINEAR, samplingrate=44100.0, length=2 ** 2).GetSignal()
         python = sumpf.modules.ThieleSmallParameterAuralizationNonlinear(thiele_small_parameters=thiele_small_parameters,
                                                                          voltage_signal=sweep,
                                                                          listener_distance=2.9,

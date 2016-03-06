@@ -28,8 +28,7 @@ class TestSweepGenerator(unittest.TestCase):
         self.sr = 100
         self.gen = sumpf.modules.SweepGenerator(start_frequency=self.f0,
                                                 stop_frequency=self.fT,
-                                                function=sumpf.modules.SweepGenerator.Exponential,
-#                                               function=None,      # This line has to be commented out, so it is tested, if None is the default value
+                                                function=sumpf.modules.SweepGenerator.EXPONENTIAL,
                                                 samplingrate=self.sr,
                                                 length=100)
 
@@ -56,7 +55,7 @@ class TestSweepGenerator(unittest.TestCase):
 #       d2 = math.cos(2 * math.pi * self.f0 / self.sr) * 2 * math.pi * self.f0
 #       d = (d1 + d2) / 2.0
 #       self.assertAlmostEqual(s2 * self.sr, d, 2)  # compare the start frequency when frequency increases exponentially
-#       self.gen.SetSweepFunction(sumpf.modules.SweepGenerator.Linear)
+#       self.gen.SetSweepFunction(sumpf.modules.SweepGenerator.LINEAR)
 #       s2 = self.gen.GetSignal().GetChannels()[0][1]
 #       self.assertAlmostEqual(s2 * self.sr, d, 2)  # compare the start frequency when frequency increases linearly
 
@@ -73,12 +72,12 @@ class TestSweepGenerator(unittest.TestCase):
         self.assertEqual(swp, tmp)                                      # the interval must be possible with both positive and negative values
         # test group delay
         self.gen.SetInterval((10, 90))
-        self.gen.SetSweepFunction(sumpf.modules.SweepGenerator.Linear)
+        self.gen.SetSweepFunction(sumpf.modules.SweepGenerator.LINEAR)
         spk = sumpf.modules.FourierTransform(signal=self.gen.GetSignal()).GetSpectrum()
         res = spk.GetResolution()
         self.assertAlmostEqual(spk.GetGroupDelay()[0][int(round(self.f0 / res))], 10.0 / self.sr, 1)
         self.assertAlmostEqual(spk.GetGroupDelay()[0][int(round(self.fT / res))], 90.0 / self.sr, 1)
-        self.gen.SetSweepFunction(sumpf.modules.SweepGenerator.Exponential)
+        self.gen.SetSweepFunction(sumpf.modules.SweepGenerator.EXPONENTIAL)
         spk = sumpf.modules.FourierTransform(signal=self.gen.GetSignal()).GetSpectrum()
         self.assertAlmostEqual(spk.GetGroupDelay()[0][int(round(self.f0 / res))], 10.0 / self.sr, 1)
         self.assertAlmostEqual(spk.GetGroupDelay()[0][int(round(self.fT / res))], 90.0 / self.sr, 1)

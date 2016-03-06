@@ -110,7 +110,7 @@ class TestMath(unittest.TestCase):
         self.assertEqual(sumpf.helper.differentiate_fft(sequence=[5.8]), [0.0])
         sweep = sumpf.modules.SweepGenerator(start_frequency=20.0,
                                              stop_frequency=20000.0,
-                                             function=sumpf.modules.SweepGenerator.Linear,
+                                             function=sumpf.modules.SweepGenerator.LINEAR,
                                              samplingrate=44100,
                                              length=2 ** 16).GetSignal()
         diff = sumpf.Signal(channels=(sumpf.helper.differentiate(sweep.GetChannels()[0]),
