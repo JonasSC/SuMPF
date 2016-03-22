@@ -18,12 +18,16 @@ import unittest
 import sumpf
 import _common as common
 
+
 class TestChannelDataProperties(unittest.TestCase):
     """
     A test case for the ChannelDataProperties module.
     """
     @unittest.skipUnless(common.lib_available("numpy"), "This test requires the library 'numpy' to be available.")
-    def test_case(self):
+    def test_methods(self):
+        """
+        Tests setting the parameters by using the setter methods
+        """
         prp = sumpf.modules.ChannelDataProperties(signal_length=2)
         imp = sumpf.modules.ImpulseGenerator()
         flt = sumpf.modules.FilterGenerator()
@@ -35,7 +39,7 @@ class TestChannelDataProperties(unittest.TestCase):
         sumpf.connect(prp.GetResolution, flt.SetResolution)
         sumpf.connect(imp.GetSignal, fft.SetSignal)
         sumpf.connect(flt.GetSpectrum, ift.SetSpectrum)
-        calls = []
+        calls = []  # a list of tuples (METHOD, PARAMETER)
         calls.append((str, 3))                      # test initial setup
         calls.append((prp.SetSignalLength, 20))     # test signal length whose half is even
         calls.append((prp.SetSignalLength, 22))     # test signal length whose half is odd
@@ -44,6 +48,8 @@ class TestChannelDataProperties(unittest.TestCase):
         calls.append((prp.SetSpectrumLength, 21))   # test odd spectrum length
         calls.append((prp.SetSamplingRate, 42.0))   # test setting the sampling rate
         calls.append((prp.SetResolution, 37.0))     # test setting the resolution
+        calls.append((prp.SetSignal, sumpf.modules.SweepGenerator(start_frequency=20.0, stop_frequency=50.0, samplingrate=104.9, length=1024).GetSignal()))
+        calls.append((prp.SetSpectrum, sumpf.modules.FilterGenerator(resolution=0.41, length=293).GetSpectrum()))
         for c in calls:
             c[0](c[1])
             gen_signal = imp.GetSignal()
@@ -54,7 +60,6 @@ class TestChannelDataProperties(unittest.TestCase):
             self.assertEqual(gen_signal.GetSamplingRate(), trd_signal.GetSamplingRate())    # The sampling rate should be the same due to the connection to a ChannelDataProperties instance
             self.assertEqual(len(gen_spectrum), len(trd_spectrum))                          # The length should be the same due to the connection to a ChannelDataProperties instance
             self.assertEqual(gen_spectrum.GetResolution(), trd_spectrum.GetResolution())    # The resolution should be the same due to the connection to a ChannelDataProperties instance
-        self.assertRaises(ValueError, prp.SetSignalLength, 21)                              # Odd signal lengths shall be forbidden
 
     def test_constructor(self):
         """
@@ -121,6 +126,15 @@ class TestChannelDataProperties(unittest.TestCase):
         self.assertEqual(prp.GetSignalLength(), default_signal_length)
         self.assertEqual(prp.GetSamplingRate(), default_samplingrate)
 
+    def test_odd_signal_lengths(self):
+        """
+        Tests if odd signal lengths are forbidden.
+        """
+        self.assertRaises(ValueError, sumpf.modules.ChannelDataProperties, **dict(signal_length=17))
+        prp = sumpf.modules.ChannelDataProperties()
+        self.assertRaises(ValueError, prp.SetSignalLength, 21)
+        self.assertRaises(ValueError, prp.SetSignal, sumpf.Signal(channels=((0.0, 0.0, 0.0),)))
+
     def test_connectors(self):
         """
         Tests if the connectors are properly decorated.
@@ -130,24 +144,26 @@ class TestChannelDataProperties(unittest.TestCase):
         self.assertEqual(prp.SetSamplingRate.GetType(), float)
         self.assertEqual(prp.SetSpectrumLength.GetType(), int)
         self.assertEqual(prp.SetResolution.GetType(), float)
+        self.assertEqual(prp.SetSignal.GetType(), sumpf.Signal)
+        self.assertEqual(prp.SetSpectrum.GetType(), sumpf.Spectrum)
         self.assertEqual(prp.GetSignalLength.GetType(), int)
         self.assertEqual(prp.GetSamplingRate.GetType(), float)
         self.assertEqual(prp.GetSpectrumLength.GetType(), int)
         self.assertEqual(prp.GetResolution.GetType(), float)
         common.test_connection_observers(testcase=self,
-                                         inputs=[prp.SetSignalLength, prp.SetSpectrumLength],
+                                         inputs=[prp.SetSignalLength, prp.SetSpectrumLength, prp.SetSignal, prp.SetSpectrum],
                                          noinputs=[prp.SetSamplingRate, prp.SetResolution],
                                          output=prp.GetSignalLength)
         common.test_connection_observers(testcase=self,
-                                         inputs=[prp.SetSamplingRate, prp.SetSpectrumLength, prp.SetResolution],
+                                         inputs=[prp.SetSamplingRate, prp.SetSpectrumLength, prp.SetResolution, prp.SetSignal, prp.SetSpectrum],
                                          noinputs=[prp.SetSignalLength],
                                          output=prp.GetSamplingRate)
         common.test_connection_observers(testcase=self,
-                                         inputs=[prp.SetSignalLength, prp.SetSpectrumLength],
+                                         inputs=[prp.SetSignalLength, prp.SetSpectrumLength, prp.SetSignal, prp.SetSpectrum],
                                          noinputs=[prp.SetSamplingRate, prp.SetResolution],
                                          output=prp.GetSpectrumLength)
         common.test_connection_observers(testcase=self,
-                                         inputs=[prp.SetSignalLength, prp.SetSamplingRate, prp.SetResolution],
+                                         inputs=[prp.SetSignalLength, prp.SetSamplingRate, prp.SetResolution, prp.SetSignal, prp.SetSpectrum],
                                          noinputs=[prp.SetSpectrumLength],
                                          output=prp.GetResolution)
 
