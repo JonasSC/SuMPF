@@ -102,7 +102,7 @@ class ConvolveSignals(object):
             spectrum2 = sumpf.modules.FourierTransform(signal=self.__signal2).GetSpectrum()
             output_spectrum = spectrum1 * spectrum2
             output_signal = sumpf.modules.InverseFourierTransform(spectrum=output_spectrum).GetSignal()
-            return sumpf.modules.RelabelSignal(input=output_signal, labels=tuple(["Convolution " + str(c + 1) for c in range(len(self.__signal1.GetChannels()))])).GetOutput()
+            return sumpf.modules.RelabelSignal(signal=output_signal, labels=tuple(["Convolution " + str(c + 1) for c in range(len(self.__signal1.GetChannels()))])).GetOutput()
         else:
             channels = []
             labels = []

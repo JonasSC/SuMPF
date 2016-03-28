@@ -368,7 +368,7 @@ class TestConnectors(unittest.TestCase):
         # deletion without explicit garbage collection
         gc.collect()
         rel = sumpf.modules.RelabelSignal()
-        rel.SetInput(sumpf.Signal())
+        rel.SetSignal(sumpf.Signal())
         del rel
         self.assertEqual(gc.collect(), 0)
         # sumpf.collect_garbage

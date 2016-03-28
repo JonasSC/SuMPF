@@ -58,9 +58,9 @@ class TestNormalizeSignal(unittest.TestCase):
         gnsignal = sumpf.Signal(channels=globalynormalizedchannels, samplingrate=48000, labels=labels)
         norm = sumpf.modules.NormalizeSignal()
         self.assertEqual(norm.GetOutput(), sumpf.Signal())  # the default input Signal should be empty
-        norm.SetInput(isignal)
+        norm.SetSignal(isignal)
         self.assertEqual(norm.GetOutput(), gnsignal)        # by default, the input Signal's channels should not be normalized individually
-        norm = sumpf.modules.NormalizeSignal(input=isignal, individual=True)
+        norm = sumpf.modules.NormalizeSignal(signal=isignal, individual=True)
         self.assertEqual(norm.GetOutput(), insignal)        # as specified in the constructor call, the channels should be normalized individually
         norm.SetIndividual(False)
         self.assertEqual(norm.GetOutput(), gnsignal)        # as specified in the setter method call, the channels should no longer be normalized individually
@@ -70,11 +70,11 @@ class TestNormalizeSignal(unittest.TestCase):
         Tests if the connectors are properly decorated.
         """
         norm = sumpf.modules.NormalizeSignal()
-        self.assertEqual(norm.SetInput.GetType(), sumpf.Signal)
+        self.assertEqual(norm.SetSignal.GetType(), sumpf.Signal)
         self.assertEqual(norm.SetIndividual.GetType(), bool)
         self.assertEqual(norm.GetOutput.GetType(), sumpf.Signal)
         common.test_connection_observers(testcase=self,
-                                         inputs=[norm.SetInput, norm.SetIndividual],
+                                         inputs=[norm.SetSignal, norm.SetIndividual],
                                          noinputs=[],
                                          output=norm.GetOutput)
 

@@ -39,7 +39,7 @@ class BaseTestCase(unittest.TestCase):
         sumpf.connect(triangle.GetSignal, merger.AddInput)
         # a handle for adjusting the output's number of channels
         self.copy = sumpf.modules.CopySignalChannels(channelcount=2)
-        sumpf.connect(merger.GetOutput, self.copy.SetInput)
+        sumpf.connect(merger.GetOutput, self.copy.SetSignal)
         # a fourier transform for testing with Spectrums
         self.fft = sumpf.modules.FourierTransform()
         sumpf.connect(self.copy.GetOutput, self.fft.SetSignal)

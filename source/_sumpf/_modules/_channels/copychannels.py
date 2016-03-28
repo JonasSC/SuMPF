@@ -22,12 +22,12 @@ class CopyChannelDataChannels(object):
     Copies the channels of an input data set to create an output data set with a
     given number of channels.
     """
-    def __init__(self, input, channelcount):
+    def __init__(self, data, channelcount):
         """
         @param data: the input data set
         @param channelcount: the integer number of channels of the output data set
         """
-        self._input = input
+        self._data = data
         self.__SetChannelCount(channelcount)
 
     def GetOutput(self):
@@ -42,8 +42,8 @@ class CopyChannelDataChannels(object):
         Creates the copied channels and their labels and returns them as a tuple of tuples.
         @retval : a tuple (a, b), where a is a tuple of channels and b is a tuple of labels
         """
-        inputchannels = self._input.GetChannels()
-        inputlabels = self._input.GetLabels()
+        inputchannels = self._data.GetChannels()
+        inputlabels = self._data.GetLabels()
         outputchannels = []
         outputlabels = []
         for i in range(self.__channelcount):
@@ -54,13 +54,6 @@ class CopyChannelDataChannels(object):
             else:
                 outputlabels.append(" ".join([label, str(i // len(inputchannels) + 1)]))
         return (outputchannels, outputlabels)
-
-    def SetInput(self, input):
-        """
-        Sets the input data set.
-        @param data: the input data set
-        """
-        self._input = input
 
     @sumpf.Input((int, sumpf.internal.ChannelData), "GetOutput")
     def SetChannelCount(self, channelcount):
@@ -118,14 +111,14 @@ class CopySignalChannels(CopyChannelDataChannels):
     input channels = c1, c2, c3; desired number of output channels = 2
     => output channels = c1, c2
     """
-    def __init__(self, input=None, channelcount=1):
+    def __init__(self, signal=None, channelcount=1):
         """
-        @param data: the input Signal
+        @param signal: the input Signal
         @param channelcount: the integer number of channels of the output Signal
         """
-        if input is None:
-            input = sumpf.Signal()
-        CopyChannelDataChannels.__init__(self, input, channelcount)
+        if signal is None:
+            signal = sumpf.Signal()
+        CopyChannelDataChannels.__init__(self, data=signal, channelcount=channelcount)
 
     @sumpf.Output(sumpf.Signal)
     def GetOutput(self):
@@ -134,15 +127,15 @@ class CopySignalChannels(CopyChannelDataChannels):
         @retval : the output Signal
         """
         channels, labels = self._GetChannelsAndLabels()
-        return sumpf.Signal(channels=channels, samplingrate=self._input.GetSamplingRate(), labels=labels)
+        return sumpf.Signal(channels=channels, samplingrate=self._data.GetSamplingRate(), labels=labels)
 
     @sumpf.Input(sumpf.Signal, "GetOutput")
-    def SetInput(self, input):
+    def SetSignal(self, signal):
         """
         Sets the input Signal.
-        @param data: the input Signal
+        @param signal: the input Signal
         """
-        CopyChannelDataChannels.SetInput(self, input)
+        self._data = signal
 
 
 
@@ -168,15 +161,15 @@ class CopySpectrumChannels(CopyChannelDataChannels):
     input channels = c1, c2, c3; desired number of output channels = 2
     => output channels = c1, c2
     """
-    def __init__(self, input=None, channelcount=1):
+    def __init__(self, spectrum=None, channelcount=1):
         """
         All parameters are optional.
-        @param data: the input Spectrum
+        @param spectrum: the input Spectrum
         @param channelcount: the integer number of channels of the output Spectrum
         """
-        if input is None:
-            input = sumpf.Spectrum()
-        CopyChannelDataChannels.__init__(self, input, channelcount)
+        if spectrum is None:
+            spectrum = sumpf.Spectrum()
+        CopyChannelDataChannels.__init__(self, data=spectrum, channelcount=channelcount)
 
     @sumpf.Output(sumpf.Spectrum)
     def GetOutput(self):
@@ -185,13 +178,13 @@ class CopySpectrumChannels(CopyChannelDataChannels):
         @retval : the output Spectrum
         """
         channels, labels = self._GetChannelsAndLabels()
-        return sumpf.Spectrum(channels=channels, resolution=self._input.GetResolution(), labels=labels)
+        return sumpf.Spectrum(channels=channels, resolution=self._data.GetResolution(), labels=labels)
 
     @sumpf.Input(sumpf.Spectrum, "GetOutput")
-    def SetInput(self, input):
+    def SetSpectrum(self, spectrum):
         """
         Sets the input Spectrum.
-        @param data: the input Spectrum
+        @param spectrum: the input Spectrum
         """
-        CopyChannelDataChannels.SetInput(self, input)
+        self._data = spectrum
 

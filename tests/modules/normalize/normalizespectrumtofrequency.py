@@ -34,10 +34,10 @@ class TestNormalizeSpectrumToFrequency(unittest.TestCase):
         # the actual tests
         nrm = sumpf.modules.NormalizeSpectrumToFrequency()
         self.assertEqual(nrm.GetOutput(), sumpf.Spectrum())
-        nrm = sumpf.modules.NormalizeSpectrumToFrequency(input=norm1000, frequency=500)
+        nrm = sumpf.modules.NormalizeSpectrumToFrequency(spectrum=norm1000, frequency=500)
         self.assertEqual(nrm.GetOutput(), norm500)
-        nrm = sumpf.modules.NormalizeSpectrumToFrequency(input=spectrum)
-        nrm.SetInput(spectrum)
+        nrm = sumpf.modules.NormalizeSpectrumToFrequency(spectrum=spectrum)
+        nrm.SetSpectrum(spectrum)
         self.assertEqual(nrm.GetOutput(), norm1000)
         nrm.SetFrequency(500)
         self.assertEqual(nrm.GetOutput(), norm500)
@@ -47,11 +47,11 @@ class TestNormalizeSpectrumToFrequency(unittest.TestCase):
         Tests if the connectors are properly decorated.
         """
         nrm = sumpf.modules.NormalizeSpectrumToFrequency()
-        self.assertEqual(nrm.SetInput.GetType(), sumpf.Spectrum)
+        self.assertEqual(nrm.SetSpectrum.GetType(), sumpf.Spectrum)
         self.assertEqual(nrm.SetFrequency.GetType(), float)
         self.assertEqual(nrm.GetOutput.GetType(), sumpf.Spectrum)
         common.test_connection_observers(testcase=self,
-                                         inputs=[nrm.SetInput, nrm.SetFrequency],
+                                         inputs=[nrm.SetSpectrum, nrm.SetFrequency],
                                          noinputs=[],
                                          output=nrm.GetOutput)
 

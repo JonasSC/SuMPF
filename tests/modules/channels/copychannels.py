@@ -30,7 +30,7 @@ class TestCopyChannels(unittest.TestCase):
         channels = ((1.1, 2.1, 3.1), (1.2, 2.2, 3.2))
         signal = sumpf.Signal(channels=channels, samplingrate=42.0, labels=("ch 1", None))
         copysignal = sumpf.modules.CopySignalChannels()
-        copysignal.SetInput(signal)
+        copysignal.SetSignal(signal)
         # test setting the channel count to an integer
         copysignal.SetChannelCount(3)
         output = copysignal.GetOutput()
@@ -52,7 +52,7 @@ class TestCopyChannels(unittest.TestCase):
         channels = ((1.1, 2.1, 3.1), (1.2, 2.2, 3.2))
         spectrum = sumpf.Spectrum(channels=channels, resolution=42.0, labels=("ch 1", "ch 2"))
         copyspectrum = sumpf.modules.CopySpectrumChannels()
-        copyspectrum.SetInput(spectrum)
+        copyspectrum.SetSpectrum(spectrum)
         copyspectrum.SetChannelCount(3)
         output = copyspectrum.GetOutput()
         self.assertEqual(output.GetResolution(), 42)                                                # the sampling rate should have been copied from the input Spectrum
@@ -81,20 +81,20 @@ class TestCopyChannels(unittest.TestCase):
         """
         # CopySignalChannels
         copysignal = sumpf.modules.CopySignalChannels()
-        self.assertEqual(copysignal.SetInput.GetType(), sumpf.Signal)
+        self.assertEqual(copysignal.SetSignal.GetType(), sumpf.Signal)
         self.assertEqual(copysignal.SetChannelCount.GetType(), (int, sumpf.internal.ChannelData))
         self.assertEqual(copysignal.GetOutput.GetType(), sumpf.Signal)
         common.test_connection_observers(testcase=self,
-                                         inputs=[copysignal.SetInput, copysignal.SetChannelCount],
+                                         inputs=[copysignal.SetSignal, copysignal.SetChannelCount],
                                          noinputs=[],
                                          output=copysignal.GetOutput)
         # CopySpectrumChannels
         copyspectrum = sumpf.modules.CopySpectrumChannels()
-        self.assertEqual(copyspectrum.SetInput.GetType(), sumpf.Spectrum)
+        self.assertEqual(copyspectrum.SetSpectrum.GetType(), sumpf.Spectrum)
         self.assertEqual(copyspectrum.SetChannelCount.GetType(), (int, sumpf.internal.ChannelData))
         self.assertEqual(copyspectrum.GetOutput.GetType(), sumpf.Spectrum)
         common.test_connection_observers(testcase=self,
-                                         inputs=[copyspectrum.SetInput, copyspectrum.SetChannelCount],
+                                         inputs=[copyspectrum.SetSpectrum, copyspectrum.SetChannelCount],
                                          noinputs=[],
                                          output=copyspectrum.GetOutput)
 

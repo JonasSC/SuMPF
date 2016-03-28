@@ -38,13 +38,16 @@ class NormalizeSpectrumToFrequency(object):
     normalized Spectrum which is then inversely fourier transformed does not
     necessarily result in a normalized Signal.
     """
-    def __init__(self, input=None, frequency=1000.0):
+    def __init__(self, spectrum=None, frequency=1000.0):
         """
         All parameters are optional
-        @param input: the Spectrum which shall be normalized
+        @param spectrum: the Spectrum which shall be normalized
         @param frequency: the frequency at which the magnitude shall be 1.0
         """
-        self.__spectrum = input
+        if spectrum is None:
+            self.__spectrum = sumpf.Spectrum()
+        else:
+            self.__spectrum = spectrum
         self.__frequency = float(frequency)
 
     @sumpf.Output(sumpf.Spectrum)
@@ -53,25 +56,20 @@ class NormalizeSpectrumToFrequency(object):
         Generates the normalized Spectrum and returns it.
         @retval : the normalized Spectrum
         """
-        spectrum = None
-        if self.__spectrum is None:
-            spectrum = sumpf.Spectrum()
-        else:
-            index = self.__frequency / self.__spectrum.GetResolution()
-            lower_index = int(math.floor(index))
-            channels = []
-            for i in range(len(self.__spectrum.GetChannels())):
-                lower, upper = self.__spectrum.GetMagnitude()[i][lower_index:lower_index + 2]
-                quotient = lower * (1.0 - index + lower_index) + upper * (index - lower_index)
-                if quotient == 0.0:
-                    channels.append(self.__spectrum.GetChannels()[i])
-                else:
-                    channels.append(tuple(numpy.divide(self.__spectrum.GetChannels()[i], quotient)))
-            spectrum = sumpf.Spectrum(channels=tuple(channels), resolution=self.__spectrum.GetResolution(), labels=self.__spectrum.GetLabels())
-        return spectrum
+        index = self.__frequency / self.__spectrum.GetResolution()
+        lower_index = int(math.floor(index))
+        channels = []
+        for i in range(len(self.__spectrum.GetChannels())):
+            lower, upper = self.__spectrum.GetMagnitude()[i][lower_index:lower_index + 2]
+            quotient = lower * (1.0 - index + lower_index) + upper * (index - lower_index)
+            if quotient == 0.0:
+                channels.append(self.__spectrum.GetChannels()[i])
+            else:
+                channels.append(tuple(numpy.divide(self.__spectrum.GetChannels()[i], quotient)))
+        return sumpf.Spectrum(channels=tuple(channels), resolution=self.__spectrum.GetResolution(), labels=self.__spectrum.GetLabels())
 
     @sumpf.Input(sumpf.Spectrum, "GetOutput")
-    def SetInput(self, spectrum):
+    def SetSpectrum(self, spectrum):
         """
         Method for setting the Spectrum which shall be normalized.
         @param spectrum: the Spectrum which shall be normalized

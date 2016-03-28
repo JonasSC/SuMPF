@@ -35,7 +35,7 @@ class TestRelabel(unittest.TestCase):
         self.assertEqual(rel.GetOutput().GetChannels(), sumpf.Signal().GetChannels())
         self.assertEqual(rel.GetOutput().GetSamplingRate(), sumpf.Signal().GetSamplingRate())
         self.assertEqual(rel.GetOutput().GetLabels(), sumpf.Signal().GetLabels())
-        rel = sumpf.modules.RelabelSignal(input=signal1)
+        rel = sumpf.modules.RelabelSignal(signal=signal1)
         self.assertEqual(rel.GetOutput().GetChannels(), signal1.GetChannels())
         self.assertEqual(rel.GetOutput().GetSamplingRate(), signal1.GetSamplingRate())
         self.assertEqual(rel.GetOutput().GetLabels(), signal1.GetLabels())                  # If no labels have been specified, the labels shall be taken from the input
@@ -43,11 +43,11 @@ class TestRelabel(unittest.TestCase):
         self.assertEqual(rel.GetOutput().GetChannels(), sumpf.Signal().GetChannels())
         self.assertEqual(rel.GetOutput().GetSamplingRate(), sumpf.Signal().GetSamplingRate())
         self.assertEqual(rel.GetOutput().GetLabels(), ("labels 3",))
-        rel = sumpf.modules.RelabelSignal(input=signal1, labels=("labels 4",))
+        rel = sumpf.modules.RelabelSignal(signal=signal1, labels=("labels 4",))
         self.assertEqual(rel.GetOutput().GetChannels(), signal1.GetChannels())
         self.assertEqual(rel.GetOutput().GetSamplingRate(), signal1.GetSamplingRate())
         self.assertEqual(rel.GetOutput().GetLabels(), ("labels 4",))
-        rel.SetInput(signal2)
+        rel.SetSignal(signal2)
         self.assertEqual(rel.GetOutput().GetChannels(), signal2.GetChannels())
         self.assertEqual(rel.GetOutput().GetSamplingRate(), signal2.GetSamplingRate())
         self.assertEqual(rel.GetOutput().GetLabels(), ("labels 4",))
@@ -66,7 +66,7 @@ class TestRelabel(unittest.TestCase):
         self.assertEqual(rel.GetOutput().GetChannels(), sumpf.Spectrum().GetChannels())
         self.assertEqual(rel.GetOutput().GetResolution(), sumpf.Spectrum().GetResolution())
         self.assertEqual(rel.GetOutput().GetLabels(), sumpf.Spectrum().GetLabels())
-        rel = sumpf.modules.RelabelSpectrum(input=spectrum1)
+        rel = sumpf.modules.RelabelSpectrum(spectrum=spectrum1)
         self.assertEqual(rel.GetOutput().GetChannels(), spectrum1.GetChannels())
         self.assertEqual(rel.GetOutput().GetResolution(), spectrum1.GetResolution())
         self.assertEqual(rel.GetOutput().GetLabels(), spectrum1.GetLabels())                    # If no labels have been specified, the labels shall be taken from the input
@@ -74,11 +74,11 @@ class TestRelabel(unittest.TestCase):
         self.assertEqual(rel.GetOutput().GetChannels(), sumpf.Spectrum().GetChannels())
         self.assertEqual(rel.GetOutput().GetResolution(), sumpf.Spectrum().GetResolution())
         self.assertEqual(rel.GetOutput().GetLabels(), ("labels 3",))
-        rel = sumpf.modules.RelabelSpectrum(input=spectrum1, labels=("labels 4",))
+        rel = sumpf.modules.RelabelSpectrum(spectrum=spectrum1, labels=("labels 4",))
         self.assertEqual(rel.GetOutput().GetChannels(), spectrum1.GetChannels())
         self.assertEqual(rel.GetOutput().GetResolution(), spectrum1.GetResolution())
         self.assertEqual(rel.GetOutput().GetLabels(), ("labels 4",))
-        rel.SetInput(spectrum2)
+        rel.SetSpectrum(spectrum2)
         self.assertEqual(rel.GetOutput().GetChannels(), spectrum2.GetChannels())
         self.assertEqual(rel.GetOutput().GetResolution(), spectrum2.GetResolution())
         self.assertEqual(rel.GetOutput().GetLabels(), ("labels 4",))
@@ -93,20 +93,20 @@ class TestRelabel(unittest.TestCase):
         """
         # SelectSpectrum
         rel = sumpf.modules.RelabelSignal()
-        self.assertEqual(rel.SetInput.GetType(), sumpf.Signal)
+        self.assertEqual(rel.SetSignal.GetType(), sumpf.Signal)
         self.assertEqual(rel.SetLabels.GetType(), collections.Iterable)
         self.assertEqual(rel.GetOutput.GetType(), sumpf.Signal)
         common.test_connection_observers(testcase=self,
-                                         inputs=[rel.SetInput, rel.SetLabels],
+                                         inputs=[rel.SetSignal, rel.SetLabels],
                                          noinputs=[],
                                          output=rel.GetOutput)
         # SelectSpectrum
         rel = sumpf.modules.RelabelSpectrum()
-        self.assertEqual(rel.SetInput.GetType(), sumpf.Spectrum)
+        self.assertEqual(rel.SetSpectrum.GetType(), sumpf.Spectrum)
         self.assertEqual(rel.SetLabels.GetType(), collections.Iterable)
         self.assertEqual(rel.GetOutput.GetType(), sumpf.Spectrum)
         common.test_connection_observers(testcase=self,
-                                         inputs=[rel.SetInput, rel.SetLabels],
+                                         inputs=[rel.SetSpectrum, rel.SetLabels],
                                          noinputs=[],
                                          output=rel.GetOutput)
 

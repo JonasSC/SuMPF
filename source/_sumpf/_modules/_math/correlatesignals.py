@@ -138,7 +138,7 @@ class CorrelateSignals(object):
             spectrum2 = sumpf.modules.FourierTransform(signal=reverse2).GetSpectrum()
             output_spectrum = spectrum1 * spectrum2
             output_signal = sumpf.modules.InverseFourierTransform(spectrum=output_spectrum).GetSignal()
-            result = sumpf.modules.RelabelSignal(input=output_signal, labels=tuple([label + str(c + 1) for c in range(len(self.__signal1.GetChannels()))])).GetOutput()
+            result = sumpf.modules.RelabelSignal(signal=output_signal, labels=tuple([label + str(c + 1) for c in range(len(self.__signal1.GetChannels()))])).GetOutput()
             if self.__shift:
                 shift = len(self.__signal2) // 2 + 1
                 result = sumpf.modules.ShiftSignal(signal=result, shift=shift, circular=True).GetOutput()

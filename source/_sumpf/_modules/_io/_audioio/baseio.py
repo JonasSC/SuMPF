@@ -95,8 +95,8 @@ class BaseIO(object):
             else:
                 record_length = self._record_length
             silence = sumpf.modules.ConstantSignalGenerator(value=0.0, samplingrate=self.GetSamplingRate(), length=record_length).GetSignal()
-            copied = sumpf.modules.CopySignalChannels(input=silence, channelcount=self._recordchannels).GetOutput()
-            relabeled = sumpf.modules.RelabelSignal(input=copied, labels=self._GetLabels()).GetOutput()
+            copied = sumpf.modules.CopySignalChannels(signal=silence, channelcount=self._recordchannels).GetOutput()
+            relabeled = sumpf.modules.RelabelSignal(signal=copied, labels=self._GetLabels()).GetOutput()
             return relabeled
         else:
             return self._record

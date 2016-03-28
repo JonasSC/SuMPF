@@ -141,9 +141,9 @@ class SignalChain(object):
         self.__REGULARIZE = 1
         self.__NOT_REGULARIZE = 2
         self.__relabel_kept = sumpf.modules.RelabelSpectrum()
-        sumpf.connect(self.__select_regularization.GetOutput, self.__relabel_kept.SetInput)
+        sumpf.connect(self.__select_regularization.GetOutput, self.__relabel_kept.SetSpectrum)
         self.__relabel = sumpf.modules.RelabelSpectrum(labels=("Recent",))
-        sumpf.connect(self.__select_regularization.GetOutput, self.__relabel.SetInput)
+        sumpf.connect(self.__select_regularization.GetOutput, self.__relabel.SetSpectrum)
         # unprocessed data
         self.__merge_utf = sumpf.modules.MergeSpectrums()
         self.__merge_utf.SetLengthConflictStrategy(sumpf.modules.MergeSpectrums.RAISE_ERROR)
@@ -157,7 +157,7 @@ class SignalChain(object):
         sumpf.connect(self.__properties.GetSamplingRate, self.__window.SetSamplingRate)
         sumpf.connect(self.__properties.GetSignalLength, self.__window.SetLength)
         self.__copy_window = sumpf.modules.CopySignalChannels()
-        sumpf.connect(self.__window.GetSignal, self.__copy_window.SetInput)
+        sumpf.connect(self.__window.GetSignal, self.__copy_window.SetSignal)
         sumpf.connect(self.__merge_uir.GetNumberOfOutputChannels, self.__copy_window.SetChannelCount)
         self.__apply_window = sumpf.modules.Multiply()
         sumpf.connect(self.__merge_uir.GetOutput, self.__apply_window.SetValue1)
@@ -174,7 +174,7 @@ class SignalChain(object):
         sumpf.connect(self.__properties.GetSpectrumLength, self.__filter.SetLength)
         sumpf.connect(self.__properties.GetResolution, self.__filter.SetResolution)
         self.__copy_filter = sumpf.modules.CopySpectrumChannels()
-        sumpf.connect(self.__filter.GetSpectrum, self.__copy_filter.SetInput)
+        sumpf.connect(self.__filter.GetSpectrum, self.__copy_filter.SetSpectrum)
         sumpf.connect(self.__merge_uir.GetNumberOfOutputChannels, self.__copy_filter.SetChannelCount)
         self.__apply_filter = sumpf.modules.Multiply()
         sumpf.connect(self.__last_fft.GetSpectrum, self.__apply_filter.SetValue1)
@@ -188,9 +188,9 @@ class SignalChain(object):
         sumpf.connect(self.__merge_uir.GetOutput, self.__keeplabel.SetLabelInput)
         # post processing: normalization
         self.__normalize_avg = sumpf.modules.NormalizeSpectrumToAverage(order=1)
-        sumpf.connect(self.__keeplabel.GetOutput, self.__normalize_avg.SetInput)
+        sumpf.connect(self.__keeplabel.GetOutput, self.__normalize_avg.SetSpectrum)
         self.__normalize_frq = sumpf.modules.NormalizeSpectrumToFrequency(frequency=1000)
-        sumpf.connect(self.__keeplabel.GetOutput, self.__normalize_frq.SetInput)
+        sumpf.connect(self.__keeplabel.GetOutput, self.__normalize_frq.SetSpectrum)
         self.__select_normalization = sumpf.modules.SelectSpectrum()
         sumpf.connect(self.__normalize_avg.GetOutput, self.__select_normalization.SetInput1)
         sumpf.connect(self.__normalize_frq.GetOutput, self.__select_normalization.SetInput2)

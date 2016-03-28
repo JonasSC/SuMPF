@@ -34,14 +34,17 @@ class NormalizeSpectrumToAverage(object):
     normalized Spectrum which is then inversely fourier transformed does not
     necessarily result in a normalized Signal.
     """
-    def __init__(self, input=None, order=2.0, individual=False):
+    def __init__(self, spectrum=None, order=2.0, individual=False):
         """
         All parameters are optional
-        @param input: the Spectrum which shall be normalized
+        @param spectrum: the Spectrum which shall be normalized
         @param order: see SetOrder for details
         @param individual: If True, the channels will be normalized individually. If False the proportion between the channels remains the same
         """
-        self.__spectrum = input
+        if spectrum is None:
+            self.__spectrum = sumpf.Spectrum()
+        else:
+            self.__spectrum = spectrum
         self.__order = order
         self.__individual = individual
 
@@ -62,7 +65,7 @@ class NormalizeSpectrumToAverage(object):
         return spectrum
 
     @sumpf.Input(sumpf.Spectrum, "GetOutput")
-    def SetInput(self, spectrum):
+    def SetSpectrum(self, spectrum):
         """
         Method for setting the Spectrum which shall be normalized.
         @param spectrum: the Spectrum which shall be normalized
@@ -109,19 +112,16 @@ class NormalizeSpectrumToAverage(object):
         Calculates the normalized channels and returns them.
         @retval : the normalized channels as a tuple
         """
-        if self.__spectrum is not None:
-            result = []
-            factor = 1
-            if not self.__individual:
-                factor = self.__GetFactor(channels=self.__spectrum.GetMagnitude())
-            for i in range(len(self.__spectrum.GetChannels())):
-                if self.__individual:
-                    factor = self.__GetFactor(channels=[self.__spectrum.GetMagnitude()[i]])
-                channel = tuple(numpy.multiply(self.__spectrum.GetChannels()[i], factor))
-                result.append(channel)
-            return result
-        else:
-            return ()
+        result = []
+        factor = 1
+        if not self.__individual:
+            factor = self.__GetFactor(channels=self.__spectrum.GetMagnitude())
+        for i in range(len(self.__spectrum.GetChannels())):
+            if self.__individual:
+                factor = self.__GetFactor(channels=[self.__spectrum.GetMagnitude()[i]])
+            channel = tuple(numpy.multiply(self.__spectrum.GetChannels()[i], factor))
+            result.append(channel)
+        return result
 
     def __GetFactor(self, channels):
         """

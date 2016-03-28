@@ -22,12 +22,12 @@ class RelabelChannelData(object):
     """
     Abstract base class for setting the channel labels of ChannelData instances.
     """
-    def __init__(self, input=None, labels=()):
+    def __init__(self, data, labels):
         """
-        @param input: an optional data set that shall be relabeled
+        @param data: a data set whose channels shall be relabeled
         @param labels: a tuple of labels for the output data set's channels
         """
-        self._input = input
+        self._data = data
         self._labels = tuple(labels)
 
     @sumpf.Input(collections.Iterable, "GetOutput")
@@ -37,15 +37,6 @@ class RelabelChannelData(object):
         @param labels: a tuple of labels for the output data set's channels
         """
         self._labels = tuple(labels)
-
-    def SetInput(self, input):
-        """
-        Virtual method whose overrides shall set the input data set.
-        It is necessary to implement this method in a derived class, so that the
-        type of the input can be set correctly.
-        @param input: the data set whose channels shall be relabeled
-        """
-        raise NotImplementedError("This method should have been overridden in a derived class")
 
     def GetOutput(self):
         """
@@ -62,13 +53,22 @@ class RelabelSignal(RelabelChannelData):
     """
     Module for setting the channel labels of a Signal.
     """
+    def __init__(self, signal=None, labels=()):
+        """
+        @param signal: a Signal instance whose channels shall be relabeled
+        @param labels: a tuple of labels for the output data set's channels
+        """
+        if signal is None:
+            signal = sumpf.Signal()
+        RelabelChannelData.__init__(self, data=signal, labels=labels)
+
     @sumpf.Input(sumpf.Signal, "GetOutput")
-    def SetInput(self, input):
+    def SetSignal(self, signal):
         """
         Sets the input Signal whose channels shall be relabeled.
-        @param input: the Signal whose channels shall be relabeled
+        @param signal: the Signal whose channels shall be relabeled
         """
-        self._input = input
+        self._data = signal
 
     @sumpf.Output(sumpf.Signal)
     def GetOutput(self):
@@ -77,16 +77,16 @@ class RelabelSignal(RelabelChannelData):
         @retval : a Signal with relabeled channels
         """
         signal = None
-        if self._input is None:
+        if self._data is None:
             signal = sumpf.Signal(labels=self._labels)
         else:
             labels = self._labels
             if labels == ():
-                labels = self._input.GetLabels()
+                labels = self._data.GetLabels()
             try:
-                signal = sumpf.Signal(channels=self._input.GetChannels(), samplingrate=self._input.GetSamplingRate(), labels=labels)
+                signal = sumpf.Signal(channels=self._data.GetChannels(), samplingrate=self._data.GetSamplingRate(), labels=labels)
             except ValueError:
-                signal = sumpf.Signal(samplingrate=self._input.GetSamplingRate(), labels=labels)
+                signal = sumpf.Signal(samplingrate=self._data.GetSamplingRate(), labels=labels)
         return signal
 
 
@@ -95,13 +95,22 @@ class RelabelSpectrum(RelabelChannelData):
     """
     Module for setting the channel labels of a Spectrum.
     """
+    def __init__(self, spectrum=None, labels=()):
+        """
+        @param spectrum: a Spectrum instance whose channels shall be relabeled
+        @param labels: a tuple of labels for the output data set's channels
+        """
+        if spectrum is None:
+            spectrum = sumpf.Spectrum()
+        RelabelChannelData.__init__(self, data=spectrum, labels=labels)
+
     @sumpf.Input(sumpf.Spectrum, "GetOutput")
-    def SetInput(self, input):
+    def SetSpectrum(self, spectrum):
         """
         Sets the input Spectrum whose channels shall be relabeled.
-        @param input: the Spectrum whose channels shall be relabeled
+        @param spectrum: the Spectrum whose channels shall be relabeled
         """
-        self._input = input
+        self._data = spectrum
 
     @sumpf.Output(sumpf.Spectrum)
     def GetOutput(self):
@@ -110,15 +119,15 @@ class RelabelSpectrum(RelabelChannelData):
         @retval : a Spectrum with relabeled channels
         """
         spectrum = None
-        if self._input is None:
+        if self._data is None:
             spectrum = sumpf.Spectrum(labels=self._labels)
         else:
             labels = self._labels
             if labels == ():
-                labels = self._input.GetLabels()
+                labels = self._data.GetLabels()
             try:
-                spectrum = sumpf.Spectrum(channels=self._input.GetChannels(), resolution=self._input.GetResolution(), labels=labels)
+                spectrum = sumpf.Spectrum(channels=self._data.GetChannels(), resolution=self._data.GetResolution(), labels=labels)
             except ValueError:
-                spectrum = sumpf.Spectrum(resolution=self._input.GetResolution(), labels=labels)
+                spectrum = sumpf.Spectrum(resolution=self._data.GetResolution(), labels=labels)
         return spectrum
 

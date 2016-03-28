@@ -104,7 +104,7 @@ class SignalEnvelope(object):
         spectrum = sumpf.modules.FourierTransform(signal=signal).GetSpectrum()
         lowpass = sumpf.modules.FilterGenerator(filterfunction=sumpf.modules.FilterGenerator.BESSEL(order=self.__order), frequency=self.__frequency / 2.0, transform=False, resolution=spectrum.GetResolution(), length=len(spectrum)).GetSpectrum()
         time_shift = sumpf.modules.DelayFilterGenerator(delay=-1.0 / (numpy.pi * self.__frequency), resolution=spectrum.GetResolution(), length=len(spectrum)).GetSpectrum()
-        copied = sumpf.modules.CopySpectrumChannels(input=lowpass * time_shift, channelcount=len(spectrum.GetChannels())).GetOutput()
+        copied = sumpf.modules.CopySpectrumChannels(spectrum=lowpass * time_shift, channelcount=len(spectrum.GetChannels())).GetOutput()
         filtered_spectrum = spectrum * copied
         offset_signal = sumpf.modules.InverseFourierTransform(spectrum=filtered_spectrum).GetSignal()
         if offset_signal.GetSamplingRate() != self.__signal.GetSamplingRate():
@@ -133,7 +133,7 @@ class SignalEnvelope(object):
         spectrum = sumpf.modules.FourierTransform(signal=rectified_signal).GetSpectrum()
         lowpass = sumpf.modules.FilterGenerator(filterfunction=sumpf.modules.FilterGenerator.BESSEL(order=self.__order), frequency=self.__frequency, transform=False, resolution=spectrum.GetResolution(), length=len(spectrum)).GetSpectrum()
         time_shift = sumpf.modules.DelayFilterGenerator(delay=-1.0 / (2.0 * numpy.pi * self.__frequency), resolution=spectrum.GetResolution(), length=len(spectrum)).GetSpectrum()
-        copied = sumpf.modules.CopySpectrumChannels(input=lowpass * time_shift, channelcount=len(spectrum.GetChannels())).GetOutput()
+        copied = sumpf.modules.CopySpectrumChannels(spectrum=lowpass * time_shift, channelcount=len(spectrum.GetChannels())).GetOutput()
         filtered_spectrum = spectrum * copied
         unscaled_envelope = sumpf.modules.InverseFourierTransform(spectrum=filtered_spectrum).GetSignal()
         if unscaled_envelope.GetSamplingRate() != self.__signal.GetSamplingRate():

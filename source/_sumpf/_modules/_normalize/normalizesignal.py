@@ -39,15 +39,15 @@ class NormalizeSignal(object):
     normalized Signal, which is then fourier transformed does not necessarily
     result in a normalized Spectrum.
     """
-    def __init__(self, input=None, individual=False):
+    def __init__(self, signal=None, individual=False):
         """
         All parameters are optional
-        @param input: the Signal which shall be normalized
+        @param signal: the Signal which shall be normalized
         @param individual: If True, the channels will be normalized individually. If False the proportion between the channels remains the same
         """
-        if input is None:
-            input = sumpf.Signal()
-        self.__signal = input
+        if signal is None:
+            signal = sumpf.Signal()
+        self.__signal = signal
         self.__individual = individual
 
     @sumpf.Output(sumpf.Signal)
@@ -70,7 +70,7 @@ class NormalizeSignal(object):
         return sumpf.Signal(channels=outputchannels, samplingrate=self.__signal.GetSamplingRate(), labels=self.__signal.GetLabels())
 
     @sumpf.Input(sumpf.Signal, "GetOutput")
-    def SetInput(self, signal):
+    def SetSignal(self, signal):
         """
         Method for setting the Signal which shall be normalized.
         @param signal: the Signal which shall be normalized

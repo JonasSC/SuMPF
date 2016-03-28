@@ -32,9 +32,8 @@ class TestNormalizeSpectrumToAverage(unittest.TestCase):
         Tests if the getter and setter methods work as expected.
         """
         nrm = sumpf.modules.NormalizeSpectrumToAverage()
-        self.assertIsNone(nrm._NormalizeSpectrumToAverage__spectrum)                                # an object initialized without arguments should be empty
         self.assertEqual(nrm.GetOutput(), sumpf.Spectrum())                                         # ... and the output shall be an empty Spectrum
-        nrm.SetInput(self.spectrum)
+        nrm.SetSpectrum(self.spectrum)
         self.assertEqual(nrm.GetOutput().GetLabels(), self.spectrum.GetLabels())                    # the output's labels should have been copied from the input
         nrm.SetOrder(1)
         self.amp.SetValue2(6.0 / 9.0)
@@ -53,7 +52,7 @@ class TestNormalizeSpectrumToAverage(unittest.TestCase):
         """
         Tests if setting the data via the constructor works.
         """
-        nrm = sumpf.modules.NormalizeSpectrumToAverage(input=self.spectrum, order=2, individual=True)
+        nrm = sumpf.modules.NormalizeSpectrumToAverage(spectrum=self.spectrum, order=2, individual=True)
         self.amp.SetValue2(1.0 / ((14.0 / 3.0) ** 0.5))
         self.assertEqual(nrm.GetOutput().GetChannels()[0], self.amp.GetResult().GetChannels()[0])   # individual normalization should have been done correctly for the first channel
         self.assertEqual(nrm.GetOutput().GetChannels()[1], self.spectrum.GetChannels()[1])          # individual normalization should have been done correctly for the first channel
@@ -62,9 +61,9 @@ class TestNormalizeSpectrumToAverage(unittest.TestCase):
         """
         Tests special cases for the normalization
         """
-        nrm = sumpf.modules.NormalizeSpectrumToAverage(input=sumpf.Spectrum(channels=((0.0, 0.0, 0.0),)))
+        nrm = sumpf.modules.NormalizeSpectrumToAverage(spectrum=sumpf.Spectrum(channels=((0.0, 0.0, 0.0),)))
         self.assertEqual(nrm.GetOutput().GetChannels()[0], (0.0, 0.0, 0.0))             # Spectrums with only 0.0 samples should be normalized to [0.0, 0.0, ...]
-        nrm = sumpf.modules.NormalizeSpectrumToAverage(input=sumpf.Spectrum(channels=((1.0, 0.5, -1.5),)), order=1)
+        nrm = sumpf.modules.NormalizeSpectrumToAverage(spectrum=sumpf.Spectrum(channels=((1.0, 0.5, -1.5),)), order=1)
         self.assertEqual(nrm.GetOutput().GetChannels()[0], (1.0, 0.5, -1.5))            # Spectrums with an average of 0.0 should not be normalized (the factor should be 1.0)
 
     def test_connectors(self):
@@ -72,12 +71,12 @@ class TestNormalizeSpectrumToAverage(unittest.TestCase):
         Tests if the connectors are properly decorated.
         """
         nrm = sumpf.modules.NormalizeSpectrumToAverage()
-        self.assertEqual(nrm.SetInput.GetType(), sumpf.Spectrum)
+        self.assertEqual(nrm.SetSpectrum.GetType(), sumpf.Spectrum)
         self.assertEqual(nrm.SetOrder.GetType(), float)
         self.assertEqual(nrm.SetIndividual.GetType(), bool)
         self.assertEqual(nrm.GetOutput.GetType(), sumpf.Spectrum)
         common.test_connection_observers(testcase=self,
-                                         inputs=[nrm.SetInput, nrm.SetOrder, nrm.SetIndividual],
+                                         inputs=[nrm.SetSpectrum, nrm.SetOrder, nrm.SetIndividual],
                                          noinputs=[],
                                          output=nrm.GetOutput)
 

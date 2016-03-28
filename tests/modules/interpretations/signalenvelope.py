@@ -53,7 +53,7 @@ class TestSignalEnvelope(unittest.TestCase):
         carrier_merger = sumpf.modules.MergeSignals()
         carrier_merger.AddInput(carrier1)
         carrier_merger.AddInput(carrier2)
-        multichannel_carrier = sumpf.modules.CopySignalChannels(input=carrier_merger.GetOutput(), channelcount=modulations.GetNumberOfOutputChannels()).GetOutput()
+        multichannel_carrier = sumpf.modules.CopySignalChannels(signal=carrier_merger.GetOutput(), channelcount=modulations.GetNumberOfOutputChannels()).GetOutput()
         # setup offset Signals
         zero_offset = sumpf.modules.ConstantSignalGenerator(value=0.0, samplingrate=samplingrate, length=length).GetSignal()
         constant_offset = sumpf.Signal(channels=((0.1,) * length, (-0.2,) * length, (-1.8,) * length), samplingrate=samplingrate)
@@ -64,7 +64,7 @@ class TestSignalEnvelope(unittest.TestCase):
         offsets = [zero_offset, constant_offset, low_frequency_offset_merger.GetOutput()]
         for o in offsets:
             # create a modulated Signal
-            offset = sumpf.modules.CopySignalChannels(input=o, channelcount=modulations.GetNumberOfOutputChannels()).GetOutput()
+            offset = sumpf.modules.CopySignalChannels(signal=o, channelcount=modulations.GetNumberOfOutputChannels()).GetOutput()
             modulated = multichannel_carrier * rectified + offset
             # setup ideal reference Signals
             ideal_upper = rectified + offset
