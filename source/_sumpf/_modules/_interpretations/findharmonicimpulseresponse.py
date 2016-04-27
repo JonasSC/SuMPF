@@ -32,13 +32,6 @@ class FindHarmonicImpulseResponse(object):
     division in the frequency domain, these non causal artifacts are "wrapped around"
     to the end of the impulse response.
 
-    The peaks, that have been cut out of the full impulse response, are time stretched
-    to become the impulse response of the harmonic. This becomes clear, when considering
-    that the spectrum of the unscaled impulse response of the n-th harmonic would
-    be a transfer function in dependency of n times the frequency. Therefore, the
-    resulting impulse response has a sampling rate, that is n times smaller than
-    that of the original impulse response and may have to be resampled.
-
     To locate the impulse responses of the harmonics, the sweep rate of the excitation
     signal has to be known. This rate can be calculated by the sweep's start frequency,
     its stop frequency and the time it took to sweep between the two.
@@ -147,7 +140,7 @@ class FindHarmonicImpulseResponse(object):
                 labels.append(l + affix)
         # crop to the impulse response of the wanted harmonic
         cropped = self.__impulse_response[harmonic_start_sample:harmonic_stop_sample]
-        harmonic = sumpf.Signal(channels=cropped.GetChannels(), samplingrate=cropped.GetSamplingRate() / self.__harmonic_order, labels=tuple(labels))
+        harmonic = sumpf.Signal(channels=cropped.GetChannels(), samplingrate=cropped.GetSamplingRate(), labels=tuple(labels))
         if len(harmonic) % 2 != 0:
             harmonic = sumpf.Signal(channels=tuple([c + (0.0,) for c in harmonic.GetChannels()]), samplingrate=harmonic.GetSamplingRate(), labels=harmonic.GetLabels())
         return harmonic

@@ -50,7 +50,7 @@ class TestFindHarmonicImpulseResponse(unittest.TestCase):
             l += 1
         harmonic = findharmonics.GetHarmonicImpulseResponse()
         self.assertEqual(len(harmonic), l)
-        self.assertEqual(harmonic.GetSamplingRate(), sr / 2.0)
+        self.assertEqual(harmonic.GetSamplingRate(), sr)
         # check length and sampling rate for higher harmonic orders
         for o in range(3, 6):
             l = sumpf.modules.DurationToLength(duration=math.log(o, k), samplingrate=sr).GetLength() - sumpf.modules.DurationToLength(duration=math.log(o - 1.0, k), samplingrate=sr).GetLength()
@@ -59,7 +59,7 @@ class TestFindHarmonicImpulseResponse(unittest.TestCase):
             findharmonics.SetHarmonicOrder(o)
             harmonic = findharmonics.GetHarmonicImpulseResponse()
             self.assertEqual(len(harmonic), l)
-            self.assertEqual(harmonic.GetSamplingRate(), sr / o)
+            self.assertEqual(harmonic.GetSamplingRate(), sr)
 
     @unittest.skipUnless(sumpf.config.get("run_long_tests"), "Long tests are skipped")
     def test_harmonic_frequency_response(self):
@@ -73,12 +73,12 @@ class TestFindHarmonicImpulseResponse(unittest.TestCase):
         # a function that defines a nonlinear system
         fr = 896.5
         def system(signal):
-            spectrum = sumpf.modules.FourierTransform(signal).GetSpectrum()
+            s = sumpf.modules.ConvolveSignals(signal1=signal, signal2=sumpf.Signal(channels=((0.1,) * 8,), samplingrate=44100.0), mode=sumpf.modules.ConvolveSignals.SAME).GetOutput()    # avoid aliasing by applying a lowpass filter
+            nonlinear = 8.0 * s - 4.0 * s * s + 6.0 * s * s * s - 8.0 * s * s * s * s
+            spectrum = sumpf.modules.FourierTransform(nonlinear).GetSpectrum()
             bandpass = sumpf.modules.FilterGenerator(filterfunction=sumpf.modules.FilterGenerator.BANDPASS(q_factor=5), frequency=fr, resolution=spectrum.GetResolution(), length=len(spectrum)).GetSpectrum()
             filtered = sumpf.modules.InverseFourierTransform(bandpass * spectrum).GetSignal()
-            s = sumpf.modules.ConvolveSignals(signal1=filtered, signal2=sumpf.Signal(channels=((0.1,) * 8,), samplingrate=44100.0), mode=sumpf.modules.ConvolveSignals.SAME).GetOutput()
-            nonlinear = 8.0 * s - 4.0 * s * s + 6.0 * s * s * s - 8.0 * s * s * s * s
-            return nonlinear
+            return filtered
         # "measure" the system's impulse response
         sweep = sumpf.modules.SweepGenerator(start_frequency=f0,
                                              stop_frequency=fT,
