@@ -81,7 +81,7 @@ class TestAudioIO(unittest.TestCase):
             aio.Delete()
         gen = sumpf.modules.ConstantSignalGenerator(value=0.0, length=2 ** 14 - 5)
         cpy = sumpf.modules.CopySignalChannels(channelcount=1)
-        sumpf.connect(gen.GetSignal, cpy.SetInput)
+        sumpf.connect(gen.GetSignal, cpy.SetSignal)
         aio = sumpf.modules.audioio.factory(playbackchannels=2, recordchannels=3)
         try:
             sumpf.connect(aio.GetSamplingRate, gen.SetSamplingRate)

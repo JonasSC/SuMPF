@@ -47,8 +47,8 @@ class GuiWindow(sumpf.gui.Window):
                               ("Processed impulse response", self.__UnloadProcessedImpulseResponse)])
         # sizer
         self.__mainsizer = wx.BoxSizer(wx.HORIZONTAL)
-        self.__controlsizer = wx.BoxSizer(wx.VERTICAL)
         self.SetSizer(self.__mainsizer)
+        self.__controlsizer = wx.BoxSizer(wx.VERTICAL)
         self.__mainsizer.Add(self.__controlsizer, 0, wx.EXPAND)
         # parameter notebook
         self.__parameter_notebook = wx.Notebook(parent=self)
@@ -142,17 +142,18 @@ class GuiWindow(sumpf.gui.Window):
         self.__view_stop = self.__AddFloatField(parent=self.__postprocessing_panel, sizer=self.__view_sizer, label="Maximal Frequency [Hz]", value=sumpf.config.get("view_stop_frequency"), minimum=0.0001, maximum=self.__signalchain.GetSamplingRate() / 2)
         self.__view_update = self.__AddButton(parent=self.__postprocessing_panel, sizer=self.__view_sizer, label="Update View", buttontext="Update", function=self.__UpdateView)
         # control buttons
+        self.__controlsizer.AddStretchSpacer(1)
         self.__start = wx.Button(parent=self, label="Start")
         self.Bind(wx.EVT_BUTTON, self.__Start, self.__start)
-        self.__controlsizer.Add(self.__start, 0, wx.ALIGN_BOTTOM | wx.EXPAND)
+        self.__controlsizer.Add(self.__start, 0, wx.EXPAND)
         self.__keep = wx.Button(parent=self, label="Keep")
         self.__keep.Disable()
         self.Bind(wx.EVT_BUTTON, self.__Keep, self.__keep)
-        self.__controlsizer.Add(self.__keep, 0, wx.ALIGN_BOTTOM | wx.EXPAND)
+        self.__controlsizer.Add(self.__keep, 0, wx.EXPAND)
         self.__clear = wx.Button(parent=self, label="Clear")
         self.__clear.Disable()
         self.Bind(wx.EVT_BUTTON, self.__Clear, self.__clear)
-        self.__controlsizer.Add(self.__clear, 0, wx.ALIGN_BOTTOM | wx.EXPAND)
+        self.__controlsizer.Add(self.__clear, 0, wx.EXPAND)
         # plots
         self.__plotnotebook = wx.Notebook(parent=self, size=(800, 600))
         self.__recordedtransferfunctionpage = sumpf.modules.SpectrumPlotPanel(parent=self.__plotnotebook, hidden_components=set(["Phase", "ContinuousPhase", "GroupDelay"]))
@@ -402,7 +403,8 @@ class GuiWindow(sumpf.gui.Window):
         wildcard = []
         formats = sumpf.modules.SpectrumFile.GetFormats()
         for f in formats:
-            wildcard.append("%s (*.%s)|*.%s" % (f.__name__, f.ending, f.ending))
+            if not f.read_only:
+                wildcard.append("%s (*.%s)|*.%s" % (f.__name__, f.ending, f.ending))
         dlg = wx.FileDialog(parent=self, defaultFile='TransferFunction', wildcard="|".join(wildcard), style=wx.FD_SAVE | wx.FD_OVERWRITE_PROMPT)
         filename = None
         format = None
@@ -417,7 +419,8 @@ class GuiWindow(sumpf.gui.Window):
         wildcard = []
         formats = sumpf.modules.SignalFile.GetFormats()
         for f in formats:
-            wildcard.append("%s (*.%s)|*.%s" % (f.__name__, f.ending, f.ending))
+            if not f.read_only:
+                wildcard.append("%s (*.%s)|*.%s" % (f.__name__, f.ending, f.ending))
         dlg = wx.FileDialog(parent=self, defaultFile='ImpulseResponse', wildcard="|".join(wildcard), style=wx.FD_SAVE | wx.FD_OVERWRITE_PROMPT)
         filename = None
         format = None
