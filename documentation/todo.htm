@@ -28,8 +28,40 @@
 			</tr>
 			<tr>
 				<td colspan="3" class="section">
-					<a name="nearfuture">To be done in near future</a>
+					<a name="nearfuture">To be done in the near future</a>
 					<a href="#top" class="toplink">Top&uarr;</a>
+				</td>
+			</tr>
+			<tr>
+				<td class="subsection">Lazy execution</td>
+				<td colspan="2" class="text">
+					Currently, the connectors update the data in the processing
+					chain as soon as they are called. This can result in unnessesary
+					computations and a sluggish user experience, as the point in
+					time, when the time consuming calculations shall be performed,
+					cannot be chosen intuitively and comfortably.<br />
+					The connectors' behaviour shall be modified in a way, that
+					the computations are only done, when retrieving a result of
+					the processing chain.<br />
+					Of course certain input connectors like those of the plots
+					must not be lazy, so they still update the plots as soon as
+					new data is available. Furthermore, the lazyness must be
+					transparent in a way, that the order, in which the methods are
+					called is kept and that disconnecting a signal processing
+					chain shall leave all objects in an updated state.
+				</td>
+			</tr>
+			<tr>
+				<td class="subsection">Processing chains inside classes</td>
+				<td colspan="2" class="text">
+					SuMPF's connectors offer no API to include a processing chain
+					inside an object into a processing chain of which that object
+					is a part. This way many of the convenient features of the
+					connectors become ineffective for the encapsulated processing
+					chain.<br />
+					The required feature would be very convenient for "macros",
+					that combine several signal processing steps, that are often
+					used together, in one class (e.g. for computing a transfer function).
 				</td>
 			</tr>
 			<tr>
@@ -47,18 +79,28 @@
 				<td class="subsection">Switch to a different GUI library</td>
 				<td colspan="2" class="text">
 					As wxPython is only available for Python2, it is necessary
-					to switch to an alternative. PyQt5 looks promising.<br />
-					Maybe this also solves some threading issues in the current
-					implementation.
+					to switch to an alternative.<br />
+					Maybe this also solves the threading issues on Windows, that
+					occur with the current implementation.<br />
+					PyQt5 seems to become the most widely used GUI library for
+					Python. Due to this reason and because of its great set of
+					features, it would be nice to switch to PyQt5, but at the
+					moment, I have not managed to get PyQt5 running in a different
+					thread than the main thread. This is a key requirement for
+					SuMPF's GUI library, because it shall be possible to display
+					plots, while doing other tasks in the main thread (e.g.
+					interactive signal processing in the terminal).
 				</td>
 			</tr>
 			<tr>
 				<td class="subsection">Threading issues in the GUI</td>
 				<td colspan="2" class="text">
-					There seems to be something wrong with the threads in the GUI.
-					Normal applications like the RecordTransferFunction example
-					run fine, but when the GUI is updated very often in a short
-					period of time, like in the unit tests, it runs quite undependable.
+					The GUI components do not work on Windows. When showing a
+					plot window, it just hangs forever.<br />
+					This is probably due to the fact, that in SuMPF, the event loop
+					of the GUI is not run in the main thread, but it is swapped
+					to a different thread to allow a concurrent display of plots,
+					while doing signal processing in the main thread.
 				</td>
 			</tr>
 			<tr>
@@ -76,33 +118,6 @@
 					It might be necessary, to patch PyJack by either removing the
 					error message or (which would be better) by providing a
 					"Check-if-JACK-is-running"-method.
-				</td>
-			</tr>
-			<tr>
-				<td class="subsection">JACK latency API</td>
-				<td colspan="2" class="text">
-					The sound card interface that uses JACK currently uses a very
-					crude (and often false) method to compensate the latency from
-					the sound card buffers in a recorded Signal.<br />
-					It is necessary to extend PyJack with the functionalities of
-					the JACK latency API and then make use of that in the respective
-					sound card interface.
-				</td>
-			</tr>
-			<tr>
-				<td class="subsection">Automatic downsampling</td>
-				<td colspan="2" class="text">
-					Currently it is not possible, to plot very large data sets,
-					like audio signals that are longer than five seconds. This
-					is because the pixel resolution of the plots is much lower
-					than what is necessary to visualize such a vast amount of
-					data.<br />
-					To comfortably plot data sets of any size, a system is required
-					that automatically detects, if downsampling the data is necessary,
-					and reduces the data, if it is.<br />
-					The basic framework for using downsamplers with the plot data
-					is implemented, but useful implementations of downsampling
-					algorithms are still missing.
 				</td>
 			</tr>
 			<tr>
@@ -136,8 +151,11 @@
 					It should be possible to create and plot a series of short time
 					spectrums over time.<br />
 					For that a data container and a plot is needed as well.<br />
+					The container and the plot should also support a non-equidistant
+					frequency sampling, like it can occur with wavelet transforms<br />
 					Maybe it is possible to create a very general containter that
-					could also store data like "spectrum vs. rotation speed".
+					could also store data like "spectrum vs. rotation" (or some
+					other parameter of the device that created the generated noise).
 				</td>
 			</tr>
 			<tr>
@@ -150,6 +168,33 @@
 				<td class="subsection">Debian Package</td>
 				<td colspan="2" class="text">
 					It would be nice to have an easy to install package for Debian.
+				</td>
+			</tr>
+			<tr>
+				<td class="subsection">JACK latency API</td>
+				<td colspan="2" class="text">
+					The sound card interface that uses JACK currently uses a very
+					crude (and often false) method to compensate the latency from
+					the sound card buffers in a recorded Signal.<br />
+					It is necessary to extend PyJack with the functionalities of
+					the JACK latency API and then make use of that in the respective
+					sound card interface.
+				</td>
+			</tr>
+			<tr>
+				<td class="subsection">Automated downsampling</td>
+				<td colspan="2" class="text">
+					Currently it is not possible, to plot very large data sets,
+					like audio signals that are longer than five seconds. This
+					is because the pixel resolution of the plots is much lower
+					than what is necessary to visualize such a vast amount of
+					data.<br />
+					To comfortably plot data sets of any size, a system is required
+					that automatically detects, if downsampling the data is necessary,
+					and reduces the data, if it is.<br />
+					The basic framework for using downsamplers with the plot data
+					is implemented, but useful implementations of downsampling
+					algorithms are still missing.
 				</td>
 			</tr>
 			<tr>
@@ -170,7 +215,14 @@
 					Currently there is the problem, that sharing large data sets
 					like Signals or Spectrums via shared memory or queues is so
 					slow, that this outweights the performance gains, that can be
-					achieved by parallel calculations.
+					achieved by parallel calculations.<br />
+					It is possible to allocate arrays in shared memory and cast
+					them to NumPy arrays. The casting is necessary to support
+					complex numbers, which the shared memory arrays don't do.
+					This of course makes SuMPF dependent on NumPy, which is undesired
+					at the moment, because its basic functions (mainly the connectors)
+					shall be available without having to install additional libraries
+					other than the standard library, that comes with Python.
 				</td>
 			</tr>
 			<tr>
@@ -197,7 +249,9 @@
 					a high value in the filter, while it sweeps faster through
 					frequencies that have a small value in the filter.
 					The start- and stop-frequencies and the sweep length should
-					not be altered.
+					not be altered.<br />
+					This has to be done by creating the sweep in the frequency
+					domain.
 				</td>
 			</tr>
 			<tr>
@@ -210,7 +264,9 @@
 					be better.<br />
 					Maybe libraries like <a href="http://drobilla.net/software/ganv">Ganv</a>
 					or <a href="http://www.graphviz.org/">GraphViz</a> can be helpful
-					here.
+					here. Also switching to a Qt based GUI library might provide
+					the necessary features (both QjackCtl and Alsa Modular Synth
+					use Qt).
 				</td>
 			</tr>
 			<tr>
@@ -234,29 +290,37 @@
 				</td>
 			</tr>
 			<tr>
-				<td class="subsection">A feedback loop</td>
+				<td class="subsection">Symbolic signal processing</td>
 				<td colspan="2" class="text">
-					A module that implements a feedback loop for processing chains.
-					This could be similar to Simulink.
+					At the moment, SuMPF's signals and spectrums are represented
+					numerically as a sequence of samples. For some tasks it would
+					be beneficial to represent those data sets as a formula and
+					a set of parameters. This would allow:
+					<ul>
+						<li>Transform IIR filters to the z-domain in order to apply them in the time domain</li>
+						<li>Being independent of the sampling rate or the frequency resolution</li>
+						<li>Computing an inverse without having to consider numerical problems, such as the periodicity of the fft</li>
+						<li>Doing certain operations fully losslessly, without adding noise due to the limited floating point precision</li>
+					<ul>
 				</td>
 			</tr>
 			<tr>
 				<td class="subsection">Loudspeaker calculations</td>
 				<td colspan="2" class="text">
-					Maybe some of the following stuff might be possible with SuMPF
+					Maybe some of the following tasks might be possible with SuMPF
 					one day:
 					<ul>
-						<li>Record and calculate the Thiele-Small-Parameters of a loudspeaker</li>
-						<li>Calculate the optimal crossover frequency</li>
-						<li>Calculate the measurements of an optimal bass reflex port</li>
+						<li>Do a recording and calculate a loudspeaker's Thiele-Small-Parameters from it</li>
+						<li>Calculate optimal crossover frequencies for multi-way loudspeakers</li>
+						<li>Calculate the dimensions of an optimal bass reflex port</li>
 					<ul>
 				</td>
 			</tr>
 			<tr>
-				<td class="subsection">Plugin from Spectrum</td>
+				<td class="subsection">A feedback loop</td>
 				<td colspan="2" class="text">
-					Maybe it is possible to generate a LADSPAA or LV2 plugin from
-					a Spectrum.
+					A module that implements a feedback loop for processing chains.
+					This could be similar to Simulink.
 				</td>
 			</tr>
 			<tr>
