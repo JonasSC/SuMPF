@@ -35,7 +35,7 @@ class SignalFile(ChannelDataFile):
     Generally the instance will always write to the given file name when the
     given Signal is not empty. Otherwise it will attempt to load the given file.
     """
-    def __init__(self, filename=None, signal=None, format=None):
+    def __init__(self, filename=None, signal=None, file_format=None):
         """
         If the filename is not None, the file exists and the initial Signal is
         empty, the Signal will be automatically be loaded from the file.
@@ -46,11 +46,11 @@ class SignalFile(ChannelDataFile):
         @param signal: the Signal instance that shall be stored in the file
         @param format: a subclass of FileFormat that specifies the desired format of the file
         """
-        if format is None:
-            format = signalformats[0]
+        if file_format is None:
+            file_format = signalformats[0]
         if signal is None:
             signal = sumpf.Signal()
-        ChannelDataFile.__init__(self, filename=filename, data=signal, format=format)
+        ChannelDataFile.__init__(self, filename=filename, data=signal, file_format=file_format)
 
     @staticmethod
     def GetFormats():
@@ -104,7 +104,7 @@ class SignalFile(ChannelDataFile):
         ChannelDataFile.SetFilename(self, filename)
 
     @sumpf.Input(FileFormat, ["GetSignal", "GetLength", "GetSamplingRate"])
-    def SetFormat(self, format):
+    def SetFormat(self, file_format):
         """
         Override of ChannelDataFile.SetFormat to decorate it with @sumpf.Input.
 
@@ -112,9 +112,9 @@ class SignalFile(ChannelDataFile):
         If the file specified by the filename and the format exists and the
         current data set is empty, the file will be loaded. Otherwise the
         current data will be saved to that file.
-        @param format: a subclass of FileFormat that specifies the desired format of the file
+        @param file_format: a subclass of FileFormat that specifies the desired format of the file
         """
-        ChannelDataFile.SetFormat(self, format)
+        ChannelDataFile.SetFormat(self, file_format)
 
     def _PerformAction(self):
         """

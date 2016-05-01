@@ -33,7 +33,7 @@ class SpectrumFile(ChannelDataFile):
     that have been created with the ITA-Toolbox from the Institute of Technical
     Acoustics, RWTH Aachen University.
     """
-    def __init__(self, filename=None, spectrum=None, format=None):
+    def __init__(self, filename=None, spectrum=None, file_format=None):
         """
         If the filename is not None, the file exists and the initial Spectrum is
         empty, the Spectrum will be automatically be loaded from the file.
@@ -42,13 +42,13 @@ class SpectrumFile(ChannelDataFile):
         already.
         @param filename: None or a string value of a path and filename preferably without the file ending
         @param spectrum: the Spectrum instance that shall be stored in the file
-        @param format: a subclass of FileFormat that specifies the desired format of the file
+        @param file_format: a subclass of FileFormat that specifies the desired format of the file
         """
-        if format is None:
-            format = SpectrumFile.NUMPY_NPZ
+        if file_format is None:
+            file_format = SpectrumFile.NUMPY_NPZ
         if spectrum is None:
             spectrum = sumpf.Spectrum()
-        ChannelDataFile.__init__(self, filename=filename, data=spectrum, format=format)
+        ChannelDataFile.__init__(self, filename=filename, data=spectrum, file_format=file_format)
 
     @staticmethod
     def GetFormats():
@@ -102,7 +102,7 @@ class SpectrumFile(ChannelDataFile):
         ChannelDataFile.SetFilename(self, filename)
 
     @sumpf.Input(FileFormat, ["GetSpectrum", "GetLength", "GetResolution"])
-    def SetFormat(self, format):
+    def SetFormat(self, file_format):
         """
         Override of ChannelDataFile.SetFormat to decorate it with @sumpf.Input.
 
@@ -110,9 +110,9 @@ class SpectrumFile(ChannelDataFile):
         If the file specified by the filename and the format exists and the
         current data set is empty, the file will be loaded. Otherwise the
         current data will be saved to that file.
-        @param format: a subclass of FileFormat that specifies the desired format of the file
+        @param file_format: a subclass of FileFormat that specifies the desired format of the file
         """
-        ChannelDataFile.SetFormat(self, format)
+        ChannelDataFile.SetFormat(self, file_format)
 
     def _PerformAction(self):
         """

@@ -312,7 +312,7 @@ class SignalChain(object):
     # File methods #
     ################
 
-    def __Save(self, merger, filename, format):
+    def __Save(self, merger, filename, file_format):
         data = merger.GetOutput()
         if isinstance(data, sumpf.Signal):
             filehandler = sumpf.modules.SignalFile()
@@ -320,7 +320,7 @@ class SignalChain(object):
         else:
             filehandler = sumpf.modules.SpectrumFile()
             filehandler.SetSpectrum(data)
-        filehandler.SetFormat(format)
+        filehandler.SetFormat(file_format)
         filehandler.SetFilename(filename)
 
     def __Load(self, merger, id_dict, filename):
@@ -384,17 +384,17 @@ class SignalChain(object):
             merger.RemoveInput(data_id)
         sumpf.activate_output(merger.GetOutput)
 
-    def SaveUnprocessedTransferFunction(self, filename, format):
-        self.__Save(merger=self.__merge_utf, filename=filename, format=format)
+    def SaveUnprocessedTransferFunction(self, filename, file_format):
+        self.__Save(merger=self.__merge_utf, filename=filename, file_format=file_format)
 
-    def SaveUnprocessedImpulseResponse(self, filename, format):
-        self.__Save(merger=self.__merge_uir, filename=filename, format=format)
+    def SaveUnprocessedImpulseResponse(self, filename, file_format):
+        self.__Save(merger=self.__merge_uir, filename=filename, file_format=file_format)
 
-    def SaveProcessedTransferFunction(self, filename, format):
-        self.__Save(merger=self.__merge_ptf, filename=filename, format=format)
+    def SaveProcessedTransferFunction(self, filename, file_format):
+        self.__Save(merger=self.__merge_ptf, filename=filename, file_format=file_format)
 
-    def SaveProcessedImpulseResponse(self, filename, format):
-        self.__Save(merger=self.__merge_pir, filename=filename, format=format)
+    def SaveProcessedImpulseResponse(self, filename, file_format):
+        self.__Save(merger=self.__merge_pir, filename=filename, file_format=file_format)
 
     def LoadUnprocessedTransferFunction(self, filename):
         self.__Load(merger=self.__merge_utf, id_dict=self.__loaded_ids_utf, filename=filename)

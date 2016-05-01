@@ -192,18 +192,18 @@
 			</tr>
 			<tr>
 				<td class="subsection">
-					<a href="https://github.com/bastibe/PySoundFile">PySoundFile</a><br />
 					<a href="http://www.ar.media.kyoto-u.ac.jp/members/david/softwares/audiolab/">scikits.audiolab</a>
+					<a href="https://github.com/bastibe/PySoundFile">PySoundFile</a><br />
 				</td>
 				<td colspan="2" class="text">
-					PySoundFile and scikits.audiolab is a Python interfaces for
+					scikits.audiolab and PySoundFile are Python interfaces for
 					the <a href="http://www.mega-nerd.com/libsndfile/">libsndfile</a>
 					library. They provide functionality to read and write audio
 					files in many different formats.<br />
 					SuMPF uses them to read and write Signal files from and to
-					common audio files such as wav, aiff and flac. It first checks
-					for PySoundFile and if that is not available, it tries to
-					fall back to scikits.audiolab.<br />
+					common audio files such as wav, aiff, flac and ogg. It first
+					checks for scikits.audiolab and if that is not available, it
+					tries to fall back to PySoundFile.<br />
 					Both PySoundFile and scikits.audiolab require NumPy to be
 					installed.<br />
 					<br />

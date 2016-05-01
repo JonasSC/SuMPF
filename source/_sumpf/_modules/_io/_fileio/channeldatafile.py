@@ -23,7 +23,7 @@ class ChannelDataFile(object):
     Provides methods for saving and loading a file from a given filename and
     with a given format.
     """
-    def __init__(self, filename, data, format):
+    def __init__(self, filename, data, file_format):
         """
         If the filename is not None, the file exists and the initial data set is
         empty, the data set will be automatically be loaded from the file.
@@ -32,10 +32,10 @@ class ChannelDataFile(object):
         already.
         @param filename: None or a string value of a path and filename preferably without the file ending
         @param data: the ChannelData instance that shall be stored in the file
-        @param format: a subclass of FileFormat that specifies the desired format of the file
+        @param file_format: a subclass of FileFormat that specifies the desired format of the file
         """
         self._data = data
-        self.__format = format
+        self.__format = file_format
         if filename is None:
             self._filename = None
         else:
@@ -70,15 +70,15 @@ class ChannelDataFile(object):
         """
         self.__SetFilename(filename)
 
-    def SetFormat(self, format):
+    def SetFormat(self, file_format):
         """
         Sets the format under which the data is or shall be stored on the disk.
         If the file specified by the filename and the format exists and the
         current data set is empty, the file will be loaded. Otherwise the
         current data will be saved to that file.
-        @param format: a subclass of FileFormat that specifies the desired format of the file
+        @param file_format: a subclass of FileFormat that specifies the desired format of the file
         """
-        self.__format = format
+        self.__format = file_format
         if self._PerformAction():
             if self._filename is not None:
                 if self.__format.Exists(self._filename):

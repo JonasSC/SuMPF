@@ -40,17 +40,11 @@ class TestFileIO(unittest.TestCase):
         signal2 = sumpf.Signal(channels=((-0.1, -0.2, -0.3), (-0.4, -0.5, -0.6), (-0.7, -0.8, -0.9)), samplingrate=25.0, labels=("three", "four", "five"))
         formats = {}#                                 exact,labels,float samplingrate
         formats[sumpf.modules.SignalFile.NUMPY_NPZ] = (True, True, True)
-        if common.lib_available("soundfile"):
+        if common.lib_available("scikits.audiolab") or common.lib_available("soundfile"):
             formats[sumpf.modules.SignalFile.AIFF_FLOAT] = (False, False, False)
             formats[sumpf.modules.SignalFile.AIFF_INT] = (False, False, False)
             formats[sumpf.modules.SignalFile.FLAC] = (False, False, False)
             formats[sumpf.modules.SignalFile.WAV_DOUBLE] = (True, False, False)
-            formats[sumpf.modules.SignalFile.WAV_INT] = (False, False, False)
-            formats[sumpf.modules.SignalFile.WAV_FLOAT] = (False, False, False)
-        elif common.lib_available("scikits.audiolab"):
-            formats[sumpf.modules.SignalFile.AIFF_FLOAT] = (False, False, False)
-            formats[sumpf.modules.SignalFile.AIFF_INT] = (False, False, False)
-            formats[sumpf.modules.SignalFile.FLAC] = (False, False, False)
             formats[sumpf.modules.SignalFile.WAV_INT] = (False, False, False)
             formats[sumpf.modules.SignalFile.WAV_FLOAT] = (False, False, False)
         if common.lib_available("oct2py", dont_import=True):
@@ -62,21 +56,21 @@ class TestFileIO(unittest.TestCase):
         self.assertTrue(set(formats.keys()).issubset(sumpf.modules.SignalFile.GetFormats()))
         for f in set(formats.keys()) - set(sumpf.modules.SignalFile.GetFormats()):
             self.assertTrue(f.read_only)
-        fileio = sumpf.modules.SignalFile(format=list(formats.keys())[0])
+        fileio = sumpf.modules.SignalFile(file_format=list(formats.keys())[0])
         self.assertEqual(os.listdir(tempdir), [])                                           # if no filename was provided, no file should have been written
         try:
             for f in formats:
                 format_info = formats[f]
                 filename1e = filename1 + "." + f.ending
                 filename2e = filename2 + "." + f.ending
-                fileio = sumpf.modules.SignalFile(filename=filename1, format=f)
+                fileio = sumpf.modules.SignalFile(filename=filename1, file_format=f)
                 self.assertTrue(f.Exists(filename1))                                        # with a filename provided, a file should have been created
                 output = fileio.GetSignal()
                 self.assertEqual(fileio.GetLength(), len(output))
                 self.assertEqual(fileio.GetSamplingRate(), output.GetSamplingRate())
                 self.__CompareSignals(output, sumpf.Signal(), format_info, "TestFileIO1")   # this file should contain an empty data set
-                fileio = sumpf.modules.SignalFile(filename=filename1, signal=signal1, format=f)
-                fileio = sumpf.modules.SignalFile(filename=filename1, format=f)
+                fileio = sumpf.modules.SignalFile(filename=filename1, signal=signal1, file_format=f)
+                fileio = sumpf.modules.SignalFile(filename=filename1, file_format=f)
                 output = fileio.GetSignal()
                 self.assertEqual(fileio.GetLength(), len(output))
                 self.assertEqual(fileio.GetSamplingRate(), output.GetSamplingRate())
@@ -87,9 +81,9 @@ class TestFileIO(unittest.TestCase):
                 fileio.SetFormat(f)
                 output = fileio.GetSignal()
                 self.__CompareSignals(output, signal2, format_info, "TestFileIO1")          # creating an empty file module and the giving it the filename and the format should have loaded the file into the empty module
-                output2 = sumpf.modules.SignalFile(filename=filename1, format=f).GetSignal()
+                output2 = sumpf.modules.SignalFile(filename=filename1, file_format=f).GetSignal()
                 self.assertEqual(output, output2)                                           # loading the Signal without storing the SignalFile instance must be possible
-                tmpio = sumpf.modules.SignalFile(filename=filename2e, signal=signal1, format=f)
+                tmpio = sumpf.modules.SignalFile(filename=filename2e, signal=signal1, file_format=f)
                 fileio.SetFilename(filename2e)
                 output = fileio.GetSignal()
                 self.__CompareSignals(output, signal2, format_info, "TestFileIO2")          # both the constructor and the SetFilename method should have cropped the file ending from the filename
@@ -97,6 +91,37 @@ class TestFileIO(unittest.TestCase):
                 self.__CompareSignals(output, signal2, format_info, "TestFileIO2")          # both fileio and tmpio have loaded the same file. fileio has changed it, so it should also have changed in tmpio
                 os.remove(filename1e)
                 os.remove(filename2e)
+        finally:
+            shutil.rmtree(tempdir)
+
+    @unittest.skipUnless(sumpf.config.get("write_to_disk"), "Tests that write to disk are skipped")
+    @unittest.skipUnless(common.lib_available("scikits.audiolab"), "Writing lossily compressed files is only available with scikits.audiolab")
+    def test_lossy_signal_formats(self):
+        tempdir = tempfile.mkdtemp()
+        try:
+            for f in [sumpf.modules.SignalFile.OGG_VORBIS]:
+                # test an empty signal
+                filename = os.path.join(tempdir, "empty")
+                sumpf.modules.SignalFile(filename=filename, file_format=f)
+                self.assertTrue(f.Exists(filename))
+                signal = sumpf.modules.SignalFile(filename=filename, file_format=f).GetSignal()
+                self.assertEqual(signal, sumpf.Signal(samplingrate=int(round(sumpf.Signal().GetSamplingRate())), labels=('empty 1',)))
+                # test a rather short signal with more than two channels
+                filename = os.path.join(tempdir, "short")
+                reference = sumpf.Signal(channels=((0.1, 0.2, 0.3), (0.4, 0.5, 0.6), (0.7, 0.8, 0.9)), samplingrate=44100.0)
+                sumpf.modules.SignalFile(filename=filename, signal=reference, file_format=f)
+                signal = sumpf.modules.SignalFile(filename=filename, file_format=f).GetSignal()
+                relative_error = (signal - reference) / reference
+                for c in sumpf.modules.RootMeanSquare(signal=relative_error, integration_time=sumpf.modules.RootMeanSquare.FULL).GetOutput().GetChannels():
+                    self.assertLess(c[0], 0.12)
+                # test a loud signal with amplitudes above 1.0 and below -1.0
+                filename = os.path.join(tempdir, "loud")
+                reference = sumpf.Signal(channels=((0.1, -2.0, 0.3, 4.0, -0.5, -6.0, 0.7, 8.0, -0.9),), samplingrate=44100.0)
+                sumpf.modules.SignalFile(filename=filename, signal=reference, file_format=f)
+                signal = sumpf.modules.SignalFile(filename=filename, file_format=f).GetSignal()
+                relative_error = (signal - reference) / reference
+                for s in (relative_error * relative_error).GetChannels()[0]:
+                    self.assertLess(s, 0.45)
         finally:
             shutil.rmtree(tempdir)
 
@@ -122,9 +147,9 @@ class TestFileIO(unittest.TestCase):
             for f in formats:
                 filename1e = filename1 + "." + f.ending
                 filename2e = filename2 + "." + f.ending
-                fileio = sumpf.modules.SpectrumFile(format=f)
+                fileio = sumpf.modules.SpectrumFile(file_format=f)
                 self.assertEqual(os.listdir(tempdir), [])                                       # if no filename was provided, no file should have been written
-                fileio = sumpf.modules.SpectrumFile(filename=filename1, format=f)
+                fileio = sumpf.modules.SpectrumFile(filename=filename1, file_format=f)
                 self.assertTrue(f.Exists(filename1))                                            # with a filename provided, a file should have been created
                 output = fileio.GetSpectrum()
                 self.assertEqual(fileio.GetLength(), len(output))
@@ -132,8 +157,8 @@ class TestFileIO(unittest.TestCase):
                 self.assertEqual(output.GetChannels(), sumpf.Spectrum().GetChannels())          # this file should contain an empty data set
                 self.assertEqual(output.GetResolution(), sumpf.Spectrum().GetResolution())      #
                 self.assertEqual(output.GetLabels(), sumpf.Spectrum().GetLabels())              #
-                fileio = sumpf.modules.SpectrumFile(filename=filename1, spectrum=spectrum1, format=f)
-                fileio = sumpf.modules.SpectrumFile(filename=filename1, format=f)
+                fileio = sumpf.modules.SpectrumFile(filename=filename1, spectrum=spectrum1, file_format=f)
+                fileio = sumpf.modules.SpectrumFile(filename=filename1, file_format=f)
                 output = fileio.GetSpectrum()
                 self.assertEqual(fileio.GetLength(), len(output))
                 self.assertEqual(fileio.GetResolution(), output.GetResolution())
@@ -148,9 +173,9 @@ class TestFileIO(unittest.TestCase):
                 self.assertEqual(output.GetChannels(), spectrum2.GetChannels())                 # changing the data set should have triggered a rewrite of the file
                 self.assertEqual(output.GetResolution(), spectrum2.GetResolution())             # creating an empty file module and the giving it the filename and the format should have loaded the file into the empty module
                 self.assertEqual(output.GetLabels(), spectrum2.GetLabels())                     #
-                output2 = sumpf.modules.SpectrumFile(filename=filename1, format=f).GetSpectrum()
+                output2 = sumpf.modules.SpectrumFile(filename=filename1, file_format=f).GetSpectrum()
                 self.assertEqual(output, output2)                                               # loading the Signal without storing the SignalFile instance must be possible
-                tmpio = sumpf.modules.SpectrumFile(filename=filename2e, spectrum=spectrum1, format=f)
+                tmpio = sumpf.modules.SpectrumFile(filename=filename2e, spectrum=spectrum1, file_format=f)
                 fileio.SetFilename(filename2e)
                 output = fileio.GetSpectrum()
                 self.assertEqual(output.GetChannels(), spectrum2.GetChannels())                 # both the constructor and the SetFilename method should have cropped the file ending from the filename
@@ -172,9 +197,9 @@ class TestFileIO(unittest.TestCase):
         data_path = os.path.join(os.sep.join(path_of_this_file.split(os.sep)[0:-1]), "data")
         timedata_file = os.path.join(data_path, "time.ita")
         freqdata_file = os.path.join(data_path, "freq.ita")
-        signalreader = sumpf.modules.SignalFile(filename=timedata_file, format=sumpf.modules.SignalFile.ITA_AUDIO)
-        spectrumreader = sumpf.modules.SpectrumFile(filename=freqdata_file, format=sumpf.modules.SpectrumFile.ITA_AUDIO)
-        reference_signal = sumpf.Signal(channels=((0.125, 0.375, 0.375, 0.125), (1.0, -1.0, 1.0, -1.0)), samplingrate=44100.000000, labels=('Lowpass [V]', 'Shah [Pa]'))
+        signalreader = sumpf.modules.SignalFile(filename=timedata_file, file_format=sumpf.modules.SignalFile.ITA_AUDIO)
+        spectrumreader = sumpf.modules.SpectrumFile(filename=freqdata_file, file_format=sumpf.modules.SpectrumFile.ITA_AUDIO)
+        reference_signal = sumpf.Signal(channels=((0.125, 0.375, 0.375, 0.125), (1.0, -1.0, 1.0, -1.0)), samplingrate=44100.0, labels=('Lowpass [V]', 'Shah [Pa]'))
         reference_spectrum = sumpf.Spectrum(channels=(((0.25 + 0j), (-0.088388347648318447 - 0.088388347648318447j), 0j), (0j, 0j, (0.70710678118654746 + 0j))), resolution=11025.000000, labels=('Lowpass [V]', 'Shah [Pa]'))
         # compare with reference data
         signal_from_time = signalreader.GetSignal()
@@ -189,6 +214,7 @@ class TestFileIO(unittest.TestCase):
         signalreader.SetFilename(freqdata_file)
         self.assertEqual(signalreader.GetSignal(), reference_transformed_spectrum)
 
+    @unittest.skipUnless(sumpf.config.get("run_incomplete_tests"), "Incomplete tests are skipped")
     @unittest.skipUnless(sumpf.config.get("write_to_disk"), "Tests that write to disk are skipped")
     @unittest.skipUnless(sumpf.config.get("run_long_tests"), "Long tests are skipped")
     @unittest.skipUnless(sumpf.config.get("run_time_variant_tests"), "Tests which might show a non deterministic behavior are skipped")
@@ -230,36 +256,36 @@ class TestFileIO(unittest.TestCase):
         spectrumfilename = os.path.join(tempdir, "spectrum")
         try:
             # test without oct2py being loaded before
-            sumpf.modules.SignalFile(filename=signalfilename, signal=sumpf.Signal(), format=sumpf.modules.SignalFile.MATLAB)
+            sumpf.modules.SignalFile(filename=signalfilename, signal=sumpf.Signal(), file_format=sumpf.modules.SignalFile.MATLAB)
             self.assertEqual(get_running_octave_instances(), original_octave_instances) # check if no octave processes have been left over
-            sumpf.modules.SignalFile(filename=signalfilename, format=sumpf.modules.SignalFile.MATLAB).GetSignal()
+            sumpf.modules.SignalFile(filename=signalfilename, file_format=sumpf.modules.SignalFile.MATLAB).GetSignal()
             self.assertEqual(get_running_octave_instances(), original_octave_instances) # check if no octave processes have been left over
-            sumpf.modules.SpectrumFile(filename=spectrumfilename, spectrum=sumpf.Spectrum(), format=sumpf.modules.SpectrumFile.MATLAB)
+            sumpf.modules.SpectrumFile(filename=spectrumfilename, spectrum=sumpf.Spectrum(), file_format=sumpf.modules.SpectrumFile.MATLAB)
             self.assertEqual(get_running_octave_instances(), original_octave_instances) # check if no octave processes have been left over
-            sumpf.modules.SpectrumFile(filename=spectrumfilename, format=sumpf.modules.SpectrumFile.MATLAB).GetSpectrum()
+            sumpf.modules.SpectrumFile(filename=spectrumfilename, file_format=sumpf.modules.SpectrumFile.MATLAB).GetSpectrum()
             self.assertEqual(get_running_octave_instances(), original_octave_instances) # check if no octave processes have been left over
             os.remove(signalfilename + ".mat")
             os.remove(spectrumfilename + ".mat")
             # test with oct2py being loaded before
             import oct2py
-#           self.assertIsNotNone(oct2py.octave._session)    # check if the convenience instance is still active
+            self.assertIsNotNone(oct2py.octave._session)    # check if the convenience instance is still active
             octave = oct2py.octave
             current_octave_instances = get_running_octave_instances()
-            sumpf.modules.SignalFile(filename=signalfilename, signal=sumpf.Signal(), format=sumpf.modules.SignalFile.MATLAB)
+            sumpf.modules.SignalFile(filename=signalfilename, signal=sumpf.Signal(), file_format=sumpf.modules.SignalFile.MATLAB)
             self.assertIs(oct2py.octave, octave)            # check if the convenience octave instance of oct2py is exactly the same as before saving the file
-#           self.assertIsNotNone(oct2py.octave._session)    # check if the convenience instance is still active
+            self.assertIsNotNone(oct2py.octave._session)    # check if the convenience instance is still active
             self.assertEqual(get_running_octave_instances(), current_octave_instances)  # check if no octave processes have been left over
-            sumpf.modules.SignalFile(filename=signalfilename, format=sumpf.modules.SignalFile.MATLAB).GetSignal()
+            sumpf.modules.SignalFile(filename=signalfilename, file_format=sumpf.modules.SignalFile.MATLAB).GetSignal()
             self.assertIs(oct2py.octave, octave)            # check if the convenience octave instance of oct2py is exactly the same as before saving the file
-#           self.assertIsNotNone(oct2py.octave._session)    # check if the convenience instance is still active
+            self.assertIsNotNone(oct2py.octave._session)    # check if the convenience instance is still active
             self.assertEqual(get_running_octave_instances(), current_octave_instances)  # check if no octave processes have been left over
-            sumpf.modules.SpectrumFile(filename=spectrumfilename, spectrum=sumpf.Spectrum(), format=sumpf.modules.SpectrumFile.MATLAB)
+            sumpf.modules.SpectrumFile(filename=spectrumfilename, spectrum=sumpf.Spectrum(), file_format=sumpf.modules.SpectrumFile.MATLAB)
             self.assertIs(oct2py.octave, octave)            # check if the convenience octave instance of oct2py is exactly the same as before saving the file
-#           self.assertIsNotNone(oct2py.octave._session)    # check if the convenience instance is still active
+            self.assertIsNotNone(oct2py.octave._session)    # check if the convenience instance is still active
             self.assertEqual(get_running_octave_instances(), current_octave_instances)  # check if no octave processes have been left over
-            sumpf.modules.SpectrumFile(filename=spectrumfilename, format=sumpf.modules.SpectrumFile.MATLAB).GetSpectrum()
+            sumpf.modules.SpectrumFile(filename=spectrumfilename, file_format=sumpf.modules.SpectrumFile.MATLAB).GetSpectrum()
             self.assertIs(oct2py.octave, octave)            # check if the convenience octave instance of oct2py is exactly the same as before saving the file
-#           self.assertIsNotNone(oct2py.octave._session)    # check if the convenience instance is still active
+            self.assertIsNotNone(oct2py.octave._session)    # check if the convenience instance is still active
             self.assertEqual(get_running_octave_instances(), current_octave_instances)  # check if no octave processes have been left over
             octave.exit()
             os.remove(signalfilename + ".mat")

@@ -64,21 +64,19 @@ class NUMPY_NPZ(FileFormat):
             else:
                 return str(label)
         channels = []
-        resolution = 1.0
-        labels = None
         with numpy.load(filename + "." + cls.ending) as data:
             for c in data["channels"]:
                 channels.append(tuple(c))
             resolution = data["resolution"]
             labels = tuple([to_string(l) for l in data["labels"]])
-        return sumpf.Spectrum(channels=channels, resolution=resolution, labels=labels)
+            return sumpf.Spectrum(channels=channels, resolution=resolution, labels=labels)
 
     @classmethod
     def Save(cls, filename, data):
         numpy.savez_compressed(filename + "." + cls.ending,
-                    channels=data.GetChannels(),
-                    resolution=data.GetResolution(),
-                    labels=data.GetLabels())
+                               channels=data.GetChannels(),
+                               resolution=data.GetResolution(),
+                               labels=data.GetLabels())
 
 spectrumformats.append(NUMPY_NPZ)
 

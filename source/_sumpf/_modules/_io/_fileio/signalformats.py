@@ -23,15 +23,15 @@ import sumpf
 from .fileformat import FileFormat
 
 try:
-    import soundfile
-    soundfile_available = True
+    import scikits.audiolab as audiolab
+    audiolab_available = True
 except ImportError:
-    soundfile_available = False
+    audiolab_available = False
     try:
-        import scikits.audiolab as audiolab
-        audiolab_available = True
+        import soundfile
+        soundfile_available = True
     except ImportError:
-        audiolab_available = False
+        soundfile_available = False
 
 oct2py_available = False
 # "try: import oct2py" is not possible, because of oct2py's convenience instance of octave
@@ -82,30 +82,150 @@ class NUMPY_NPZ(FileFormat):
             else:
                 return str(label)
         channels = []
-        samplingrate = 44100.0
-        labels = None
         with numpy.load(filename + "." + cls.ending) as data:
             for c in data["channels"]:
                 channels.append(tuple(c))
             samplingrate = data["samplingrate"]
             labels = tuple([to_string(l) for l in data["labels"]])
-        return sumpf.Signal(channels=channels, samplingrate=samplingrate, labels=labels)
+            return sumpf.Signal(channels=channels, samplingrate=samplingrate, labels=labels)
 
     @classmethod
     def Save(cls, filename, data):
         numpy.savez_compressed(filename + "." + cls.ending,
-                    channels=data.GetChannels(),
-                    samplingrate=data.GetSamplingRate(),
-                    labels=data.GetLabels())
+                               channels=data.GetChannels(),
+                               samplingrate=data.GetSamplingRate(),
+                               labels=data.GetLabels())
 
 signalformats.insert(0, NUMPY_NPZ)  # Make NUMPY_NPZ the default format, if no other format is available
+
+
+####################
+# scikits.audiolab #
+####################
+
+if audiolab_available:
+    class AudioLabFileFormat(FileFormat):
+        """
+        An abstract base class for file formats that are available through
+        the scikits.audiolab module.
+        """
+        format = None
+        encoding = None
+
+        @classmethod
+        def Load(cls, filename):
+            name = filename.split(os.sep)[-1]
+            soundfile = audiolab.Sndfile(filename=filename + "." + cls.ending, mode="r")
+            frames = soundfile.read_frames(nframes=soundfile.nframes, dtype=numpy.float64)
+            channels = tuple(frames.transpose())
+            if soundfile.channels == 1:
+                channels = (channels,)
+            labels = []
+            for c in range(soundfile.channels):
+                labels.append(str(" ".join([name, str(c + 1)])))
+            samplingrate = soundfile.samplerate
+            soundfile.close()
+            return sumpf.Signal(channels=channels, samplingrate=samplingrate, labels=labels)
+
+        @classmethod
+        def Save(cls, filename, data):
+            channels = data.GetChannels()
+            frames = numpy.array(channels).transpose()
+            fileformat = audiolab.Format(type=cls.format, encoding=cls.encoding, endianness="file")
+            soundfile = audiolab.Sndfile(filename=filename + "." + cls.ending,
+                                         mode="w",
+                                         format=fileformat,
+                                         channels=len(channels),
+                                         samplerate=int(round(data.GetSamplingRate())))
+            soundfile.write_frames(frames)
+            soundfile.close()
+
+
+
+    class AIFF_FLOAT(AudioLabFileFormat):
+        """
+        File format class for the Apple aiff format.
+        This one uses 32bit float samples.
+        """
+        ending = "aif"
+        format = "aiff"
+        encoding = "float32"
+
+
+
+    class AIFF_INT(AudioLabFileFormat):
+        """
+        File format class for the Apple aiff format.
+        This one uses 24bit integer samples.
+        """
+        ending = "aif"
+        format = "aiff"
+        encoding = "pcm24"
+
+
+
+    class FLAC(AudioLabFileFormat):
+        """
+        File format class for the flac format.
+        This one uses 24bit integer samples.
+        """
+        ending = "flac"
+        format = "flac"
+        encoding = "pcm24"
+
+
+
+    class OGG_VORBIS(AudioLabFileFormat):
+        """
+        File format class for the ogg vorbis format.
+        This is a format with lossy compression.
+        """
+        ending = "ogg"
+        format = "ogg"
+        encoding = "vorbis"
+
+
+
+    class WAV_DOUBLE(AudioLabFileFormat):
+        """
+        File format class for the wav format.
+        This one uses 32bit float samples.
+        """
+        ending = "wav"
+        format = "wav"
+        encoding = "float64"
+
+
+
+    class WAV_FLOAT(AudioLabFileFormat):
+        """
+        File format class for the wav format.
+        This one uses 32bit float samples.
+        """
+        ending = "wav"
+        format = "wav"
+        encoding = "float32"
+
+
+
+    class WAV_INT(AudioLabFileFormat):
+        """
+        File format class for the wav format.
+        This one uses 24bit integer samples.
+        """
+        ending = "wav"
+        format = "wav"
+        encoding = "pcm24"
+
+    signalformats.insert(0, WAV_FLOAT)  # make WAV_FLOAT the default format
+    signalformats.extend([AIFF_FLOAT, AIFF_INT, FLAC, OGG_VORBIS, WAV_DOUBLE, WAV_INT])
 
 
 ###############
 # PySoundFile #
 ###############
 
-if soundfile_available:
+elif soundfile_available:    # if scikits.audiolab is not installed, check for PySoundFile
     class SoundFileFileFormat(FileFormat):
         """
         An abstract base class for file formats that are available through
@@ -169,6 +289,18 @@ if soundfile_available:
 
 
 
+    class OGG_VORBIS(SoundFileFileFormat):
+        """
+        File format class for the ogg vorbis format.
+        This is a format with lossy compression.
+        """
+        read_only = True    # writing ogg-files with PySoundFile is currently not working
+        ending = "ogg"
+        format = "OGG"
+        encoding = "VORBIS"
+
+
+
     class WAV_DOUBLE(SoundFileFileFormat):
         """
         File format class for the wav format.
@@ -201,105 +333,8 @@ if soundfile_available:
         encoding = "PCM_24"
 
     signalformats.insert(0, WAV_FLOAT)  # make WAV_FLOAT the default format
-    signalformats.extend([AIFF_FLOAT, AIFF_INT, FLAC, WAV_DOUBLE, WAV_INT])
+    signalformats.extend([AIFF_FLOAT, AIFF_INT, FLAC, OGG_VORBIS, WAV_DOUBLE, WAV_INT])
 
-
-
-####################
-# scikits.audiolab #
-####################
-
-elif audiolab_available:    # if PySoundFile is not installed, check for scikits.audiolab
-    class AudioLabFileFormat(FileFormat):
-        """
-        An abstract base class for file formats that are available through
-        the scikits.audiolab module.
-        """
-        format = None
-        encoding = None
-
-        @classmethod
-        def Load(cls, filename):
-            name = filename.split(os.sep)[-1]
-            soundfile = audiolab.Sndfile(filename=filename + "." + cls.ending, mode="r")
-            frames = soundfile.read_frames(nframes=soundfile.nframes, dtype=numpy.float64)
-            channels = tuple(frames.transpose())
-            if soundfile.channels == 1:
-                channels = (channels,)
-            labels = []
-            for c in range(soundfile.channels):
-                labels.append(str(" ".join([name, str(c + 1)])))
-            return sumpf.Signal(channels=channels, samplingrate=soundfile.samplerate, labels=labels)
-
-        @classmethod
-        def Save(cls, filename, data):
-            channels = data.GetChannels()
-            frames = numpy.array(channels).transpose()
-            fileformat = audiolab.Format(type=cls.format, encoding=cls.encoding, endianness="file")
-            soundfile = audiolab.Sndfile(filename=filename + "." + cls.ending,
-                                    mode="w",
-                                    format=fileformat,
-                                    channels=len(channels),
-                                    samplerate=int(round(data.GetSamplingRate())))
-            soundfile.write_frames(frames)
-
-
-
-    class AIFF_FLOAT(AudioLabFileFormat):
-        """
-        File format class for the Apple aiff format.
-        This one uses 32bit float samples.
-        """
-        ending = "aif"
-        format = "aiff"
-        encoding = "float32"
-
-
-
-    class AIFF_INT(AudioLabFileFormat):
-        """
-        File format class for the Apple aiff format.
-        This one uses 24bit integer samples.
-        """
-        ending = "aif"
-        format = "aiff"
-        encoding = "pcm24"
-
-
-
-    class FLAC(AudioLabFileFormat):
-        """
-        File format class for the flac format.
-        This one uses 24bit integer samples.
-        """
-        ending = "flac"
-        format = "flac"
-        encoding = "pcm24"
-
-
-
-    class WAV_FLOAT(AudioLabFileFormat):
-        """
-        File format class for the wav format.
-        This one uses 32bit float samples.
-        """
-        ending = "wav"
-        format = "wav"
-        encoding = "float32"
-
-
-
-    class WAV_INT(AudioLabFileFormat):
-        """
-        File format class for the wav format.
-        This one uses 24bit integer samples.
-        """
-        ending = "wav"
-        format = "wav"
-        encoding = "pcm24"
-
-    signalformats.insert(0, WAV_FLOAT)  # make WAV_FLOAT the default format
-    signalformats.extend([AIFF_FLOAT, AIFF_INT, FLAC, WAV_INT])
 
 
 ##########

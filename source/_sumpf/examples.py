@@ -33,7 +33,7 @@ def RecordTransferFunction():
     from ._examples import recordtransferfunction
     recordtransferfunction.mainfunction()
 
-def ConvertFile(input="", output="", format="AUTO"):
+def ConvertFile(input="", output="", file_format="AUTO"):
     """
     Converts an input file to an output file with the given format.
     Depending on the input and output formats, a (inverse) fourier transformation
@@ -53,8 +53,8 @@ def ConvertFile(input="", output="", format="AUTO"):
     the output data will be in the same domain as the input data.
     @param input: the filename of the input file
     @param output: the optional filename of the output file
-    @param format: the file format of the output file. This can be one of the following: AUTO,
+    @param file_format: the file format of the output file. This can be one of the following: AUTO,
     """
     from ._examples import convertfile
-    convertfile.convert_file(input=input, output=output, format=format)
+    convertfile.convert_file(input=input, output=output, file_format=file_format)
 

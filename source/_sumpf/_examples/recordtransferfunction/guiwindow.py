@@ -428,31 +428,31 @@ class GuiWindow(sumpf.gui.Window):
         return filename, format
 
     def __SaveUnprocessedTransferFunction(self, event=None):
-        filename, format = self.__GetTransferFunctionFileDescriptionForSaving()
+        filename, file_format = self.__GetTransferFunctionFileDescriptionForSaving()
         if filename is not None:
             self.__statusbar.SetStatusText("Saving data")
-            self.__signalchain.SaveUnprocessedTransferFunction(filename=filename, format=format)
+            self.__signalchain.SaveUnprocessedTransferFunction(filename=filename, file_format=file_format)
         self.__statusbar.SetStatusText("Done")
 
     def __SaveUnprocessedImpulseResponse(self, event=None):
-        filename, format = self.__GetImpulseResponseFileDescriptionForSaving()
+        filename, file_format = self.__GetImpulseResponseFileDescriptionForSaving()
         if filename is not None:
             self.__statusbar.SetStatusText("Saving data")
-            self.__signalchain.SaveUnprocessedImpulseResponse(filename=filename, format=format)
+            self.__signalchain.SaveUnprocessedImpulseResponse(filename=filename, file_format=file_format)
         self.__statusbar.SetStatusText("Done")
 
     def __SaveProcessedTransferFunction(self, event=None):
-        filename, format = self.__GetTransferFunctionFileDescriptionForSaving()
+        filename, file_format = self.__GetTransferFunctionFileDescriptionForSaving()
         if filename is not None:
             self.__statusbar.SetStatusText("Saving data")
-            self.__signalchain.SaveProcessedTransferFunction(filename=filename, format=format)
+            self.__signalchain.SaveProcessedTransferFunction(filename=filename, file_format=file_format)
         self.__statusbar.SetStatusText("Done")
 
     def __SaveProcessedImpulseResponse(self, event=None):
-        filename, format = self.__GetImpulseResponseFileDescriptionForSaving()
+        filename, file_format = self.__GetImpulseResponseFileDescriptionForSaving()
         if filename is not None:
             self.__statusbar.SetStatusText("Saving data")
-            self.__signalchain.SaveProcessedImpulseResponse(filename=filename, format=format)
+            self.__signalchain.SaveProcessedImpulseResponse(filename=filename, file_format=file_format)
         self.__statusbar.SetStatusText("Done")
 
     def __LoadFile(self, method):
