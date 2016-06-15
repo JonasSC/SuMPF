@@ -93,7 +93,7 @@ class ShortFourierTransform(object):
         if window is None:
             window = sumpf.modules.WindowGenerator(raise_interval=(0, 4096),
                                                    fall_interval=(4096, 8192),
-                                                   function=sumpf.modules.WindowGenerator.Hanning(),
+                                                   function=sumpf.modules.WindowGenerator.VonHann(),
                                                    samplingrate=self.__signal.GetSamplingRate(),
                                                    length=8192).GetSignal()
         elif self.__signal.GetSamplingRate() != window.GetSamplingRate():

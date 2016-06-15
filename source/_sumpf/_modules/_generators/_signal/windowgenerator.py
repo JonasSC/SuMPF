@@ -67,7 +67,7 @@ class WindowGenerator(SignalGenerator):
         self.__raise_interval = raise_interval
         self.__fall_interval = fall_interval
         if function is None:
-            self.__function = WindowGenerator.Hanning()
+            self.__function = WindowGenerator.VonHann()
         else:
             self.__function = function
 
@@ -210,7 +210,7 @@ class WindowGenerator(SignalGenerator):
             """
             return numpy.hamming(length)
 
-    class Hanning(WindowFunction):
+    class VonHann(WindowFunction):
         """
         Wrapper for the hanning window function in numpy.
         """

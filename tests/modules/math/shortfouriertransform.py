@@ -57,7 +57,7 @@ class TestShortFourierTransform(unittest.TestCase):
         merger.AddInput(sine1)
         merger.AddInput(sine2)
         signal = merger.GetOutput()
-        window = sumpf.modules.WindowGenerator(raise_interval=(0, 2048), fall_interval=(2048, 4096), function=sumpf.modules.WindowGenerator.Hanning(), samplingrate=samplingrate, length=4096).GetSignal()
+        window = sumpf.modules.WindowGenerator(raise_interval=(0, 2048), fall_interval=(2048, 4096), function=sumpf.modules.WindowGenerator.VonHann(), samplingrate=samplingrate, length=4096).GetSignal()
         fft = sumpf.modules.ShortFourierTransform()
         fft.SetSignal(signal)
         fft.SetWindow(window)

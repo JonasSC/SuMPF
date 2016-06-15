@@ -113,7 +113,7 @@ class GuiWindow(sumpf.gui.Window):
         self.__window_functions = {"Bartlett": sumpf.modules.WindowGenerator.Bartlett(),
                                    "Blackman": sumpf.modules.WindowGenerator.Blackman(),
                                    "Hamming": sumpf.modules.WindowGenerator.Hamming(),
-                                   "Hanning": sumpf.modules.WindowGenerator.Hanning()}
+                                   "Hanning": sumpf.modules.WindowGenerator.VonHann()}
         self.__window_function = self.__AddChoice(parent=self.__postprocessing_panel, sizer=self.__window_sizer, label="Window function", choices=list(self.__window_functions.keys()))
         self.__window_function.SetStringSelection(sumpf.config.get("window_function"))
         self.__window_start = self.__AddFloatField(parent=self.__postprocessing_panel, sizer=self.__window_sizer, label="Window start [s]", value=sumpf.config.get("window_start"))

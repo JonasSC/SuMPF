@@ -82,7 +82,7 @@ class TestWindowGenerator(unittest.TestCase):
         functions.append((sumpf.modules.WindowGenerator.Bartlett(), -2))    # store a tuple (function, limit)
         functions.append((sumpf.modules.WindowGenerator.Blackman(), -1))    # where function is the WindowFunction object
         functions.append((sumpf.modules.WindowGenerator.Hamming(), -1))     # and limit is the last sample that is not 0.0
-        functions.append((sumpf.modules.WindowGenerator.Hanning(), -2))     # so if the window ends with 0.0 limit is the last but one sample: -2
+        functions.append((sumpf.modules.WindowGenerator.VonHann(), -2))     # so if the window ends with 0.0 limit is the last but one sample: -2
         functions.append((sumpf.modules.WindowGenerator.Kaiser(14), -1))    # otherwise it's the last sample: -1
         for function, limit in functions:
             self.gen.SetFunction(function)
