@@ -63,9 +63,8 @@ class TestNoiseGenerator(unittest.TestCase):
             avg.Add(value)
         average = avg.GetAverage()
         for i in rmss:
-            self.assertAlmostEqual(i, average, 2)                               # the RMS value of the noise should not change with different signal lengths
-        self.assertGreater(average, 0.4)                                        # the RMS value of the noise should be between 0.4 and 0.5
-        self.assertLess(average, 0.5)                                           # the RMS value of the noise should be between 0.4 and 0.5
+            self.assertAlmostEqual(i, average, 1)                               # the RMS value of the noise should not change with different signal lengths
+        self.assertAlmostEqual(average, 0.5 ** 0.5, 1)                  # the RMS should be around 1/(sqrt(2)
 
     @unittest.skipUnless(sumpf.config.get("run_time_variant_tests"), "Tests which are testing random numbers are skipped")
     def test_pink_noise(self):
@@ -83,21 +82,21 @@ class TestNoiseGenerator(unittest.TestCase):
             length = 2 ** i
             gen.SetLength(length)
             magnitude = fft.GetSpectrum().GetMagnitude()[0]
-            self.assertAlmostEqual(magnitude[0], 0.0)                   # there should only be very little dc offset
-            invmagnitude = tuple(numpy.divide(1.0, magnitude[1:-1]))
-            derivative = sumpf.helper.differentiate(invmagnitude)
-            self.assertAlmostEqual(min(derivative), max(derivative))    # the magnitude of the spectrum should fall with a rate of 1/f
+            self.assertAlmostEqual(magnitude[0], 0.0)                       # there should only be very little dc offset
+            invmagnitude = numpy.divide(1.0, magnitude[1:-1])
+            sqinvmagnitude = tuple(numpy.square(invmagnitude))
+            sqderivative = sumpf.helper.differentiate(sqinvmagnitude)
+            self.assertAlmostEqual(min(sqderivative), max(sqderivative))    # the magnitude of the spectrum should fall with a rate of 1/sqrt(f) (which means, that the energy falls with 1/f)
             output = rms.GetOutput()
-            self.assertEqual(output.GetLabels()[0], "Pink Noise")       # the label for the channel has to be "Pink Noise"
-            self.assertEqual(len(output), length)                       # the length of the generated sequence should be set correctly
+            self.assertEqual(output.GetLabels()[0], "Pink Noise")           # the label for the channel has to be "Pink Noise"
+            self.assertEqual(len(output), length)                           # the length of the generated sequence should be set correctly
             value = output.GetChannels()[0][0]
             rmss.append(value)
             avg.Add(value)
         average = avg.GetAverage()
         for i in rmss:
-            self.assertAlmostEqual(i, average, 2)                       # the RMS value of the noise should not change with different signal lengths
-        self.assertGreater(average, 0.4)                                # the RMS value of the noise should be between 0.4 and 0.5
-        self.assertLess(average, 0.5)                                   # the RMS value of the noise should be between 0.4 and 0.5
+            self.assertAlmostEqual(i, average, 1)                           # the RMS value of the noise should not change with different signal lengths
+        self.assertAlmostEqual(average, 0.5 ** 0.5, 1)                      # the RMS should be around 1/(sqrt(2)
 
     @unittest.skipUnless(sumpf.config.get("run_time_variant_tests"), "Tests which are testing random numbers are skipped")
     def test_red_noise(self):
@@ -117,9 +116,8 @@ class TestNoiseGenerator(unittest.TestCase):
             magnitude = fft.GetSpectrum().GetMagnitude()[0]
             self.assertAlmostEqual(magnitude[0], 0.0)                   # there should only be very little dc offset
             invmagnitude = numpy.divide(1.0, magnitude[1:-1])
-            sqrtinvmagnitude = tuple(numpy.sqrt(invmagnitude))
-            derivative = sumpf.helper.differentiate(sqrtinvmagnitude)
-            self.assertAlmostEqual(min(derivative), max(derivative))    # the magnitude of the spectrum should fall with a rate of 1/f^2
+            derivative = sumpf.helper.differentiate(invmagnitude)
+            self.assertAlmostEqual(min(derivative), max(derivative))    # the magnitude of the spectrum should fall with a rate of 1/f (which means, that the energy falls with 1/f**2)
             output = rms.GetOutput()
             self.assertEqual(output.GetLabels()[0], "Red Noise")        # the label for the channel has to be "Red Noise"
             self.assertEqual(len(output), length)                       # the length of the generated sequence should be set correctly
@@ -128,9 +126,8 @@ class TestNoiseGenerator(unittest.TestCase):
             avg.Add(value)
         average = avg.GetAverage()
         for i in rmss:
-            self.assertAlmostEqual(i, average, 2)                       # the RMS value of the noise should not change with different signal lengths
-        self.assertGreater(average, 0.4)                                # the RMS value of the noise should be between 0.4 and 0.5
-        self.assertLess(average, 0.5)                                   # the RMS value of the noise should be between 0.4 and 0.5
+            self.assertAlmostEqual(i, average, 1)                       # the RMS value of the noise should not change with different signal lengths
+        self.assertAlmostEqual(average, 0.5 ** 0.5, 1)                  # the RMS should be around 1/(sqrt(2)
 
     @unittest.skipUnless(sumpf.config.get("run_time_variant_tests"), "Tests which are testing random numbers are skipped")
     def test_uniform_distribution(self):

@@ -48,9 +48,9 @@ class TestIntegrateSignal(unittest.TestCase):
         sumpf.connect(cache.GetSignal, integral.SetInput)
         derivative = sumpf.modules.DifferentiateSignal()
         sumpf.connect(integral.GetOutput, derivative.SetInput)
-        common.compare_signals_almost_equal(testcase=self, signal1=cache.GetSignal(), signal2=derivative.GetOutput(), places=2)
+        common.compare_signals_almost_equal(testcase=self, signal1=cache.GetSignal()[1:-1], signal2=derivative.GetOutput()[1:-1], places=12)
         integral.SetOffset(129.874)
-        common.compare_signals_almost_equal(testcase=self, signal1=cache.GetSignal(), signal2=derivative.GetOutput(), places=2)
+        common.compare_signals_almost_equal(testcase=self, signal1=cache.GetSignal()[1:-1], signal2=derivative.GetOutput()[1:-1], places=10)
 
     def test_connectors(self):
         """

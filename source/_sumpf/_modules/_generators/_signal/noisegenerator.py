@@ -145,7 +145,7 @@ class NoiseGenerator(SignalGenerator):
         """
         def GetSamples(self, length):
             fsamples = [0.0]    # first fft-sample is 0.0 to avoid a dc offset
-            factor = 2.0 ** (0.5 * math.log(length, 2.0) - 1.0)
+            factor = 2.0 ** (0.5 * math.log(length, 2.0) - 1.0) * 2.0 ** 0.5
             for i in range(length // 2):
                 fsamples.append(factor * numpy.exp(2.0j * math.pi * self._random.gauss(0.0, 1.0)))
             samples = numpy.fft.irfft(fsamples)
@@ -157,9 +157,9 @@ class NoiseGenerator(SignalGenerator):
         """
         def GetSamples(self, length):
             fsamples = [0.0]    # first fft-sample is 0.0 to avoid a dc offset
-            factor = length / 4.0
+            factor = 2.0 ** (0.899 * math.log(length, 2.0) - 1.0) * 0.8
             for i in range(1, length // 2 + 1):
-                fsamples.append(factor / i * numpy.exp(2.0j * math.pi * self._random.gauss(0.0, 1.0)))
+                fsamples.append(factor / (i ** 0.5) * numpy.exp(2.0j * math.pi * self._random.gauss(0.0, 1.0)))
             samples = numpy.fft.irfft(fsamples)
             return tuple(samples)
 
@@ -169,9 +169,9 @@ class NoiseGenerator(SignalGenerator):
         """
         def GetSamples(self, length):
             fsamples = [0.0]    # first fft-sample is 0.0 to avoid a dc offset
-            factor = length / 2.0 / (math.pi ** 2 / 6.0)
+            factor = 2.0 ** (math.log(length, 2.0) - 1.0) * 0.8
             for i in range(1, length // 2 + 1):
-                fsamples.append(factor / (i ** 2) * numpy.exp(2.0j * math.pi * self._random.gauss(0.0, 1.0)))
+                fsamples.append(factor / i * numpy.exp(2.0j * math.pi * self._random.gauss(0.0, 1.0)))
             samples = numpy.fft.irfft(fsamples)
             return tuple(samples)
 
