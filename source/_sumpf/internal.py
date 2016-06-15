@@ -28,6 +28,7 @@ from _sumpf._data.channeldata import ChannelData
 from _sumpf._modules._generators._signal.signalgenerator import SignalGenerator
 from _sumpf._modules._generators._spectrum.spectrumgenerator import SpectrumGenerator
 
+from _sumpf._modules._generators._signal.sweepgenerator import SweepFunction
 from _sumpf._modules._generators._spectrum.filtergenerator import FilterFunction
 
 try:

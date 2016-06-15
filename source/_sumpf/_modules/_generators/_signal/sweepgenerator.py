@@ -14,7 +14,6 @@
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 
-import collections
 import math
 import sumpf
 from .signalgenerator import SignalGenerator
@@ -23,7 +22,7 @@ from .signalgenerator import SignalGenerator
 class SweepFunction(object):
     """
     A base class, that defines the interface for different functions by which the
-    frequency of a sweep increases with time.
+    instantaneous frequency of a sweep increases with time.
     """
     @staticmethod
     def precompute_values(f0, fT, T):
@@ -97,8 +96,57 @@ class ExponentialIncrease(SweepFunction):
         @retval : a tuple of precomputed values
         """
         k = (fT / f0) ** (1.0 / T)
-        l = math.log(k, math.e)
+        l = math.log(k)
         f = 2.0 * math.pi * f0 / l
+        return (k, f)
+
+    @staticmethod
+    def compute_sample(t, *precomputed):
+        """
+        This static method is called to compute each individual sample.
+        @param t: the time of the sample in seconds as a float
+        @param *precomputed: the parameters, that have been precomputed by the precompute_values method
+        @retval : the computed sample
+        """
+        k, f = precomputed
+        e = (k ** t) - 1.0
+        return math.sin(f * e)
+
+
+
+class SynchronizedExponentialIncrease(SweepFunction):
+    """
+    This class defines an exponential increase of the sweep's frequency over time.
+    Additionally, the sweeps frequency increase rate is adjusted to "synchronize
+    the phase" of the sweep.
+    Synchronization means in this context, that a sweep, that is shifted by the
+    time it takes to sweep from one frequency to an integer multiple of that frequency
+    is identical to an unshifted sweep, whose start and stop frequencies are multiplied
+    with the same integer factor. This implies, that the sweep (which starts with
+    a zero sample) has zero samples at each point in time, when it reaches an integer
+    multiple of the start frequency.
+    This is being done by a rounding operation, that affects the stop frequency
+    of the sweep. This means, that the stop frequency is neither guaranteed to
+    be reached by the sweep, nor is it guaranteed to be the highest frequency,
+    that is excited by the sweep.
+    The synchronized sweep was proposed by Antonin Novak in his PHD thesis:
+    http://ant-novak.com/publications.php
+    """
+    @staticmethod
+    def precompute_values(f0, fT, T):
+        """
+        This static method is called before actually generating the sweep. It
+        precomputes and returns values, that are independent of the sample, so
+        that their use increases the computation speed of the individual samples.
+        @param f0: the start frequency of the sweep in Hz as a float
+        @param f0: the stop frequency of the sweep in Hz as a float
+        @param T: the duration, that it takes the sweep to go from the start to the stop frequency, in seconds as a float
+        @retval : a tuple of precomputed values
+        """
+        l = math.log((fT / f0) ** (1.0 / T))
+        L = 1.0 / f0 * round(f0 / l)
+        k = math.exp(1.0 / L)
+        f = 2.0 * math.pi * f0 * L
         return (k, f)
 
     @staticmethod
@@ -127,6 +175,7 @@ class SweepGenerator(SignalGenerator):
 
     LINEAR = LinearIncrease
     EXPONENTIAL = ExponentialIncrease
+    SYNCHRONIZED = SynchronizedExponentialIncrease
 
     def __init__(self, start_frequency=20.0, stop_frequency=20000.0, function=EXPONENTIAL, interval=None, samplingrate=None, length=None):
         """
@@ -147,7 +196,7 @@ class SweepGenerator(SignalGenerator):
 
     def _GetSamples(self):
         """
-        Generates the samples of the Sweep and returns them as a tuple.
+        Generates the samples of the sweep and returns them as a tuple.
         @retval : a tuple of samples
         """
         self.__PrecomputeValues()
@@ -184,11 +233,12 @@ class SweepGenerator(SignalGenerator):
         """
         self.__stop = float(frequency)
 
-    @sumpf.Input(collections.Callable, "GetSignal")
+    @sumpf.Input(SweepFunction, "GetSignal")
     def SetSweepFunction(self, function):
         """
-        Sets the function that defines the frequency raise (e.g. linear or exponential)
-        @param function: a function with the parameters (x, start, stop). See SweepGenerator.Exponential for details
+        Sets the function that defines the raising of the instantaneous frequency
+        of the sweep.
+        @param function: a class of a frequency increase function such as SweepGenerator.LINEAR, SweepGenerator.EXPONENTIAL or SweepGenerator.SYNCHRONIZED
         """
         self.__function = function
 

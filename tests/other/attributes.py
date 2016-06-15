@@ -45,7 +45,8 @@ class TestAttributes(unittest.TestCase):
                            "RelabelSignal", "RelabelSpectrum",
                            "ClipSignal", "LogarithmSignal",
                            "SignalMean", "SpectrumMean",
-                           "SignalVariance", "SpectrumVariance"]
+                           "SignalVariance", "SpectrumVariance",
+                           "SweepFunction"]
         for p, m, c, f, v in sumpf.helper.walk_module(sumpf):
             for cls in c:
                 if cls.__doc__ is None:

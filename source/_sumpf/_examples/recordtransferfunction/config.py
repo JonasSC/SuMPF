@@ -23,7 +23,7 @@ def create_config():
                 "silence_duration": 0.06,
                 "sweep_start_frequency": 20.0,
                 "sweep_stop_frequency": 20000.0,
-                "sweep_exponentially": True,
+                "sweep_function": 1,
                 "fade_out": 0.02,
                 "amplitude": 0.9,
                 "averages": 1,

@@ -77,9 +77,7 @@ class GuiWindow(sumpf.gui.Window):
         self.__sweep_silenceduration = self.__AddFloatField(parent=self.__record_panel, sizer=self.__sweep_sizer, label="Silence [s]", value=sumpf.config.get("silence_duration"))
         self.__sweep_start = self.__AddFloatField(parent=self.__record_panel, sizer=self.__sweep_sizer, label="Start frequency [Hz]", value=sumpf.config.get("sweep_start_frequency"), minimum=0.0001, maximum=self.__signalchain.GetSamplingRate() / 2)
         self.__sweep_stop = self.__AddFloatField(parent=self.__record_panel, sizer=self.__sweep_sizer, label="Stop frequency [Hz]", value=sumpf.config.get("sweep_stop_frequency"), minimum=0.0001, maximum=self.__signalchain.GetSamplingRate() / 2)
-        self.__sweep_scale = self.__AddRadioButtons(parent=self.__record_panel, sizer=self.__sweep_sizer, labels=["Linear", "Exponential"], selected="Exponential")
-        if not sumpf.config.get("sweep_exponentially"):
-            self.__sweep_scale["Linear"].SetValue(True)
+        self.__sweep_scale = self.__AddChoice(parent=self.__record_panel, sizer=self.__sweep_sizer, label="Sweep function", choices=["Linear", "Exponential", "Synchronized"], value=sumpf.config.get("sweep_function"))
         self.__sweep_fade = self.__AddFloatField(parent=self.__record_panel, sizer=self.__sweep_sizer, label="Fade in/out", value=sumpf.config.get("fade_out"), minimum=0.0)
         self.__sweep_amplitude = self.__AddFloatField(parent=self.__record_panel, sizer=self.__sweep_sizer, label="Amplitude", value=sumpf.config.get("amplitude"), minimum=0.0, maximum=1.0)
         self.__sweep_average = self.__AddIntegerField(parent=self.__record_panel, sizer=self.__sweep_sizer, label="Averages", value=sumpf.config.get("averages"), minimum=1)
@@ -195,7 +193,7 @@ class GuiWindow(sumpf.gui.Window):
             sumpf.config.set("silence_duration", self.__sweep_silenceduration.GetValue())
         sumpf.config.set("sweep_start_frequency", self.__sweep_start.GetValue())
         sumpf.config.set("sweep_stop_frequency", self.__sweep_stop.GetValue())
-        sumpf.config.set("sweep_exponentially", self.__sweep_scale["Exponential"].GetValue())
+        sumpf.config.set("sweep_function", self.__sweep_scale.GetSelection())
         sumpf.config.set("fade_out", self.__sweep_fade.GetValue())
         sumpf.config.set("averages", self.__sweep_average.GetValue())
         sumpf.config.set("capture_port", self.__jack_capture.GetSelection())
@@ -218,7 +216,7 @@ class GuiWindow(sumpf.gui.Window):
                                  silence_duration=silence_duration,
                                  start_frequency=self.__sweep_start.GetValue(),
                                  stop_frequency=self.__sweep_stop.GetValue(),
-                                 exponential=self.__sweep_scale["Exponential"].GetValue(),
+                                 sweep_function=self.__sweep_scale.GetSelection(),
                                  fade=self.__sweep_fade.GetValue(),
                                  averages=self.__sweep_average.GetValue(),
                                  capture_port=capture_port,
@@ -407,12 +405,12 @@ class GuiWindow(sumpf.gui.Window):
                 wildcard.append("%s (*.%s)|*.%s" % (f.__name__, f.ending, f.ending))
         dlg = wx.FileDialog(parent=self, defaultFile='TransferFunction', wildcard="|".join(wildcard), style=wx.FD_SAVE | wx.FD_OVERWRITE_PROMPT)
         filename = None
-        format = None
+        file_format = None
         if dlg.ShowModal() == wx.ID_OK:
             filename = dlg.GetPath()
-            format = formats[dlg.GetFilterIndex()]
+            file_format = formats[dlg.GetFilterIndex()]
         dlg.Destroy()
-        return filename, format
+        return filename, file_format
 
     def __GetImpulseResponseFileDescriptionForSaving(self):
         self.__statusbar.SetStatusText("Asking for a file")
@@ -423,12 +421,12 @@ class GuiWindow(sumpf.gui.Window):
                 wildcard.append("%s (*.%s)|*.%s" % (f.__name__, f.ending, f.ending))
         dlg = wx.FileDialog(parent=self, defaultFile='ImpulseResponse', wildcard="|".join(wildcard), style=wx.FD_SAVE | wx.FD_OVERWRITE_PROMPT)
         filename = None
-        format = None
+        file_format = None
         if dlg.ShowModal() == wx.ID_OK:
             filename = dlg.GetPath()
-            format = formats[dlg.GetFilterIndex()]
+            file_format = formats[dlg.GetFilterIndex()]
         dlg.Destroy()
-        return filename, format
+        return filename, file_format
 
     def __SaveUnprocessedTransferFunction(self, event=None):
         filename, file_format = self.__GetTransferFunctionFileDescriptionForSaving()
@@ -546,9 +544,11 @@ class GuiWindow(sumpf.gui.Window):
         self.__AddElement(parent, sizer, element, label)
         return element
 
-    def __AddChoice(self, parent, sizer, label, choices, function=None):
+    def __AddChoice(self, parent, sizer, label, choices, value=None, function=None):
         element = wx.Choice(parent=parent, choices=choices, size=(100, -1))
         self.__AddElement(parent, sizer, element, label)
+        if value is not None:
+            element.SetSelection(value)
         if function is not None:
             self.Bind(wx.EVT_CHOICE, function, element)
         return element

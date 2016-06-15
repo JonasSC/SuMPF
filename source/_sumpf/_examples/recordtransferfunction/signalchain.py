@@ -233,7 +233,7 @@ class SignalChain(object):
     # Data creation methods #
     #########################
 
-    def Start(self, amplitude, sweep_duration, silence_duration, start_frequency, stop_frequency, exponential, fade, averages, capture_port, playback_port):
+    def Start(self, amplitude, sweep_duration, silence_duration, start_frequency, stop_frequency, sweep_function, fade, averages, capture_port, playback_port):
         """
         Starts the recording process.
         @param amplitude:
@@ -241,7 +241,7 @@ class SignalChain(object):
         @param silence_duration:
         @param start_frequency:
         @param stop_frequency:
-        @param exponential:
+        @param sweep_function:
         @param fade: a time in seconds as a float, that specifies the length of the fade in and fade out of the sweep
         @param averages:
         @param capture_port: the name of the other program's capture port
@@ -249,20 +249,17 @@ class SignalChain(object):
         """
         self.__has_data = True
         # connect to jack
-        input = self.__audio_io.GetInputs()[0]
-        output = self.__audio_io.GetOutputs()[0]
+        jack_input = self.__audio_io.GetInputs()[0]
+        jack_output = self.__audio_io.GetOutputs()[0]
         if capture_port is not None:
-            self.__audio_io.Connect(output, capture_port)
+            self.__audio_io.Connect(jack_output, capture_port)
         if playback_port is not None:
-            self.__audio_io.Connect(playback_port, input)
+            self.__audio_io.Connect(playback_port, jack_input)
         # prepare settings
         method_pairs = []
         method_pairs.append((self.__generator.SetStartFrequency, start_frequency))
         method_pairs.append((self.__generator.SetStopFrequency, stop_frequency))
-        if exponential:
-            method_pairs.append((self.__generator.SetSweepFunction, sumpf.modules.SweepGenerator.EXPONENTIAL))
-        else:
-            method_pairs.append((self.__generator.SetSweepFunction, sumpf.modules.SweepGenerator.LINEAR))
+        method_pairs.append((self.__generator.SetSweepFunction, (sumpf.modules.SweepGenerator.LINEAR, sumpf.modules.SweepGenerator.EXPONENTIAL, sumpf.modules.SweepGenerator.SYNCHRONIZED)[sweep_function]))
         if sweep_duration is not None:
             method_pairs.append((self.__sweep_duration.SetDuration, sweep_duration))
         if silence_duration is not None:
@@ -283,9 +280,9 @@ class SignalChain(object):
         sumpf.set_multiple_values(pairs=method_pairs, progress_indicator=self.__progress_indicator)
         # disconnect from jack
         if capture_port is not None:
-            self.__audio_io.Disconnect(playback_port, input)
+            self.__audio_io.Disconnect(playback_port, jack_input)
         if playback_port is not None:
-            self.__audio_io.Disconnect(output, capture_port)
+            self.__audio_io.Disconnect(jack_output, capture_port)
 
     def Keep(self, label):
         """
@@ -339,12 +336,12 @@ class SignalChain(object):
         ending = filename.split(".")[-1]
         if merger in [self.__merge_uir, self.__merge_pir]:
             filehandler = sumpf.modules.SignalFile()
-            format = sumpf.modules.SignalFile.GetFormats()[0]
+            file_format = sumpf.modules.SignalFile.GetFormats()[0]
             for f in sumpf.modules.SignalFile.GetFormats():
                 if f.ending == ending:
-                    format = f
+                    file_format = f
                     break
-            filehandler.SetFormat(format)
+            filehandler.SetFormat(file_format)
             filehandler.SetFilename(filename)
             loaded = filehandler.GetSignal()
             if not self.__has_data:
@@ -354,12 +351,12 @@ class SignalChain(object):
                 prepare_for_loading()
         else:
             filehandler = sumpf.modules.SpectrumFile()
-            format = sumpf.modules.SpectrumFile.GetFormats()[0]
+            file_format = sumpf.modules.SpectrumFile.GetFormats()[0]
             for f in sumpf.modules.SpectrumFile.GetFormats():
                 if f.ending == ending:
-                    format = f
+                    file_format = f
                     break
-            filehandler.SetFormat(format)
+            filehandler.SetFormat(file_format)
             filehandler.SetFilename(filename)
             loaded = filehandler.GetSpectrum()
             if not self.__has_data:
