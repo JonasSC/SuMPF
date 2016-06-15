@@ -176,19 +176,20 @@ class Config(InterfaceConfig):
         """
         self.__parser.read(path)
         for name in self.__parser.options(SECTION):
-            oldvalue = self.Get(name)
-            newvalue = oldvalue
-            if isinstance(oldvalue, bool):
-                newvalue = self.__parser.getboolean(SECTION, name)
-            elif isinstance(oldvalue, int):
-                newvalue = self.__parser.getint(SECTION, name)
-            elif isinstance(oldvalue, float):
-                newvalue = self.__parser.getfloat(SECTION, name)
-            elif isinstance(oldvalue, str):
-                newvalue = self.__parser.get(SECTION, name)
-            else:
-                raise ValueError("The value of the config option " + name + " has an incompatible type: " + str(type(oldvalue)))
-            self.__variables[name] = newvalue
+            if self.Has(name):
+                oldvalue = self.Get(name)
+                newvalue = oldvalue
+                if isinstance(oldvalue, bool):
+                    newvalue = self.__parser.getboolean(SECTION, name)
+                elif isinstance(oldvalue, int):
+                    newvalue = self.__parser.getint(SECTION, name)
+                elif isinstance(oldvalue, float):
+                    newvalue = self.__parser.getfloat(SECTION, name)
+                elif isinstance(oldvalue, str):
+                    newvalue = self.__parser.get(SECTION, name)
+                else:
+                    raise ValueError("The value of the config option " + name + " has an incompatible type: " + str(type(oldvalue)))
+                self.__variables[name] = newvalue
 
     def __Save(self):
         """
