@@ -18,11 +18,16 @@ import collections
 import inspect
 import os
 import sys
+import warnings
 import numpy
 import sumpf
 from .fileformat import FileFormat
 
 try:
+    warnings.filterwarnings(action="ignore",
+                            message="^Could not import alsa backend; most probably, you did not have alsa headers when building audiolab$",
+                            category=UserWarning,
+                            module="scikits.audiolab")
     import scikits.audiolab as audiolab
     audiolab_available = True
 except ImportError:
