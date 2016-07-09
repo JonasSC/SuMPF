@@ -24,6 +24,7 @@ from ._math.differentiatesignal import DifferentiateSignal
 from ._math.integratesignal import IntegrateSignal
 from ._math.logarithmsignal import LogarithmSignal
 from ._math.rectifysignal import RectifySignal
+from ._math.sumchanneldata import SumSignals, SumSpectrums
 
 try:
     from ._math.convolvesignals import ConvolveSignals

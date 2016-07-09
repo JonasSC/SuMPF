@@ -14,21 +14,6 @@
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 
-from .average import *
-from .statistics import *
-from .sumchanneldata import *
-
-from .algebra import TestAlgebra
-from .comparesignals import TestCompareSignals
-from .conjugatespectrum import TestConjugateSpectrum
-from .convolvesignals import TestConvolveSignals
-from .correlatesignals import TestCorrelateSignals
-from .differentiatesignal import TestDifferentiateSignal
-from .fouriertransform import TestFourierTransform
-from .integratesignal import TestIntegrateSignal
-from .logarithmsignal import TestLogarithmSignal
-from .rectifysignal import TestRectifySignal
-from .resamplesignal import TestResampleSignal
-from .rootmeansquare import TestRootMeanSquare
-from .shortfouriertransform import TestShortFourierTransform
+from .sumsignals import TestSumSignals
+from .sumspectrums import TestSumSpectrums
 
