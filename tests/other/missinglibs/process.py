@@ -56,9 +56,9 @@ class MissingLibProcess(multiprocessing.Process):
     def __CheckFileFormats(self, sumpf_module, formats, data_type):
         file_class = None
         if data_type == "Signal":
-            file_class = sumpf_module.modules.SignalFile
+            file_class = sumpf_module.modules.SaveSignal
         elif data_type == "Spectrum":
-            file_class = sumpf_module.modules.SpectrumFile
+            file_class = sumpf_module.modules.SaveSpectrum
         result = {}
         for f in formats:
             result[f] = hasattr(file_class, f)

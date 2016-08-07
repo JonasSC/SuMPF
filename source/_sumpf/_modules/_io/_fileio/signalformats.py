@@ -19,9 +19,15 @@ import inspect
 import os
 import sys
 import warnings
-import numpy
 import sumpf
-from .fileformat import FileFormat
+from .fileformat import FileFormat, TextFormat
+
+try:
+    import numpy
+    numpy_available = True
+except ImportError:
+    numpy = sumpf.helper.numpydummy
+    numpy_available = False
 
 try:
     warnings.filterwarnings(action="ignore",
@@ -67,46 +73,150 @@ else:
 signalformats = []
 
 
+class AUTO(FileFormat):
+    """
+    A file format, that tries to automatically detect the format of the file.
+    For this, the following rules apply, when loading a file:
+        - first, the available file formats, that fit to the ending of the filename
+          are tried.
+        - after that, all other formats are tried
+        - if the file cannot be loaded, the Load method returns None
+    And when saving a file:
+        - the first format in the list, that has the same extension as the filename
+          is used to save the file
+        - if the extension is not recognized, the first format in the list is used
+    """
+    @classmethod
+    def Load(cls, filename):
+        file_ending = os.path.splitext(filename)[-1].lstrip(".")
+        for f in signalformats:
+            if f.ending == file_ending:
+                try:
+                    return f.Load(filename)
+                except:
+                    pass
+        # reload if still necessary, try all all available formats
+        for f in signalformats:
+            if f.ending != file_ending:
+                try:
+                    return f.Load(filename)
+                except:
+                    pass
+        # if the file could not be loaded, set the data set to be empty
+        return None
+
+    @classmethod
+    def Save(cls, filename, data):
+        file_ending = os.path.splitext(filename)[-1].lstrip(".")
+        file_format = signalformats[0]
+        for f in signalformats[1:]:
+            if f.ending == file_ending:
+                file_format = f
+                break
+        file_format.Save(filename, data)
+
+
+########
+# Text #
+########
+
+
+class TEXT(TextFormat):
+    """
+    File format class for reading and writing Signals to text files.
+     - The text file will use a table, that is separated by tabs and line breaks.
+     - Lines that start with a # are interpreted as comments and are ignored. One
+    exception is a comment, that starts with "# LABELS:", which can be used to
+    specify the labels for the Signal's channels, by giving a tab-separated list
+    of labels after the colon.
+     - the lines do not have to be sorted.
+     - Each row of the table represents a sample. The first column of each line is
+    interpreted as the the time, while all following columns are interpreted
+    as channels.
+     - One limitation of SuMPF is, that it can only handle Signals, that are
+    sampled equidistantly and whose time range starts at zero. When reading a
+    file, the sampling rate is computed from the average of the time steps between
+    samples [2/(min_time + max_time)]. If the lowest time is smaller than zero,
+    the negative time samples are skipped. If the lowest time is greater than zero,
+    an appropriate number of zero samples is inserted at the beginning of the Signal.
+    """
+    ending = "asc"
+
+    @classmethod
+    def Load(cls, filename):
+        labels, number_of_channels, number_of_samples, minimum_time, maximum_time = cls._GetProperties(filename)
+        # create the channels and initialize them with zeros
+        samplingrate = (number_of_samples - 1) / (maximum_time - minimum_time)
+        leading_zeros = max(0, int(round(minimum_time * samplingrate)))
+        cut_off = -min(0, int(round(minimum_time * samplingrate)))
+        channels = numpy.zeros((number_of_channels, leading_zeros + (number_of_samples - cut_off)), dtype=float)
+        # load the samples into the channels
+        with open(filename) as f:
+            for l in f:
+                line = l.strip()
+                if line != "" and not line.startswith("#"):
+                    data = line.split("#")[0].strip().split("\t")
+                    sample_index = int(round(float(data[0].strip()) * samplingrate))
+                    for channel_index, value in enumerate(data[1:]):
+                        channels[channel_index][sample_index] = float(value.strip())
+            return sumpf.Signal(channels=channels, samplingrate=samplingrate, labels=labels)
+
+    @classmethod
+    def Save(cls, filename, data):
+        with open(filename, "w") as f:
+            if None not in data.GetLabels():
+                f.write("# LABELS:\t%s\n" % "\t".join(data.GetLabels()))
+            for i, samples in enumerate(zip(*data.GetChannels())):
+                f.write("%s\t%s\n" % (repr(float(i) / data.GetSamplingRate()), "\t".join(repr(s) for s in samples)))
+
+signalformats.append(TEXT)
+
+
+
 #########
 # NumPy #
 #########
 
 
-class NUMPY_NPZ(FileFormat):
-    """
-    File format class for the numpy npz-format for Signals.
-    http://docs.scipy.org/doc/numpy/reference/generated/numpy.savez.html
-    """
-    ending = "npz"
+if numpy_available:
+    class NUMPY_NPZ(FileFormat):
+        """
+        File format class for the numpy npz-format for Signals.
+        http://docs.scipy.org/doc/numpy/reference/generated/numpy.savez.html
+        """
+        ending = "npz"
 
-    @classmethod
-    def Load(cls, filename):
-        def to_string(label):
-            if label is None:
-                return None
-            else:
-                return str(label)
-        channels = []
-        with numpy.load(filename + "." + cls.ending) as data:
-            for c in data["channels"]:
-                channels.append(tuple(c))
-            samplingrate = data["samplingrate"]
-            labels = tuple([to_string(l) for l in data["labels"]])
-            return sumpf.Signal(channels=channels, samplingrate=samplingrate, labels=labels)
+        @classmethod
+        def Load(cls, filename):
+            def to_string(label):
+                if label is None:
+                    return None
+                else:
+                    return str(label)
+            channels = []
+            with numpy.load(filename) as data:
+                for c in data["channels"]:
+                    channels.append(tuple(c))
+                samplingrate = data["samplingrate"]
+                labels = tuple([to_string(l) for l in data["labels"]])
+                return sumpf.Signal(channels=channels, samplingrate=samplingrate, labels=labels)
 
-    @classmethod
-    def Save(cls, filename, data):
-        numpy.savez_compressed(filename + "." + cls.ending,
-                               channels=data.GetChannels(),
-                               samplingrate=data.GetSamplingRate(),
-                               labels=data.GetLabels())
+        @classmethod
+        def Save(cls, filename, data):
+            with open(filename, "wb") as f:
+                numpy.savez_compressed(f,
+                                       channels=data.GetChannels(),
+                                       samplingrate=data.GetSamplingRate(),
+                                       labels=data.GetLabels())
 
-signalformats.insert(0, NUMPY_NPZ)  # Make NUMPY_NPZ the default format, if no other format is available
+    signalformats.insert(0, NUMPY_NPZ)  # Make NUMPY_NPZ the default format, if no other format is available
+
 
 
 ####################
 # scikits.audiolab #
 ####################
+
 
 if audiolab_available:
     class AudioLabFileFormat(FileFormat):
@@ -120,7 +230,7 @@ if audiolab_available:
         @classmethod
         def Load(cls, filename):
             name = filename.split(os.sep)[-1]
-            soundfile = audiolab.Sndfile(filename=filename + "." + cls.ending, mode="r")
+            soundfile = audiolab.Sndfile(filename=filename, mode="r")
             frames = soundfile.read_frames(nframes=soundfile.nframes, dtype=numpy.float64)
             channels = tuple(frames.transpose())
             if soundfile.channels == 1:
@@ -137,7 +247,7 @@ if audiolab_available:
             channels = data.GetChannels()
             frames = numpy.array(channels).transpose()
             fileformat = audiolab.Format(type=cls.format, encoding=cls.encoding, endianness="file")
-            soundfile = audiolab.Sndfile(filename=filename + "." + cls.ending,
+            soundfile = audiolab.Sndfile(filename=filename,
                                          mode="w",
                                          format=fileformat,
                                          channels=len(channels),
@@ -226,9 +336,11 @@ if audiolab_available:
     signalformats.extend([AIFF_FLOAT, AIFF_INT, FLAC, OGG_VORBIS, WAV_DOUBLE, WAV_INT])
 
 
+
 ###############
 # PySoundFile #
 ###############
+
 
 elif soundfile_available:    # if scikits.audiolab is not installed, check for PySoundFile
     class SoundFileFileFormat(FileFormat):
@@ -241,7 +353,7 @@ elif soundfile_available:    # if scikits.audiolab is not installed, check for P
 
         @classmethod
         def Load(cls, filename):
-            data, samplingrate = soundfile.read(file="%s.%s" % (filename, cls.ending))
+            data, samplingrate = soundfile.read(file=filename)
             if numpy.size(data) == len(data):   # single channel files are imported into a one dimensional row array, so len and size are the same. These need not be transposed
                 channels = (data,)
             else:
@@ -254,7 +366,7 @@ elif soundfile_available:    # if scikits.audiolab is not installed, check for P
         def Save(cls, filename, data):
             d = numpy.transpose(data.GetChannels())
             soundfile.write(data=d,
-                            file="%s.%s" % (filename, cls.ending),
+                            file=filename,
                             samplerate=int(round(data.GetSamplingRate())),
                             subtype=cls.encoding,
                             format=cls.format)
@@ -346,6 +458,7 @@ elif soundfile_available:    # if scikits.audiolab is not installed, check for P
 # oct2py #
 ##########
 
+
 if oct2py_available:
     class MATLAB(FileFormat):
         """
@@ -386,7 +499,6 @@ if oct2py_available:
 
         @classmethod
         def Load(cls, filename):
-            filename = "%s.%s" % (filename, cls.ending)
             # retrieve the Matlab data through octave
             path_of_this_file = sumpf.helper.normalize_path(inspect.getfile(inspect.currentframe()))
             terminate_convenience_instance = "oct2py" not in sys.modules
@@ -456,7 +568,6 @@ if oct2py_available:
 
         @classmethod
         def Save(cls, filename, data):
-            filename = "%s.%s" % (filename, cls.ending)
             path_of_this_file = sumpf.helper.normalize_path(inspect.getfile(inspect.currentframe()))
             # avoid labels that are None
             labels = list(data.GetLabels())
@@ -499,7 +610,6 @@ if oct2py_available:
 
         @classmethod
         def Load(cls, filename):
-            filename = "%s.%s" % (filename, cls.ending)
             # retrieve the Matlab data through octave
             path_of_this_file = sumpf.helper.normalize_path(inspect.getfile(inspect.currentframe()))
             terminate_convenience_instance = "oct2py" not in sys.modules

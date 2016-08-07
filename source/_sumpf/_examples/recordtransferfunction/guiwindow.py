@@ -399,7 +399,7 @@ class GuiWindow(sumpf.gui.Window):
     def __GetTransferFunctionFileDescriptionForSaving(self):
         self.__statusbar.SetStatusText("Asking for a file")
         wildcard = []
-        formats = sumpf.modules.SpectrumFile.GetFormats()
+        formats = sumpf.modules.SaveSpectrum.GetFormats()
         for f in formats:
             if not f.read_only:
                 wildcard.append("%s (*.%s)|*.%s" % (f.__name__, f.ending, f.ending))
@@ -415,7 +415,7 @@ class GuiWindow(sumpf.gui.Window):
     def __GetImpulseResponseFileDescriptionForSaving(self):
         self.__statusbar.SetStatusText("Asking for a file")
         wildcard = []
-        formats = sumpf.modules.SignalFile.GetFormats()
+        formats = sumpf.modules.SaveSignal.GetFormats()
         for f in formats:
             if not f.read_only:
                 wildcard.append("%s (*.%s)|*.%s" % (f.__name__, f.ending, f.ending))

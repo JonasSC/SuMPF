@@ -38,9 +38,9 @@ class TestConvertFile(unittest.TestCase):
         filename = "file"
         tempdir = tempfile.mkdtemp()
         try:
-            pathT = os.path.join(tempdir, filename) + "T"
-            pathF = os.path.join(tempdir, filename) + "F"
-            gen = sumpf.modules.SineWaveGenerator()
+            pathT = os.path.join(tempdir, filename + "T")
+            pathF = os.path.join(tempdir, filename + "F")
+            gen = sumpf.modules.SineWaveGenerator(length=4)
             amp = sumpf.modules.Multiply(value1=gen.GetSignal(), value2=0.6)
             mrg = sumpf.modules.MergeSignals()
             mrg.AddInput(gen.GetSignal())
@@ -49,38 +49,50 @@ class TestConvertFile(unittest.TestCase):
             fft = sumpf.modules.FourierTransform(signal=signal)
             ifft = sumpf.modules.InverseFourierTransform(spectrum=fft.GetSpectrum())
             # create some test files and read their data
-            sumpf.modules.SignalFile(filename=pathT, signal=signal, file_format=sumpf.modules.SignalFile.NUMPY_NPZ)
-            npz_T = sumpf.modules.SignalFile(filename=pathT, file_format=sumpf.modules.SignalFile.NUMPY_NPZ).GetSignal()
-            sumpf.modules.SignalFile(filename=pathT, signal=signal, file_format=sumpf.modules.SignalFile.WAV_FLOAT)
-            wav_f = sumpf.modules.SignalFile(filename=pathT, file_format=sumpf.modules.SignalFile.WAV_FLOAT).GetSignal()
+            sumpf.modules.SaveSignal(filename=pathT + ".npz", signal=signal, file_format=sumpf.modules.SaveSignal.NUMPY_NPZ)
+            sumpf.modules.SaveSignal(filename=pathT + ".asc", signal=signal, file_format=sumpf.modules.SaveSignal.TEXT)
+            sumpf.modules.SaveSignal(filename=pathT + ".wav", signal=signal, file_format=sumpf.modules.SaveSignal.WAV_FLOAT)
+            sumpf.modules.SaveSpectrum(filename=pathF + ".asc", spectrum=fft.GetSpectrum(), file_format=sumpf.modules.SaveSpectrum.TEXT_I)
+            wav_f = sumpf.modules.LoadSignal(filename=pathT + ".wav").GetSignal()
             os.remove(pathT + ".wav")
-            sumpf.modules.SignalFile(filename=pathT, signal=signal, file_format=sumpf.modules.SignalFile.WAV_INT)
-            wav_i = sumpf.modules.SignalFile(filename=pathT, file_format=sumpf.modules.SignalFile.WAV_INT).GetSignal()
+            sumpf.modules.SaveSignal(filename=pathT + ".wav", signal=signal, file_format=sumpf.modules.SaveSignal.WAV_INT)
+            wav_i = sumpf.modules.LoadSignal(filename=pathT + ".wav").GetSignal()
             os.remove(pathT + ".wav")
-            sumpf.modules.SpectrumFile(filename=pathF, spectrum=fft.GetSpectrum(), file_format=sumpf.modules.SpectrumFile.NUMPY_NPZ)
-            npz_F = sumpf.modules.SpectrumFile(filename=pathF, file_format=sumpf.modules.SpectrumFile.NUMPY_NPZ).GetSpectrum()
-            os.remove(pathF + ".npz")
             # test converting a npz Signal file to floating point wav
             sumpf.examples.ConvertFile(input=pathT + ".npz", output=pathT + ".wav")
-            output = sumpf.modules.SignalFile(filename=pathT, file_format=sumpf.modules.SignalFile.WAV_FLOAT).GetSignal()
+            output = sumpf.modules.LoadSignal(filename=pathT + ".wav").GetSignal()
             self.assertEqual(output, wav_f)
-            # test converting a npz Signal file to integer wav
             os.remove(pathT + ".wav")
+            # test converting a npz Signal file to integer wav
             sumpf.examples.ConvertFile(input=pathT + ".npz", file_format="WAV_INT")
-            output = sumpf.modules.SignalFile(filename=pathT, file_format=sumpf.modules.SignalFile.WAV_INT).GetSignal()
+            output = sumpf.modules.LoadSignal(filename=pathT + ".wav").GetSignal()
             self.assertEqual(output, wav_i)
             # test converting a npz Signal file to a npz Spectrum file
             sumpf.examples.ConvertFile(input=pathT + ".npz", output=pathF + ".npz")
-            output = sumpf.modules.SpectrumFile(filename=pathF, file_format=sumpf.modules.SpectrumFile.NUMPY_NPZ).GetSpectrum()
-            self.assertEqual(output, npz_F)
+            output = sumpf.modules.LoadSpectrum(filename=pathF + ".npz").GetSpectrum()
+            self.assertEqual(output, fft.GetSpectrum())
             # test converting a npz Spectrum file to a npz Signal file
             sumpf.examples.ConvertFile(input=pathF + ".npz", output=pathT + ".npz")
-            output = sumpf.modules.SignalFile(filename=pathT, file_format=sumpf.modules.SignalFile.NUMPY_NPZ).GetSignal()
+            output = sumpf.modules.LoadSignal(filename=pathT + ".npz").GetSignal()
             self.assertEqual(output, ifft.GetSignal())
             # test converting a wav Signal file to a npz Signal file
             sumpf.examples.ConvertFile(input=pathT + ".wav", output=pathT + ".npz")
-            output = sumpf.modules.SignalFile(filename=pathT, file_format=sumpf.modules.SignalFile.NUMPY_NPZ).GetSignal()
+            output = sumpf.modules.LoadSignal(filename=pathT + ".npz").GetSignal()
             self.assertEqual(output, wav_i)
+            # test converting a text Signal to a text Spectrum
+            sumpf.examples.ConvertFile(input=pathT + ".asc", output=pathF + ".asc")
+            output = sumpf.modules.LoadSpectrum(filename=pathF + ".asc").GetSpectrum()
+            self.assertEqual(output, fft.GetSpectrum())
+            # test converting a npz Signal to a text Signal
+            os.remove(pathT + ".asc")
+            sumpf.modules.SaveSignal(filename=pathT + ".npz", signal=signal, file_format=sumpf.modules.SaveSignal.NUMPY_NPZ)
+            sumpf.examples.ConvertFile(input=pathT + ".npz", output=pathT + ".asc")
+            output = sumpf.modules.LoadSignal(filename=pathT + ".asc").GetSignal()
+            self.assertEqual(output, signal)
+            # test converting a text Spectrum to a npz Spectrum
+            sumpf.examples.ConvertFile(input=pathF + ".asc", output=pathF + ".npz")
+            output = sumpf.modules.LoadSpectrum(filename=pathF + ".npz").GetSpectrum()
+            self.assertEqual(output, fft.GetSpectrum())
         finally:
             shutil.rmtree(tempdir)
 
@@ -97,7 +109,7 @@ class TestConvertFile(unittest.TestCase):
                 f.write("test")
             gen = sumpf.modules.SineWaveGenerator()
             # create a test file
-            sumpf.modules.SignalFile(filename=path1, signal=gen.GetSignal(), file_format=sumpf.modules.SignalFile.NUMPY_NPZ)
+            sumpf.modules.SaveSignal(filename=path1, signal=gen.GetSignal(), file_format=sumpf.modules.SaveSignal.NUMPY_NPZ)
             self.assertRaises(IOError, sumpf.examples.ConvertFile, **{"input": path1 + "X.npz"})
             self.assertRaises(IOError, sumpf.examples.ConvertFile, **{"input": path2})
             self.assertRaises(IOError, sumpf.examples.ConvertFile, **{"input": path1 + ".npz", "output": "_GARBAGE_"})

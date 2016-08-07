@@ -33,17 +33,6 @@ class FileFormat(object):
         raise RuntimeError("This class may not be instantiated")
 
     @classmethod
-    def Exists(cls, filename):
-        """
-        Tests the existence of a file with the given filename.
-        The filename has to consist of the path and the name of the file, but
-        without the file ending as this is appended automatically by this method.
-        @param filename: a string value of a path and filename without file ending
-        @retval : True if the file exists, False otherwise
-        """
-        return os.path.exists("%s.%s" % (filename, cls.ending))
-
-    @classmethod
     def Load(cls, filename):
         """
         Virtual method whose overrides shall load a data set from a file and return it.
@@ -63,4 +52,45 @@ class FileFormat(object):
             raise RuntimeError("This file format can only be read, not written")
         else:
             raise NotImplementedError("This method should have been overridden in a derived class")
+
+
+
+class TextFormat(FileFormat):
+    """
+    Base class for saving and loading text files.
+    """
+    @staticmethod
+    def _GetProperties(filename):
+        """
+        Reads the given file and returns the following properties:
+         - the labels
+         - the number of channels in the file
+         - the number of samples in the file
+         - the minimum value of the first column of the file (e.g. the minimum frequency for spectrums or the minimum time for signals)
+         - the maximum value of the first column of the file (e.g. the maximum frequency for spectrums or the maximum time for signals)
+        @retval : a tuple (labels, number of channels, number of samples, minimum of first column, maximum of first column)
+        """
+        with open(filename) as f:
+            labels = ()
+            number_of_channels = 0
+            number_of_samples = 0
+            minimum_x = None
+            maximum_x = 0.0
+            for l in f:
+                line = l.strip()
+                if line == "":
+                    continue
+                elif line.startswith("# LABELS:"):
+                    labels = ":".join(line.split(":")[1:]).strip().split("\t")
+                elif not line.startswith("#"):
+                    number_of_samples += 1
+                    data = line.split("#")[0].strip().split("\t")
+                    number_of_channels = max(number_of_channels, len(data) - 1)
+                    x = float(data[0])
+                    if minimum_x is None:
+                        minimum_x = x
+                    else:
+                        minimum_x = min(minimum_x, x)
+                    maximum_x = max(maximum_x, x)
+            return labels, number_of_channels, number_of_samples, minimum_x, maximum_x
 

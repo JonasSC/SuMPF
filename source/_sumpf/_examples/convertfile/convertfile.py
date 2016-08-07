@@ -29,29 +29,19 @@ def convert_file(input="", output="", file_format="AUTO"):
     input = sumpf.helper.normalize_path(input)
     if not os.path.exists(input):
         raise IOError("The given input file does not exist")
-    input_split = split_filename_and_ending(input)
-    input_filename = input_split[0]
-    input_ending = input_split[1]
+    input_filename, input_ending = os.path.splitext(input)
+    input_ending = input_ending.lstrip(".")
     input_is_signal = True
-    input_data = None
-    for f in sumpf.modules.SignalFile.GetFormats():
-        if f.ending == input_ending:
-            try:
-                input_data = sumpf.modules.SignalFile(filename=input_filename, file_format=f).GetSignal()
-                break
-            except KeyError:
-                pass
-    if input_data is None:
-        for f in sumpf.modules.SpectrumFile.GetFormats():
-            if f.ending == input_ending:
-                try:
-                    input_data = sumpf.modules.SpectrumFile(filename=input_filename, file_format=f).GetSpectrum()
-                    input_is_signal = False
-                    break
-                except KeyError:
-                    pass
-    if input_data is None:
-        raise IOError("The given input file cannot be loaded")
+    signal_loader = sumpf.modules.LoadSignal(filename=input)
+    if signal_loader.GetSuccess():
+        input_data = signal_loader.GetSignal()
+    else:
+        spectrum_loader = sumpf.modules.LoadSpectrum(filename=input)
+        if spectrum_loader.GetSuccess():
+            input_data = spectrum_loader.GetSpectrum()
+            input_is_signal = False
+        else:
+            raise IOError("The given input file cannot be loaded: %s" % input)
     # get the output file's format and filename
     output_filename = None
     output_format = None
@@ -60,21 +50,20 @@ def convert_file(input="", output="", file_format="AUTO"):
         if output == "":
             if input_is_signal:
                 if input_ending == "wav":
-                    output_format = sumpf.modules.SpectrumFile.GetFormats()[0]
+                    output_format = sumpf.modules.SaveSpectrum.GetFormats()[0]
                 else:
-                    output_format = sumpf.modules.SignalFile.WAV_FLOAT
+                    output_format = sumpf.modules.SaveSignal.WAV_FLOAT
                     output_is_signal = True
             else:
-                output_format = sumpf.modules.SignalFile.WAV_FLOAT
+                output_format = sumpf.modules.SaveSignal.WAV_FLOAT
                 output_is_signal = True
             output_filename = input_filename
         else:
-            output_split = split_filename_and_ending(sumpf.helper.normalize_path(output))
-            output_filename = output_split[0]
-            output_ending = output_split[1]
+            output_filename, output_ending = os.path.splitext(sumpf.helper.normalize_path(output))
+            output_ending = output_ending.lstrip(".")
             if input_ending == output_ending:
                 output_is_signal = not input_is_signal
-            formats = [sumpf.modules.SignalFile.GetFormats(), sumpf.modules.SpectrumFile.GetFormats()]
+            formats = [sumpf.modules.SaveSignal.GetFormats(), sumpf.modules.SaveSpectrum.GetFormats()]
             if not output_is_signal:
                 formats.reverse()
             for f in formats[0]:
@@ -88,13 +77,13 @@ def convert_file(input="", output="", file_format="AUTO"):
                         output_is_signal = not output_is_signal
                         break
             if output_format is None:
-                raise IOError("The format of the output file could not be determined")
+                raise IOError("The format of the output file could not be determined automatically")
     else:
         if output == "":
             output_filename = input_filename
         else:
-            output_filename = split_filename_and_ending(sumpf.helper.normalize_path(output))[0]
-        formats = [sumpf.modules.SignalFile.GetFormats(), sumpf.modules.SpectrumFile.GetFormats()]
+            output_filename = os.path.splitext(sumpf.helper.normalize_path(output))[0]
+        formats = [sumpf.modules.SaveSignal.GetFormats(), sumpf.modules.SaveSpectrum.GetFormats()]
         if not output_is_signal:
             formats.reverse()
         for f in formats[0]:
@@ -109,6 +98,8 @@ def convert_file(input="", output="", file_format="AUTO"):
                     break
         if output_format is None:
             raise IOError("The format of the output file could not be determined")
+    if not output_filename.endswith(output_format.ending):
+        output_filename = "%s.%s" % (output_filename, output_format.ending)
     # save the output file
     output_data = input_data
     if output_is_signal and not input_is_signal:
@@ -116,19 +107,7 @@ def convert_file(input="", output="", file_format="AUTO"):
     elif not output_is_signal and input_is_signal:
         output_data = sumpf.modules.FourierTransform(signal=input_data).GetSpectrum()
     if output_is_signal:
-        sumpf.modules.SignalFile(filename=output_filename, signal=output_data, file_format=output_format)
+        sumpf.modules.SaveSignal(filename=output_filename, signal=output_data, file_format=output_format)
     else:
-        sumpf.modules.SpectrumFile(filename=output_filename, spectrum=output_data, file_format=output_format)
-
-
-def split_filename_and_ending(path):
-    """
-    Splits the filename from the file ending and returns them as a tuple.
-    @param path: the path that shall be splitted
-    @retval : a tuple (filename, ending)
-    """
-    split = path.split(".")
-    filename = ".".join(split[0:-1])
-    ending = split[-1]
-    return (filename, ending)
+        sumpf.modules.SaveSpectrum(filename=output_filename, spectrum=output_data, file_format=output_format)
 

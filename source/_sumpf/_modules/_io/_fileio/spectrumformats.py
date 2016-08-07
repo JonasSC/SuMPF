@@ -18,9 +18,15 @@ import collections
 import inspect
 import os
 import sys
-import numpy
 import sumpf
-from .fileformat import FileFormat
+from .fileformat import FileFormat, TextFormat
+
+try:
+    import numpy
+    numpy_available = True
+except ImportError:
+    numpy = sumpf.helper.numpydummy
+    numpy_available = False
 
 oct2py_available = False
 # "try: import oct2py" is not possible, because of oct2py's convenience instance of octave
@@ -50,36 +56,200 @@ else:
 spectrumformats = []
 
 
-class NUMPY_NPZ(FileFormat):
+class AUTO(FileFormat):
     """
-    File format class for the numpy npz-format for Spectrums.
-    http://docs.scipy.org/doc/numpy/reference/generated/numpy.savez.html
+    A file format, that tries to automatically detect the format of the file.
+    For this, the following rules apply, when loading a file:
+        - first, the available file formats, that fit to the ending of the filename
+          are tried.
+        - after that, all other formats are tried
+        - if the file cannot be loaded, the Load method returns None
+    And when saving a file:
+        - the first format in the list, that has the same extension as the filename
+          is used to save the file
+        - if the extension is not recognized, the first format in the list is used
     """
-    ending = "npz"
     @classmethod
     def Load(cls, filename):
-        def to_string(label):
-            if label is None:
-                return None
-            else:
-                return str(label)
-        channels = []
-        with numpy.load(filename + "." + cls.ending) as data:
-            for c in data["channels"]:
-                channels.append(tuple(c))
-            resolution = data["resolution"]
-            labels = tuple([to_string(l) for l in data["labels"]])
+        file_ending = os.path.splitext(filename)[-1].lstrip(".")
+        for f in spectrumformats:
+            if f.ending == file_ending:
+                try:
+                    return f.Load(filename)
+                except:
+                    pass
+        # reload if still necessary, try all all available formats
+        for f in spectrumformats:
+            if f.ending != file_ending:
+                try:
+                    return f.Load(filename)
+                except:
+                    pass
+        # if the file could not be loaded, set the data set to be empty
+        return None
+
+    @classmethod
+    def Save(cls, filename, data):
+        file_ending = os.path.splitext(filename)[-1].lstrip(".")
+        file_format = spectrumformats[0]
+        for f in spectrumformats[1:]:
+            if f.ending == file_ending:
+                file_format = f
+                break
+        file_format.Save(filename, data)
+
+
+########
+# Text #
+########
+
+
+class TEXT_I(TextFormat):
+    """
+    File format class for reading and writing Spectrums to text files. It uses
+    the 'a+bi' notation for complex numbers, which differs from Python's practice
+    to use a 'j' for the imaginary unit.
+     - The text file will use a table, that is separated by tabs and line breaks.
+     - Lines that start with a # are interpreted as comments and are ignored. One
+    exception is a comment, that starts with "# LABELS:", which can be used to
+    specify the labels for the Spectrum's channels, by giving a tab-separated
+    list of labels after the colon.
+     - the lines do not have to be sorted.
+     - Each row of the table represents a sample. The first column of each line is
+    interpreted as the the frequency, while all following columns are interpreted
+    as channels.
+     - One limitation of SuMPF is, that it can only handle Spectrums, that are
+    sampled equidistantly and whose frequency range starts at zero. When reading
+    a file, the resolution of the Spectrum is computed from the average of the
+    frequency steps between the samples [2/(min_frequency + max_frequency)]. If
+    the lowest frequency is not zero, an appropriate number of zero samples is
+    inserted at the beginning of the Spectrum.
+    """
+    ending = "asc"
+
+    @classmethod
+    def Load(cls, filename):
+        labels, number_of_channels, number_of_samples, minimum_frequency, maximum_frequency = cls._GetProperties(filename)
+        # create the channels and initialize them with zeros
+        resolution = (maximum_frequency - minimum_frequency) / (number_of_samples - 1)
+        leading_zeros = int(round(minimum_frequency / resolution))
+        channels = numpy.zeros((number_of_channels, leading_zeros + number_of_samples), dtype=complex)
+        # load the samples into the channels
+        with open(filename) as f:
+            for l in f:
+                line = l.strip()
+                if line != "" and not line.startswith("#"):
+                    data = line.split("#")[0].strip().split("\t")
+                    sample_index = int(round(float(data[0]) / resolution))
+                    for channel_index, value in enumerate(data[1:]):
+                        channels[channel_index][sample_index] = complex(value.replace("i", "j"))
             return sumpf.Spectrum(channels=channels, resolution=resolution, labels=labels)
 
     @classmethod
     def Save(cls, filename, data):
-        numpy.savez_compressed(filename + "." + cls.ending,
-                               channels=data.GetChannels(),
-                               resolution=data.GetResolution(),
-                               labels=data.GetLabels())
+        with open(filename, "w") as f:
+            if None not in data.GetLabels():
+                f.write("# LABELS:\t%s\n" % "\t".join(data.GetLabels()))
+            for i, samples in enumerate(zip(*data.GetChannels())):
+                f.write("%s\t%s\n" % (repr(i * data.GetResolution()), "\t".join(repr(s).lstrip("(").rstrip(")").replace("j", "i") for s in samples)))
 
-spectrumformats.append(NUMPY_NPZ)
 
+
+class TEXT_J(TextFormat):
+    """
+    File format class for reading and writing Spectrums to text files. It uses
+    the 'a+bj' notation for complex numbers, which is the same, that Python uses,
+    when converting a complex number to a string (but without the parentheses).
+     - The text file will use a table, that is separated by tabs and line breaks.
+     - Lines that start with a # are interpreted as comments and are ignored. One
+    exception is a comment, that starts with "# LABELS:", which can be used to
+    specify the labels for the Spectrum's channels, by giving a tab-separated
+    list of labels after the colon.
+     - the lines do not have to be sorted.
+     - Each row of the table represents a sample. The first column of each line is
+    interpreted as the the frequency, while all following columns are interpreted
+    as channels.
+     - One limitation of SuMPF is, that it can only handle Spectrums, that are
+    sampled equidistantly and whose frequency range starts at zero. When reading
+    a file, the resolution of the Spectrum is computed from the average of the
+    frequency steps between the samples [2/(min_frequency + max_frequency)]. If
+    the lowest frequency is not zero, an appropriate number of zero samples is
+    inserted at the beginning of the Spectrum.
+    """
+    ending = "asc"
+
+    @classmethod
+    def Load(cls, filename):
+        labels, number_of_channels, number_of_samples, minimum_frequency, maximum_frequency = cls._GetProperties(filename)
+        # create the channels and initialize them with zeros
+        resolution = (maximum_frequency - minimum_frequency) / (number_of_samples - 1)
+        leading_zeros = int(round(minimum_frequency / resolution))
+        channels = numpy.zeros((number_of_channels, leading_zeros + number_of_samples), dtype=complex)
+        # load the samples into the channels
+        with open(filename) as f:
+            for l in f:
+                line = l.strip()
+                if line != "" and not line.startswith("#"):
+                    data = line.split("#")[0].strip().split("\t")
+                    sample_index = int(round(float(data[0]) / resolution))
+                    for channel_index, value in enumerate(data[1:]):
+                        channels[channel_index][sample_index] = complex(value)
+            return sumpf.Spectrum(channels=channels, resolution=resolution, labels=labels)
+
+    @classmethod
+    def Save(cls, filename, data):
+        with open(filename, "w") as f:
+            if None not in data.GetLabels():
+                f.write("# LABELS:\t%s\n" % "\t".join(data.GetLabels()))
+            for i, samples in enumerate(zip(*data.GetChannels())):
+                f.write("%s\t%s\n" % (repr(i * data.GetResolution()), "\t".join(repr(s).lstrip("(").rstrip(")") for s in samples)))
+
+spectrumformats.extend((TEXT_I, TEXT_J))
+
+
+
+#########
+# NumPy #
+#########
+
+
+if numpy_available:
+    class NUMPY_NPZ(FileFormat):
+        """
+        File format class for the numpy npz-format for Spectrums.
+        http://docs.scipy.org/doc/numpy/reference/generated/numpy.savez.html
+        """
+        ending = "npz"
+        @classmethod
+        def Load(cls, filename):
+            def to_string(label):
+                if label is None:
+                    return None
+                else:
+                    return str(label)
+            channels = []
+            with numpy.load(filename) as data:
+                for c in data["channels"]:
+                    channels.append(tuple(c))
+                resolution = data["resolution"]
+                labels = tuple([to_string(l) for l in data["labels"]])
+                return sumpf.Spectrum(channels=channels, resolution=resolution, labels=labels)
+
+        @classmethod
+        def Save(cls, filename, data):
+                with open(filename, "wb") as f:
+                    numpy.savez_compressed(f,
+                                           channels=data.GetChannels(),
+                                           resolution=data.GetResolution(),
+                                           labels=data.GetLabels())
+
+    spectrumformats.insert(0, NUMPY_NPZ)    # Make NUMPY_NPZ the default format
+
+
+
+##########
+# oct2py #
+##########
 
 
 if oct2py_available:
@@ -105,7 +275,6 @@ if oct2py_available:
 
         @classmethod
         def Load(cls, filename):
-            filename = "%s.%s" % (filename, cls.ending)
             # retrieve the Matlab data through octave
             path_of_this_file = sumpf.helper.normalize_path(inspect.getfile(inspect.currentframe()))
             terminate_convenience_instance = "oct2py" not in sys.modules
@@ -176,7 +345,6 @@ if oct2py_available:
 
         @classmethod
         def Load(cls, filename):
-            filename = "%s.%s" % (filename, cls.ending)
             # retrieve the Matlab data through octave
             path_of_this_file = sumpf.helper.normalize_path(inspect.getfile(inspect.currentframe()))
             terminate_convenience_instance = "oct2py" not in sys.modules
@@ -247,7 +415,6 @@ if oct2py_available:
 
         @classmethod
         def Save(cls, filename, data):
-            filename = "%s.%s" % (filename, cls.ending)
             labels = list(data.GetLabels())
             # avoid labels that are None
             for i, l in enumerate(labels):
