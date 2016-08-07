@@ -14,6 +14,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 
+import collections
 import unittest
 import sumpf
 import _common as common
@@ -57,6 +58,20 @@ class TestNormalizeSpectrumToAverage(unittest.TestCase):
         self.assertEqual(nrm.GetOutput().GetChannels()[0], self.amp.GetResult().GetChannels()[0])   # individual normalization should have been done correctly for the first channel
         self.assertEqual(nrm.GetOutput().GetChannels()[1], self.spectrum.GetChannels()[1])          # individual normalization should have been done correctly for the first channel
 
+    def test_frequency_range(self):
+        """
+        Tests if limiting the averaging to a given frequency range works as expected.
+        """
+        nrm = sumpf.modules.NormalizeSpectrumToAverage(spectrum=self.spectrum, order=2, frequency_range=(16.0, 18.0), individual=False)
+        self.amp.SetValue2(1.0 / ((5.0 / 2.0) ** 0.5))
+        self.assertEqual(nrm.GetOutput().GetChannels(), self.amp.GetResult().GetChannels())
+        nrm.SetFrequencyRange((0.0, 18.0))
+        self.amp.SetValue2(1.0 / ((7.0 / 4.0) ** 0.5))
+        self.assertEqual(nrm.GetOutput().GetChannels(), self.amp.GetResult().GetChannels())
+        nrm.SetFrequencyRange(None)
+        self.amp.SetValue2(1.0 / ((17.0 / 6.0) ** 0.5))
+        self.assertEqual(nrm.GetOutput().GetChannels(), self.amp.GetResult().GetChannels())
+
     def test_special_cases(self):
         """
         Tests special cases for the normalization
@@ -73,10 +88,11 @@ class TestNormalizeSpectrumToAverage(unittest.TestCase):
         nrm = sumpf.modules.NormalizeSpectrumToAverage()
         self.assertEqual(nrm.SetSpectrum.GetType(), sumpf.Spectrum)
         self.assertEqual(nrm.SetOrder.GetType(), float)
+        self.assertEqual(nrm.SetFrequencyRange.GetType(), collections.Iterable)
         self.assertEqual(nrm.SetIndividual.GetType(), bool)
         self.assertEqual(nrm.GetOutput.GetType(), sumpf.Spectrum)
         common.test_connection_observers(testcase=self,
-                                         inputs=[nrm.SetSpectrum, nrm.SetOrder, nrm.SetIndividual],
+                                         inputs=[nrm.SetSpectrum, nrm.SetOrder, nrm.SetFrequencyRange, nrm.SetIndividual],
                                          noinputs=[],
                                          output=nrm.GetOutput)
 

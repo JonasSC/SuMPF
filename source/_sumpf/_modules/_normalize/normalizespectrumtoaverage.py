@@ -14,6 +14,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 
+import collections
 import sumpf
 
 try:
@@ -34,11 +35,12 @@ class NormalizeSpectrumToAverage(object):
     normalized Spectrum which is then inversely fourier transformed does not
     necessarily result in a normalized Signal.
     """
-    def __init__(self, spectrum=None, order=2.0, individual=False):
+    def __init__(self, spectrum=None, order=2.0, frequency_range=None, individual=False):
         """
         All parameters are optional
         @param spectrum: the Spectrum which shall be normalized
         @param order: see SetOrder for details
+        @param frequency_range: a tuple (MIN, MAX) for a frequency interval in which the magnitude values shall be used to compute the normalization factor, or None to take the whole frequency range of the Spectrum
         @param individual: If True, the channels will be normalized individually. If False the proportion between the channels remains the same
         """
         if spectrum is None:
@@ -46,6 +48,7 @@ class NormalizeSpectrumToAverage(object):
         else:
             self.__spectrum = spectrum
         self.__order = order
+        self.__frequency_range = frequency_range
         self.__individual = individual
 
     @sumpf.Output(sumpf.Spectrum)
@@ -95,6 +98,17 @@ class NormalizeSpectrumToAverage(object):
         """
         self.__order = float(order)
 
+    @sumpf.Input(collections.Iterable, "GetOutput")
+    def SetFrequencyRange(self, frequency_range):
+        """
+        Sets the frequency interval in which the magnitude values shall be used
+        to compute the normalization factor. It is also possible to set the frequency
+        range to None, which leads to the whole frequency range of the Spectrum
+        being taken into account.
+        @param frequency_range: a tuple (MIN, MAX) or None
+        """
+        self.__frequency_range = frequency_range
+
     @sumpf.Input(bool, "GetOutput")
     def SetIndividual(self, individual):
         """
@@ -131,9 +145,15 @@ class NormalizeSpectrumToAverage(object):
         @param channels: the list of channels for which the factor shall be calculated
         @retval : the normalization factor as a float
         """
-        averager = sumpf.helper.average.SortedSum()
+        if self.__frequency_range is None:
+            i0 = 0
+            iE = None
+        else:
+            i0 = int(round(self.__frequency_range[0] / self.__spectrum.GetResolution()))
+            iE = int(round(self.__frequency_range[1] / self.__spectrum.GetResolution())) + 1
+        averager = sumpf.helper.average.SumDirectly()
         for c in channels:
-            for s in c:
+            for s in c[i0:iE]:
                 averager.Add(s ** self.__order)
         average = averager.GetAverage() ** (1.0 / self.__order)
         if average == 0.0:
