@@ -32,11 +32,7 @@ class TestConcatenateSignals(unittest.TestCase):
         Tests if the concatenation works as expected.
         """
         ccs = sumpf.modules.ConcatenateSignals()
-        self.assertEqual(ccs.GetOutput(), sumpf.Signal())
-        ccs = sumpf.modules.ConcatenateSignals(signal1=self.signal1)
-        self.assertEqual(ccs.GetOutput(), self.signal1)
-        ccs = sumpf.modules.ConcatenateSignals(signal2=self.signal2)
-        self.assertEqual(ccs.GetOutput(), self.signal2)
+        self.assertEqual(ccs.GetOutput(), sumpf.Signal(channels=((0.0, 0.0, 0.0, 0.0),), labels=("Concatenation 1",)))
         ccs = sumpf.modules.ConcatenateSignals(signal1=self.signal1, signal2=self.signal2)
         self.assertEqual(ccs.GetOutputLength(), 5)
         output = ccs.GetOutput()
@@ -55,9 +51,6 @@ class TestConcatenateSignals(unittest.TestCase):
         self.assertEqual(output.GetChannels(), ((0.0, 0.5, 0.0, 1.0, 0.0), (2.4, 6.2, 9.8, 3.1, 4.7)))
         self.assertEqual(output.GetSamplingRate(), 48000)
         self.assertEqual(output.GetLabels(), ("Concatenation 1", "Concatenation 2"))
-        ccs.SetInput1(sumpf.Signal())
-        self.assertEqual(ccs.GetOutput(), self.signal1)
-        self.assertEqual(ccs.GetOutputLength(), 2)
 
     def test_errors(self):
         """

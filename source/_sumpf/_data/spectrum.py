@@ -152,10 +152,7 @@ class Spectrum(ChannelData):
             labels = self.GetLabels()
         else:
             self.__CheckOtherSpectrum(other)
-            if other.IsEmpty():
-                channels = self.GetChannels()
-            else:
-                channels = numpy.add(self.GetChannels(), other.GetChannels())
+            channels = numpy.add(self.GetChannels(), other.GetChannels())
             labels = tuple(["Sum %i" % (i + 1) for i in range(len(channels))])
         return Spectrum(channels=channels, resolution=self.GetResolution(), labels=labels)
 
@@ -188,13 +185,7 @@ class Spectrum(ChannelData):
             labels = self.GetLabels()
         else:
             self.__CheckOtherSpectrum(other)
-            if other.IsEmpty():
-                channels = self.GetChannels()
-            else:
-                if self.IsEmpty():
-                    channels = numpy.subtract(0.0, other.GetChannels())
-                else:
-                    channels = numpy.subtract(self.GetChannels(), other.GetChannels())
+            channels = numpy.subtract(self.GetChannels(), other.GetChannels())
             labels = tuple(["Difference %i" % (i + 1) for i in range(len(channels))])
         return Spectrum(channels=channels, resolution=self.GetResolution(), labels=labels)
 
@@ -236,10 +227,7 @@ class Spectrum(ChannelData):
             labels = self.GetLabels()
         else:
             self.__CheckOtherSpectrum(other)
-            if other.IsEmpty():
-                channels = self.GetChannels()
-            else:
-                channels = numpy.multiply(self.GetChannels(), other.GetChannels())
+            channels = numpy.multiply(self.GetChannels(), other.GetChannels())
             labels = tuple(["Product %i" % (i + 1) for i in range(len(channels))])
         return Spectrum(channels=channels, resolution=self.GetResolution(), labels=labels)
 
@@ -278,9 +266,7 @@ class Spectrum(ChannelData):
             labels = self.GetLabels()
         else:
             self.__CheckOtherSpectrum(other)
-            if self.IsEmpty():
-                selfvalue = 0.0
-            elif len(other) != len(self):
+            if len(other) != len(self):
                 raise ValueError("The other Spectrum has a different length")
             for c in other.GetChannels():
                 if numpy.prod(numpy.shape(numpy.nonzero(c))) == 0:
@@ -323,7 +309,6 @@ class Spectrum(ChannelData):
             raise ValueError("The other Spectrum has a different resolution")
         if len(other.GetChannels()) != len(self.GetChannels()) and 1 not in (len(other.GetChannels()), len(self.GetChannels())):
             raise ValueError("The other Spectrum has a different number of channels")
-        if not (self.IsEmpty() or other.IsEmpty()):
-            if len(other) != len(self):
-                raise ValueError("The other Spectrum has a different length (expected %s, got %s)" % (len(self), len(other)))
+        if len(other) != len(self):
+            raise ValueError("The other Spectrum has a different length (expected %s, got %s)" % (len(self), len(other)))
 

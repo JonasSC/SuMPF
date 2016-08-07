@@ -40,23 +40,6 @@ class TestCompareSignals(unittest.TestCase):
         self.assertEqual(result.GetSamplingRate(), 62.33)
         self.assertEqual(result.GetLabels(), ("Comparison 1", "Comparison 2"))
 
-    def test_empty_signals(self):
-        """
-        Tests the algebra modules in case at least one of the input Signals is empty.
-        """
-        wrong_samplingrate = sumpf.Signal(channels=((0.0, 0.0), (0.0, 0.0)), samplingrate=self.wrongsamplingrate)
-        wrong_channelcount = sumpf.Signal(samplingrate=self.signal1.GetSamplingRate())
-        wrong_length = sumpf.Signal(channels=((0.0, 0.0), (0.0, 0.0)), samplingrate=self.signal1.GetSamplingRate(), labels=("These should", "not be copied"))
-        comp = sumpf.modules.CompareSignals()
-        comp.SetInput1(self.signal1)
-        comp.SetInput2(wrong_samplingrate)
-        self.assertEqual(comp.GetOutput(), sumpf.Signal())
-        comp.SetInput1(wrong_channelcount)
-        comp.SetInput2(self.signal1)
-        self.assertEqual(comp.GetOutput(), sumpf.Signal(samplingrate=self.signal1.GetSamplingRate()))
-        comp.SetInput1(wrong_length)
-        self.assertEqual(comp.GetOutput(), sumpf.Signal(channels=wrong_length.GetChannels(), samplingrate=self.signal1.GetSamplingRate()))
-
     def test_errors(self):
         """
         Tests if the algebra modules raise errors correctly.

@@ -60,24 +60,19 @@ class ConcatenateSignals(object):
         Appends the second Signal to the first one and returns the concatenated Signal.
         @retval : a Signal whose channels are the result of the concatenation
         """
-        if self.__signal1.IsEmpty():
-            return self.__signal2
-        elif self.__signal2.IsEmpty():
-            return self.__signal1
-        else:
-            if self.__signal1.GetSamplingRate() != self.__signal2.GetSamplingRate():
-                raise ValueError("The given signal has a different sampling rate than the second signal")
-            if len(self.__signal1.GetChannels()) != len(self.__signal2.GetChannels()):
-                raise ValueError("The given signal has a different channel count than the second signal")
-            channels = []
-            for c in self.__signal1.GetChannels():
-                channels.append(list(c))
-            labels = []
-            for i in range(len(self.__signal2.GetChannels())):
-                for s in self.__signal2.GetChannels()[i]:
-                    channels[i].append(s)
-                labels.append("Concatenation " + str(i + 1))
-            return sumpf.Signal(channels=channels, samplingrate=self.__signal1.GetSamplingRate(), labels=labels)
+        if self.__signal1.GetSamplingRate() != self.__signal2.GetSamplingRate():
+            raise ValueError("The given signal has a different sampling rate than the second signal")
+        if len(self.__signal1.GetChannels()) != len(self.__signal2.GetChannels()):
+            raise ValueError("The given signal has a different channel count than the second signal")
+        channels = []
+        for c in self.__signal1.GetChannels():
+            channels.append(list(c))
+        labels = []
+        for i in range(len(self.__signal2.GetChannels())):
+            for s in self.__signal2.GetChannels()[i]:
+                channels[i].append(s)
+            labels.append("Concatenation " + str(i + 1))
+        return sumpf.Signal(channels=channels, samplingrate=self.__signal1.GetSamplingRate(), labels=labels)
 
     @sumpf.Output(int)
     def GetOutputLength(self):
@@ -86,10 +81,5 @@ class ConcatenateSignals(object):
         (This is the sum of the lengths of the input Signals.)
         @retval : the length of the output Signal as integer
         """
-        if self.__signal1.IsEmpty():
-            return len(self.__signal2)
-        elif self.__signal2.IsEmpty():
-            return len(self.__signal1)
-        else:
-            return len(self.__signal1) + len(self.__signal2)
+        return len(self.__signal1) + len(self.__signal2)
 

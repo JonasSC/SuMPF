@@ -158,22 +158,6 @@ class TestMergeSignals(unittest.TestCase):
         channels = self.merger.GetOutput().GetChannels()
         self.assertEqual(channels[0], self.signal1.GetChannels()[0][0:2])   # the longer Signal's channels should be cropped during the merge
         self.assertEqual(channels[3:6], self.signal3.GetChannels())         # the shorter Signal should simply be copied
-        self.merger.SetLengthConflictStrategy(sumpf.modules.MergeSignals.RAISE_ERROR_EXCEPT_EMPTY)
-        self.assertRaises(RuntimeError, self.merger.GetOutput)              # this should fail because channels do not have the same length
-        self.merger.RemoveInput(id3)
-        ide = self.merger.AddInput(sumpf.Signal())
-        channels = self.merger.GetOutput().GetChannels()
-        samplingrate = self.merger.GetOutput().GetSamplingRate()
-        self.assertEqual(channels[0:3], self.signal1.GetChannels())         # the first Signal should simply be copied
-        self.assertEqual(channels[3], (0.0,) * len(self.signal1))           # the empty Signal should be stretched with zeros
-        self.assertEqual(samplingrate, self.signal1.GetSamplingRate())      # the sampling rate should have been taken from the non empty Signal
-        self.merger.RemoveInput(id1)
-        id5 = self.merger.AddInput(self.signal5)
-        channels = self.merger.GetOutput().GetChannels()
-        samplingrate = self.merger.GetOutput().GetSamplingRate()
-        self.assertEqual(channels[0], (0.0,) * len(self.signal5))           # the empty Signal should again be stretched with zeros
-        self.assertEqual(channels[1:3], self.signal5.GetChannels())         # the non empty Signal should simply be copied
-        self.assertEqual(samplingrate, self.signal1.GetSamplingRate())      # the sampling rate should have been taken from the non empty Signal
 
     def test_connections(self):
         """

@@ -23,16 +23,15 @@ class MergeChannelData(object):
     A base class for merging the data of multiple ChannelData instances into one instance.
     """
     # Flags for the handling of length conflicts. See SetLengthConflictStrategy for documentation
-    RAISE_ERROR_EXCEPT_EMPTY = 0
-    RAISE_ERROR = 1
-    FILL_WITH_ZEROS = 2
-    CROP = 3
+    RAISE_ERROR = 0
+    FILL_WITH_ZEROS = 1
+    CROP = 2
 
     def __init__(self, datasets, merge_strategy, on_length_conflict):
         """
         @param datasets: a list of data sets that shall be added to the merger. As the constructor can not return the data ids for these data sets, they can only be removed from the merger with the Clear method.
         @param merge_strategy: a function that implements the strategy according to which the channels of the output data are sorted
-        @param on_length_conflict: one of the merger class's flags for length conflict resolution (e.g. RAISE_ERROR_EXCEPT_EMPTY)
+        @param on_length_conflict: one of the merger class's flags for length conflict resolution (e.g. RAISE_ERROR)
         """
         self.__strategy = merge_strategy
         self._on_length_conflict = on_length_conflict
@@ -102,16 +101,13 @@ class MergeChannelData(object):
         """
         self.__strategy = strategy
 
-    @sumpf.Input(type(RAISE_ERROR_EXCEPT_EMPTY), "GetOutput")
+    @sumpf.Input(type(RAISE_ERROR), "GetOutput")
     def SetLengthConflictStrategy(self, strategy):
         """
         Sets the behavior for when the added data sets do not have the same length.
         The following flags are available:
         RAISE_ERROR for raising a RuntimeError during merging, if data sets with
             different lengths have been added.
-        RAISE_ERROR_EXCEPT_EMPTY for raising errors just like with RAISE_ERROR,
-            but only when neither the new input data set nor all the already added
-            data sets are empty.
         FILL_WITH_ZEROS for solving the conflict by filling the too short data
             sets with zeros until all sets have the same length.
         CROP for cropping the length of all added data sets to the length of the
@@ -142,7 +138,7 @@ class MergeChannelData(object):
             for c in chs:
                 length = max(length, len(c))
             for c in chs:
-                for i in range(len(c), length):
+                for _ in range(len(c), length):
                     c.append(0.0)
             return chs
         def crop(chs):
@@ -165,34 +161,16 @@ class MergeChannelData(object):
                 channels = fill_with_zeros(channels)
             elif self._on_length_conflict == MergeChannelData.CROP:
                 channels = crop(channels)
-            elif self._on_length_conflict == MergeChannelData.RAISE_ERROR_EXCEPT_EMPTY:
-                length = 0
-                empty = True
-                for c in channels:
-                    if c != [0.0, 0.0]:
-                        if empty:
-                            length = len(c)
-                            empty = False
-                        elif len(c) != length:
-                            raise RuntimeError("The data sets do not have the same length")
-                channels = fill_with_zeros(channels)
         return channels, labels
 
     def _IsEmpty(self):
         """
         Looks up if the merger contains data.
-        This also depends on the length conflict strategy. Normally the merger
-        considers itself empty only if no data sets have been added. But when
-        the strategy is set to RAISE_ERROR_EXCEPT_EMPTY, it also considers itself
-        empty if only empty data sets have been added.
+        This also depends on the length conflict strategy. The merger considers
+        itself empty only if no data sets have been added.
         @retval : True if the merger is empty, False otherwise
         """
         if self._data.GetData() == []:
-            return True
-        elif self._on_length_conflict == MergeChannelData.RAISE_ERROR_EXCEPT_EMPTY:
-            for d in self._data.GetData():
-                if not d.IsEmpty():
-                    return False
             return True
         else:
             return False
@@ -211,10 +189,6 @@ class MergeChannelData(object):
         """
         if self._data.GetData() == []:
             return 2
-        elif self._on_length_conflict == MergeChannelData.RAISE_ERROR_EXCEPT_EMPTY:
-            for d in self._data.GetData():
-                if not d.IsEmpty():
-                    return len(d)
         elif self._on_length_conflict == MergeChannelData.RAISE_ERROR:
             return len(self._data.GetData()[0])
         elif self._on_length_conflict == MergeChannelData.FILL_WITH_ZEROS:
@@ -281,11 +255,11 @@ class MergeSignals(MergeChannelData):
 
     The merged Signals must have the same sampling rate.
     """
-    def __init__(self, signals=[], merge_strategy=MergeChannelData._FIRST_DATASET_FIRST, on_length_conflict=MergeChannelData.RAISE_ERROR_EXCEPT_EMPTY):
+    def __init__(self, signals=[], merge_strategy=MergeChannelData._FIRST_DATASET_FIRST, on_length_conflict=MergeChannelData.RAISE_ERROR):
         """
         @param signals: a list of Signals that shall be added to the merger. As the constructor can not return the data ids for these Signals, they can only be removed from the merger with the Clear method.
         @param merge_strategy: a function that implements the strategy according to which the channels of the output Signal are sorted
-        @param on_length_conflict: one of the flags of the MergeSignals class for length conflict resolution (e.g. RAISE_ERROR_EXCEPT_EMPTY)
+        @param on_length_conflict: one of the flags of the MergeSignals class for length conflict resolution (e.g. RAISE_ERROR)
         """
         MergeChannelData.__init__(self, datasets=signals, merge_strategy=merge_strategy, on_length_conflict=on_length_conflict)
 
@@ -300,14 +274,10 @@ class MergeSignals(MergeChannelData):
             return sumpf.Signal()
         else:
             i = 0
-            if self._on_length_conflict == MergeSignals.RAISE_ERROR_EXCEPT_EMPTY:
-                while i < len(data) and data[i].IsEmpty():
-                    i += 1
             samplingrate = data[i % len(data)].GetSamplingRate()
             for d in data[i + 1:]:
                 if d.GetSamplingRate() != samplingrate:
-                    if self._on_length_conflict != MergeSignals.RAISE_ERROR_EXCEPT_EMPTY or not d.IsEmpty():
-                        raise RuntimeError("The Signals in the merger do not all have the same sampling rate")
+                    raise RuntimeError("The Signals in the merger do not all have the same sampling rate")
             channels, labels = self._GetChannelsAndLabels()
             return sumpf.Signal(channels=channels, samplingrate=samplingrate, labels=labels)
 
@@ -356,11 +326,11 @@ class MergeSpectrums(MergeChannelData):
 
     The merged Spectrums must have the same resolution.
     """
-    def __init__(self, spectrums=[], merge_strategy=MergeChannelData._FIRST_DATASET_FIRST, on_length_conflict=MergeChannelData.RAISE_ERROR_EXCEPT_EMPTY):
+    def __init__(self, spectrums=[], merge_strategy=MergeChannelData._FIRST_DATASET_FIRST, on_length_conflict=MergeChannelData.RAISE_ERROR):
         """
         @param spectrums: a list of Spectrums that shall be added to the merger. As the constructor can not return the data ids for these Spectrums, they can only be removed from the merger with the Clear method.
         @param merge_strategy: a function that implements the strategy according to which the channels of the output Signal are sorted
-        @param on_length_conflict: one of the flags of the MergeSpectrums class for length conflict resolution (e.g. RAISE_ERROR_EXCEPT_EMPTY)
+        @param on_length_conflict: one of the flags of the MergeSpectrums class for length conflict resolution (e.g. RAISE_ERROR)
         """
         MergeChannelData.__init__(self, datasets=spectrums, merge_strategy=merge_strategy, on_length_conflict=on_length_conflict)
 
@@ -375,14 +345,10 @@ class MergeSpectrums(MergeChannelData):
             return sumpf.Spectrum()
         else:
             i = 0
-            if self._on_length_conflict == MergeSpectrums.RAISE_ERROR_EXCEPT_EMPTY:
-                while i < len(data) and data[i].IsEmpty():
-                    i += 1
             resolution = data[i % len(data)].GetResolution()
             for d in data[i + 1:]:
                 if d.GetResolution() != resolution:
-                    if self._on_length_conflict != MergeSpectrums.RAISE_ERROR_EXCEPT_EMPTY or not d.IsEmpty():
-                        raise RuntimeError("The Spectrums in the merger do not all have the same resolution")
+                    raise RuntimeError("The Spectrums in the merger do not all have the same resolution")
             channels, labels = self._GetChannelsAndLabels()
             return sumpf.Spectrum(channels=channels, resolution=resolution, labels=labels)
 

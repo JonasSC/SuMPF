@@ -157,23 +157,7 @@ class TestMergeSpectrums(unittest.TestCase):
         self.merger.SetLengthConflictStrategy(sumpf.modules.MergeSpectrums.CROP)
         channels = self.merger.GetOutput().GetChannels()
         self.assertEqual(channels[0], self.spectrum1.GetChannels()[0][0:2])         # the longer Spectrum's channels should be cropped during the merge
-        self.assertEqual(channels[3:6], self.spectrum3.GetChannels())                   # the shorter Spectrum should simply be copied
-        self.merger.SetLengthConflictStrategy(sumpf.modules.MergeSpectrums.RAISE_ERROR_EXCEPT_EMPTY)
-        self.assertRaises(RuntimeError, self.merger.GetOutput)                      # this should fail because channels do not have the same length
-        self.merger.RemoveInput(id3)
-        ide = self.merger.AddInput(sumpf.Spectrum())
-        channels = self.merger.GetOutput().GetChannels()
-        resolution = self.merger.GetOutput().GetResolution()
-        self.assertEqual(channels[0:3], self.spectrum1.GetChannels())               # the first Spectrum should simply be copied
-        self.assertEqual(channels[3], (0.0,) * len(self.spectrum1))                 # the empty Spectrum should be stretched with zeros
-        self.assertEqual(resolution, self.spectrum1.GetResolution())                # the resolution should have been taken from the non empty Spectrum
-        self.merger.RemoveInput(id1)
-        id5 = self.merger.AddInput(self.spectrum5)
-        channels = self.merger.GetOutput().GetChannels()
-        samplingrate = self.merger.GetOutput().GetResolution()
-        self.assertEqual(channels[0], (0.0,) * len(self.spectrum5))                 # the empty Spectrum should again be stretched with zeros
-        self.assertEqual(channels[1:3], self.spectrum5.GetChannels())               # the non empty Spectrum should simply be copied
-        self.assertEqual(samplingrate, self.spectrum1.GetResolution())              # the resolution should have been taken from the non empty Signal
+        self.assertEqual(channels[3:6], self.spectrum3.GetChannels())               # the shorter Spectrum should simply be copied
 
     def test_connections(self):
         """

@@ -128,10 +128,7 @@ class Signal(ChannelData):
             labels = self.GetLabels()
         else:
             self.__CheckOtherSignal(other)
-            if other.IsEmpty():
-                channels = self.GetChannels()
-            else:
-                channels = numpy.add(self.GetChannels(), other.GetChannels())
+            channels = numpy.add(self.GetChannels(), other.GetChannels())
             labels = tuple(["Sum %i" % (i + 1) for i in range(len(channels))])
         return Signal(channels=channels, samplingrate=self.GetSamplingRate(), labels=labels)
 
@@ -166,15 +163,8 @@ class Signal(ChannelData):
             labels = self.GetLabels()
         else:
             self.__CheckOtherSignal(other)
-            if other.IsEmpty():
-                channels = self.GetChannels()
-            else:
-                if self.IsEmpty():
-                    channels = numpy.subtract(0.0, other.GetChannels())
-                else:
-                    channels = numpy.subtract(self.GetChannels(), other.GetChannels())
-                labels = tuple([" %i" % (i + 1) for i in range(max(len(self.GetChannels()), len(other.GetChannels())))])
-            labels = tuple(["Difference %i" % (i + 1) for i in range(len(channels))])
+            channels = numpy.subtract(self.GetChannels(), other.GetChannels())
+            labels = tuple(["Difference %i" % (i + 1) for i in range(max(len(self.GetChannels()), len(other.GetChannels())))])
         return Signal(channels=channels, samplingrate=self.GetSamplingRate(), labels=labels)
 
     def __rsub__(self, other):
@@ -215,10 +205,7 @@ class Signal(ChannelData):
             labels = self.GetLabels()
         else:
             self.__CheckOtherSignal(other)
-            if other.IsEmpty():
-                channels = self.GetChannels()
-            else:
-                channels = numpy.multiply(self.GetChannels(), other.GetChannels())
+            channels = numpy.multiply(self.GetChannels(), other.GetChannels())
             labels = tuple(["Product %i" % (i + 1) for i in range(len(channels))])
         return Signal(channels=channels, samplingrate=self.GetSamplingRate(), labels=labels)
 
@@ -259,9 +246,7 @@ class Signal(ChannelData):
             labels = self.GetLabels()
         else:
             self.__CheckOtherSignal(other)
-            if self.IsEmpty():
-                selfvalue = 0.0
-            elif len(other) != len(self):
+            if len(other) != len(self):
                 raise ValueError("The other Signal has a different length")
             for c in other.GetChannels():
                 if numpy.prod(numpy.shape(numpy.nonzero(c))) == 0:
@@ -304,7 +289,6 @@ class Signal(ChannelData):
             raise ValueError("The other Signal has a different sampling rate")
         if len(other.GetChannels()) != len(self.GetChannels()) and 1 not in (len(other.GetChannels()), len(self.GetChannels())):
             raise ValueError("The other Signal has a different number of channels")
-        if not (self.IsEmpty() or other.IsEmpty()):
-            if len(other) != len(self):
-                raise ValueError("The other Signal has a different length")
+        if len(other) != len(self):
+            raise ValueError("The other Signal has a different length")
 

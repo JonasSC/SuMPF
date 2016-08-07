@@ -78,20 +78,11 @@ class CompareSignals(object):
         signal2 = self.__signal2
         # checks
         if signal1.GetSamplingRate() != signal2.GetSamplingRate():
-            if signal1.IsEmpty() or signal2.IsEmpty():
-                return sumpf.Signal()
-            else:
-                raise ValueError("The Signals do not have the same sampling rate (Signal1: %f, Signal2: %f)" % (signal1.GetSamplingRate(), signal2.GetSamplingRate()))
+            raise ValueError("The Signals do not have the same sampling rate (Signal1: %f, Signal2: %f)" % (signal1.GetSamplingRate(), signal2.GetSamplingRate()))
         elif len(signal1.GetChannels()) != len(signal2.GetChannels()):
-            if signal1.IsEmpty() or signal2.IsEmpty():
-                return sumpf.Signal(samplingrate=signal1.GetSamplingRate())
-            else:
-                raise ValueError("The Signals do not have the same number of channels (Signal1: %i, Signal2: %i)" % (len(signal1.GetChannels()), len(signal2.GetChannels())))
+            raise ValueError("The Signals do not have the same number of channels (Signal1: %i, Signal2: %i)" % (len(signal1.GetChannels()), len(signal2.GetChannels())))
         elif len(signal1) != len(signal2):
-            if signal1.IsEmpty() or signal2.IsEmpty():
-                return sumpf.Signal(channels=((0.0, 0.0),) * len(signal1.GetChannels()), samplingrate=signal1.GetSamplingRate())
-            else:
-                raise ValueError("The Signals do not have the same length (Signal1: %i, Signal2: %i)" % (len(signal1), len(signal2)))
+            raise ValueError("The Signals do not have the same length (Signal1: %i, Signal2: %i)" % (len(signal1), len(signal2)))
         else:
         # the actual comparison
             signal1_channels = signal1.GetChannels()

@@ -59,19 +59,6 @@ class ChannelData(object):
         """
         return self.__labels
 
-    def IsEmpty(self):
-        """
-        Returns if the data set is empty (all channels == (0.0, 0.0))
-        @retval : True, if data set is empty, False otherwise
-        """
-        if len(self) == 2:
-            for c in self.__channels:
-                for s in c:
-                    if s != 0.0:
-                        return False
-            return True
-        return False
-
     def __eq__(self, other):
         """
         This method is called when two data sets are compared with ==. It returns
