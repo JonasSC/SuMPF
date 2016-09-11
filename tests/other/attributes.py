@@ -63,57 +63,65 @@ class TestAttributes(unittest.TestCase):
         if fails != []:
             self.fail("The following " + str(len(fails)) + " classes are not sufficiently documented: " + str(fails))
 
-    def test_no_connectors_in_constructor(self):
+    def test_no_output_call_in_constructor(self):
         """
-        Tests, that no methods, that have been decorates as connectors are called
-        from within their class's constructor.
+        Tests, that no methods, that have been decorates as OutputConnectors are
+        called from within their class's constructor.
         This is just a simple test, that checks for direct calls of the connector
         in the constructor. It does not check, if the constructor calls a method,
         which calls the connector, which is of course also forbidden.
         """
+        # precompile regular expressions
+        re_indentation = re.compile("(\s*)")
+        re_class = re.compile("(\s*)(class)\s+([a-zA-Z_]+\w*)")
+        re_call = re.compile("(\s+self.)(\w+)(\()")
+        re_constructor = re.compile("(\s*)(def\s+__init__)(\(\s*self)")
+        re_method = re.compile("(\s+def\s+)(\w+)(\(\s*self)")
+        re_output = re.compile("\s*\@sumpf.Output\(")
+        # search for Output connectors, that are called from within a constructor
         for path in sumpf.config.get("source_dirs"):
             for root, dirs, files in os.walk(path):
                 for filename in files:
                     if filename.endswith(".py"):
                         with open(os.path.join(root, filename)) as f:
                             in_constructor = False
-                            is_connector = False
+                            is_output = False
                             constructor_indentation = 0
                             class_incm = [] # a list of tuples (indentation, class name, connector methods, methods that are called in the constructor)
                             for line in f:
-                                indentation = len(re.match("(\s*)", line).groups()[0])
+                                indentation = len(re_indentation.match(line).groups()[0])
                                 if indentation < constructor_indentation:
                                     in_constructor = False
                                 while class_incm != [] and indentation < class_incm[-1][0]:
                                     class_incm.pop()
-                                class_match = re.match("(\s*)(class)\s+([a-zA-Z_]+\w*)", line)
+                                class_match = re_class.match(line)
                                 if class_match:
                                     groups = class_match.groups()
                                     class_incm.append((len(groups[0]), groups[2], [], []))
                                 if in_constructor:
-                                    call_match = re.search("(\s+self.)(\w+)(\()", line)
+                                    call_match = re_call.search(line)
                                     if call_match:
                                         method_name = call_match.groups()[1]
                                         if method_name in class_incm[-1][2]:
-                                            self.fail("The connector method %s is called from the constructor of class %s" % (method_name, class_incm[-1][1]))
+                                            self.fail("The OutputConnector method %s is called from the constructor of class %s" % (method_name, class_incm[-1][1]))
                                         else:
                                             class_incm[-1][3].append(method_name)
                                 if class_incm != []:
-                                    constructor_match = re.match("(\s*)(def\s+__init__)(\(\s*self)", line)
+                                    constructor_match = re_constructor.match(line)
                                     if constructor_match:
                                         constructor_indentation = len(constructor_match.groups()[0])
                                         in_constructor = True
                                     else:
-                                        method_match = re.match("(\s+def\s+)(\w+)(\(\s*self)", line)
+                                        method_match = re_method.match(line)
                                         if method_match:
-                                            if is_connector:
+                                            if is_output:
                                                 method_name = method_match.groups()[1]
                                                 if method_name in class_incm[-1][3]:
-                                                    self.fail("The connector method %s is called from the constructor of class %s" % (method_name, class_incm[-1][1]))
+                                                    self.fail("The OutputConnector method %s is called from the constructor of class %s" % (method_name, class_incm[-1][1]))
                                                 else:
                                                     class_incm[-1][2].append(method_name)
-                                            is_connector = False
-                                connector_match = re.match("\s*\@sumpf.(Input|Trigger|MultiInput|Output)\(", line)
-                                if connector_match:
-                                    is_connector = True
+                                            is_output = False
+                                output_match = re_output.match(line)
+                                if output_match:
+                                    is_output = True
 
