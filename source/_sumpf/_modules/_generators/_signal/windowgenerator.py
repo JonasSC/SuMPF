@@ -35,7 +35,7 @@ class WindowFunction(object):
     """
     def __call__(self, length):
         """
-        Virtual base method that makes the instance call-able.
+        Virtual base method that makes the instance callable.
         @param length: the full length of the window (in samples) for both the rising and the falling edge
         @retval : a tuple of samples with the rising and the falling edge of the window
         """
@@ -89,11 +89,11 @@ class WindowGenerator(SignalGenerator):
             width = rb - ra
             window = self.__function(2 * width)[0:width]
             samples = []
-            for i in range(ra):
+            for _ in range(ra):
                 samples.append(0.0)
             for s in window:
                 samples.append(s)
-            for i in range(self._length - rb):
+            for _ in range(self._length - rb):
                 samples.append(1.0)
             result = samples[0:self._length]
         else:
@@ -110,11 +110,11 @@ class WindowGenerator(SignalGenerator):
             width = fb - fa
             window = self.__function(2 * width)[width:]
             samples = []
-            for i in range(fa):
+            for _ in range(fa):
                 samples.append(1.0)
             for s in window:
                 samples.append(s)
-            for i in range(self._length - fb):
+            for _ in range(self._length - fb):
                 samples.append(0.0)
             if self.__raise_interval is None:
                 result = numpy.multiply(result, samples[0:self._length])

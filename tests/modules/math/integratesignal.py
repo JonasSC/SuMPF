@@ -56,7 +56,6 @@ class TestIntegrateSignal(unittest.TestCase):
         """
         Tests if the connectors are properly decorated.
         """
-        # FourierTransform
         ins = sumpf.modules.IntegrateSignal()
         self.assertEqual(ins.SetInput.GetType(), sumpf.Signal)
         self.assertEqual(ins.SetOffset.GetType(), float)

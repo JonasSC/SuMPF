@@ -52,10 +52,9 @@ class TestCorrelateSignals(unittest.TestCase):
             cor.SetInput2(sumpf.Signal(channels=(channels[1],), samplingrate=55.2))
             for mode in expected_results[channels]:
                 cor.SetCorrelationMode(mode)
-                if True:#mode in [sumpf.modules.CorrelateSignals.FULL, sumpf.modules.CorrelateSignals.SPECTRUM, sumpf.modules.CorrelateSignals.SAME]:
-                    self.assertEqual(cor.GetOutput().GetChannels(), (expected_results[channels][mode],))    # check correlation result
-                    self.assertEqual(cor.GetOutput().GetSamplingRate(), 55.2)                               # check if the sampling rate has been set as expected
-                    self.assertEqual(cor.GetOutput().GetLabels(), ("Cross Correlation 1",))                 # check if the label has been set as expected
+                self.assertEqual(cor.GetOutput().GetChannels(), (expected_results[channels][mode],))    # check correlation result
+                self.assertEqual(cor.GetOutput().GetSamplingRate(), 55.2)                               # check if the sampling rate has been set as expected
+                self.assertEqual(cor.GetOutput().GetLabels(), ("Cross Correlation 1",))                 # check if the label has been set as expected
 
     def test_autocorrelation(self):
         """

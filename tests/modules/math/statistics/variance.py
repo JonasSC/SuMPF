@@ -70,7 +70,7 @@ class TestVariance(unittest.TestCase):
                                          noinputs=[],
                                          output=variance.GetVariance)
 
-    @unittest.skipUnless(common.lib_available("numpy"), "These tests require the library 'numpy' to be available.")
+    @unittest.skipUnless(common.lib_available("numpy"), "This test requires the library 'numpy' to be available.")
     def test_spectrum_variance_connectors(self):
         """
         Tests if the connectors of the SpectrumVariance class are properly decorated.
