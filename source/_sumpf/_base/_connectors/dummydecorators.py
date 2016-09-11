@@ -14,16 +14,14 @@
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 
-from os import environ
+class DummyDecorator(object):
+    def __init__(self, *args, **kwargs):
+        pass
+    def __call__(self, func):
+        return func
 
-if "SUMPF_DISABLE_CONNECTORS" in environ and environ["SUMPF_DISABLE_CONNECTORS"] in (1, "1", "True", "true", "Yes", "yes", "Y", "y"):
-    from ._connectors.dummydecorators import Input, Trigger, MultiInput, Output
-else:
-    from ._connectors.functions import connect, disconnect, disconnect_all, \
-                                       deactivate_output, activate_output, \
-                                       destroy_connectors, set_multiple_values
-    from ._connectors.decorators import Input, Trigger, MultiInput, Output
-    from ._connectors import progressindicators
-
-del environ
+Input = DummyDecorator
+Trigger = DummyDecorator
+MultiInput = DummyDecorator
+Output = DummyDecorator
 

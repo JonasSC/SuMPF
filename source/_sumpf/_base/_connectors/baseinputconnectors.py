@@ -15,6 +15,8 @@
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 import collections
+import weakref
+import sumpf
 from .baseconnectors import Connector, TypedConnector
 from . import outputconnectors
 from .connectorproxy import ConnectorProxy
@@ -35,47 +37,45 @@ class InputConnector(Connector):
         Connector.__init__(self, instance, method)
         self.__observers = []
         for o in observers:
-            method = getattr(self._instance(), o)
+            method = getattr(self.GetInstance(), o)
             if isinstance(method, ConnectorProxy):
                 self.__observers.append(method.GetConnector())
             else:
                 self.__observers.append(method)
         self._progress_indicator = nop_progress_indicator
+        self.__connections = []
 
-    def _Announce(self):
+    def Connect(self, connector):
         """
-        Protected method that announces to both the observing outputs and the
-        progress indicator, that this input is about to receive new data.
+        Please do not use this method as it might be changed in future versions.
+        Use the connect function instead.
+        @param connector: the connector to which this connector shall be connected
         """
-        self._progress_indicator.Announce(self)
-        self._AnnounceToObservers()
+        self.CheckConnection(connector)
+        self.__connections.append(weakref.ref(connector))
 
-    def _AnnounceToObservers(self):
+    def Disconnect(self, connector):
         """
-        Protected method that announces only to the observing outputs, that this
-        input is about to receive new data. The progress indicator is not notified.
+        Please do not use this method as it might be changed in future versions.
+        Use the disconnect function instead.
+        @param connector: the connector from which this connector shall be disconnected
         """
-        for o in self.__observers:
-            o.NoticeAnnouncement(self)
+        disconnected = False
+        for i, c in enumerate(self.__connections):
+            if c() is connector:
+                del self.__connections[i]
+                disconnected = True
+                break
+        if not disconnected:
+            raise ValueError("The connection, that shall be disconnected, has never been established.")
 
-    def _Report(self):
+    def DisconnectAll(self):
         """
-        Protected method that reports to both the observing outputs and the
-        progress indicator, that this input has received new data and that the
-        outputs need to recalculate their value.
+        Please do not use this method as it might be changed in future versions.
+        Use the disconnect_all function instead.
         """
-        self._progress_indicator.Report(self)
-        self._progress_indicator = nop_progress_indicator
-        self._ReportToObservers()
-
-    def _ReportToObservers(self):
-        """
-        Protected method that reports only to the observing outputs, that this
-        input has received new data and that the outputs need to recalculate their
-        value. The progress indicator is not notified.
-        """
-        for o in self.__observers:
-            o.NoticeValueChange(self)
+        while len(self.__connections) > 0:
+            sumpf.disconnect(self, self.__connections[0]())
 
     def CheckConnection(self, connector):
         """
@@ -121,6 +121,41 @@ class InputConnector(Connector):
         @retval : a ProgressIndicator instance
         """
         return self._progress_indicator
+
+    def _Announce(self):
+        """
+        Protected method that announces to both the observing outputs and the
+        progress indicator, that this input is about to receive new data.
+        """
+        self._progress_indicator.Announce(self)
+        self._AnnounceToObservers()
+
+    def _AnnounceToObservers(self):
+        """
+        Protected method that announces only to the observing outputs, that this
+        input is about to receive new data. The progress indicator is not notified.
+        """
+        for o in self.__observers:
+            o.NoticeAnnouncement(self)
+
+    def _Report(self):
+        """
+        Protected method that reports to both the observing outputs and the
+        progress indicator, that this input has received new data and that the
+        outputs need to recalculate their value.
+        """
+        self._progress_indicator.Report(self)
+        self._progress_indicator = nop_progress_indicator
+        self._ReportToObservers()
+
+    def _ReportToObservers(self):
+        """
+        Protected method that reports only to the observing outputs, that this
+        input has received new data and that the outputs need to recalculate their
+        value. The progress indicator is not notified.
+        """
+        for o in self.__observers:
+            o.NoticeValueChange(self)
 
 
 

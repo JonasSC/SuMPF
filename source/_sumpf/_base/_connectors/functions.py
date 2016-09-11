@@ -47,7 +47,7 @@ def connect(a, b):
 def disconnect(a, b):
     """
     Disconnects two methods that have been decorated with either Input or Output.
-    @param a, b: Should be one Input and one Output. The order is not important
+    @param a, b: Should be one input and one output, that are connected. The order is not important
     """
     a.Disconnect(b)
     b.Disconnect(a)

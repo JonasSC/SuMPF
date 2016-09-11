@@ -15,7 +15,6 @@
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 import weakref
-import sumpf
 
 
 class Connector(object):
@@ -28,10 +27,8 @@ class Connector(object):
     """
     def __init__(self, instance, method):
         self.__doc__ = method.__doc__           # This way the docstring of the decorated method remains the same
-        self._instance = weakref.ref(instance)  # the weak reference avoids reference counting errors due to circular references
-        self.__strong_reference = None          # stores a strong reference to the instance, when the connector is connected; this allows to create signal processing chains, without storing all processing objects persistently
+        self.__instance = weakref.ref(instance) # the weak reference avoids reference counting errors due to circular references
         self._method = method
-        self._connections = []
 
     def __call__(self, *args, **kwargs):
         """
@@ -68,9 +65,7 @@ class Connector(object):
         Use the connect function instead.
         @param connector: the connector to which this connector shall be connected
         """
-        self.CheckConnection(connector)
-        self._connections.append(connector)
-        self.__strong_reference = self._instance()
+        raise NotImplementedError("This method should have been overridden in a derived class")
 
     def Disconnect(self, connector):
         """
@@ -78,17 +73,14 @@ class Connector(object):
         Use the disconnect function instead.
         @param connector: the connector from which this connector shall be disconnected
         """
-        self._connections.remove(connector)
-        if len(self._connections) == 0:
-            self.__strong_reference = None
+        raise NotImplementedError("This method should have been overridden in a derived class")
 
     def DisconnectAll(self):
         """
         Please do not use this method as it might be changed in future versions.
         Use the disconnect_all function instead.
         """
-        while len(self._connections) > 0:
-            sumpf.disconnect(self, self._connections[0])
+        raise NotImplementedError("This method should have been overridden in a derived class")
 
     def CheckConnection(self, connector):
         """
@@ -99,9 +91,7 @@ class Connector(object):
         parent-class.
         @param connector: the connector to which the connection shall be checked
         """
-        # check if connection already exists
-        if connector in self._connections:
-            raise ValueError("The connection already exists")
+        pass
 
     def GetName(self):
         """
@@ -112,7 +102,10 @@ class Connector(object):
         of the decorated method.
         @retval : a string CLASSNAME.METHODNAME
         """
-        return ".".join((self._instance().__class__.__name__, self._method.__name__))
+        return ".".join((self.__instance().__class__.__name__, self._method.__name__))
+
+    def GetInstance(self):
+        return self.__instance()
 
 
 

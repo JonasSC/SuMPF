@@ -340,6 +340,6 @@ class MacroTestClass(object):
         self.GetInversion = self.__inversion.GetOutput
 
     def Destroy(self):
+        sumpf.disconnect_all(self.__inversion)  # begin the destruction at the back of the processing chain
         sumpf.disconnect_all(self.__input)
-        sumpf.disconnect_all(self.__inversion)
 

@@ -51,7 +51,7 @@ class MultiInputConnectorBase(TypedInputConnector):
         @retval : the id returned by the replaced method
         """
         self._Announce()
-        result = self._method(self._instance(), *args, **kwargs)
+        result = self._method(self.GetInstance(), *args, **kwargs)
         if self.__self_announcements == 0:
             self._Report()
         else:
@@ -82,7 +82,7 @@ class MultiInputConnectorBase(TypedInputConnector):
         if self.__connections[connector] is not None:
             self.__connections[connector] = self._ReplaceData(data_id=self.__connections[connector], data=value)
         else:
-            self.__connections[connector] = self._method(self._instance(), value)
+            self.__connections[connector] = self._method(self.GetInstance(), value)
         self.__announcements.discard(connector)
         if self.__announcements == set() and self.__self_announcements == 0:
             self._Report()
@@ -147,7 +147,7 @@ class NonReplacingMultiInputConnector(MultiInputConnectorBase):
         @retval : the data id under which the new data is stored
         """
         self._remove_method.CallMethod(data_id)
-        return self._method(self._instance(), data)
+        return self._method(self.GetInstance(), data)
 
 
 

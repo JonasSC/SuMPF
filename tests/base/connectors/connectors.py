@@ -201,7 +201,6 @@ class TestConnectors(unittest.TestCase):
         self.assertRaises(TypeError, sumpf.connect, *(self.obj1.SetValue, self.obj2.SetValue))              # connecting should fail if both connectors are inputs
         self.assertRaises(ValueError, sumpf.connect, *(self.obj1.GetValue, self.obj1.SetValue))             # connecting should fail if the output is connected to an input that updates the output automatically, because that would cause an infinite loop
         sumpf.connect(self.obj1.GetValue, self.obj1.SetValueNoUpdate)
-        self.assertRaises(ValueError, sumpf.connect, *(self.obj1.GetValue, self.obj1.SetValueNoUpdate))     # connecting should fail if the connection already exists
         self.assertRaises(ValueError, sumpf.connect, *(self.obj1.GetValue2, self.obj1.SetValueNoUpdate))    # connecting should fail if input is already connected
         self.assertRaises(ValueError, sumpf.disconnect, *(self.obj1.GetValue, self.obj2.SetValue))          # disconnecting should fail if connection does not exist
         sumpf.disconnect(self.obj1.GetValue, self.obj1.SetValueNoUpdate)
@@ -375,19 +374,27 @@ class TestConnectors(unittest.TestCase):
         sumpf.connect(self.obj1.GetValue, self.obj2.SetValue)
         sumpf.connect(self.obj2.GetText, self.obj1.SetText)
         sumpf.disconnect_all(self.obj1)
-        gc.collect()
         current_instance_count = ExampleClass.instance_count
         sumpf.destroy_connectors(self.obj1)
         del self.obj1
-        gc.collect()
         if ExampleClass.instance_count != current_instance_count - 1:
+            deletion_failed = True
             for o in gc.garbage:
                 if isinstance(o, ExampleClass):
                     collected = sumpf.collect_garbage()
                     self.assertIsInstance(collected, int)  # sumpf.collect_garbage shall return the integer number of collected items
                     self.assertEqual(gc.garbage, [])       # garbage collection should have removed all garbage
-                    return
-            self.fail("The object has neither been deleted, nor has it been marked as garbage")
+                    deletion_failed = False
+                    break
+            if deletion_failed:
+                self.fail("The object has neither been deleted, nor has it been marked as garbage")
+        # deletion of connected objects
+        o1 = ExampleClass()
+        o2 = ExampleClass()
+        sumpf.connect(o1.GetFloat, o2.SetValue2)
+        del o1
+        del o2
+        self.assertEqual(gc.collect(), 0)
 
     @unittest.skipUnless(common.lib_available("numpy"), "This test requires the library 'numpy' to be available.")
     def test_macro(self):

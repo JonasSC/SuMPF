@@ -14,16 +14,24 @@
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 
-from os import environ
+"""
+i    o    I    O
+C
+F -> A -> A -> A
+  -> R
+________________
+               C
+          Q <-
+     Q <- V
+            -> R
+"""
 
-if "SUMPF_DISABLE_CONNECTORS" in environ and environ["SUMPF_DISABLE_CONNECTORS"] in (1, "1", "True", "true", "Yes", "yes", "Y", "y"):
-    from ._connectors.dummydecorators import Input, Trigger, MultiInput, Output
-else:
-    from ._connectors.functions import connect, disconnect, disconnect_all, \
-                                       deactivate_output, activate_output, \
-                                       destroy_connectors, set_multiple_values
-    from ._connectors.decorators import Input, Trigger, MultiInput, Output
-    from ._connectors import progressindicators
+from .singleinputconnector import SingleInputConnector
+from .outputconnectors import NotCachingOutputConnector
 
-del environ
+
+class MacroInputConnector(SingleInputConnector):
+    def __init__(self, instance, input_data_type, method, output_data_type):
+        SingleInputConnector.__init__(self, instance=instance, data_type=input_data_type, method=method, observers=())
+        self.GetOutput = NotCachingOutputConnector()
 

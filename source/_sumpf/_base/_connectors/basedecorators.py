@@ -14,9 +14,6 @@
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 
-from .connectorproxy import ConnectorProxy
-
-
 class ConnectorDecorator(object):
     """
     An abstract base class for the decoration of methods so they can be used as Connectors.
@@ -57,15 +54,27 @@ class ConnectorDecorator(object):
         @param instance: the instance of which a method shall be replaced
         @param instance_type: the type of the instance
         """
-        connector = self._GetConnector(instance)
-        setattr(instance, self._method.__name__, connector)
-        return ConnectorProxy(connector=connector, instance=instance)
+        raise NotImplementedError("This method should have been overridden in a derived class")
 
     def _GetConnector(self, instance):
         """
         An abstract method in which the derived classes can initialize the correct Connector-object.
         """
         raise NotImplementedError("This method should have been overridden in a derived class")
+
+
+
+class InputDecorator(ConnectorDecorator):
+    def __get__(self, instance, instance_type):
+        """
+        Makes this class a non-data descriptor for the decorated method.
+        Initializes the Connector-object and replaces the decorated method with it.
+        @param instance: the instance of which a method shall be replaced
+        @param instance_type: the type of the instance
+        """
+        connector = self._GetConnector(instance)
+        setattr(instance, self._method.__name__, connector)
+        return connector
 
 
 

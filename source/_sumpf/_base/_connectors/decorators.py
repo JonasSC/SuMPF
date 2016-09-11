@@ -15,14 +15,15 @@
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 import sumpf
-from .basedecorators import ConnectorDecorator, TypedDecorator, ObservedDecorator
+from .basedecorators import ConnectorDecorator, InputDecorator, TypedDecorator, ObservedDecorator
+from .connectorproxy import ConnectorProxy
 from .singleinputconnector import SingleInputConnector
 from .triggerinputconnector import TriggerInputConnector
 from .multiinputconnector import NonReplacingMultiInputConnector, ReplacingMultiInputConnector
 from .outputconnectors import CachingOutputConnector, NotCachingOutputConnector
 
 
-class Input(ConnectorDecorator, TypedDecorator, ObservedDecorator):
+class Input(InputDecorator, TypedDecorator, ObservedDecorator):
     """
     A decorator that marks a method as an input for single connections.
     These connections can be used to automatically update a processing chain
@@ -46,7 +47,7 @@ class Input(ConnectorDecorator, TypedDecorator, ObservedDecorator):
 
 
 
-class Trigger(ConnectorDecorator, ObservedDecorator):
+class Trigger(InputDecorator, ObservedDecorator):
     """
     A decorator that marks a method as a trigger input.
     The decorated method must be callable without arguments.
@@ -67,7 +68,7 @@ class Trigger(ConnectorDecorator, ObservedDecorator):
 
 
 
-class MultiInput(ConnectorDecorator, TypedDecorator, ObservedDecorator):
+class MultiInput(InputDecorator, TypedDecorator, ObservedDecorator):
     """
     A decorator that marks a method as an input for multiple connections.
     These connections can be used to automatically update a processing chain
@@ -131,6 +132,17 @@ class Output(ConnectorDecorator, TypedDecorator):
         ConnectorDecorator.__init__(self)
         TypedDecorator.__init__(self, data_type=data_type)
         self.__caching = caching
+
+    def __get__(self, instance, instance_type):
+        """
+        Makes this class a non-data descriptor for the decorated method.
+        Initializes the Connector-object and replaces the decorated method with it.
+        @param instance: the instance of which a method shall be replaced
+        @param instance_type: the type of the instance
+        """
+        connector = self._GetConnector(instance)
+        setattr(instance, self._method.__name__, connector)
+        return ConnectorProxy(connector=connector, instance=instance)
 
     def _GetConnector(self, instance):
         if self.__caching or \

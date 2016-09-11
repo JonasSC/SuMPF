@@ -14,6 +14,8 @@
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 
+import weakref
+import sumpf
 from .baseconnectors import Connector, TypedConnector
 #from . import baseinputconnectors  # doesn't work here because of circular imports. The import is now in OutputConnector.CheckConnection
 
@@ -34,6 +36,7 @@ class OutputConnector(Connector, TypedConnector):
         self.__value_has_changed = False
         self.__is_deactivated = False
         self.__announcements = set()
+        self.__connections = [] # stores tuples (connector, instance). The instance is only saved to prevent its deletion through garbage collection
 
     def NoticeAnnouncement(self, connector):
         """
@@ -43,13 +46,13 @@ class OutputConnector(Connector, TypedConnector):
         unnecessary computations in forked connection chains can be avoided.
         @param connector: the observed input connector
         """
-        for c in self._connections:
-            c.SetProgressIndicator(connector.GetProgressIndicator())    # propagate progress indicator
+        for c, _ in self.__connections:
+            c().SetProgressIndicator(connector.GetProgressIndicator())    # propagate progress indicator
             # The announcement of a value change of this connector will be
             # done in the connected input connectors. This way, an output
             # that is not connected to any input will not contribute to the
             # progress estimation.
-            c.NoticeAnnouncement(self)
+            c().NoticeAnnouncement(self)
         self.__announcements.add(connector)
 
     def NoticeValueChange(self, connector):
@@ -64,8 +67,40 @@ class OutputConnector(Connector, TypedConnector):
             if self.__is_deactivated:
                 self.__value_has_changed = True
             else:
-                for c in self._connections:
-                    c.NoticeValueChange(self)
+                for c, _ in self.__connections:
+                    c().NoticeValueChange(self)
+
+    def Connect(self, connector):
+        """
+        Please do not use this method as it might be changed in future versions.
+        Use the connect function instead.
+        @param connector: the connector to which this connector shall be connected
+        """
+        self.CheckConnection(connector)
+        self.__connections.append((weakref.ref(connector), connector.GetInstance()))
+
+    def Disconnect(self, connector):
+        """
+        Please do not use this method as it might be changed in future versions.
+        Use the disconnect function instead.
+        @param connector: the connector from which this connector shall be disconnected
+        """
+        disconnected = False
+        for i, c in enumerate(self.__connections):
+            if c[0]() is connector:
+                del self.__connections[i]
+                disconnected = True
+                break
+        if not disconnected:
+            raise ValueError("The connection, that shall be disconnected, has never been established.")
+
+    def DisconnectAll(self):
+        """
+        Please do not use this method as it might be changed in future versions.
+        Use the disconnect_all function instead.
+        """
+        while len(self.__connections) > 0:
+            sumpf.disconnect(self, self.__connections[0][0]())
 
     def CheckConnection(self, connector):
         """
@@ -97,10 +132,10 @@ class OutputConnector(Connector, TypedConnector):
         self.__is_deactivated = False
         if self.__value_has_changed:
             self.__announcements = set()
-            for c in self._connections:
-                c.NoticeAnnouncement(self)
-            for c in self._connections:
-                c.NoticeValueChange(self)
+            for c, _ in self.__connections:
+                c().NoticeAnnouncement(self)
+            for c, _ in self.__connections:
+                c().NoticeValueChange(self)
             self.__value_has_changed = False
 
     def IsActive(self):
@@ -130,7 +165,7 @@ class NotCachingOutputConnector(OutputConnector):
         """
         By making the object callable, it mimics the replaced method.
         """
-        return self._method(self._instance(), *args, **kwargs)
+        return self._method(self.GetInstance(), *args, **kwargs)
 
 
 
@@ -154,7 +189,7 @@ class CachingOutputConnector(OutputConnector):
         By making the object callable, it mimics the replaced method.
         """
         if not self.__cache_is_valid:
-            self.__cached_value = self._method(self._instance(), *args, **kwargs)
+            self.__cached_value = self._method(self.GetInstance(), *args, **kwargs)
             self.__cache_is_valid = True
         return self.__cached_value
 
