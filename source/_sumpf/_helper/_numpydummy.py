@@ -85,6 +85,12 @@ def true_divide(a, b):
         return c / d
     return algebra_base(a, b, function)
 
+def power(a, b):
+    """
+    an alternative for numpy.power
+    """
+    return algebra_base(a, b, function=lambda c, d: c ** d)
+
 def abs(x):
     """
     an alternative for numpy.abs

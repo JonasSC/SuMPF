@@ -26,6 +26,7 @@ from .correlatesignals import TestCorrelateSignals
 from .differentiatesignal import TestDifferentiateSignal
 from .fouriertransform import TestFourierTransform
 from .integratesignal import TestIntegrateSignal
+from .level import TestLevel
 from .logarithmsignal import TestLogarithmSignal
 from .rectifysignal import TestRectifySignal
 from .resamplesignal import TestResampleSignal

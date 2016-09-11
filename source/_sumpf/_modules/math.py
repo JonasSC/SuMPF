@@ -22,6 +22,7 @@ from ._math.comparesignals import CompareSignals
 from ._math.conjugatespectrum import ConjugateSpectrum
 from ._math.differentiatesignal import DifferentiateSignal
 from ._math.integratesignal import IntegrateSignal
+from ._math.level import Level
 from ._math.logarithmsignal import LogarithmSignal
 from ._math.rectifysignal import RectifySignal
 from ._math.sumchanneldata import SumSignals, SumSpectrums

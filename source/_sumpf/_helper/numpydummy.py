@@ -16,10 +16,10 @@
 
 """
 This name space contains functions that emulate some functions from the NumPy
-library. The functions are far slower than their NumPy equivalents. They are only used
-if NumPy is not available.
+library. The functions are far slower than their NumPy equivalents. They are only
+used if NumPy is not available.
 """
 
-from ._numpydummy import float32, add, subtract, multiply, divide, true_divide, \
+from ._numpydummy import float32, add, subtract, multiply, divide, true_divide, power, \
                          abs, angle, conjugate, zeros, mean, var, shape, prod, nonzero
 

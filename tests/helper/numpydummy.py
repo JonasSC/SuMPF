@@ -118,6 +118,18 @@ class TestNumpyDummy(unittest.TestCase):
                 r2 = sumpf.helper.numpydummy.true_divide(self.arrayvalues[a][0], self.arrayvalues[b][1])
                 self.__Compare(r1, r2, a, b)
 
+    def test_power(self):
+        a = [(1, 2), (3, 4)]
+        b = [(5, 6)]
+        n = numpy.power(a, b)
+        d = sumpf.helper.numpydummy.power(a, b)
+        self.assertEqual(numpy.linalg.norm(numpy.subtract(n, d)), 0)
+        for a in range(len(self.arrayvalues)):
+            for b in range(len(self.arrayvalues)):
+                r1 = numpy.power(numpy.abs(self.arrayvalues[a][0]), self.arrayvalues[b][1])
+                r2 = sumpf.helper.numpydummy.power(numpy.abs(self.arrayvalues[a][0]), self.arrayvalues[b][1])
+                self.__Compare(r1, r2, a, b)
+
     def test_abs(self):
         for i in range(len(self.complexvalues)):
             r1 = numpy.abs(self.complexvalues[i])
