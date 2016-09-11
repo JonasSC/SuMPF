@@ -25,7 +25,7 @@ class TestShiftSignal(unittest.TestCase):
     """
     def test_function(self):
         """
-        Tests the function of the CutSignal module.
+        Tests the basic functionality of the ShiftSignal module.
         """
         signal = sumpf.Signal(channels=((1.0, 2.0, 3.0, 4.0, 5.0), (6.0, 7.0, 8.0, 9.0, 0.0)), samplingrate=12.0, labels=("1", None))
         shifted1 = sumpf.Signal(channels=((4.0, 5.0, 1.0, 2.0, 3.0), (9.0, 0.0, 6.0, 7.0, 8.0)), samplingrate=12.0, labels=("1", None))
@@ -45,6 +45,23 @@ class TestShiftSignal(unittest.TestCase):
         shift.SetCircular(True)
         self.assertEqual(shift.GetOutput(), shifted2)
 
+    def test_excessive_shift(self):
+        """
+        Tests if shifting a Signal by more than its length does not change the
+        length of the resulting Signal.
+        """
+        signal = sumpf.Signal(channels=((1.0, 2.0, 3.0, 4.0, 5.0), (6.0, 7.0, 8.0, 9.0, 0.0)), samplingrate=12.0, labels=("1", None))
+        shifted1 = sumpf.modules.ShiftSignal(signal=signal, shift=2, circular=True).GetOutput()
+        shifted2 = sumpf.modules.ShiftSignal(signal=signal, shift=-2, circular=True).GetOutput()
+        null = sumpf.Signal(channels=((0.0,) * len(signal),) * len(signal.GetChannels()), samplingrate=signal.GetSamplingRate(), labels=signal.GetLabels())
+        shift = sumpf.modules.ShiftSignal(signal=signal, shift=len(signal) + 2, circular=True)
+        self.assertEqual(shift.GetOutput(), shifted1)
+        shift.SetShift(-len(signal) - 2)
+        self.assertEqual(shift.GetOutput(), shifted2)
+        shift.SetCircular(False)
+        self.assertEqual(shift.GetOutput(), null)
+        shift.SetShift(len(signal) + 3)
+        self.assertEqual(shift.GetOutput(), null)
 
     def test_connectors(self):
         """

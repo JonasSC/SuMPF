@@ -71,32 +71,26 @@ class ShiftSignal(object):
         """
         result = self.__signal
         if self.__shift < 0:
-            channels = []
-            for c in self.__signal.GetChannels():
-                channel = []
-                for i in range(-self.__shift, len(c)):
-                    channel.append(c[i])
-                if self.__circular:
-                    for i in range(-self.__shift):
-                        channel.append(c[i])
-                else:
-                    for i in range(-self.__shift):
-                        channel.append(0.0)
-                channels.append(tuple(channel))
+            if self.__circular:
+                shift = (-self.__shift) % len(self.__signal)
+                kept = tuple(c[shift:] for c in self.__signal.GetChannels())
+                wrapped = tuple(c[0:shift] for c in self.__signal.GetChannels())
+                channels = tuple(k + w for k, w in zip(kept, wrapped))
+            else:
+                kept = tuple(c[-self.__shift:] for c in self.__signal.GetChannels())
+                wrapped = (0.0,) * min(-self.__shift, len(self.__signal))
+                channels = tuple(k + wrapped for k in kept)
             result = sumpf.Signal(channels=tuple(channels), samplingrate=self.__signal.GetSamplingRate(), labels=self.__signal.GetLabels())
         elif self.__shift > 0:
-            channels = []
-            for c in self.__signal.GetChannels():
-                channel = []
-                if self.__circular:
-                    for i in range(len(c) - self.__shift, len(c)):
-                        channel.append(c[i])
-                else:
-                    for i in range(self.__shift):
-                        channel.append(0.0)
-                for i in range(len(c) - self.__shift):
-                    channel.append(c[i])
-                channels.append(tuple(channel))
+            if self.__circular:
+                shift = self.__shift % len(self.__signal)
+                kept = tuple(c[0:-shift] for c in self.__signal.GetChannels())
+                wrapped = tuple(c[-shift:] for c in self.__signal.GetChannels())
+                channels = tuple(w + k for k, w in zip(kept, wrapped))
+            else:
+                kept = tuple(c[0:-self.__shift] for c in self.__signal.GetChannels())
+                wrapped = (0.0,) * min(self.__shift, len(self.__signal))
+                channels = tuple(wrapped + k for k in kept)
             result = sumpf.Signal(channels=tuple(channels), samplingrate=self.__signal.GetSamplingRate(), labels=self.__signal.GetLabels())
         return result
 
