@@ -74,10 +74,33 @@ class TestWindowGenerator(unittest.TestCase):
         both = sumpf.modules.WindowGenerator(raise_interval=(1, 9), fall_interval=(4, 6), samplingrate=42.0, length=10).GetSignal()
         self.assertEqual(both.GetChannels(), (raising * falling).GetChannels())
 
+    def test_negative_intervals(self):
+        """
+        Tests negative integers and None for the interval borders
+        """
+        self.assertEqual(sumpf.modules.WindowGenerator(raise_interval=(0, -7), fall_interval=(-3, -1), samplingrate=42.0, length=10).GetSignal(),
+                         sumpf.modules.WindowGenerator(raise_interval=(0, 3), fall_interval=(7, 9), samplingrate=42.0, length=10).GetSignal())
+        self.assertEqual(sumpf.modules.WindowGenerator(raise_interval=(-3, None), fall_interval=(-10, -7), samplingrate=42.0, length=10).GetSignal(),
+                         sumpf.modules.WindowGenerator(raise_interval=(7, 10), fall_interval=(0, 3), samplingrate=42.0, length=10).GetSignal())
+
+    def test_float_intervals(self):
+        """
+        Tests floats for the intervals
+        """
+        self.assertEqual(sumpf.modules.WindowGenerator(raise_interval=0.3, fall_interval=-0.3, samplingrate=42.0, length=10).GetSignal(),
+                         sumpf.modules.WindowGenerator(raise_interval=(0, 3), fall_interval=(7, 10), samplingrate=42.0, length=10).GetSignal())
+        self.assertEqual(sumpf.modules.WindowGenerator(raise_interval=-0.3, fall_interval=0.3, samplingrate=42.0, length=10).GetSignal(),
+                         sumpf.modules.WindowGenerator(raise_interval=(7, 10), fall_interval=(0, 3), samplingrate=42.0, length=10).GetSignal())
+
     def test_window_functions(self):
         """
         Tests the different window functions.
         """
+        # test the rectangle function
+        window = sumpf.modules.WindowGenerator(raise_interval=(1, 4), fall_interval=(6, 9), function=sumpf.modules.WindowGenerator.Rectangle(), samplingrate=14.39, length=10).GetSignal()
+        reference = sumpf.Signal(channels=((0.0,) + (1.0,) * 8 + (0.0,),), samplingrate=14.39, labels=("Window",))
+        self.assertEqual(window, reference)
+        # test the functions, that actually do a fade
         functions = []
         functions.append((sumpf.modules.WindowGenerator.Bartlett(), -2))    # store a tuple (function, limit)
         functions.append((sumpf.modules.WindowGenerator.Blackman(), -1))    # where function is the WindowFunction object
@@ -108,8 +131,8 @@ class TestWindowGenerator(unittest.TestCase):
         gen = sumpf.modules.WindowGenerator()
         self.assertEqual(gen.SetLength.GetType(), int)
         self.assertEqual(gen.SetSamplingRate.GetType(), float)
-        self.assertEqual(gen.SetRaiseInterval.GetType(), tuple)
-        self.assertEqual(gen.SetFallInterval.GetType(), tuple)
+        self.assertEqual(gen.SetRaiseInterval.GetType(), (tuple, float))
+        self.assertEqual(gen.SetFallInterval.GetType(), (tuple, float))
         self.assertEqual(gen.SetFunction.GetType(), sumpf.internal.WindowFunction)
         self.assertEqual(gen.GetSignal.GetType(), sumpf.Signal)
         common.test_connection_observers(testcase=self,

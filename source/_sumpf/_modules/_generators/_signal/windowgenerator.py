@@ -14,6 +14,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 
+import collections
 import numpy
 import sumpf
 from .signalgenerator import SignalGenerator
@@ -56,9 +57,8 @@ class WindowGenerator(SignalGenerator):
     """
     def __init__(self, raise_interval=None, fall_interval=None, function=None, samplingrate=None, length=None):
         """
-        @param raise_interval: None, or a tuple (a, b) of integers where a is the index of first sample of the fading in window and b is the index of the first sample after the window
-        @param fall_interval: None, or a tuple (a, b) of integers where a is the index of first sample of the fading out window and b is the index of the first sample after the window
-        @param raising: True if the window shall be raising, False otherwise
+        @param raise_interval: None, a tuple of two integers or a float between -1.0 and 1.0, see the SetRaiseInterval method for details
+        @param fall_interval: None, a tuple of two integers or a float between -1.0 and 1.0, see the SetFallInterval method for details
         @param function: a WindowFunction instance
         @param samplingrate: the sampling rate in Hz
         @param length: the number of samples of the signal
@@ -76,13 +76,31 @@ class WindowGenerator(SignalGenerator):
         Generates the samples of the window and returns them as a tuple.
         @retval : a tuple of samples
         """
+        # check for the intervals being floats
+        if self.__raise_interval is None or isinstance(self.__raise_interval, collections.Iterable):
+            raise_interval = self.__raise_interval
+        elif isinstance(self.__raise_interval, float):
+            if self.__raise_interval >= 0.0:
+                raise_interval = (0, int(round((self._length * self.__raise_interval))))
+            else:
+                raise_interval = (int(round((self._length * self.__raise_interval))), None)
+        if self.__fall_interval is None or isinstance(self.__fall_interval, collections.Iterable):
+            fall_interval = self.__fall_interval
+        elif isinstance(self.__fall_interval, float):
+            if self.__fall_interval >= 0.0:
+                fall_interval = (0, int(round((self._length * self.__fall_interval))))
+            else:
+                fall_interval = (int(round((self._length * self.__fall_interval))), self._length)
+        # create the samples
         result = None
-        if self.__raise_interval is not None:
-            ra = self.__raise_interval[0]
+        if raise_interval is not None:
+            ra = raise_interval[0]
             if ra < 0:
                 ra = self._length + ra
-            rb = self.__raise_interval[1]
-            if rb < 0:
+            rb = raise_interval[1]
+            if rb is None:
+                rb = self._length
+            elif rb < 0:
                 rb = self._length + rb
             if ra >= rb:
                 raise ValueError("The raise interval has to span at least one sample.")
@@ -98,12 +116,14 @@ class WindowGenerator(SignalGenerator):
             result = samples[0:self._length]
         else:
             result = [1.0] * self._length
-        if self.__fall_interval is not None:
-            fa = self.__fall_interval[0]
+        if fall_interval is not None:
+            fa = fall_interval[0]
             if fa < 0:
                 fa = self._length + fa
-            fb = self.__fall_interval[1]
-            if fb < 0:
+            fb = fall_interval[1]
+            if fb is None:
+                fb = self._length
+            elif fb < 0:
                 fb = self._length + fb
             if fa >= fb:
                 raise ValueError("The fall interval has to span at least one sample.")
@@ -116,7 +136,7 @@ class WindowGenerator(SignalGenerator):
                 samples.append(s)
             for _ in range(self._length - fb):
                 samples.append(0.0)
-            if self.__raise_interval is None:
+            if raise_interval is None:
                 result = numpy.multiply(result, samples[0:self._length])
             elif fb < ra:
                 result = numpy.add(result, samples[0:self._length])
@@ -131,41 +151,53 @@ class WindowGenerator(SignalGenerator):
         """
         return "Window"
 
-    @sumpf.Input(tuple, "GetSignal")
+    @sumpf.Input((tuple, float), "GetSignal")
     def SetRaiseInterval(self, interval):
         """
         An interval in which the samples of the output Signal shall be raising
         from 0.0 to 1.0 according to the given window function.
-        The interval is given as a tuple of integers. Positive values specify
-        the indices of the samples, while for negative values, the indices will
-        be calculated from the back of the output Signal. If interval is None,
-        all samples will be 1.0 from the start on.
+        There are three allowed data types to specify the interval:
+         - None disables the fade in. All samples will be 1.0 from the start on.
+         - A tuple of integers specifies the sample index, with which the fade in
+           starts, and the index of the first sample after the fade in.
+           With negative values, the indices will be calculated from the end of
+           the output Signal. If the second index is None, the fade in will extend
+           to the end of the output signal. (similar to slicing of lists)
+         - A float value determines the fraction of the output Signal, that shall
+           be affected by the fade in. Positive values place the fade in at the
+           beginning of the signal, Negative values place it at the end.
         If the raise interval is located before the fall interval, or if the
         intervals overlap, the Signals for the raising and the falling edge are
         multiplied, which makes the output Signal have its minimums at the beginning
         and at the end. If the raise interval is located after the fall interval,
         the two Signals are added, which makes the output Signal have its maximums
         at the beginning and at the end.
-        @param interval: None or a tuple of integers (a, b)
+        @param interval: None, a tuple of two integers or a float between -1.0 and 1.0
         """
         self.__raise_interval = interval
 
-    @sumpf.Input(tuple, "GetSignal")
+    @sumpf.Input((tuple, float), "GetSignal")
     def SetFallInterval(self, interval):
         """
         An interval in which the samples of the output Signal shall be falling
         from 1.0 to 0.0 according to the given window function.
-        The interval is given as a tuple of integers. Positive values specify
-        the indices of the samples, while for negative values, the indices will
-        be calculated from the back of the output Signal. If interval is None,
-        all samples will be 1.0 until the end of the output Signal.
+        There are three allowed data types to specify the interval:
+         - None disables the fade out. All samples will be 1.0 until the end.
+         - A tuple of integers specifies the sample index, with which the fade
+           out starts, and the index of the first sample after the fade out.
+           With negative values, the indices will be calculated from the end of
+           the output Signal. If the second index is None, the fade out will extend
+           to the end of the output signal. (similar to slicing of lists)
+         - A float value determines the fraction of the output Signal, that shall
+           be affected by the fade out. Positive values place the fade out at the
+           beginning of the signal, Negative values place it at the end.
         If the raise interval is located before the fall interval, or if the
         intervals overlap, the Signals for the raising and the falling edge are
         multiplied, which makes the output Signal have its minimums at the beginning
         and at the end. If the raise interval is located after the fall interval,
         the two Signals are added, which makes the output Signal have its maximums
         at the beginning and at the end.
-        @param interval: None or a tuple of integers (a, b)
+        @param interval: None, a tuple of two integers or a float between -1.0 and 1.0
         """
         self.__fall_interval = interval
 
@@ -210,17 +242,6 @@ class WindowGenerator(SignalGenerator):
             """
             return numpy.hamming(length)
 
-    class VonHann(WindowFunction):
-        """
-        Wrapper for the hanning window function in numpy.
-        """
-        def __call__(self, length):
-            """
-            @param length: the full length of the window (in samples) for both the rising and the falling edge
-            @retval : a tuple of samples with the rising and the falling edge of the window
-            """
-            return numpy.hanning(length)
-
     class Kaiser(WindowFunction):
         """
         Wrapper for the kaiser window function in numpy.
@@ -245,4 +266,26 @@ class WindowGenerator(SignalGenerator):
             @retval : a tuple of samples with the rising and the falling edge of the window
             """
             return numpy.kaiser(length, self.__beta)
+
+    class Rectangle(WindowFunction):
+        """
+        a window function class for creating a rectangle window
+        """
+        def __call__(self, length):
+            """
+            @param length: the full length of the window (in samples) for both the rising and the falling edge
+            @retval : a tuple of samples with the rising and the falling edge of the window
+            """
+            return numpy.ones(length)
+
+    class VonHann(WindowFunction):
+        """
+        Wrapper for the hanning window function in numpy.
+        """
+        def __call__(self, length):
+            """
+            @param length: the full length of the window (in samples) for both the rising and the falling edge
+            @retval : a tuple of samples with the rising and the falling edge of the window
+            """
+            return numpy.hanning(length)
 
