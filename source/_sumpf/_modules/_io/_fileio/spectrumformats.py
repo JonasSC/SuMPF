@@ -92,7 +92,7 @@ class AUTO(FileFormat):
     def Save(cls, filename, data):
         file_ending = os.path.splitext(filename)[-1].lstrip(".")
         file_format = spectrumformats[0]
-        for f in spectrumformats[1:]:
+        for f in spectrumformats:
             if f.ending == file_ending:
                 file_format = f
                 break

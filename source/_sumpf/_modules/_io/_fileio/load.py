@@ -103,7 +103,8 @@ class LoadChannelData(object):
         self.__filename = filename
         self.__reload = True
         self.__StopFileObserver()
-        self.__StartFileObserver()
+        if self.__monitor_file:
+            self.__StartFileObserver()
 
     @sumpf.Input(bool)
     def SetMonitorFile(self, monitor):

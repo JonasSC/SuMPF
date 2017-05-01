@@ -109,7 +109,7 @@ class AUTO(FileFormat):
     def Save(cls, filename, data):
         file_ending = os.path.splitext(filename)[-1].lstrip(".")
         file_format = signalformats[0]
-        for f in signalformats[1:]:
+        for f in signalformats:
             if f.ending == file_ending:
                 file_format = f
                 break
@@ -333,7 +333,7 @@ if audiolab_available:
         encoding = "pcm24"
 
     signalformats.insert(0, WAV_FLOAT)  # make WAV_FLOAT the default format
-    signalformats.extend([AIFF_FLOAT, AIFF_INT, FLAC, OGG_VORBIS, WAV_DOUBLE, WAV_INT])
+    signalformats.extend((AIFF_FLOAT, AIFF_INT, FLAC, OGG_VORBIS, WAV_DOUBLE, WAV_INT))
 
 
 
@@ -450,7 +450,7 @@ elif soundfile_available:    # if scikits.audiolab is not installed, check for P
         encoding = "PCM_24"
 
     signalformats.insert(0, WAV_FLOAT)  # make WAV_FLOAT the default format
-    signalformats.extend([AIFF_FLOAT, AIFF_INT, FLAC, OGG_VORBIS, WAV_DOUBLE, WAV_INT])
+    signalformats.extend((AIFF_FLOAT, AIFF_INT, FLAC, OGG_VORBIS, WAV_DOUBLE, WAV_INT))
 
 
 
@@ -638,5 +638,5 @@ if oct2py_available:
             else:
                 raise RuntimeError("Unknown domain: %s" % domain)
 
-    signalformats.extend([MATLAB, ITA_AUDIO])
+    signalformats.extend((MATLAB, ITA_AUDIO))
 
