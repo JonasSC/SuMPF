@@ -59,6 +59,18 @@ class Spectrum(ChannelData):
             result.append(tuple(numpy.angle(c)))
         return tuple(result)
 
+    def GetReal(self):
+        """
+        @retval : a tuple of channels which are a tuple of samples which represent the real part of the spectrum
+        """
+        return tuple(tuple(numpy.real(c)) for c in self.GetChannels())
+
+    def GetImaginary(self):
+        """
+        @retval : a tuple of channels which are a tuple of samples which represent the imaginary part of the spectrum
+        """
+        return tuple(tuple(numpy.imag(c)) for c in self.GetChannels())
+
     def GetGroupDelay(self):
         """
         @retval : a tuple of channels which are a tuple of samples which represent the group delay of the spectrum

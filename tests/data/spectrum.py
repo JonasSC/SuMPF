@@ -55,6 +55,10 @@ class TestSpectrum(unittest.TestCase):
             self.assertEqual(self.spectrum.GetMagnitude(), magnitude)   # test if magnitude is computed correctly
         phase = (tuple(math.acos(c.real / ((c.real ** 2 + c.imag ** 2) ** 0.5)) for c in self.spectrum.GetChannels()[0]), (0.0,) * len(self.spectrum))
         self.assertLess(numpy.sum(numpy.subtract(self.spectrum.GetPhase(), phase)), 1e-15)  # test if phase is computed correctly
+        real = (tuple(i * ((-0.9) ** i) for i in range(1, 11)), self.samples2)
+        self.assertEqual(self.spectrum.GetReal(), real)
+        imag = (tuple(i * 0.3 for i in range(1, 11)), (0.0,) * len(self.spectrum))
+        self.assertEqual(self.spectrum.GetImaginary(), imag)
         self.assertEqual(self.spectrum.GetLabels(), ("1", "2"))         # test if labels are set correctly
         spk = sumpf.Spectrum(channels=self.channels, resolution=4800.0, labels=("1",))
         self.assertEqual(spk.GetLabels(), ("1", None))                  # test if labels are set correctly, if the given tuple of labels is shorter than the tuple of channels

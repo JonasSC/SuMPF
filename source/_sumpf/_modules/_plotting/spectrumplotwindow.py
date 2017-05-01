@@ -35,10 +35,14 @@ class SpectrumPlotWindow(PlotWindow):
         self.__log_phase = False
         self.__log_continuousphase = False
         self.__log_groupdelay = False
+        self.__log_real = False
+        self.__log_imaginary = False
         self.__show_magnitude = True
-        self.__show_phase = True
+        self.__show_phase = False
         self.__show_continuousphase = False
         self.__show_groupdelay = False
+        self.__show_real = False
+        self.__show_imaginary = False
 
     def _GetPanel(self):
         """
@@ -47,6 +51,7 @@ class SpectrumPlotWindow(PlotWindow):
         """
         panel = SpectrumPlotPanel(parent=self._window)
         panel.SetSpectrum(self.__spectrum)
+        # linear/logarithmic display
         if self.__log_magnitude:
             panel.LogarithmicMagnitude()
         else:
@@ -63,6 +68,15 @@ class SpectrumPlotWindow(PlotWindow):
             panel.LogarithmicGroupDelay()
         else:
             panel.LinearGroupDelay()
+        if self.__log_real:
+            panel.LogarithmicReal()
+        else:
+            panel.LinearReal()
+        if self.__log_imaginary:
+            panel.LogarithmicImaginary()
+        else:
+            panel.LinearImaginary()
+        # showing plots
         if self.__show_magnitude:
             panel.ShowMagnitude()
         if self.__show_phase:
@@ -71,14 +85,23 @@ class SpectrumPlotWindow(PlotWindow):
             panel.ShowContinuousPhase()
         if self.__show_groupdelay:
             panel.ShowGroupDelay()
-        else:
-            panel.HideGroupDelay()
-        if not self.__show_continuousphase:
-            panel.HideContinuousPhase()
-        if not self.__show_phase:
-            panel.HidePhase()
+        if self.__show_real:
+            panel.ShowReal()
+        if self.__show_imaginary:
+            panel.ShowImaginary()
+        # hiding plots
         if not self.__show_magnitude:
             panel.HideMagnitude()
+        if not self.__show_phase:
+            panel.HidePhase()
+        if not self.__show_continuousphase:
+            panel.HideContinuousPhase()
+        if not self.__show_groupdelay:
+            panel.HideGroupDelay()
+        if not self.__show_real:
+            panel.HideReal()
+        if not self.__show_imaginary:
+            panel.HideImaginary()
         return panel
 
     @sumpf.Input(sumpf.Spectrum)
@@ -145,7 +168,6 @@ class SpectrumPlotWindow(PlotWindow):
         if self._panel is not None:
             self._panel.LogarithmicContinuousPhase()
 
-
     @sumpf.Trigger()
     def LinearGroupDelay(self):
         """
@@ -163,6 +185,42 @@ class SpectrumPlotWindow(PlotWindow):
         self.__log_groupdelay = True
         if self._panel is not None:
             self._panel.LogarithmicGroupDelay()
+
+    @sumpf.Trigger()
+    def LinearReal(self):
+        """
+        Shows the real part linearly.
+        """
+        self.__log_real = False
+        if self._panel is not None:
+            self._panel.LinearReal()
+
+    @sumpf.Trigger()
+    def LogarithmicReal(self):
+        """
+        Shows the real part logarithmically.
+        """
+        self.__log_real = True
+        if self._panel is not None:
+            self._panel.LogarithmicReal()
+
+    @sumpf.Trigger()
+    def LinearImaginary(self):
+        """
+        Shows the imaginary part linearly.
+        """
+        self.__log_imaginary = False
+        if self._panel is not None:
+            self._panel.LinearImaginary()
+
+    @sumpf.Trigger()
+    def LogarithmicImaginary(self):
+        """
+        Shows the imaginary part logarithmically.
+        """
+        self.__log_imaginary = True
+        if self._panel is not None:
+            self._panel.LogarithmicImaginary()
 
     @sumpf.Trigger()
     def ShowMagnitude(self):
@@ -235,4 +293,40 @@ class SpectrumPlotWindow(PlotWindow):
         self.__show_groupdelay = False
         if self._panel is not None:
             self._panel.HideGroupDelay()
+
+    @sumpf.Trigger()
+    def ShowReal(self):
+        """
+        Shows the plot of the real part.
+        """
+        self.__show_real = True
+        if self._panel is not None:
+            self._panel.ShowReal()
+
+    @sumpf.Trigger()
+    def HideReal(self):
+        """
+        Hides the plot of the real part.
+        """
+        self.__show_real = False
+        if self._panel is not None:
+            self._panel.HideReal()
+
+    @sumpf.Trigger()
+    def ShowImaginary(self):
+        """
+        Shows the plot of the imaginary part.
+        """
+        self.__show_imaginary = True
+        if self._panel is not None:
+            self._panel.ShowImaginary()
+
+    @sumpf.Trigger()
+    def HideImaginary(self):
+        """
+        Hides the plot of the imaginary part.
+        """
+        self.__show_imaginary = False
+        if self._panel is not None:
+            self._panel.HideImaginary()
 

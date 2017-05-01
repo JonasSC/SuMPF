@@ -80,10 +80,7 @@ class LinePlotPanel(wx.Panel):
         self.__cursor_positions = cursor_positions
         self.__logx = log_x
         self.__logy = set(log_y)
-        self.__shown_components = []
-        for c in self.__components:
-            if c not in hidden_components:
-                self.__shown_components.append(c)
+        self.__shown_components = [c for c in self.__components if c not in hidden_components]
         self.__move_plots_together = move_plots_together
         # store state variables
         self.__plots = []

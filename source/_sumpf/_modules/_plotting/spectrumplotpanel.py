@@ -24,7 +24,7 @@ class SpectrumPlotPanel(LinePlotPanel):
     This panel is meant to be integrated into a GUI. If you want a simple plot
     consider using SpectrumPlotWindow.
     """
-    def __init__(self, parent, layout=LinePlotPanel.LAYOUT_ONE_PLOT, linemanager=LinePlotPanel.NO_DOWNSAMPLING, x_interval=None, margin=0.1, show_legend=True, show_grid=None, show_cursors=True, cursor_positions=[], log_x=True, log_y=set(["Magnitude"]), hidden_components=set(["ContinuousPhase", "GroupDelay"]), move_plots_together=False):
+    def __init__(self, parent, layout=LinePlotPanel.LAYOUT_ONE_PLOT, linemanager=LinePlotPanel.NO_DOWNSAMPLING, x_interval=None, margin=0.1, show_legend=True, show_grid=None, show_cursors=True, cursor_positions=[], log_x=True, log_y=set(["Magnitude"]), hidden_components=set(["Phase", "Continuous phase", "Group delay", "Real part", "Imaginary part"]), move_plots_together=False):
         """
         @param parent: the parent wx.Window of this panel
         @param layout: one of the LAYOUT_... flags of the SpectrumPlotPanel class
@@ -43,7 +43,7 @@ class SpectrumPlotPanel(LinePlotPanel):
                                parent=parent,
                                layout=layout,
                                linemanager=linemanager,
-                               components=["Magnitude", "Phase", "ContinuousPhase", "GroupDelay"],
+                               components=("Magnitude", "Phase", "Continuous phase", "Group delay", "Real part", "Imaginary part"),
                                x_caption="Frequency [Hz]",
                                x_interval=x_interval,
                                margin=margin,
@@ -64,8 +64,10 @@ class SpectrumPlotPanel(LinePlotPanel):
         """
         self._SetData(data={"Magnitude": spectrum.GetMagnitude(),
                             "Phase": spectrum.GetPhase(),
-                            "ContinuousPhase": spectrum.GetContinuousPhase(),
-                            "GroupDelay": spectrum.GetGroupDelay()},
+                            "Continuous phase": spectrum.GetContinuousPhase(),
+                            "Group delay": spectrum.GetGroupDelay(),
+                            "Real part": spectrum.GetReal(),
+                            "Imaginary part": spectrum.GetImaginary()},
                       interval=(0.0, spectrum.GetResolution() * (len(spectrum) - 1)),
                       labels=spectrum.GetLabels())
 
@@ -102,28 +104,56 @@ class SpectrumPlotPanel(LinePlotPanel):
         """
         Shows the continuous phase linearly.
         """
-        self.LogarithmicY(component="ContinuousPhase", log=False)
+        self.LogarithmicY(component="Continuous phase", log=False)
 
     @sumpf.Trigger()
     def LogarithmicContinuousPhase(self):
         """
         Shows the continuous phase logarithmically.
         """
-        self.LogarithmicY(component="ContinuousPhase", log=True)
+        self.LogarithmicY(component="Continuous phase", log=True)
 
     @sumpf.Trigger()
     def LinearGroupDelay(self):
         """
         Shows the group delay linearly.
         """
-        self.LogarithmicY(component="GroupDelay", log=False)
+        self.LogarithmicY(component="Group delay", log=False)
 
     @sumpf.Trigger()
     def LogarithmicGroupDelay(self):
         """
         Shows the group delay logarithmically.
         """
-        self.LogarithmicY(component="GroupDelay", log=True)
+        self.LogarithmicY(component="Group delay", log=True)
+
+    @sumpf.Trigger()
+    def LinearReal(self):
+        """
+        Shows the real part linearly.
+        """
+        self.LogarithmicY(component="Real part", log=False)
+
+    @sumpf.Trigger()
+    def LogarithmicReal(self):
+        """
+        Shows the real part logarithmically.
+        """
+        self.LogarithmicY(component="Real part", log=True)
+
+    @sumpf.Trigger()
+    def LinearImaginary(self):
+        """
+        Shows the imaginary part linearly.
+        """
+        self.LogarithmicY(component="Imaginary part", log=False)
+
+    @sumpf.Trigger()
+    def LogarithmicImaginary(self):
+        """
+        Shows the imaginary part logarithmically.
+        """
+        self.LogarithmicY(component="Imaginary part", log=True)
 
     @sumpf.Trigger()
     def ShowMagnitude(self):
@@ -158,26 +188,54 @@ class SpectrumPlotPanel(LinePlotPanel):
         """
         Shows the continuous phase plot.
         """
-        self.ShowComponent(component="ContinuousPhase", show=True)
+        self.ShowComponent(component="Continuous phase", show=True)
 
     @sumpf.Trigger()
     def HideContinuousPhase(self):
         """
         Hides the continuous phase plot.
         """
-        self.ShowComponent(component="ContinuousPhase", show=False)
+        self.ShowComponent(component="Continuous phase", show=False)
 
     @sumpf.Trigger()
     def ShowGroupDelay(self):
         """
         Shows the group delay plot.
         """
-        self.ShowComponent(component="GroupDelay", show=True)
+        self.ShowComponent(component="Group delay", show=True)
 
     @sumpf.Trigger()
     def HideGroupDelay(self):
         """
         Hides the group delay plot.
         """
-        self.ShowComponent(component="GroupDelay", show=False)
+        self.ShowComponent(component="Group delay", show=False)
+
+    @sumpf.Trigger()
+    def ShowReal(self):
+        """
+        Shows the plot of the real part.
+        """
+        self.ShowComponent(component="Real part", show=True)
+
+    @sumpf.Trigger()
+    def HideReal(self):
+        """
+        Hides the plot of the real part.
+        """
+        self.ShowComponent(component="Real part", show=False)
+
+    @sumpf.Trigger()
+    def ShowImaginary(self):
+        """
+        Shows the plot of the imaginary part.
+        """
+        self.ShowComponent(component="Imaginary part", show=True)
+
+    @sumpf.Trigger()
+    def HideImaginary(self):
+        """
+        Hides the plot of the imaginary part.
+        """
+        self.ShowComponent(component="Imaginary part", show=False)
 
