@@ -66,6 +66,7 @@ class TestSplitSignal(unittest.TestCase):
         self.splitter.SetOutputChannels([1, 4])
         self.assertEqual(self.splitter.GetOutput().GetChannels(), (self.channels[1], self.channels[4])) # selecting the channels via a list should be possible
         self.splitter.SetInput(self.short)
+        self.splitter.DropChannels()
         self.assertEqual(self.splitter.GetOutput().GetChannels(), (self.channels[1],))                  # when the input Signal is changed, all available selected channels shall be kept, all others shall be dropped
         self.splitter.SetInput(self.long)
         self.assertEqual(self.splitter.GetOutput().GetChannels(), (self.channels[1],))                  # when the input Signal is changed to one with more channels, the previously dropped channels should not come back
@@ -86,7 +87,6 @@ class TestSplitSignal(unittest.TestCase):
         """
         self.splitter.SetOutputChannels([])                                     # selecting no channels of an empty Splitter should not raise an error
         self.splitter.SetInput(self.long)
-        self.assertRaises(IndexError, self.splitter.SetOutputChannels, -1)      # selecting a channel with a negative index should raise an error
         self.splitter.SetOutputChannels(5)
         self.assertRaises(IndexError, self.splitter.GetOutput)                  # selecting a channel that is not in the Input should raise an error
         self.splitter.SetOutputChannels(2)

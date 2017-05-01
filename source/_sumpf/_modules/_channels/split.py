@@ -30,8 +30,7 @@ class SplitChannelData(object):
         @param channels: the indexes of the selected channels that shall be in the output data set
         """
         self._input = data
-        self.__channels = []
-        self.__SetOutputChannels(channels)
+        self.__channels = channels
 
     def GetOutput(self):
         """
@@ -49,12 +48,6 @@ class SplitChannelData(object):
         @param data: the input data, from which the channels shall be taken
         """
         self._input = data
-        length = len(self._input.GetChannels())
-        newchannels = []
-        for i in self.__channels:
-            if i < length:
-                newchannels.append(i)
-        self.__channels = newchannels
 
     @sumpf.Output(int)
     def GetNumberOfOutputChannels(self):
@@ -62,7 +55,12 @@ class SplitChannelData(object):
         Returns the number of channels of the output data set.
         @retval : the number of channels of the output data set as an integer
         """
-        return len(self.__channels)
+        length = len(self._input.GetChannels())
+        result = 0
+        for i in self.__channels:
+            if i < length:
+                result += 1
+        return result
 
     @sumpf.Input(tuple, ["GetOutput", "GetNumberOfOutputChannels"])
     def SetOutputChannels(self, channels):
@@ -70,7 +68,16 @@ class SplitChannelData(object):
         Sets the channels of the input data set that shall be copied to the output.
         @param channels: a flag like type(self).ALL or an integer or a tuple of integers that are the indexes of the selected input data set's channels
         """
-        return self.__SetOutputChannels(channels)
+        self.__channels = channels
+
+    @sumpf.Trigger("GetOutput")
+    def DropChannels(self):
+        """
+        Removes channel indices from the set output channels, that are higher than
+        the maximum channel number of the input data set.
+        """
+        if self.__channels != SplitChannelData.ALL:
+            self.__channels = [i for i in self.__channels if i < len(self._input.GetChannels())]
 
     def _GetChannelsAndLabels(self):
         """
@@ -78,32 +85,21 @@ class SplitChannelData(object):
         returns them as a tuple.
         @retval : a tuple (a, b), where a is a tuple of channels and b is a tuple of labels
         """
-        if self.__all:
+        if self.__channels == SplitChannelData.ALL:
             return (self._input.GetChannels(), self._input.GetLabels())
+        elif isinstance(self.__channels, int):
+            return [self._input.GetChannels()[self.__channels]], [self._input.GetLabels()[self.__channels]]
         else:
             channels = []
             labels = []
+            length = len(self._input.GetChannels())
             for i in self.__channels:
-                channels.append(self._input.GetChannels()[i])
-                labels.append(self._input.GetLabels()[i])
+                if i < length:
+                    channels.append(self._input.GetChannels()[i])
+                    labels.append(self._input.GetLabels()[i])
+                else:
+                    raise IndexError("The channel index %s is higher than the input data's number of channels (%s)." % (i, length))
             return channels, labels
-
-    def __SetOutputChannels(self, channels):
-        """
-        A private helper method to avoid, that the connector SetOutputChannels
-        is called in the constructor.
-        @param channels: a flag like type(self).ALL or an integer or a tuple of integers that are the indexes of the selected input data set's channels
-        """
-        if channels == SplitChannelData.ALL:
-            self.__all = True
-        else:
-            self.__all = False
-            if isinstance(channels, int):
-                channels = (channels,)
-            for i in channels:
-                if i < 0:
-                    raise IndexError("Negative indices are not possible")
-            self.__channels = channels
 
 
 
