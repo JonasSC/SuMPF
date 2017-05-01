@@ -20,6 +20,7 @@ from .signalgenerator import TestSignalGenerator
 from .impulsegenerator import TestImpulseGenerator
 from .laguerrefunctiongenerator import TestLaguerreFunctionGenerator
 from .noisegenerator import TestNoiseGenerator
+from .rudinshapiro_noisegenerator import TestRudinShapiroNoiseGenerator
 from .sinewavegenerator import TestSineWaveGenerator
 from .squarewavegenerator import TestSquareWaveGenerator
 from .sweepgenerator import TestSweepGenerator

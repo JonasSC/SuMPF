@@ -28,6 +28,10 @@ try:
 except ImportError:
     pass
 try:
+    from ._signal.rudinshapiro_noisegenerator import RudinShapiroNoiseGenerator
+except ImportError:
+    pass
+try:
     from ._signal.windowgenerator import WindowGenerator
 except ImportError:
     pass
