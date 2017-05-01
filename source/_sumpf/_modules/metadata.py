@@ -14,6 +14,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 
+from ._metadata.adjustsamplingrate import AdjustSamplingRate
 from ._metadata.channeldataproperties import ChannelDataProperties
 from ._metadata.copylabels import CopyLabelsToSignal, CopyLabelsToSpectrum
 from ._metadata.durationtolength import DurationToLength
