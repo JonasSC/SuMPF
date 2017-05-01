@@ -20,6 +20,10 @@ library. The functions are far slower than their NumPy equivalents. They are onl
 used if NumPy is not available.
 """
 
-from ._numpydummy import float32, add, subtract, multiply, divide, true_divide, power, \
-                         abs, angle, conjugate, zeros, mean, var, shape, prod, nonzero
+from ._numpydummy import float32, float64, float128, complex_, \
+                         zeros, shape, \
+                         add, subtract, multiply, divide, true_divide, mod, power, \
+                         abs, angle, real, imag, conjugate, \
+                         min, max, sum, prod, mean, var, \
+                         equal, nonzero
 

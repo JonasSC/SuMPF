@@ -58,6 +58,37 @@ class TestNumpyDummy(unittest.TestCase):
             elif abs(result_numpy - result_numpydummy) > 1e-12:
                 self.fail(str(result_numpy) + " != " + str(result_numpydummy) + "    (" + str(a_index) + " " + str(b_index) + ")")
 
+    # number types
+
+    def test_complex_(self):
+        c = sumpf.helper.numpydummy.complex_(self.arrayvalues)
+        def recursion(a):
+            if isinstance(a, collections.Iterable):
+                return all(recursion(b) for b in a)
+            else:
+                return isinstance(a, complex)
+        self.assertTrue(recursion(c))
+
+    # array generators and related functions
+
+    def test_zeros(self):
+        self.assertEqual(sumpf.helper.numpydummy.zeros(shape=()), 0.0)
+        for s in range(1, 5):
+            shape = list(range(s))
+            r1 = numpy.zeros(shape=shape, dtype=float)
+            r2 = sumpf.helper.numpydummy.zeros(shape=shape, dtype=sumpf.helper.numpydummy.float32)
+            r3 = sumpf.helper.numpydummy.zeros(shape=shape)
+            self.__Compare(r1, r2, s, None)
+            self.__Compare(r2, r3, s, None)
+
+    def test_shape(self):
+        self.__Compare(numpy.shape(self.arrayvalues[0][0]), sumpf.helper.numpydummy.shape(self.arrayvalues[0][0]), 0, 0)
+        self.__Compare(numpy.shape([]), sumpf.helper.numpydummy.shape([]), 0, 0)
+        for i, a in enumerate(self.arrayvalues):
+            self.__Compare(numpy.shape(a), sumpf.helper.numpydummy.shape(a), i, i)
+
+    # algebra functions
+
     def test_add(self):
         a = [(1, 2), (3, 4)]
         b = [(5, 6)]
@@ -118,6 +149,18 @@ class TestNumpyDummy(unittest.TestCase):
                 r2 = sumpf.helper.numpydummy.true_divide(self.arrayvalues[a][0], self.arrayvalues[b][1])
                 self.__Compare(r1, r2, a, b)
 
+    def test_mod(self):
+        a = [(1, 2), (3, 4)]
+        b = [(5, 6)]
+        n = numpy.mod(a, b)
+        d = sumpf.helper.numpydummy.mod(a, b)
+        self.assertEqual(numpy.linalg.norm(numpy.subtract(n, d)), 0)
+        for a in range(len(self.arrayvalues)):
+            for b in range(len(self.arrayvalues)):
+                r1 = numpy.mod(self.arrayvalues[a][0], self.arrayvalues[b][1])
+                r2 = sumpf.helper.numpydummy.mod(self.arrayvalues[a][0], self.arrayvalues[b][1])
+                self.__Compare(r1, r2, a, b)
+
     def test_power(self):
         a = [(1, 2), (3, 4)]
         b = [(5, 6)]
@@ -129,6 +172,8 @@ class TestNumpyDummy(unittest.TestCase):
                 r1 = numpy.power(numpy.abs(self.arrayvalues[a][0]), self.arrayvalues[b][1])
                 r2 = sumpf.helper.numpydummy.power(numpy.abs(self.arrayvalues[a][0]), self.arrayvalues[b][1])
                 self.__Compare(r1, r2, a, b)
+
+    # monadic computations
 
     def test_abs(self):
         for i in range(len(self.complexvalues)):
@@ -150,6 +195,26 @@ class TestNumpyDummy(unittest.TestCase):
             r2 = sumpf.helper.numpydummy.angle(self.arrayvalues[a][0])
             self.__Compare(r1, r2, a, None)
 
+    def test_real(self):
+        # does not test for scalar values, since numpy's behavior to return an array for scalar input is a bit unexpected and not modelled by numpydummy
+        r1 = numpy.real(self.complexvalues)
+        r2 = sumpf.helper.numpydummy.real(self.complexvalues)
+        self.__Compare(r1, r2, -1, None)
+        for a in range(len(self.arrayvalues)):
+            r1 = numpy.real(self.arrayvalues[a])
+            r2 = sumpf.helper.numpydummy.real(self.arrayvalues[a])
+            self.__Compare(r1, r2, a, None)
+
+    def test_imag(self):
+        # does not test for scalar values, since numpy's behavior to return an array for scalar input is a bit unexpected and not modelled by numpydummy
+        r1 = numpy.imag(self.complexvalues)
+        r2 = sumpf.helper.numpydummy.imag(self.complexvalues)
+        self.__Compare(r1, r2, -1, None)
+        for a in range(len(self.arrayvalues)):
+            r1 = numpy.imag(self.arrayvalues[a])
+            r2 = sumpf.helper.numpydummy.imag(self.arrayvalues[a])
+            self.__Compare(r1, r2, a, None)
+
     def test_conjugate(self):
         for i in range(len(self.complexvalues)):
             r1 = numpy.conjugate(self.complexvalues[i])
@@ -160,15 +225,31 @@ class TestNumpyDummy(unittest.TestCase):
             r2 = sumpf.helper.numpydummy.conjugate(self.arrayvalues[a][0])
             self.__Compare(r1, r2, a, None)
 
-    def test_zeros(self):
-        self.assertEqual(sumpf.helper.numpydummy.zeros(shape=()), 0.0)
-        for s in range(1, 5):
-            shape = list(range(s))
-            r1 = numpy.zeros(shape=shape, dtype=float)
-            r2 = sumpf.helper.numpydummy.zeros(shape=shape, dtype=sumpf.helper.numpydummy.float32)
-            r3 = sumpf.helper.numpydummy.zeros(shape=shape)
-            self.__Compare(r1, r2, s, None)
-            self.__Compare(r2, r3, s, None)
+    # array functions with a scalar result
+
+    def test_min(self):
+        self.assertEqual(numpy.min(self.arrayvalues[0][0]), sumpf.helper.numpydummy.min(self.arrayvalues[0][0]))
+        self.assertRaises(ValueError, sumpf.helper.numpydummy.min, [])
+        for a in self.arrayvalues:
+            self.assertEqual(numpy.min(a), sumpf.helper.numpydummy.min(a))
+
+    def test_max(self):
+        self.assertEqual(numpy.max(self.arrayvalues[0][0]), sumpf.helper.numpydummy.max(self.arrayvalues[0][0]))
+        self.assertRaises(ValueError, sumpf.helper.numpydummy.max, [])
+        for a in self.arrayvalues:
+            self.assertEqual(numpy.max(a), sumpf.helper.numpydummy.max(a))
+
+    def test_sum(self):
+        self.__Compare(numpy.sum(self.arrayvalues[0][0]), sumpf.helper.numpydummy.sum(self.arrayvalues[0][0]), 0, 0)
+        self.__Compare(numpy.sum([]), sumpf.helper.numpydummy.sum([]), 0, 0)
+        for i, a in enumerate(self.arrayvalues):
+            self.__Compare(numpy.sum(a), sumpf.helper.numpydummy.sum(a), i, i)
+
+    def test_prod(self):
+        self.__Compare(numpy.prod(self.arrayvalues[0][0]), sumpf.helper.numpydummy.prod(self.arrayvalues[0][0]), 0, 0)
+        self.__Compare(numpy.prod([]), sumpf.helper.numpydummy.prod([]), 0, 0)
+        for i, a in enumerate(self.arrayvalues):
+            self.__Compare(numpy.prod(a), sumpf.helper.numpydummy.prod(a), i, i)
 
     def test_mean(self):
         values = (3.3, -4.7, -9.8, 15.3, 6.4)
@@ -182,17 +263,22 @@ class TestNumpyDummy(unittest.TestCase):
         from_numpy = numpy.var(values)
         self.assertAlmostEqual(from_dummy, from_numpy)
 
-    def test_shape(self):
-        self.__Compare(numpy.shape(self.arrayvalues[0][0]), sumpf.helper.numpydummy.shape(self.arrayvalues[0][0]), 0, 0)
-        self.__Compare(numpy.shape([]), sumpf.helper.numpydummy.shape([]), 0, 0)
-        for i, a in enumerate(self.arrayvalues):
-            self.__Compare(numpy.shape(a), sumpf.helper.numpydummy.shape(a), i, i)
+# evaluation functions
 
-    def test_prod(self):
-        self.__Compare(numpy.prod(self.arrayvalues[0][0]), sumpf.helper.numpydummy.prod(self.arrayvalues[0][0]), 0, 0)
-        self.__Compare(numpy.prod([]), sumpf.helper.numpydummy.prod([]), 0, 0)
-        for i, a in enumerate(self.arrayvalues):
-            self.__Compare(numpy.prod(a), sumpf.helper.numpydummy.prod(a), i, i)
+    def test_equal(self):
+        for a in self.arrayvalues:
+            a2 = numpy.square(a)
+            for b in self.arrayvalues:
+                try:
+                    e1 = numpy.equal(a, b)
+                except ValueError:
+                    break
+                else:
+                    e2 = sumpf.helper.numpydummy.equal(a, b)
+                    self.assertTrue(numpy.equal(e1, e2).all())
+                    n1 = numpy.equal(a2, b)
+                    n2 = sumpf.helper.numpydummy.equal(a2, b)
+                    self.assertTrue(numpy.equal(n1, n2).all())
 
     def test_nonzero(self):
         self.__Compare(numpy.nonzero(0.0), sumpf.helper.numpydummy.nonzero(0.0), 0, 0)

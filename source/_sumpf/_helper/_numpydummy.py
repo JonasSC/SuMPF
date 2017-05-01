@@ -16,16 +16,15 @@
 
 import cmath
 import collections
-
 python_abs = abs
-float32 = float
-float64 = float
-float128 = float
+
+####################
+# helper functions #
+####################
 
 def get_iterable_depth(container):
     """
-    a little helper function to find out of how many layers of iterables the
-    container consists.
+    a helper function to find out of how many layers of iterables the container consists.
     """
     if isinstance(container, collections.Iterable):
         return 1 + get_iterable_depth(container[0])
@@ -33,6 +32,9 @@ def get_iterable_depth(container):
         return 0
 
 def algebra_base(a, b, function):
+    """
+    a base function, that manages the recursion of algebra functions for arrays.
+    """
     result = []
     da = get_iterable_depth(a)
     db = get_iterable_depth(b)
@@ -50,6 +52,61 @@ def algebra_base(a, b, function):
         for i in range(max(len(a), len(b))):
             result.append(algebra_base(a[i % len(a)], b[i % len(b)], function))
     return result
+
+
+################
+# number types #
+################
+
+float32 = float
+float64 = float
+float128 = float
+
+def complex_(x):
+    """
+    an alternative for numpy.complex_, which casts arrays to contain complex values.
+    """
+    if isinstance(x, collections.Iterable):
+        result = []
+        for i in x:
+            result.append(complex_(i))
+        return result
+    else:
+        return complex(x)
+
+
+##########################################
+# array generators and related functions #
+##########################################
+
+def zeros(shape, dtype=float):
+    """
+    an alternative for numpy.zeros
+    """
+    if len(shape) == 0:
+        return dtype(0.0)
+    else:
+        result = []
+        for _ in range(shape[0]):
+            result.append(zeros(shape=shape[1:], dtype=dtype))
+        return result
+
+def shape(a):
+    """
+    an alternative to numpy.shape
+    """
+    if isinstance(a, collections.Iterable):
+        if len(a) == 0:
+            return (0,)
+        else:
+            return (len(a),) + shape(a[0])
+    else:
+        return ()
+
+
+#####################
+# algebra functions #
+#####################
 
 def add(a, b):
     """
@@ -85,11 +142,22 @@ def true_divide(a, b):
         return c / d
     return algebra_base(a, b, function)
 
+def mod(a, b):
+    """
+    an alternative for numpy.mod
+    """
+    return algebra_base(a, b, function=lambda c, d: c % d)
+
 def power(a, b):
     """
     an alternative for numpy.power
     """
     return algebra_base(a, b, function=lambda c, d: c ** d)
+
+
+########################
+# monadic computations #
+########################
 
 def abs(x):
     """
@@ -115,6 +183,38 @@ def angle(x):
     else:
         return cmath.phase(x)
 
+def real(x):
+    """
+    an alternative for numpy.real
+    this does not model numpy's behaviour, that real returns an array for a scalar
+    input.
+    """
+    if isinstance(x, collections.Iterable):
+        result = []
+        for i in x:
+            result.append(real(i))
+        return result
+    elif isinstance(x, complex):
+        return x.real
+    else:
+        return x
+
+def imag(x):
+    """
+    an alternative for numpy.imag
+    this does not model numpy's behaviour, that imag returns an array for a scalar
+    input.
+    """
+    if isinstance(x, collections.Iterable):
+        result = []
+        for i in x:
+            result.append(imag(i))
+        return result
+    elif isinstance(x, complex):
+        return x.imag
+    else:
+        return 0.0
+
 def conjugate(x):
     """
     an alternative for numpy.conjugate
@@ -133,17 +233,74 @@ def conjugate(x):
         else:
             return x
 
-def zeros(shape, dtype=float):
+
+########################################
+# array functions with a scalar result #
+########################################
+
+def min(*args):
     """
-    an alternative for numpy.zeros
+    an alternative to numpy.min
     """
-    if len(shape) == 0:
-        return dtype(0.0)
+    if len(args) == 1:
+        a = args[0]
     else:
-        result = []
-        for l in range(shape[0]):
-            result.append(zeros(shape=shape[1:], dtype=dtype))
+        a = args
+    if isinstance(a, collections.Iterable):
+        if len(a) == 0:
+            raise ValueError("zero-size array to reduction operation minimum which has no identity")
+        minimum = min(a[0])
+        for b in a[1:]:
+            m = min(b)
+            if m < minimum:
+                minimum = m
+        return minimum
+    else:
+        return a
+
+def max(*args):
+    """
+    an alternative to numpy.max
+    """
+    if len(args) == 1:
+        a = args[0]
+    else:
+        a = args
+    if isinstance(a, collections.Iterable):
+        if len(a) == 0:
+            raise ValueError("zero-size array to reduction operation maximum which has no identity")
+        maximum = max(a[0])
+        for b in a[1:]:
+            m = max(b)
+            if maximum < m:
+                maximum = m
+        return maximum
+    else:
+        return a
+
+def sum(a):
+    """
+    an alternative to numpy.sum
+    """
+    if isinstance(a, collections.Iterable):
+        result = 0.0
+        for b in a:
+            result += sum(b)
         return result
+    else:
+        return a
+
+def prod(a):
+    """
+    an alternative to numpy.prod
+    """
+    if isinstance(a, collections.Iterable):
+        result = 1.0
+        for b in a:
+            result *= prod(b)
+        return result
+    else:
+        return a
 
 def mean(a):
     """
@@ -162,29 +319,16 @@ def var(a):
     squared = multiply(a, a)
     return mean(squared) - mean(a) ** 2
 
-def shape(a):
-    """
-    an alternative to numpy.shape
-    """
-    if isinstance(a, collections.Iterable):
-        if len(a) == 0:
-            return (0,)
-        else:
-            return (len(a),) + shape(a[0])
-    else:
-        return ()
 
-def prod(a):
+########################
+# evaluation functions #
+########################
+
+def equal(a, b):
     """
-    an alternative to numpy.prod
+    an alternative for numpy.equal
     """
-    if isinstance(a, collections.Iterable):
-        result = 1.0
-        for b in a:
-            result *= prod(b)
-        return result
-    else:
-        return a
+    return algebra_base(a, b, function=lambda c, d: c == d)
 
 def nonzero(a):
     """
