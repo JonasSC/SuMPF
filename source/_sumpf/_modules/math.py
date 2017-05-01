@@ -14,7 +14,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 
-from ._math.algebra import Add, Subtract, Multiply, Divide
+from ._math.algebra import Add, Subtract, Multiply, Divide, Power
 from ._math.statistics import *
 
 from ._math.average import AverageSignals, AverageSpectrums

@@ -31,8 +31,8 @@ class TestSpectrum(unittest.TestCase):
         samples1 = []
         samples2 = []
         for i in range(1, 11):
-            samples1.append(i + 1.0j * i)
-            samples2.append(2 * i)
+            samples1.append((i * ((-0.9) ** i)) + i * 0.3j)
+            samples2.append(0.2 * i)
         self.samples1 = tuple(samples1)
         self.samples2 = tuple(samples2)
         self.channels = (self.samples1, self.samples2)
@@ -53,8 +53,8 @@ class TestSpectrum(unittest.TestCase):
                     self.assertAlmostEqual(spk_magnitude[c][s], magnitude[c][s])    # perform a windows specific test, because the calculations do not seem not run as precise as expected here
         else:
             self.assertEqual(self.spectrum.GetMagnitude(), magnitude)   # test if magnitude is computed correctly
-        phase = ((math.pi / 4.0,) * len(self.spectrum), (0.0,) * len(self.spectrum))
-        self.assertEqual(self.spectrum.GetPhase(), phase)               # test if phase is computed correctly
+        phase = (tuple(math.acos(c.real / ((c.real ** 2 + c.imag ** 2) ** 0.5)) for c in self.spectrum.GetChannels()[0]), (0.0,) * len(self.spectrum))
+        self.assertLess(numpy.sum(numpy.subtract(self.spectrum.GetPhase(), phase)), 1e-15)  # test if phase is computed correctly
         self.assertEqual(self.spectrum.GetLabels(), ("1", "2"))         # test if labels are set correctly
         spk = sumpf.Spectrum(channels=self.channels, resolution=4800.0, labels=("1",))
         self.assertEqual(spk.GetLabels(), ("1", None))                  # test if labels are set correctly, if the given tuple of labels is shorter than the tuple of channels
@@ -150,13 +150,7 @@ class TestSpectrum(unittest.TestCase):
         The comparison operators are tested in test_comparison.
         The length getter is tested in test_signal_initialization
         """
-        # __repr__
-        newlocals = {}
-        exec("newspectrum = sumpf." + repr(self.spectrum), globals(), newlocals)
-        self.assertEqual(newlocals["newspectrum"], self.spectrum)
-        # __str__
-        self.assertEqual(str(self.spectrum), "<_sumpf._data.spectrum.Spectrum object (length: 10, resolution: 4800.00, channel count: 2) at 0x%x>" % id(self.spectrum))
-        # algebra
+        # test spectrums
         spectrum1 = sumpf.Spectrum(channels=(self.samples2, self.samples1), resolution=4800.0, labels=("1", "2"))
         spectrum2 = sumpf.Spectrum(channels=(self.samples1,), resolution=4800.0, labels=("3", "4"))
         spectrum3 = sumpf.Spectrum(channels=(self.samples1, self.samples2, self.samples1), resolution=4800.0, labels=("5", "6"))
@@ -164,6 +158,12 @@ class TestSpectrum(unittest.TestCase):
         spectrum5 = sumpf.Spectrum(channels=((1.0,) * 10, (2.0 + 2.3j,) * 10), resolution=4410.0, labels=("9", "10"))
         spectrum6 = sumpf.Spectrum(channels=((0.0,) * 10, (0.0,) * 10), resolution=4800.0, labels=("11", "12"))
         spectrum7 = sumpf.Spectrum(channels=((0.0, 0.0),) * 3, resolution=4800.0)
+        # __repr__
+        newlocals = {}
+        exec("newspectrum = sumpf." + repr(self.spectrum), globals(), newlocals)
+        self.assertEqual(newlocals["newspectrum"], self.spectrum)
+        # __str__
+        self.assertEqual(str(self.spectrum), "<_sumpf._data.spectrum.Spectrum object (length: 10, resolution: 4800.00, channel count: 2) at 0x%x>" % id(self.spectrum))
         # __add__
         self.assertEqual(self.spectrum + spectrum1,
                          sumpf.Spectrum(channels=(numpy.add(self.samples1, self.samples2), numpy.add(self.samples2, self.samples1)),
@@ -316,4 +316,59 @@ class TestSpectrum(unittest.TestCase):
         self.assertRaises(ZeroDivisionError, div, *(9.5 + 4.6j, spectrum7))     # dividing a scalar by a Spectrum with a channel with only zero values should fail
         self.assertRaises(ZeroDivisionError, div, *(self.spectrum, 0.0))        # dividing by zero should fail
         self.assertRaises(ZeroDivisionError, div, *(self.spectrum, (4.2, 0.0))) # dividing by a tuple with a zero should fail
+        # __pow__
+        self.assertEqual(self.spectrum ** spectrum1,
+                         sumpf.Spectrum(channels=(numpy.power(self.samples1, self.samples2), numpy.power(self.samples2, self.samples1)),
+                                        resolution=4800.0,
+                                        labels=("Power 1", "Power 2")))   # power of two spectrums with the same number of channels
+        self.assertEqual(self.spectrum ** spectrum2,
+                         sumpf.Spectrum(channels=(numpy.power(self.samples1, self.samples1), numpy.power(self.samples2, self.samples1)),
+                                        resolution=4800.0,
+                                        labels=("Power 1", "Power 2")))   # power of two spectrums, where the exponent has only one channel
+        self.assertEqual(spectrum2 ** spectrum1,
+                         sumpf.Spectrum(channels=(numpy.power(self.samples1, self.samples2), numpy.power(self.samples1, self.samples1)),
+                                        resolution=4800.0,
+                                        labels=("Power 1", "Power 2")))   # power of two spectrums, where the base has only one channel
+        for number in (-2.0, -2.7 + 4.1j, 3, 5 - 1j):
+            self.assertEqual(self.spectrum ** number,
+                             sumpf.Spectrum(channels=numpy.power((self.samples1, self.samples2), number),
+                                            resolution=4800.0,
+                                            labels=self.spectrum.GetLabels()))  # a number as exponent
+            self.assertEqual(number ** self.spectrum,
+                             sumpf.Spectrum(channels=numpy.power(complex(number), (self.samples1, self.samples2)),
+                                            resolution=4800.0,
+                                            labels=self.spectrum.GetLabels()))  # a number as base
+        if common.lib_available("numpy"):
+            self.assertEqual(self.spectrum ** [12.3, 9],
+                             sumpf.Spectrum(channels=(numpy.power(self.samples1, 12.3), numpy.power(numpy.complex_(self.samples2), 9.0)),
+                                            resolution=4800.0,
+                                            labels=self.spectrum.GetLabels()))  # a list as exponent
+        else:
+            self.assertEqual(self.spectrum ** [12.3, 9],
+                             sumpf.Spectrum(channels=(numpy.power(self.samples1, 12.3), numpy.power(self.samples2, 9)),
+                                            resolution=4800.0,
+                                            labels=self.spectrum.GetLabels()))  # a list as exponent
+        self.assertEqual((12.3, 9) ** self.spectrum,
+                         sumpf.Spectrum(channels=(numpy.power(12.3, self.samples1), numpy.power(9, self.samples2)),
+                                        resolution=4800.0,
+                                        labels=self.spectrum.GetLabels()))  # a list as base
+        def pow(a, b):
+            return a ** b
+        self.assertRaises(ValueError, pow, *(self.spectrum, spectrum3))             # computing the power of a Spectrum with a different number of channels should fail, if none of the channel counts is one
+        self.assertRaises(ValueError, pow, *(self.spectrum, spectrum4))             # computing the power of a Spectrum with a different length should fail
+        self.assertRaises(ValueError, pow, *(self.spectrum, spectrum5))             # computing the power of a Spectrum with a different resolution should fail
+        self.assertRaises(ValueError, pow, *(self.spectrum, (1.0, -2.0, 3.0)))      # computing the power of a tuple of wrong length by a Spectrum should fail
+        self.assertRaises(ValueError, pow, *((-2.0,), self.spectrum))               # computing the power of a Spectrum by a tuple of wrong length should fail
+        self.assertRaises(ZeroDivisionError, pow, *(spectrum6, self.spectrum))      # computing the power of a zero Spectrum to a complex exponent should fail
+        self.assertRaises(ZeroDivisionError, pow, *(spectrum6, 1.0 + 4.1j))         # computing the power of a zero Spectrum to a complex exponent should fail
+        self.assertRaises(ZeroDivisionError, pow, *(spectrum6, (1.0 + 4.1j, 3.2)))  # computing the power of a zero Spectrum to a complex exponent should fail
+        self.assertRaises(ZeroDivisionError, pow, *(0.0, self.spectrum))            # computing the power of zero to a complex exponent should fail
+        self.assertRaises(ZeroDivisionError, pow, *((0.0, 0.0), self.spectrum))     # computing the power of a zero tuple to a complex exponent should fail
+        float_spectrum = sumpf.Spectrum(channels=numpy.real(self.channels))
+        complex_spectrum = sumpf.Spectrum(channels=numpy.complex_(numpy.real(self.channels)))
+        self.assertEqual(float_spectrum ** float_spectrum, complex_spectrum ** complex_spectrum)
+        self.assertEqual((-3.9) ** float_spectrum, (-3.9) ** complex_spectrum)
+        self.assertEqual((-3.9, 7.8) ** float_spectrum, (-3.9, 7.8) ** complex_spectrum)
+        self.assertEqual(float_spectrum ** (-3.9), complex_spectrum ** (-3.9))
+        self.assertEqual(float_spectrum ** (-3.9, 7.8), complex_spectrum ** (-3.9, 7.8))
 

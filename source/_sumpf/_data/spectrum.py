@@ -136,7 +136,9 @@ class Spectrum(ChannelData):
         A method for adding this Spectrum and another one.
         The result will be a newly created Spectrum instance. Neither this Spectrum
         nor the other Spectrum will be modified.
-        The Spectrums must have the same length, resolution and channel count.
+        The Spectrums must have the same length and resolution. The channel count
+        of both Spectrums has to be equal or one Spectrum has to have a channel
+        count of one.
         The two Spectrums will be added channel per channel and sample per sample:
             self = sumpf.Spectrum(channels = ((1, 2), (3, 4)))
             other = sumpf.Spectrum(channels = ((5, 6), (7, 8)))
@@ -169,7 +171,9 @@ class Spectrum(ChannelData):
         A method for subtracting another Spectrum from this one.
         The result will be a newly created Spectrum instance. Neither this Spectrum
         nor the other Spectrum will be modified.
-        The Spectrums must have the same length, resolution and channel count.
+        The Spectrums must have the same length and resolution. The channel count
+        of both Spectrums has to be equal or one Spectrum has to have a channel
+        count of one.
         The two Spectrums will be subtracted channel per channel and sample per sample:
             self = sumpf.Spectrum(channels = ((1, 2), (3, 4)))
             other = sumpf.Spectrum(channels = ((5, 6), (7, 8)))
@@ -208,7 +212,9 @@ class Spectrum(ChannelData):
         A method for multiplying this Spectrum and another one or a scalar factor.
         The result will be a newly created Spectrum instance. Neither this Spectrum
         nor the other Spectrum will be modified.
-        The Spectrums must have the same length, resolution and channel count.
+        The Spectrums must have the same length and resolution. The channel count
+        of both Spectrums has to be equal or one Spectrum has to have a channel
+        count of one.
         The two Spectrums will be multiplied channel per channel and sample per sample:
             self = sumpf.Spectrum(channels = ((1, 2), (3, 4)))
             other = sumpf.Spectrum(channels = ((5, 6), (7, 8)))
@@ -244,7 +250,9 @@ class Spectrum(ChannelData):
         A method for dividing this Spectrum by another one.
         The result will be a newly created Spectrum instance. Neither this Spectrum
         nor the other Spectrum will be modified.
-        The Spectrums must have the same length, resolution and channel count.
+        The Spectrums must have the same length and resolution. The channel count
+        of both Spectrums has to be equal or one Spectrum has to have a channel
+        count of one.
         The two Spectrums will be divided channel per channel and sample per sample:
             self = sumpf.Spectrum(channels = ((1, 2), (3, 4)))
             other = sumpf.Spectrum(channels = ((5, 6), (7, 8)))
@@ -297,6 +305,98 @@ class Spectrum(ChannelData):
         The same as __rtruediv__. For backwards compatibility with Python 2.
         """
         return self.__rtruediv__(other)
+
+    def __pow__(self, other):
+        """
+        A method for computing the power of a Spectrum, in which the other Spectrum
+        is the exponent.
+        The result will be a newly created Spectrum instance. Neither this Spectrum
+        nor the other Spectrum will be modified.
+        The Spectrums must have the same length and resolution. The channel count
+        of both Spectrums has to be equal or one Spectrum has to have a channel
+        count of one.
+        The power will be computed channel per channel and sample per sample:
+            self = sumpf.Spectrum(channels = ((1, 2), (3, 4)))
+            other = sumpf.Spectrum(channels = ((5, 6), (7, 8)))
+            self ** other == sumpf.Spectrum(channels=((1**5, 2**6), (3**7, 4**8)))
+        @param other: the Spectrum that contains the exponents for the power
+        @retval : a Spectrum instance that is the power
+        """
+        if isinstance(other, (int, float)):
+            if int(other) != other:
+                try:
+                    if numpy.min(self.GetChannels()) < 0.0:
+                        channels = numpy.power(numpy.complex_(self.GetChannels()), other)
+                    else:
+                        channels = numpy.power(self.GetChannels(), other)
+                except TypeError:   # computing the minimum of a complex spectrum can raise a TypeError, because complex numbers have no order
+                    channels = numpy.power(self.GetChannels(), other)
+            else:
+                channels = numpy.power(self.GetChannels(), other)
+            labels = self.GetLabels()
+        elif isinstance(other, complex):
+            for c in self.GetChannels():
+                if numpy.prod(numpy.shape(numpy.nonzero(c))) == 0:
+                    raise ZeroDivisionError("Cannot compute the power of a Spectrum with only 0.0-samples to a complex exponent")
+            channels = numpy.power(self.GetChannels(), other)
+            labels = self.GetLabels()
+        elif isinstance(other, collections.Iterable):
+            if len(other) != len(self.GetChannels()):
+                raise ValueError("The given tuple's length does not equal the number of channels")
+            elif any(isinstance(f, complex) for f in other):
+                for c in self.GetChannels():
+                    if numpy.prod(numpy.shape(numpy.nonzero(c))) == 0:
+                        raise ZeroDivisionError("Cannot compute the power of a Spectrum with only 0.0-samples to a complex exponent")
+            elif any(int(f) != f for f in other):
+                try:
+                    if numpy.min(self.GetChannels()) < 0.0:
+                        channels = [numpy.power(a, c) for a, c in zip(numpy.complex_(self.GetChannels()), other)]
+                    else:
+                        channels = [numpy.power(a, c) for a, c in zip(self.GetChannels(), other)]
+                except TypeError:   # computing the minimum of a complex spectrum can raise a TypeError, because complex numbers have no order
+                    channels = [numpy.power(a, c) for a, c in zip(self.GetChannels(), other)]
+            else:
+                channels = [numpy.power(a, c) for a, c in zip(self.GetChannels(), other)]
+            labels = self.GetLabels()
+        else:
+            self.__CheckOtherSpectrum(other)
+            for c in self.GetChannels():
+                if numpy.prod(numpy.shape(numpy.nonzero(c))) == 0:
+                    raise ZeroDivisionError("Cannot compute the power of a Spectrum with only 0.0-samples to a complex exponent")
+            try:
+                if numpy.min(self.GetChannels()) < 0.0:
+                    channels = numpy.power(numpy.complex_(self.GetChannels()), other.GetChannels())
+                else:
+                    channels = numpy.power(self.GetChannels(), other.GetChannels())
+            except TypeError:   # computing the minimum of a complex spectrum can raise a TypeError, because complex numbers have no order
+                channels = numpy.power(self.GetChannels(), other.GetChannels())
+            labels = tuple(["Power %i" % (i + 1) for i in range(max(len(self.GetChannels()), len(other.GetChannels())))])
+        return Spectrum(channels=channels, resolution=self.GetResolution(), labels=labels)
+
+    def __rpow__(self, other):
+        """
+        This method is for computing the power of a scalar value, where the exponent
+        is this Spectrum.
+        @param other: the base for the computation of the power
+        @retval : a Spectrum instance whose samples are the power of the given value to this Spectrum's samples
+        """
+        if isinstance(other, collections.Iterable):
+            if len(other) != len(self.GetChannels()):
+                raise ValueError("The given tuple's length does not equal the number of channels")
+            elif numpy.prod(numpy.shape(numpy.nonzero(other))) == 0:
+                raise ZeroDivisionError("Cannot compute the power of a Spectrum with only 0.0-samples to a complex exponent")
+            if not any(isinstance(f, complex) for f in other) and min(other) < 0.0:
+                channels = [numpy.power(c, a) for a, c in zip(self.GetChannels(), numpy.complex_(other))]
+            else:
+                channels = [numpy.power(c, a) for a, c in zip(self.GetChannels(), other)]
+        else:
+            if other == 0.0:
+                raise ZeroDivisionError("Cannot compute the power of a Spectrum with only 0.0-samples to a complex exponent")
+            if not isinstance(other, complex) and other < 0.0:
+                channels = numpy.power(complex(other), self.GetChannels())
+            else:
+                channels = numpy.power(other, self.GetChannels())
+        return Spectrum(channels=channels, resolution=self.GetResolution(), labels=self.GetLabels())
 
     def __CheckOtherSpectrum(self, other):
         """

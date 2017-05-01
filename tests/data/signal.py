@@ -28,7 +28,7 @@ class TestSignal(unittest.TestCase):
         samples1 = []
         samples2 = []
         for i in range(1, 11):
-            samples1.append(float(i))
+            samples1.append(float(i) * (-1.0 ** i))
             samples2.append(2.0 * i)
         self.samples1 = tuple(samples1)
         self.samples2 = tuple(samples2)
@@ -110,6 +110,14 @@ class TestSignal(unittest.TestCase):
         The comparison operators are tested in test_comparison.
         The length getter is tested in test_signal_initialization
         """
+        # test signals
+        signal1 = sumpf.Signal(channels=(self.samples2, self.samples1), samplingrate=4410.0, labels=("1", "2"))
+        signal2 = sumpf.Signal(channels=(self.samples1,), samplingrate=4410.0, labels=("3", "4"))
+        signal3 = sumpf.Signal(channels=(self.samples1, self.samples2, self.samples1), samplingrate=4410.0, labels=("5", "6"))
+        signal4 = sumpf.Signal(channels=((1.0,) * 12, (2.0,) * 12), samplingrate=4410.0, labels=("7", "8"))
+        signal5 = sumpf.Signal(channels=((1.0,) * 10, (2.0,) * 10), samplingrate=4800.0, labels=("9", "10"))
+        signal6 = sumpf.Signal(channels=((1.0,) * 10, (0.0,) * 10), samplingrate=4410.0, labels=("11", "12"))
+        signal7 = sumpf.Signal(channels=((0.0, 0.0),) * 2, samplingrate=4800.0)
         # __repr__
         newlocals = {}
         exec("newsignal = sumpf." + repr(self.signal), globals(), newlocals)
@@ -124,14 +132,6 @@ class TestSignal(unittest.TestCase):
         self.assertRaises(ValueError, self.signal.__getitem__, slice(5, 6))
         self.assertRaises(ValueError, self.signal.__getitem__, slice(5, 8, 2))
         self.assertRaises(ValueError, self.signal.__getitem__, slice(6, 3))
-        # algebra
-        signal1 = sumpf.Signal(channels=(self.samples2, self.samples1), samplingrate=4410.0, labels=("1", "2"))
-        signal2 = sumpf.Signal(channels=(self.samples1,), samplingrate=4410.0, labels=("3", "4"))
-        signal3 = sumpf.Signal(channels=(self.samples1, self.samples2, self.samples1), samplingrate=4410.0, labels=("5", "6"))
-        signal4 = sumpf.Signal(channels=((1.0,) * 12, (2.0,) * 12), samplingrate=4410.0, labels=("7", "8"))
-        signal5 = sumpf.Signal(channels=((1.0,) * 10, (2.0,) * 10), samplingrate=4800.0, labels=("9", "10"))
-        signal6 = sumpf.Signal(channels=((1.0,) * 10, (0.0,) * 10), samplingrate=4410.0, labels=("11", "12"))
-        signal7 = sumpf.Signal(channels=((0.0, 0.0),) * 2, samplingrate=4800.0)
         # __add__
         self.assertEqual(self.signal + signal1,
                          sumpf.Signal(channels=(numpy.add(self.samples1, self.samples2), numpy.add(self.samples2, self.samples1)),
@@ -284,4 +284,46 @@ class TestSignal(unittest.TestCase):
         self.assertRaises(ZeroDivisionError, div, *(4.3, signal7))              # dividing a scalar by a Signal with a channel with only zero values should fail
         self.assertRaises(ZeroDivisionError, div, *(self.signal, 0.0))          # dividing by zero should fail
         self.assertRaises(ZeroDivisionError, div, *(self.signal, (4.2, 0.0)))   # dividing by a tuple with a zero should fail
+        # __pow__
+        self.assertEqual(self.signal ** signal1,
+                         sumpf.Signal(channels=(numpy.power(self.samples1, self.samples2), numpy.power(self.samples2, self.samples1)),
+                                      samplingrate=4410.0,
+                                      labels=("Power 1", "Power 2")))   # power of two signals with the same number of channels
+        self.assertEqual(self.signal ** signal2,
+                         sumpf.Signal(channels=(numpy.power(self.samples1, self.samples1), numpy.power(self.samples2, self.samples1)),
+                                      samplingrate=4410.0,
+                                      labels=("Power 1", "Power 2")))   # power of two signals, where the exponent has only one channel
+        self.assertEqual(signal2 ** signal1,
+                         sumpf.Signal(channels=(numpy.power(self.samples1, self.samples2), numpy.power(self.samples1, self.samples1)),
+                                      samplingrate=4410.0,
+                                      labels=("Power 1", "Power 2")))   # power of two signals, where the base has only one channel
+        for number in (2.0, -4.0, 3):
+            self.assertEqual(self.signal ** number,
+                             sumpf.Signal(channels=(numpy.power(self.samples1, number), numpy.power(self.samples2, number)),
+                                          samplingrate=4410.0,
+                                          labels=self.signal.GetLabels()))  # a number as exponent
+            self.assertEqual(number ** self.signal,
+                             sumpf.Signal(channels=(numpy.power(number, self.samples1), numpy.power(number, self.samples2)),
+                                          samplingrate=4410.0,
+                                          labels=self.signal.GetLabels()))  # a number as base
+        self.assertEqual(self.signal ** [12.0, 9],
+                         sumpf.Signal(channels=(numpy.power(self.samples1, 12.0), numpy.power(self.samples2, 9)),
+                                      samplingrate=4410.0,
+                                      labels=self.signal.GetLabels()))  # a list as exponent
+        self.assertEqual((12.3, -9) ** self.signal,
+                         sumpf.Signal(channels=(numpy.power(12.3, self.samples1), numpy.power(-9, self.samples2)),
+                                      samplingrate=4410.0,
+                                      labels=self.signal.GetLabels()))  # a list as base
+        def pow(a, b):
+            return a ** b
+        self.assertRaises(ValueError, pow, *(self.signal, signal3))                     # computing the power of a Signal with a different number of channels should fail, if none of the channel counts is one
+        self.assertRaises(ValueError, pow, *(self.signal, signal4))                     # computing the power of a Signal with a different length should fail
+        self.assertRaises(ValueError, pow, *(self.signal, signal5))                     # computing the power of a Signal with a different sampling rate should fail
+        self.assertRaises(ValueError, pow, *(self.signal, (1.0, -2.0, 3.0)))            # computing the power of a tuple of wrong length by a Signal should fail
+        self.assertRaises(ValueError, pow, *((-2.0,), self.signal))                     # computing the power of a Signal by a tuple of wrong length should fail
+        self.assertRaises(ValueError, pow, *(-1.0 * self.signal, 1.7))                  # computing a fractional power of a negative value should fail
+        self.assertRaises(ValueError, pow, *(-1.0 * self.signal, (1.7, -1.0)))          # computing a fractional power of a negative value should fail
+        self.assertRaises(ValueError, pow, *(-2.0, self.signal * 0.1))                  # computing a fractional power of a negative value should fail
+        self.assertRaises(ValueError, pow, *((-2.0, 1.7), self.signal * 0.1))           # computing a fractional power of a negative value should fail
+        self.assertRaises(ValueError, pow, *(-1.0 * self.signal, self.signal * 0.1))    # computing a fractional power of a negative value should fail
 

@@ -110,7 +110,9 @@ class Signal(ChannelData):
         A method for adding this Signal and another one.
         The result will be a newly created Signal instance. Neither this Signal
         nor the other Signal will be modified.
-        The Signals must have the same length, sampling rate and channel count.
+        The Signals must have the same length and sampling rate. The channel count
+        of both Signals has to be equal or one Signal has to have a channel count
+        of one.
         The two Signals will be added channel per channel and sample per sample:
             self = sumpf.Signal(channels = ((1, 2), (3, 4)))
             other = sumpf.Signal(channels = ((5, 6), (7, 8)))
@@ -145,7 +147,9 @@ class Signal(ChannelData):
         A method for subtracting another Signal from this one.
         The result will be a newly created Signal instance. Neither this Signal
         nor the other Signal will be modified.
-        The Signals must have the same length, sampling rate and channel count.
+        The Signals must have the same length and sampling rate. The channel count
+        of both Signals has to be equal or one Signal has to have a channel count
+        of one.
         The two Signals will be subtracted channel per channel and sample per sample:
             self = sumpf.Signal(channels = ((1, 2), (3, 4)))
             other = sumpf.Signal(channels = ((5, 6), (7, 8)))
@@ -186,7 +190,9 @@ class Signal(ChannelData):
         A method for multiplying this Signal and another one or a scalar factor.
         The result will be a newly created Signal instance. Neither this Signal
         nor the other Signal will be modified.
-        The Signals must have the same length, sampling rate and channel count.
+        The Signals must have the same length and sampling rate. The channel count
+        of both Signals has to be equal or one Signal has to have a channel count
+        of one.
         The two Signals will be multiplied channel per channel and sample per sample:
             self = sumpf.Signal(channels = ((1, 2), (3, 4)))
             other = sumpf.Signal(channels = ((5, 6), (7, 8)))
@@ -222,7 +228,9 @@ class Signal(ChannelData):
         A method for dividing this Signal by another one.
         The result will be a newly created Signal instance. Neither this Signal
         nor the other Signal will be modified.
-        The Signals must have the same length, sampling rate and channel count.
+        The Signals must have the same length and sampling rate. The channel count
+        of both Signals has to be equal or one Signal has to have a channel count
+        of one.
         The two Signals will be divided channel per channel and sample per sample:
             self = sumpf.Signal(channels = ((1, 2), (3, 4)))
             other = sumpf.Signal(channels = ((5, 6), (7, 8)))
@@ -277,6 +285,63 @@ class Signal(ChannelData):
         The same as __rtruediv__. For backwards compatibility with Python 2.
         """
         return self.__rtruediv__(other)
+
+    def __pow__(self, other):
+        """
+        A method for computing the power of a Signal, in which the other Signal
+        is the exponent.
+        The result will be a newly created Signal instance. Neither this Signal
+        nor the other Signal will be modified.
+        The Signals must have the same length and sampling rate. The channel count
+        of both Signals has to be equal or one Signal has to have a channel count
+        of one.
+        The power will be computed channel per channel and sample per sample:
+            self = sumpf.Signal(channels = ((1, 2), (3, 4)))
+            other = sumpf.Signal(channels = ((5, 6), (7, 8)))
+            self ** other == sumpf.Signal(channels=((1**5, 2**6), (3**7, 4**8)))
+        @param other: the Signal that contains the exponents for the power
+        @retval : a Signal instance that is the power
+        """
+        if isinstance(other, (int, float)):
+            if int(other) != other and numpy.min(self.GetChannels()) < 0.0:
+                raise ValueError("Negative samples cannot be raised to a fractional power")
+            channels = numpy.power(self.GetChannels(), other)
+            labels = self.GetLabels()
+        elif isinstance(other, collections.Iterable):
+            if len(other) != len(self.GetChannels()):
+                raise ValueError("The given tuple's length does not equal the number of channels")
+            elif numpy.min(self.GetChannels()) < 0.0:
+                for x in other:
+                    if int(x) != x:
+                        raise ValueError("Negative samples cannot be raised to a fractional power")
+            channels = [numpy.power(a, c) for a, c in zip(self.GetChannels(), other)]
+            labels = self.GetLabels()
+        else:
+            self.__CheckOtherSignal(other)
+            if numpy.min(self.GetChannels()) < 0.0 and not all(all(c) for c in numpy.equal(numpy.mod(other.GetChannels(), 1.0), 0.0)):
+                raise ValueError("Negative samples cannot be raised to a fractional power")
+            channels = numpy.power(self.GetChannels(), other.GetChannels())
+            labels = tuple(["Power %i" % (i + 1) for i in range(max(len(self.GetChannels()), len(other.GetChannels())))])
+        return Signal(channels=channels, samplingrate=self.GetSamplingRate(), labels=labels)
+
+    def __rpow__(self, other):
+        """
+        This method is for computing the power of a scalar value, where the exponent
+        is this Signal.
+        @param other: the base for the computation of the power
+        @retval : a Signal instance whose samples are the power of the given value to this Signal's samples
+        """
+        if isinstance(other, collections.Iterable):
+            if len(other) != len(self.GetChannels()):
+                raise ValueError("The given tuple's length does not equal the number of channels")
+            elif min(other) < 0.0 and not all(all(c) for c in numpy.equal(numpy.mod(self.GetChannels(), 1.0), 0.0)):
+                raise ValueError("Negative samples cannot be raised to a fractional power")
+            channels = [numpy.power(c, a) for a, c in zip(self.GetChannels(), other)]
+        else:
+            if other < 0.0 and not all(all(c) for c in numpy.equal(numpy.mod(self.GetChannels(), 1.0), 0.0)):
+                raise ValueError("Negative samples cannot be raised to a fractional power")
+            channels = numpy.power(other, self.GetChannels())
+        return Signal(channels=channels, samplingrate=self.GetSamplingRate(), labels=self.GetLabels())
 
     def __CheckOtherSignal(self, other):
         """

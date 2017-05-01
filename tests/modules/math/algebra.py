@@ -27,11 +27,11 @@ class TestAlgebra(unittest.TestCase):
         """
         Tests if the calculations yield the expected results with signals.
         """
-        signal1 = sumpf.Signal(channels=((4.0, 6.0, 9.34), (3.0, 5.0, 8.4)), samplingrate=62.33)
-        signal2 = sumpf.Signal(channels=((2.0, 1.0, 14.2), (3.0, 7.0, 2.1)), samplingrate=62.33)
+        signal1 = sumpf.Signal(channels=((4.0, -6.0, 9.34), (3.0, 5.0, -8.4)), samplingrate=62.33)
+        signal2 = sumpf.Signal(channels=((2.0, 1.0, -14.2), (-3.0, 7.0, 2.1)), samplingrate=62.33)
         empty = sumpf.Signal(samplingrate=62.33)
-        wrongchannelcount = sumpf.Signal(channels=((2.0, 1.0, 14.2),), samplingrate=62.33)
-        wrongsamplingrate = sumpf.Signal(channels=((2.0, 1.0, 14.2), (3.0, 7.0, 2.1)), samplingrate=59.78)
+        wrongchannelcount = sumpf.Signal(channels=((-2.0, 1.0, 14.2),), samplingrate=62.33)
+        wrongsamplingrate = sumpf.Signal(channels=((2.0, 1.0, -14.2), (3.0, -7.0, 2.1)), samplingrate=59.78)
         scalar = 4.74
         array = (4.2, -5.5)
         for a in (signal1, empty, wrongchannelcount, wrongsamplingrate, scalar, array):
@@ -70,16 +70,24 @@ class TestAlgebra(unittest.TestCase):
                     self.assertRaises(ZeroDivisionError, sumpf.modules.Divide(value1=a, value2=b).GetResult)
                 else:
                     self.assertEqual(sumpf.modules.Divide(value1=a, value2=b).GetResult(), c)
+                try:
+                    c = a ** b
+                except ValueError:
+                    self.assertRaises(ValueError, sumpf.modules.Power(value1=a, value2=b).GetResult)
+                except TypeError:
+                    self.assertRaises(TypeError, sumpf.modules.Power(value1=a, value2=b).GetResult)
+                else:
+                    self.assertEqual(sumpf.modules.Power(value1=a, value2=b).GetResult(), c)
 
     def test_spectrums(self):
         """
         Tests if the calculations yield the expected results with signals.
         """
-        spectrum1 = sumpf.Spectrum(channels=((4.0 + 1.9j, 6.0 + 7.3j, 9.34), (3.0 - 6.6j, 5.0, 8.4 + 9.4j)), resolution=62.33)
-        spectrum2 = sumpf.Spectrum(channels=((2.0 - 4.4j, 1.0 + 3.6j, 14.2 - 1.6j), (3.0 + 4.2j, 7.0 - 6.4j, 2.1 - 9.8j)), resolution=62.33)
+        spectrum1 = sumpf.Spectrum(channels=((-4.0 + 1.9j, 6.0 + 7.3j, -9.34), (3.0 - 6.6j, -5.0, 8.4 + 9.4j)), resolution=62.33)
+        spectrum2 = sumpf.Spectrum(channels=((2.0 - 4.4j, -1.0 + 3.6j, -14.2 - 1.6j), (3.0 + 4.2j, -7.0 - 6.4j, 2.1 - 9.8j)), resolution=62.33)
         empty = sumpf.Spectrum(resolution=62.33)
-        wrongchannelcount = sumpf.Spectrum(channels=((2.0 + 5.3j, 1.0 + 1.1j, 14.2 - 3.6j),), resolution=62.33)
-        wrongresolution = sumpf.Spectrum(channels=((2.0 + 6.3j, 1.0 - 4.4j, 14.2 - 2.0j), (3.0 + 3.1j, 7.0 - 3.8j, 2.1 + 4.7j)), resolution=59.78)
+        wrongchannelcount = sumpf.Spectrum(channels=((-2.0 + 5.3j, 1.0 + 1.1j, 14.2 - 3.6j),), resolution=62.33)
+        wrongresolution = sumpf.Spectrum(channels=((2.0 + 6.3j, -1.0 - 4.4j, 14.2 - 2.0j), (-3.0 + 3.1j, 7.0 - 3.8j, 2.1 + 4.7j)), resolution=59.78)
         scalar = 4.74 + 12.5j
         array = (4.2, -5.5)
         for a in (spectrum1, empty, wrongchannelcount, wrongresolution, scalar, array):
@@ -118,6 +126,16 @@ class TestAlgebra(unittest.TestCase):
                     self.assertRaises(TypeError, sumpf.modules.Divide(value1=a, value2=b).GetResult)
                 else:
                     self.assertEqual(sumpf.modules.Divide(value1=a, value2=b).GetResult(), c)
+                try:
+                    c = a ** b
+                except ValueError:
+                    self.assertRaises(ValueError, sumpf.modules.Power(value1=a, value2=b).GetResult)
+                except ZeroDivisionError:
+                    self.assertRaises(ZeroDivisionError, sumpf.modules.Power(value1=a, value2=b).GetResult)
+                except TypeError:
+                    self.assertRaises(TypeError, sumpf.modules.Power(value1=a, value2=b).GetResult)
+                else:
+                    self.assertEqual(sumpf.modules.Power(value1=a, value2=b).GetResult(), c)
 
 
     def test_connectors(self):
@@ -127,7 +145,8 @@ class TestAlgebra(unittest.TestCase):
         for m in [sumpf.modules.Add(),
                   sumpf.modules.Subtract(),
                   sumpf.modules.Multiply(),
-                  sumpf.modules.Divide()]:
+                  sumpf.modules.Divide(),
+                  sumpf.modules.Power()]:
             self.assertEqual(m.SetValue1.GetType(), None)
             self.assertEqual(m.SetValue2.GetType(), None)
             self.assertEqual(m.GetResult.GetType(), None)
