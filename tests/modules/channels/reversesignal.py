@@ -59,7 +59,7 @@ class TestReverseSignal(unittest.TestCase):
 
     def test_connections(self):
         """
-        Tests the connections of the concatenation module.
+        Tests if the connectors are properly decorated.
         """
         ccs = sumpf.modules.ReverseSignal()
         self.assertEqual(ccs.SetInput.GetType(), sumpf.Signal)
