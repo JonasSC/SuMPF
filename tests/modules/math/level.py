@@ -22,13 +22,12 @@ class TestLevel(unittest.TestCase):
     """
     A test case for the Level class.
     """
-    @unittest.skipUnless(sumpf.config.get("run_long_tests"), "Long tests are skipped")
     def test_multichannel_input(self):
         """
         Tests if signals with multiple channels are computed as expected.
         """
-        constant = sumpf.modules.ConstantSignalGenerator(value=2.0)
-        square = sumpf.modules.SquareWaveGenerator(frequency=6.0 / constant.GetSignal().GetDuration())
+        constant = sumpf.modules.ConstantSignalGenerator(value=2.0, length=2 ** 11)
+        square = sumpf.modules.SquareWaveGenerator(frequency=6.0 / constant.GetSignal().GetDuration(), length=2 ** 11)
         merger = sumpf.modules.MergeSignals()
         sumpf.connect(constant.GetSignal, merger.AddInput)
         sumpf.connect(square.GetSignal, merger.AddInput)
@@ -46,14 +45,13 @@ class TestLevel(unittest.TestCase):
             else:
                 self.assertEqual(result[1], 0.0)
 
-    @unittest.skipUnless(sumpf.config.get("run_long_tests"), "Long tests are skipped")
     def test_sine(self):
         """
         Tests computing the RMS value of a sine wave.
         """
-        sine = sumpf.modules.SineWaveGenerator().GetSignal()
+        sine = sumpf.modules.SineWaveGenerator(frequency=50.0, samplingrate=1000.0, length=1000.0).GetSignal()
         level = sumpf.modules.Level(signal=sine).GetLevel()[0]
-        self.assertAlmostEqual(level, 0.5 ** 0.5, 4)
+        self.assertAlmostEqual(level, 0.5 ** 0.5, 15)
 
     @unittest.skipUnless(common.lib_available("numpy"), "This test requires the library 'numpy' to be available.")
     def test_sampling_rate(self):

@@ -59,7 +59,7 @@ class TestRudinShapiroNoiseGenerator(unittest.TestCase):
                         for s in spectrum.GetChannels()[0][stop_index:]:
                             self.assertLess(abs(s), 2e-15)
                         # check the crest factor
-                        rms = sumpf.modules.RootMeanSquare(signal=noise, integration_time=sumpf.modules.RootMeanSquare.FULL).GetOutput().GetChannels()[0][0]
+                        rms = sumpf.modules.Level(signal=noise).GetLevel()[0]
                         peak = max(sumpf.modules.RectifySignal(signal=noise).GetOutput().GetChannels()[0])
                         self.assertLess(20.0 * math.log10(peak / rms), 6.8)
                         # test the computation of the Rudin-Shapiro sequence length
