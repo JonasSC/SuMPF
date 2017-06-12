@@ -100,7 +100,6 @@ class TestResampleSignal(unittest.TestCase):
         sweep = sumpf.modules.SweepGenerator(start_frequency=10.0,
                                              stop_frequency=1000.0,
                                              function=sumpf.modules.SweepGenerator.EXPONENTIAL,
-                                             interval=None,
                                              samplingrate=2500.0,
                                              length=1000).GetSignal()
         triangle = sumpf.modules.TriangleWaveGenerator(raising=0.3,

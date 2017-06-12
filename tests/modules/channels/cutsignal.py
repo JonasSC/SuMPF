@@ -31,15 +31,14 @@ class TestCutSignal(unittest.TestCase):
         cut = sumpf.modules.CutSignal()
         self.assertEqual(cut.GetOutput(), sumpf.Signal())
         self.assertEqual(cut.GetOutputLength(), len(cut.GetOutput()))
-        cut = sumpf.modules.CutSignal(signal=signal, start=2, stop=(-1))
+        cut = sumpf.modules.CutSignal(signal=signal, interval=(2, -1))
         self.assertEqual(cut.GetOutput(), signal[2:-1])
         self.assertEqual(cut.GetOutputLength(), len(cut.GetOutput()))
-        cut.SetStart(1)
-        cut.SetStop(sumpf.modules.CutSignal.END)
+        cut.SetInterval(-(len(signal) - 1))
         self.assertEqual(cut.GetOutput(), signal[1:])
         self.assertEqual(cut.GetOutputLength(), len(cut.GetOutput()))
-        cut.SetStop(27)
-        self.assertEqual(cut.GetOutput(), signal[1:27])
+        cut.SetInterval(27)
+        self.assertEqual(cut.GetOutput(), signal[0:27])
         self.assertEqual(cut.GetOutputLength(), len(cut.GetOutput()))
 
     def test_connectors(self):
@@ -47,18 +46,16 @@ class TestCutSignal(unittest.TestCase):
         Tests if the connectors are properly decorated.
         """
         cut = sumpf.modules.CutSignal()
-        self.assertEqual(cut.SetInput.GetType(), sumpf.Signal)
-        self.assertEqual(cut.SetStart.GetType(), int)
-        self.assertEqual(cut.SetStop.GetType(), int)
-        self.assertEqual(cut.SetInterval.GetType(), tuple)
+        self.assertEqual(cut.SetSignal.GetType(), sumpf.Signal)
+        self.assertEqual(cut.SetInterval.GetType(), sumpf.SampleInterval)
         self.assertEqual(cut.GetOutput.GetType(), sumpf.Signal)
         self.assertEqual(cut.GetOutputLength.GetType(), int)
         common.test_connection_observers(testcase=self,
-                                         inputs=[cut.SetInput, cut.SetStart, cut.SetStop, cut.SetInterval],
+                                         inputs=[cut.SetSignal, cut.SetInterval],
                                          noinputs=[],
                                          output=cut.GetOutput)
         common.test_connection_observers(testcase=self,
-                                         inputs=[cut.SetInput, cut.SetStart, cut.SetStop, cut.SetInterval],
+                                         inputs=[cut.SetSignal, cut.SetInterval],
                                          noinputs=[],
                                          output=cut.GetOutputLength)
 

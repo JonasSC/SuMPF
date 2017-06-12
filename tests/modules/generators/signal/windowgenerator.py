@@ -40,84 +40,99 @@ class TestWindowGenerator(unittest.TestCase):
         self.assertEqual(output.GetSamplingRate(), 42)              # the sampling rate should be as defined in the constructor
         self.assertEqual(output.GetChannels()[0][0:3], (1.0,) * 3)  # all samples before the window should be 1.0
         self.assertEqual(output.GetChannels()[0][7:10], (0.0,) * 3) # all samples after the window should be 0.0
-        self.gen.SetFallInterval(None)
-        self.gen.SetRaiseInterval((3, 7))
-        output = self.gen.GetSignal()
-        self.assertEqual(output.GetChannels()[0][0:3], (0.0,) * 3)  # if the window is raising all samples before the window should be 0.0
-        self.assertEqual(output.GetChannels()[0][7:10], (1.0,) * 3) # if the window is raising all samples after the window should be 1.0
-        self.gen.SetRaiseInterval((-6, -4))
-        output = self.gen.GetSignal()
-        self.assertEqual(output.GetChannels()[0][0:4], (0.0,) * 4)  # the start of the window should have been set correctly via SetInterval
-        self.assertEqual(output.GetChannels()[0][6:10], (1.0,) * 4) # the end of the window should have been set correctly via SetInterval
-        self.gen.SetRaiseInterval((5, 12))
-        output = self.gen.GetSignal()
-        self.assertEqual(output.GetChannels()[0][0:5], (0.0,) * 5)  # setting an interval which is larger than the length of the generated Signal should be possible
-        self.assertEqual(len(output), 10)                           # the length should not be changed by the large interval
+        for fall in ((0, 0), (1.0, 1.0)):
+            self.gen.SetFallInterval(fall)
+            self.gen.SetRiseInterval((3, 7))
+            output = self.gen.GetSignal()
+            self.assertEqual(output.GetChannels()[0][0:3], (0.0,) * 3)  # if the window is raising all samples before the window should be 0.0
+            self.assertEqual(output.GetChannels()[0][7:10], (1.0,) * 3) # if the window is raising all samples after the window should be 1.0
+            self.gen.SetRiseInterval((-6, -4))
+            output = self.gen.GetSignal()
+            self.assertEqual(output.GetChannels()[0][0:4], (0.0,) * 4)  # the start of the window should have been set correctly via SetInterval
+            self.assertEqual(output.GetChannels()[0][6:10], (1.0,) * 4) # the end of the window should have been set correctly via SetInterval
+            self.gen.SetRiseInterval((5, 12))
+            output = self.gen.GetSignal()
+            self.assertEqual(output.GetChannels()[0][0:5], (0.0,) * 5)  # setting an interval which is larger than the length of the generated Signal should be possible
+            self.assertEqual(len(output), 10)                           # the length should not be changed by the large interval
 
-    def test_raise_fall(self):
+    def test_rise_fall(self):
         """
-        Tests the generation of Signals with both a raising and a falling edge.
+        Tests the generation of Signals with both a rising and a falling edge.
         """
-        # first raise, then fall
-        raising = sumpf.modules.WindowGenerator(raise_interval=(1, 4), samplingrate=42.0, length=10).GetSignal()
+        # first rise, then fall
+        rising = sumpf.modules.WindowGenerator(rise_interval=(1, 4), samplingrate=42.0, length=10).GetSignal()
         falling = sumpf.modules.WindowGenerator(fall_interval=(6, 9), samplingrate=42.0, length=10).GetSignal()
-        both = sumpf.modules.WindowGenerator(raise_interval=(1, 4), fall_interval=(6, 9), samplingrate=42.0, length=10).GetSignal()
-        self.assertEqual(both.GetChannels(), (raising * falling).GetChannels())
-        # first fall, then raise
-        raising = sumpf.modules.WindowGenerator(raise_interval=(6, 9), samplingrate=42.0, length=10).GetSignal()
+        both = sumpf.modules.WindowGenerator(rise_interval=(1, 4), fall_interval=(6, 9), samplingrate=42.0, length=10).GetSignal()
+        self.assertEqual(both.GetChannels(), (rising * falling).GetChannels())
+        # first fall, then rise
+        rising = sumpf.modules.WindowGenerator(rise_interval=(6, 9), samplingrate=42.0, length=10).GetSignal()
         falling = sumpf.modules.WindowGenerator(fall_interval=(1, 4), samplingrate=42.0, length=10).GetSignal()
-        both = sumpf.modules.WindowGenerator(raise_interval=(6, 9), fall_interval=(1, 4), samplingrate=42.0, length=10).GetSignal()
-        self.assertEqual(both.GetChannels(), (raising + falling).GetChannels())
-        # first fall, then raise
-        raising = sumpf.modules.WindowGenerator(raise_interval=(1, 9), samplingrate=42.0, length=10).GetSignal()
+        both = sumpf.modules.WindowGenerator(rise_interval=(6, 9), fall_interval=(1, 4), samplingrate=42.0, length=10).GetSignal()
+        self.assertEqual(both.GetChannels(), (rising + falling).GetChannels())
+        # first fall, then rise
+        rising = sumpf.modules.WindowGenerator(rise_interval=(1, 9), samplingrate=42.0, length=10).GetSignal()
         falling = sumpf.modules.WindowGenerator(fall_interval=(4, 6), samplingrate=42.0, length=10).GetSignal()
-        both = sumpf.modules.WindowGenerator(raise_interval=(1, 9), fall_interval=(4, 6), samplingrate=42.0, length=10).GetSignal()
-        self.assertEqual(both.GetChannels(), (raising * falling).GetChannels())
+        both = sumpf.modules.WindowGenerator(rise_interval=(1, 9), fall_interval=(4, 6), samplingrate=42.0, length=10).GetSignal()
+        self.assertEqual(both.GetChannels(), (rising * falling).GetChannels())
 
     def test_negative_intervals(self):
         """
         Tests negative integers and None for the interval borders
         """
-        self.assertEqual(sumpf.modules.WindowGenerator(raise_interval=(0, -7), fall_interval=(-3, -1), samplingrate=42.0, length=10).GetSignal(),
-                         sumpf.modules.WindowGenerator(raise_interval=(0, 3), fall_interval=(7, 9), samplingrate=42.0, length=10).GetSignal())
-        self.assertEqual(sumpf.modules.WindowGenerator(raise_interval=(-3, None), fall_interval=(-10, -7), samplingrate=42.0, length=10).GetSignal(),
-                         sumpf.modules.WindowGenerator(raise_interval=(7, 10), fall_interval=(0, 3), samplingrate=42.0, length=10).GetSignal())
+        self.assertEqual(sumpf.modules.WindowGenerator(rise_interval=(0, -7), fall_interval=(-3, -1), samplingrate=42.0, length=10).GetSignal(),
+                         sumpf.modules.WindowGenerator(rise_interval=(0, 3), fall_interval=(7, 9), samplingrate=42.0, length=10).GetSignal())
+        self.assertEqual(sumpf.modules.WindowGenerator(rise_interval=(-3, 1.0), fall_interval=(-10, -7), samplingrate=42.0, length=10).GetSignal(),
+                         sumpf.modules.WindowGenerator(rise_interval=(7, 10), fall_interval=(0, 3), samplingrate=42.0, length=10).GetSignal())
+
+    def test_excessive_intervals(self):
+        """
+        Tests intervals for the edges, that are outside the signal's length
+        """
+        self.assertEqual(sumpf.modules.WindowGenerator(rise_interval=(-15, -12), fall_interval=(12, 18), samplingrate=42.0, length=10).GetSignal().GetChannels(),
+                         sumpf.modules.ConstantSignalGenerator(value=1.0, samplingrate=42.0, length=10).GetSignal().GetChannels())
+        self.assertEqual(sumpf.modules.WindowGenerator(rise_interval=(1.2, 1.4), fall_interval=(-1.2, -1.4), samplingrate=42.0, length=10).GetSignal().GetChannels(),
+                         sumpf.modules.ConstantSignalGenerator(value=0.0, samplingrate=42.0, length=10).GetSignal().GetChannels())
+        self.assertEqual(sumpf.modules.WindowGenerator(rise_interval=(-1.4, -1.2), fall_interval=(-1.4, -1.2), samplingrate=42.0, length=10).GetSignal().GetChannels(),
+                         sumpf.modules.ConstantSignalGenerator(value=0.0, samplingrate=42.0, length=10).GetSignal().GetChannels())
+        self.assertEqual(sumpf.modules.WindowGenerator(rise_interval=(1.2, 1.4), fall_interval=(1.2, 1.4), samplingrate=42.0, length=10).GetSignal().GetChannels(),
+                         sumpf.modules.ConstantSignalGenerator(value=0.0, samplingrate=42.0, length=10).GetSignal().GetChannels())
 
     def test_float_intervals(self):
         """
         Tests floats for the intervals
         """
-        self.assertEqual(sumpf.modules.WindowGenerator(raise_interval=0.3, fall_interval=-0.3, samplingrate=42.0, length=10).GetSignal(),
-                         sumpf.modules.WindowGenerator(raise_interval=(0, 3), fall_interval=(7, 10), samplingrate=42.0, length=10).GetSignal())
-        self.assertEqual(sumpf.modules.WindowGenerator(raise_interval=-0.3, fall_interval=0.3, samplingrate=42.0, length=10).GetSignal(),
-                         sumpf.modules.WindowGenerator(raise_interval=(7, 10), fall_interval=(0, 3), samplingrate=42.0, length=10).GetSignal())
+        self.assertEqual(sumpf.modules.WindowGenerator(rise_interval=0.3, fall_interval=-0.3, samplingrate=42.0, length=10).GetSignal(),
+                         sumpf.modules.WindowGenerator(rise_interval=(0, 3), fall_interval=(7, 10), samplingrate=42.0, length=10).GetSignal())
+        self.assertEqual(sumpf.modules.WindowGenerator(rise_interval=-0.3, fall_interval=0.3, samplingrate=42.0, length=10).GetSignal(),
+                         sumpf.modules.WindowGenerator(rise_interval=(7, 10), fall_interval=(0, 3), samplingrate=42.0, length=10).GetSignal())
 
     def test_window_functions(self):
         """
         Tests the different window functions.
         """
         # test the rectangle function
-        window = sumpf.modules.WindowGenerator(raise_interval=(1, 4), fall_interval=(6, 9), function=sumpf.modules.WindowGenerator.Rectangle(), samplingrate=14.39, length=10).GetSignal()
+        window = sumpf.modules.WindowGenerator(rise_interval=(1, 4), fall_interval=(6, 9), function=sumpf.modules.WindowGenerator.Rectangle(), samplingrate=14.39, length=10).GetSignal()
         reference = sumpf.Signal(channels=((0.0,) + (1.0,) * 8 + (0.0,),), samplingrate=14.39, labels=("Window",))
         self.assertEqual(window, reference)
         # test the functions, that actually do a fade
-        functions = []
-        functions.append((sumpf.modules.WindowGenerator.Bartlett(), -2))    # store a tuple (function, limit)
-        functions.append((sumpf.modules.WindowGenerator.Blackman(), -1))    # where function is the WindowFunction object
-        functions.append((sumpf.modules.WindowGenerator.Hamming(), -1))     # and limit is the last sample that is not 0.0
-        functions.append((sumpf.modules.WindowGenerator.VonHann(), -2))     # so if the window ends with 0.0 limit is the last but one sample: -2
-        functions.append((sumpf.modules.WindowGenerator.Kaiser(14), -1))    # otherwise it's the last sample: -1
+        functions = [(sumpf.modules.WindowGenerator.Bartlett(), -2),    # store a tuple (function, limit)
+                     (sumpf.modules.WindowGenerator.Blackman(), -1),    # where function is the WindowFunction object
+                     (sumpf.modules.WindowGenerator.Hamming(), -1),     # and limit is the last sample that is not 0.0
+                     (sumpf.modules.WindowGenerator.VonHann(), -2),     # so if the window ends with 0.0 limit is the last but one sample: -2
+                     (sumpf.modules.WindowGenerator.Kaiser(14), -1)]    # otherwise it's the last sample: -1
         for function, limit in functions:
+            # test a falling window
             self.gen.SetFunction(function)
-            self.gen.SetRaiseInterval(None)
-            self.gen.SetFallInterval((0, 10))
-            for s in self.gen.GetSignal().GetChannels()[0][0:limit]:
+            self.gen.SetRiseInterval((0, 0))
+            self.gen.SetFallInterval((0, 1.0))
+            for i, s in enumerate(self.gen.GetSignal().GetChannels()[0][0:limit]):
                 self.assertNotEqual(s, 1.0)                                         # the samples of the window must not be 1.0
                 self.assertNotEqual(s, 0.0)                                         # neither can they be 0.0
             if limit == -2:
                 self.assertEqual(self.gen.GetSignal().GetChannels()[0][-1], 0.0)    # if the window ends with 0.0 check that last sample
-            self.gen.SetFallInterval(None)
-            self.gen.SetRaiseInterval((0, 10))
+            # test a rising window
+            self.gen.SetFallInterval((0, 0))
+            self.gen.SetRiseInterval((0, 1.0))
             for s in self.gen.GetSignal().GetChannels()[0][-1 - limit:]:
                 self.assertNotEqual(s, 1.0)                                         # the samples of the window must not be 1.0
                 self.assertNotEqual(s, 0.0)                                         # neither can they be 0.0
@@ -131,12 +146,12 @@ class TestWindowGenerator(unittest.TestCase):
         gen = sumpf.modules.WindowGenerator()
         self.assertEqual(gen.SetLength.GetType(), int)
         self.assertEqual(gen.SetSamplingRate.GetType(), float)
-        self.assertEqual(gen.SetRaiseInterval.GetType(), (tuple, float))
+        self.assertEqual(gen.SetRiseInterval.GetType(), (tuple, float))
         self.assertEqual(gen.SetFallInterval.GetType(), (tuple, float))
         self.assertEqual(gen.SetFunction.GetType(), sumpf.internal.WindowFunction)
         self.assertEqual(gen.GetSignal.GetType(), sumpf.Signal)
         common.test_connection_observers(testcase=self,
-                                         inputs=[gen.SetLength, gen.SetSamplingRate, gen.SetRaiseInterval, gen.SetFallInterval, gen.SetFunction],
+                                         inputs=[gen.SetLength, gen.SetSamplingRate, gen.SetRiseInterval, gen.SetFallInterval, gen.SetFunction],
                                          noinputs=[],
                                          output=gen.GetSignal)
 

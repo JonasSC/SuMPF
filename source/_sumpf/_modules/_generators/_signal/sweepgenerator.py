@@ -177,7 +177,7 @@ class SweepGenerator(SignalGenerator):
     EXPONENTIAL = ExponentialIncrease
     SYNCHRONIZED = SynchronizedExponentialIncrease
 
-    def __init__(self, start_frequency=20.0, stop_frequency=20000.0, function=EXPONENTIAL, interval=None, samplingrate=None, length=None):
+    def __init__(self, start_frequency=20.0, stop_frequency=20000.0, function=EXPONENTIAL, interval=(0, 1.0), samplingrate=None, length=None):
         """
         @param start_frequency: the frequency at the beginning in Hz
         @param stop_frequency: the frequency at the end in Hz
@@ -242,25 +242,23 @@ class SweepGenerator(SignalGenerator):
         """
         self.__function = function
 
-    @sumpf.Input(tuple, "GetSignal")
+    @sumpf.Input(sumpf.SampleInterval, "GetSignal")
     def SetInterval(self, interval):
         """
-        Sets a time interval in which shall be swept through the frequencies.
-        The interval shall be either None or a tuple of integers.
-        If the interval is None, the sweep will start with the given start frequency
-        at the first sample of the sweep and end with the given stop frequency
-        at the last sample.
-        If the interval is a tuple of sample numbers (a, b), the sweep will
-        start with a low frequency at the first sample, reach the given start
-        frequency at the a-th sample, go on to the given stop frequency at the
-        b-th sample and then end with a high frequency at the last sample.
+        Sets a interval of sample indices in which shall be swept through the
+        frequencies.
+        The sweep will start with a low frequency at the first sample, reach the
+        given start frequency at the beginning of the interval, go on to the given
+        stop frequency during the samples inside interval and then end with a high
+        frequency at the last sample.
         This functionality is useful, when the sweep's beginning and end shall
         be faded in and out with a window function, because the time interval, in
         which the sweep sweeps though the interesting frequencies is known and
         before and after this interval, the signal can be faded in and out.
-        If a or b are negative, the sample number will be counted from the end
-        of the sweep.
-        @param interval: None or a tuple of integers (a, b)
+        The interval does not need to be a SampleInterval instance. A sequence
+        or an integer or float number will be converted internally as documented
+        in the SampleInterval's class.
+        @param interval: a SampleInterval, a sequence, an int or a float
         """
         self.__interval = interval
 
@@ -271,22 +269,10 @@ class SweepGenerator(SignalGenerator):
         individually.
         This method is called directly before the sweep is generated.
         """
-        T = 0.0
-        if self.__interval is None:
-            T = float(self._length) / float(self._samplingrate)
-            self.__offset = 0.0
-        else:
-            a = self.__interval[0]
-            if a < 0:
-                a = self._length + a
-            b = self.__interval[1]
-            if b < 0:
-                b = self._length + b
-            if a >= b:
-                raise ValueError("The interval has to span at least one sample.")
-            T = float(min(b, self._length) - max(a, 0)) / float(self._samplingrate)
-            self.__offset = float(a) / float(self._samplingrate)
+        a, b = sumpf.SampleInterval.factory(self.__interval).GetIndices(self._length)
+        self.__offset = float(a) / float(self._samplingrate)
         f0 = self.__start
         fT = self.__stop
+        T = float(min(b, self._length) - max(a, 0)) / float(self._samplingrate)
         self.__precomputed = self.__function.precompute_values(f0, fT, T)
 

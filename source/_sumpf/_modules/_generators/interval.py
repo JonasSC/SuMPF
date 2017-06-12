@@ -14,33 +14,19 @@
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 
-import sys
 import sumpf
 
-if sys.version_info.major == 2:
-    import types
-    NoneType = types.NoneType
-else:
-    NoneType = type(None)
 
-
-
-class CreateInterval(object):
+class CreateSampleInterval(object):
     """
-    A class for creating an interval tuple out of two numbers
-    This can be useful in processing chains, where an interval has to be created
-    from given signal lengths, or to generate a frequency range.
-    To be able to specify an interval at the end of a sequence, the class offers
-    flags to multiply the given numbers with -1. This creates an interval, that
-    is interpreted similarly to a slice of a tuple or a list with negative indices
-    (e.g. (1,2,3,4)[-2:-1]). It is also possible to set the stop value to None,
-    if the last value of a sequence shall be inside the interval (this behavior
-    is similar to (1,2,3,4)[2:] or the equivalent (1,2,3,4)[2:None]).
+    A class for creating a SampleInterval instance tuple out of two numbers.
+    The numbers can be integer sample indices or float fractions of the data set's
+    length. See the SampleInterval class for further information.
     """
-    def __init__(self, start=0, stop=-1, negative_start=False, negative_stop=False):
+    def __init__(self, start=0, stop=1.0, negative_start=False, negative_stop=False):
         """
-        @param start: the integer or float start value for the interval (usually the first value inside the interval)
-        @param stop: the integer or float end value for the interval (usually the first value outside/after the interval) or None, if the last item of a sequence shall be inside the interval
+        @param start: the integer or float start value for the interval (the first value inside the interval)
+        @param stop: the integer or float end value for the interval (the first value outside/after the interval)
         @param negative_start: True, if the "start"-parameter shall be multiplied with -1, False otherwise
         @param negative_stop: True, if the "stop"-parameter shall be multiplied with -1, False otherwise
         """
@@ -49,33 +35,33 @@ class CreateInterval(object):
         self.__negative_start = negative_start
         self.__negative_stop = negative_stop
 
-    @sumpf.Output(tuple)
+    @sumpf.Output(sumpf.SampleInterval)
     def GetInterval(self):
         """
-        Returns the interval tuple.
-        @retval : a tuple (start, stop), where start and stop are the given values
+        Returns the interval.
+        @retval : a SampleInterval instance
         """
         start = self.__start
         stop = self.__stop
         if self.__negative_start:
             start *= -1
-        if stop is not None and self.__negative_stop:
+        if self.__negative_stop:
             stop *= -1
-        return (start, stop)
+        return sumpf.SampleInterval(start, stop)
 
     @sumpf.Input((int, float), "GetInterval")
     def SetStart(self, value):
         """
         Sets the start value for the interval.
-        @param value: the integer or float start value for the interval (usually the first value inside the interval)
+        @param value: the integer or float start value for the interval (the first value inside the interval)
         """
         self.__start = value
 
-    @sumpf.Input((int, float, NoneType), "GetInterval")
+    @sumpf.Input((int, float), "GetInterval")
     def SetStop(self, value):
         """
         Sets the stop value for the interval.
-        @param value: the integer or float end value for the interval (usually the first value outside/after the interval) or None, if the last item of a sequence shall be inside the interval
+        @param value: the integer or float end value for the interval (the first value outside/after the interval)
         """
         self.__stop = value
 

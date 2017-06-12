@@ -164,10 +164,8 @@ class TestSweepGenerator(unittest.TestCase):
         """
         Tests if errors are raised as expected.
         """
-        self.gen.SetInterval((-3, -4))
-        self.assertRaises(ValueError, self.gen.GetSignal)   # intervals with negative length should raise an error
         self.gen.SetInterval((50, 50))
-        self.assertRaises(ValueError, self.gen.GetSignal)   # intervals with zero length should raise an error
+        self.assertRaises(ZeroDivisionError, self.gen.GetSignal)   # intervals with zero length should raise an error
 
     def test_connectors(self):
         """
@@ -179,7 +177,7 @@ class TestSweepGenerator(unittest.TestCase):
         self.assertEqual(gen.SetStartFrequency.GetType(), float)
         self.assertEqual(gen.SetStopFrequency.GetType(), float)
         self.assertEqual(gen.SetSweepFunction.GetType(), sumpf.internal.SweepFunction)
-        self.assertEqual(gen.SetInterval.GetType(), tuple)
+        self.assertEqual(gen.SetInterval.GetType(), sumpf.SampleInterval)
         self.assertEqual(gen.GetSignal.GetType(), sumpf.Signal)
         common.test_connection_observers(testcase=self,
                                          inputs=[gen.SetLength, gen.SetSamplingRate, gen.SetStartFrequency, gen.SetStopFrequency, gen.SetSweepFunction, gen.SetInterval],

@@ -58,12 +58,12 @@ class TestLevel(unittest.TestCase):
         """
         Tests that the sampling rate does not affect the computed level.
         """
-        signal1 = sumpf.modules.WindowGenerator(raise_interval=(0, 1000),
+        signal1 = sumpf.modules.WindowGenerator(rise_interval=(0, 1000),
                                                 fall_interval=(1000, 2000),
                                                 function=sumpf.modules.WindowGenerator.VonHann(),
                                                 samplingrate=1000.0,
                                                 length=2000.0).GetSignal()
-        signal2 = sumpf.modules.WindowGenerator(raise_interval=(0, 3000),
+        signal2 = sumpf.modules.WindowGenerator(rise_interval=(0, 3000),
                                                 fall_interval=(3000, 6000),
                                                 function=sumpf.modules.WindowGenerator.VonHann(),
                                                 samplingrate=3000.0,

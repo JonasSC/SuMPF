@@ -14,57 +14,46 @@
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 
-import sys
 import unittest
 import sumpf
 import _common as common
 
-if sys.version_info.major == 2:
-    import types
-    NoneType = types.NoneType
-else:
-    NoneType = type(None)
-
 
 @unittest.skipUnless(common.lib_available("numpy"), "These tests require the library 'numpy' to be available.")
-class TestCreateInterval(unittest.TestCase):
+class TestCreateSampleInterval(unittest.TestCase):
     """
-    A TestCase for the CreateInterval module.
+    A TestCase for the CreateSampleInterval module.
     """
     def test_intervals(self):
         """
         Tests if the intercals are generated as expected
         """
         # test the defaults
-        ci = sumpf.modules.CreateInterval()
-        self.assertEqual(ci.GetInterval(), (0, -1))
+        ci = sumpf.modules.CreateSampleInterval()
+        self.assertEqual(ci.GetInterval(), sumpf.SampleInterval(0, 1.0))
         # test the setter and getter
         ci.SetStop(12)
-        self.assertEqual(ci.GetInterval(), (0, 12))
+        self.assertEqual(ci.GetInterval(), sumpf.SampleInterval(0, 12))
         ci.SetNegativeStop(True)
-        self.assertEqual(ci.GetInterval(), (0, -12))
-        ci.SetStop(None)
-        self.assertEqual(ci.GetInterval(), (0, None))
-        ci.SetStart(9.1)
-        self.assertEqual(ci.GetInterval(), (9.1, None))
-        ci.SetNegativeStart(True)
-        self.assertEqual(ci.GetInterval(), (-9.1, None))
-        ci.SetStop(3.4)
-        self.assertEqual(ci.GetInterval(), (-9.1, -3.4))
+        self.assertEqual(ci.GetInterval(), sumpf.SampleInterval(0, -12))
+        ci.SetStop(1.0)
+        self.assertEqual(ci.GetInterval(), sumpf.SampleInterval(0, -1.0))
+        ci.SetStart(8)
+        self.assertEqual(ci.GetInterval(), sumpf.SampleInterval(8, -1.0))
         # test the constructor arguments
-        self.assertEqual(sumpf.modules.CreateInterval(start=2.9, stop=-14.8, negative_stop=True).GetInterval(), (2.9, 14.8))
-        self.assertEqual(sumpf.modules.CreateInterval(start=-5.7, stop=13, negative_start=True).GetInterval(), (5.7, 13))
+        self.assertEqual(sumpf.modules.CreateSampleInterval(start=2.9, stop=-14.8, negative_stop=True).GetInterval(), sumpf.SampleInterval(2.9, 14.8))
+        self.assertEqual(sumpf.modules.CreateSampleInterval(start=-5.7, stop=13, negative_start=True).GetInterval(), sumpf.SampleInterval(5.7, 13))
 
     def test_connectors(self):
         """
         Tests if the connectors are properly decorated.
         """
-        ci = sumpf.modules.CreateInterval()
+        ci = sumpf.modules.CreateSampleInterval()
         self.assertEqual(ci.SetStart.GetType(), (int, float))
-        self.assertEqual(ci.SetStop.GetType(), (int, float, NoneType))
+        self.assertEqual(ci.SetStop.GetType(), (int, float))
         self.assertEqual(ci.SetNegativeStart.GetType(), bool)
         self.assertEqual(ci.SetNegativeStop.GetType(), bool)
-        self.assertEqual(ci.GetInterval.GetType(), tuple)
+        self.assertEqual(ci.GetInterval.GetType(), sumpf.SampleInterval)
         common.test_connection_observers(testcase=self,
                                          inputs=[ci.SetStart, ci.SetStop, ci.SetNegativeStart, ci.SetNegativeStop],
                                          noinputs=[],
