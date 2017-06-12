@@ -53,16 +53,16 @@ class TestFileIO(unittest.TestCase):
         formats[sumpf.modules.SaveSignal.TEXT] = (True, True, None)
         if common.lib_available("numpy"):
             formats[sumpf.modules.SaveSignal.NUMPY_NPZ] = (True, True, True)
-        if common.lib_available("scikits.audiolab") or common.lib_available("soundfile"):
-            formats[sumpf.modules.SaveSignal.AIFF_FLOAT] = (False, False, False)
-            formats[sumpf.modules.SaveSignal.AIFF_INT] = (False, False, False)
-            formats[sumpf.modules.SaveSignal.FLAC] = (False, False, False)
-            formats[sumpf.modules.SaveSignal.WAV_DOUBLE] = (True, False, False)
-            formats[sumpf.modules.SaveSignal.WAV_INT] = (False, False, False)
-            formats[sumpf.modules.SaveSignal.WAV_FLOAT] = (False, False, False)
-        if common.lib_available("oct2py", dont_import=True):
-            if sumpf.config.get("run_long_tests"):
-                formats[sumpf.modules.SaveSignal.MATLAB] = (True, True, True)
+            if common.lib_available("scikits.audiolab") or common.lib_available("soundfile"):
+                formats[sumpf.modules.SaveSignal.AIFF_FLOAT] = (False, False, False)
+                formats[sumpf.modules.SaveSignal.AIFF_INT] = (False, False, False)
+                formats[sumpf.modules.SaveSignal.FLAC] = (False, False, False)
+                formats[sumpf.modules.SaveSignal.WAV_DOUBLE] = (True, False, False)
+                formats[sumpf.modules.SaveSignal.WAV_INT] = (False, False, False)
+                formats[sumpf.modules.SaveSignal.WAV_FLOAT] = (False, False, False)
+            if common.lib_available("oct2py", dont_import=True):
+                if sumpf.config.get("run_long_tests"):
+                    formats[sumpf.modules.SaveSignal.MATLAB] = (True, True, True)
         else:
             self.assertNotIn("MATLAB", vars(sumpf.modules.SaveSignal))
         self.assertTrue(set(formats.keys()).issubset(sumpf.modules.SaveSignal.GetFormats()))
@@ -116,9 +116,9 @@ class TestFileIO(unittest.TestCase):
                    sumpf.modules.SaveSpectrum.TEXT_J]
         if common.lib_available("numpy"):
             formats.append(sumpf.modules.SaveSpectrum.NUMPY_NPZ)
-        if common.lib_available("oct2py", dont_import=True):
-            if sumpf.config.get("run_long_tests"):
-                formats.append(sumpf.modules.SaveSpectrum.MATLAB)
+            if common.lib_available("oct2py", dont_import=True):
+                if sumpf.config.get("run_long_tests"):
+                    formats.append(sumpf.modules.SaveSpectrum.MATLAB)
         else:
             self.assertNotIn("MATLAB", vars(sumpf.modules.SaveSpectrum))
         self.assertTrue(set(formats).issubset(sumpf.modules.SaveSpectrum.GetFormats()))
@@ -159,6 +159,7 @@ class TestFileIO(unittest.TestCase):
 
     @unittest.skipUnless(sumpf.config.get("write_to_disk"), "Tests that write to disk are skipped")
     @unittest.skipUnless(sumpf.config.get("run_long_tests"), "Long tests are skipped")
+    @unittest.skipUnless(common.lib_available("numpy"), "This test requires the library 'numpy' to be available.")
     @unittest.skipUnless(common.lib_available("scikits.audiolab"), "Writing lossily compressed files is only available with external libraries")
     def test_lossy_signal_formats(self):
         tempdir = tempfile.mkdtemp()
@@ -414,6 +415,7 @@ class TestFileIO(unittest.TestCase):
             shutil.rmtree(tempdir)
 
     @unittest.skipUnless(sumpf.config.get("run_long_tests"), "Long tests are skipped")
+    @unittest.skipUnless(common.lib_available("numpy"), "This test requires the library 'numpy' to be available.")
     @unittest.skipUnless(common.lib_available("oct2py", dont_import=True), "This test requires the library 'oct2py' to be available.")
     def test_read_ita_audio(self):
         path_of_this_file = sumpf.helper.normalize_path(inspect.getfile(inspect.currentframe()))
@@ -519,6 +521,7 @@ class TestFileIO(unittest.TestCase):
 
     @unittest.skipUnless(sumpf.config.get("write_to_disk"), "Tests that write to disk are skipped")
     @unittest.skipUnless(sumpf.config.get("run_long_tests"), "Long tests are skipped")
+    @unittest.skipUnless(common.lib_available("numpy"), "This test requires the library 'numpy' to be available.")
     @unittest.skipUnless(common.lib_available("scikits.audiolab") or common.lib_available("soundfile"), "Writing lossily compressed files is only available with external libraries")
     def test_autodetect_fileformat_on_save(self):
         """
@@ -540,7 +543,7 @@ class TestFileIO(unittest.TestCase):
         try:
             test_filename = os.path.join(tempdir, "test")
             reference_filename = os.path.join(tempdir, "reference")
-            signal = sumpf.modules.NoiseGenerator().GetSignal()
+            signal = sumpf.modules.SineWaveGenerator().GetSignal()
             spectrum = sumpf.modules.FilterGenerator().GetSpectrum()
             # signal file with file ending
             sumpf.modules.SaveSignal(filename=test_filename + ".aif", signal=signal)

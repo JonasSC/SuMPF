@@ -64,7 +64,7 @@ class TestMissingLibs(unittest.TestCase):
             process.join()
             result = process.namespace.result
             for r in result:
-                if not result[r] and r != "OGG_VORBIS":
+                if not result[r] and r != "OGG_VORBIS" and common.lib_available("numpy"):
                     self.fail("PySoundFile was not used as fallback for scikits.audiolab")
 
 

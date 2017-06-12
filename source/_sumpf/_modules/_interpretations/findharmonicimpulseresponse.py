@@ -16,7 +16,6 @@
 
 import math
 import sumpf
-import numpy    # the FindHarmonicImpulseResponse class needs NumPy for the fourier transforms, so importing this file shall fail, when NumPy is not available
 
 
 class FindHarmonicImpulseResponse(object):

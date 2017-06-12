@@ -20,7 +20,6 @@ import sumpf
 import _common as common
 
 
-@unittest.skipUnless(common.lib_available("numpy"), "These tests require the library 'numpy' to be available.")
 class TestFindHarmonicImpulseResponse(unittest.TestCase):
     """
     A TestCase for the FindHarmonicImpulseResponse module.
@@ -62,6 +61,7 @@ class TestFindHarmonicImpulseResponse(unittest.TestCase):
             self.assertEqual(harmonic.GetSamplingRate(), sr)
 
     @unittest.skipUnless(sumpf.config.get("run_long_tests"), "Long tests are skipped")
+    @unittest.skipUnless(common.lib_available("numpy"), "This test requires the library 'numpy' to be available.")
     def test_harmonic_frequency_response(self):
         """
         Tests if the frequency response of the cut out harmonics look realistic.

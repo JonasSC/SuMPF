@@ -31,25 +31,27 @@ except ImportError:
 oct2py_available = False
 # "try: import oct2py" is not possible, because of oct2py's convenience instance of octave
 if sys.version_info.major == 2:
-    import imp
-    try:
-        f, p, d = imp.find_module("oct2py")
-        if not p.endswith("SuMPF/tests/_common/unavailable_libs/oct2py/oct2py.py"): # check if the found module is the dummy module from the unittests
-            oct2py_available = True
-    except ImportError:
-        pass
-    else:
-        if f is not None:
-            f.close()
-        del f
-        del p
-        del d
+    if numpy_available:
+        import imp
+        try:
+            f, p, d = imp.find_module("oct2py")
+            if not p.endswith("SuMPF/tests/_common/unavailable_libs/oct2py/oct2py.py"): # check if the found module is the dummy module from the unittests
+                oct2py_available = True
+        except ImportError:
+            pass
+        else:
+            if f is not None:
+                f.close()
+            del f
+            del p
+            del d
 else:
-    import importlib.util
-    spec = importlib.util.find_spec("oct2py")
-    if not (spec is None or spec.origin.endswith("SuMPF/tests/_common/unavailable_libs/oct2py/oct2py.py")): # check if the found module is the dummy module from the unittests
-        oct2py_available = True
-    del spec
+    if numpy_available:
+        import importlib.util
+        spec = importlib.util.find_spec("oct2py")
+        if not (spec is None or spec.origin.endswith("SuMPF/tests/_common/unavailable_libs/oct2py/oct2py.py")): # check if the found module is the dummy module from the unittests
+            oct2py_available = True
+        del spec
     basestring = str
 
 
