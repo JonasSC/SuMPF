@@ -95,6 +95,7 @@ class TestLinePlotting(unittest.TestCase):
         sumpf.connect(fft.GetSpectrum, plt.SetSpectrum)
         # modify plot before showing
         plt.HideMagnitude()
+        plt.ShowPhase()
         # show window
         plt.Show()
         # modify while showing
