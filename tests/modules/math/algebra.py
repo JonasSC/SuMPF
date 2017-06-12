@@ -14,19 +14,33 @@
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 
+import math
 import unittest
+import warnings
 import sumpf
 import _common as common
+try:
+    import numpy
+except ImportError:
+    pass
+
 
 
 class TestAlgebra(unittest.TestCase):
     """
     A test case for the algebra modules.
     """
+    @unittest.skipUnless(common.lib_available("numpy"), "This test requires the library 'numpy' to be available.")
     def test_signals(self):
         """
         Tests if the calculations yield the expected results with signals.
         """
+        # disable some numpy warnings
+        warnings.filterwarnings(action="ignore", message="^divide by zero encountered in divide$", category=RuntimeWarning)
+        warnings.filterwarnings(action="ignore", message="^divide by zero encountered in true_divide$", category=RuntimeWarning)
+        warnings.filterwarnings(action="ignore", message="^divide by zero encountered in power$", category=RuntimeWarning)
+        warnings.filterwarnings(action="ignore", message="^invalid value encountered in power$", category=RuntimeWarning)
+        # perform the tests
         signal1 = sumpf.Signal(channels=((4.0, -6.0, 9.34), (3.0, 5.0, -8.4)), samplingrate=62.33)
         signal2 = sumpf.Signal(channels=((2.0, 1.0, -14.2), (-3.0, 7.0, 2.1)), samplingrate=62.33)
         empty = sumpf.Signal(samplingrate=62.33)
@@ -34,51 +48,10 @@ class TestAlgebra(unittest.TestCase):
         wrongsamplingrate = sumpf.Signal(channels=((2.0, 1.0, -14.2), (3.0, -7.0, 2.1)), samplingrate=59.78)
         scalar = 4.74
         array = (4.2, -5.5)
-        for a in (signal1, empty, wrongchannelcount, wrongsamplingrate, scalar, array):
-            for b in (signal2, empty, wrongchannelcount, wrongsamplingrate, scalar, array):
-                try:
-                    c = a + b
-                except ValueError:
-                    self.assertRaises(ValueError, sumpf.modules.Add(value1=a, value2=b).GetResult)
-                except TypeError:
-                    self.assertRaises(TypeError, sumpf.modules.Add(value1=a, value2=b).GetResult)
-                else:
-                    self.assertEqual(sumpf.modules.Add(value1=a, value2=b).GetResult(), c)
-                try:
-                    c = a - b
-                except ValueError:
-                    self.assertRaises(ValueError, sumpf.modules.Subtract(value1=a, value2=b).GetResult)
-                except TypeError:
-                    self.assertRaises(TypeError, sumpf.modules.Subtract(value1=a, value2=b).GetResult)
-                else:
-                    self.assertEqual(sumpf.modules.Subtract(value1=a, value2=b).GetResult(), c)
-                try:
-                    c = a * b
-                except ValueError:
-                    self.assertRaises(ValueError, sumpf.modules.Multiply(value1=a, value2=b).GetResult)
-                except TypeError:
-                    self.assertRaises(TypeError, sumpf.modules.Multiply(value1=a, value2=b).GetResult)
-                else:
-                    self.assertEqual(sumpf.modules.Multiply(value1=a, value2=b).GetResult(), c)
-                try:
-                    c = a / b
-                except ValueError:
-                    self.assertRaises(ValueError, sumpf.modules.Divide(value1=a, value2=b).GetResult)
-                except TypeError:
-                    self.assertRaises(TypeError, sumpf.modules.Divide(value1=a, value2=b).GetResult)
-                except ZeroDivisionError:
-                    self.assertRaises(ZeroDivisionError, sumpf.modules.Divide(value1=a, value2=b).GetResult)
-                else:
-                    self.assertEqual(sumpf.modules.Divide(value1=a, value2=b).GetResult(), c)
-                try:
-                    c = a ** b
-                except ValueError:
-                    self.assertRaises(ValueError, sumpf.modules.Power(value1=a, value2=b).GetResult)
-                except TypeError:
-                    self.assertRaises(TypeError, sumpf.modules.Power(value1=a, value2=b).GetResult)
-                else:
-                    self.assertEqual(sumpf.modules.Power(value1=a, value2=b).GetResult(), c)
+        self.__TestComputationsAndExceptions(test_data1=(signal1, empty, wrongchannelcount, wrongsamplingrate, scalar, array, None, 0.0),
+                                             test_data2=(signal2, empty, wrongchannelcount, wrongsamplingrate, scalar, array, None, 0))
 
+    @unittest.skipUnless(common.lib_available("numpy"), "This test requires the library 'numpy' to be available.")
     def test_spectrums(self):
         """
         Tests if the calculations yield the expected results with signals.
@@ -90,53 +63,8 @@ class TestAlgebra(unittest.TestCase):
         wrongresolution = sumpf.Spectrum(channels=((2.0 + 6.3j, -1.0 - 4.4j, 14.2 - 2.0j), (-3.0 + 3.1j, 7.0 - 3.8j, 2.1 + 4.7j)), resolution=59.78)
         scalar = 4.74 + 12.5j
         array = (4.2, -5.5)
-        for a in (spectrum1, empty, wrongchannelcount, wrongresolution, scalar, array):
-            for b in (spectrum2, empty, wrongchannelcount, wrongresolution, scalar, array):
-                try:
-                    c = a + b
-                except ValueError:
-                    self.assertRaises(ValueError, sumpf.modules.Add(value1=a, value2=b).GetResult)
-                except TypeError:
-                    self.assertRaises(TypeError, sumpf.modules.Add(value1=a, value2=b).GetResult)
-                else:
-                    self.assertEqual(sumpf.modules.Add(value1=a, value2=b).GetResult(), c)
-                try:
-                    c = a - b
-                except ValueError:
-                    self.assertRaises(ValueError, sumpf.modules.Subtract(value1=a, value2=b).GetResult)
-                except TypeError:
-                    self.assertRaises(TypeError, sumpf.modules.Subtract(value1=a, value2=b).GetResult)
-                else:
-                    self.assertEqual(sumpf.modules.Subtract(value1=a, value2=b).GetResult(), c)
-                try:
-                    c = a * b
-                except ValueError:
-                    self.assertRaises(ValueError, sumpf.modules.Multiply(value1=a, value2=b).GetResult)
-                except TypeError:
-                    self.assertRaises(TypeError, sumpf.modules.Multiply(value1=a, value2=b).GetResult)
-                else:
-                    self.assertEqual(sumpf.modules.Multiply(value1=a, value2=b).GetResult(), c)
-                try:
-                    c = a / b
-                except ValueError:
-                    self.assertRaises(ValueError, sumpf.modules.Divide(value1=a, value2=b).GetResult)
-                except ZeroDivisionError:
-                    self.assertRaises(ZeroDivisionError, sumpf.modules.Divide(value1=a, value2=b).GetResult)
-                except TypeError:
-                    self.assertRaises(TypeError, sumpf.modules.Divide(value1=a, value2=b).GetResult)
-                else:
-                    self.assertEqual(sumpf.modules.Divide(value1=a, value2=b).GetResult(), c)
-                try:
-                    c = a ** b
-                except ValueError:
-                    self.assertRaises(ValueError, sumpf.modules.Power(value1=a, value2=b).GetResult)
-                except ZeroDivisionError:
-                    self.assertRaises(ZeroDivisionError, sumpf.modules.Power(value1=a, value2=b).GetResult)
-                except TypeError:
-                    self.assertRaises(TypeError, sumpf.modules.Power(value1=a, value2=b).GetResult)
-                else:
-                    self.assertEqual(sumpf.modules.Power(value1=a, value2=b).GetResult(), c)
-
+        self.__TestComputationsAndExceptions(test_data1=(spectrum1, empty, wrongchannelcount, wrongresolution, scalar, array, None),
+                                             test_data2=(spectrum2, empty, wrongchannelcount, wrongresolution, scalar, array, 0))
 
     def test_connectors(self):
         """
@@ -154,4 +82,110 @@ class TestAlgebra(unittest.TestCase):
                                              inputs=[m.SetValue1, m.SetValue2],
                                              noinputs=[],
                                              output=m.GetResult)
+
+    def __TestComputationsAndExceptions(self, test_data1, test_data2):
+        for a in test_data1:
+            for b in test_data2:
+                # add
+                try:
+                    c = a + b
+                except AttributeError:
+                    self.assertRaises(AttributeError, sumpf.modules.Add(value1=a, value2=b).GetResult)
+                except TypeError:
+                    try:
+                        c = numpy.add(a, b)
+                    except TypeError:
+                        self.assertRaises(TypeError, sumpf.modules.Add(value1=a, value2=b).GetResult)
+                    except ValueError:
+                        self.assertRaises(ValueError, sumpf.modules.Add(value1=a, value2=b).GetResult)
+                    else:
+                        self.assertEqual(sum(numpy.subtract(sumpf.modules.Add(value1=a, value2=b).GetResult(), c)), 0.0)
+                except ValueError:
+                    self.assertRaises(ValueError, sumpf.modules.Add(value1=a, value2=b).GetResult)
+                else:
+                    self.assertEqual(sumpf.modules.Add(value1=a, value2=b).GetResult(), c)
+                # subtract
+                try:
+                    c = a - b
+                except AttributeError:
+                    self.assertRaises(AttributeError, sumpf.modules.Subtract(value1=a, value2=b).GetResult)
+                except TypeError:
+                    try:
+                        c = numpy.subtract(a, b)
+                    except TypeError:
+                        self.assertRaises(TypeError, sumpf.modules.Subtract(value1=a, value2=b).GetResult)
+                    except ValueError:
+                        self.assertRaises(ValueError, sumpf.modules.Subtract(value1=a, value2=b).GetResult)
+                    else:
+                        self.assertEqual(sum(numpy.subtract(sumpf.modules.Subtract(value1=a, value2=b).GetResult(), c)), 0.0)
+                except ValueError:
+                    self.assertRaises(ValueError, sumpf.modules.Subtract(value1=a, value2=b).GetResult)
+                else:
+                    self.assertEqual(sumpf.modules.Subtract(value1=a, value2=b).GetResult(), c)
+                # multiply
+                try:
+                    c = a * b
+                except AttributeError:
+                    self.assertRaises(AttributeError, sumpf.modules.Multiply(value1=a, value2=b).GetResult)
+                except TypeError:
+                    try:
+                        c = numpy.multiply(a, b)
+                    except TypeError:
+                        self.assertRaises(TypeError, sumpf.modules.Multiply(value1=a, value2=b).GetResult)
+                    except ValueError:
+                        self.assertRaises(ValueError, sumpf.modules.Multiply(value1=a, value2=b).GetResult)
+                    else:
+                        self.assertEqual(sum(numpy.subtract(sumpf.modules.Multiply(value1=a, value2=b).GetResult(), c)), 0.0)
+                except ValueError:
+                    self.assertRaises(ValueError, sumpf.modules.Multiply(value1=a, value2=b).GetResult)
+                else:
+                    self.assertEqual(sumpf.modules.Multiply(value1=a, value2=b).GetResult(), c)
+                # divide
+                try:
+                    c = a / b
+                except AttributeError:
+                    self.assertRaises(AttributeError, sumpf.modules.Divide(value1=a, value2=b).GetResult)
+                except TypeError:
+                    try:
+                        c = numpy.divide(a, b)
+                    except TypeError:
+                        self.assertRaises(TypeError, sumpf.modules.Divide(value1=a, value2=b).GetResult)
+                    except ValueError:
+                        self.assertRaises(ValueError, sumpf.modules.Divide(value1=a, value2=b).GetResult)
+                    else:
+                        for m, r in zip(sumpf.modules.Divide(value1=a, value2=b).GetResult(), c):
+                            if numpy.isnan(r):
+                                self.assertTrue(math.isnan(m))
+                            else:
+                                self.assertEqual(m, r)
+                except ValueError:
+                    self.assertRaises(ValueError, sumpf.modules.Divide(value1=a, value2=b).GetResult)
+                except ZeroDivisionError:
+                    self.assertRaises(ZeroDivisionError, sumpf.modules.Divide(value1=a, value2=b).GetResult)
+                else:
+                    self.assertEqual(sumpf.modules.Divide(value1=a, value2=b).GetResult(), c)
+                # power
+                try:
+                    c = a ** b
+                except AttributeError:
+                    self.assertRaises(AttributeError, sumpf.modules.Power(value1=a, value2=b).GetResult)
+                except TypeError:
+                    try:
+                        c = numpy.power(a, b)
+                    except TypeError:
+                        self.assertRaises(TypeError, sumpf.modules.Power(value1=a, value2=b).GetResult)
+                    except ValueError:
+                        self.assertRaises(ValueError, sumpf.modules.Power(value1=a, value2=b).GetResult)
+                    else:
+                        for m, r in zip(sumpf.modules.Power(value1=a, value2=b).GetResult(), c):
+                            if numpy.isnan(r):
+                                self.assertTrue(math.isnan(m))
+                            else:
+                                self.assertEqual(m, r)
+                except ValueError:
+                    self.assertRaises(ValueError, sumpf.modules.Power(value1=a, value2=b).GetResult)
+                except ZeroDivisionError:
+                    self.assertRaises(ZeroDivisionError, sumpf.modules.Power(value1=a, value2=b).GetResult)
+                else:
+                    self.assertEqual(sumpf.modules.Power(value1=a, value2=b).GetResult(), c)
 

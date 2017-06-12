@@ -15,6 +15,11 @@
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 import sumpf
+try:
+    import numpy
+except ImportError:
+    numpy = sumpf.helper.numpydummy
+
 
 
 class Add(object):
@@ -37,7 +42,10 @@ class Add(object):
         Returns the result of the addition.
         @retval : the type of the result is defined by the input values
         """
-        return self.__value1 + self.__value2
+        try:
+            return self.__value1 + self.__value2
+        except TypeError:   # maybe numpy can figure out, how to add the two values
+            return numpy.add(self.__value1, self.__value2)
 
     @sumpf.Input(None, "GetResult")
     def SetValue1(self, value):
@@ -76,7 +84,10 @@ class Subtract(object):
         Returns the result of the subtraction.
         @retval : the type of the result is defined by the input values
         """
-        return self.__value1 - self.__value2
+        try:
+            return self.__value1 - self.__value2
+        except TypeError:   # maybe numpy can figure out, how to subtract the two values
+            return numpy.subtract(self.__value1, self.__value2)
 
     @sumpf.Input(None, "GetResult")
     def SetValue1(self, value):
@@ -114,7 +125,11 @@ class Multiply(object):
         Returns the result of the multiplication.
         @retval : the type of the result is defined by the input values
         """
-        return self.__value1 * self.__value2
+        try:
+            return self.__value1 * self.__value2
+        except TypeError:   # maybe numpy can figure out, how to multiply the two values
+            return numpy.multiply(self.__value1, self.__value2)
+
 
     @sumpf.Input(None, "GetResult")
     def SetValue1(self, value):
@@ -153,7 +168,10 @@ class Divide(object):
         Returns the result of the division
         @retval : the type of the result is defined by the input values
         """
-        return self.__value1 / self.__value2
+        try:
+            return self.__value1 / self.__value2
+        except TypeError:   # maybe numpy can figure out, how to divide the two values
+            return numpy.divide(self.__value1, self.__value2)
 
     @sumpf.Input(None, "GetResult")
     def SetValue1(self, value):
@@ -192,7 +210,10 @@ class Power(object):
         Returns the power
         @retval : the type of the result is defined by the input values
         """
-        return self.__value1 ** self.__value2
+        try:
+            return self.__value1 ** self.__value2
+        except TypeError:   # maybe numpy can figure out, how to compute the power of the two values
+            return numpy.power(self.__value1, self.__value2)
 
     @sumpf.Input(None, "GetResult")
     def SetValue1(self, value):
