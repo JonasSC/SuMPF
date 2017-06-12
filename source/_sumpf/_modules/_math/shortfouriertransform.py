@@ -35,10 +35,10 @@ class ShortFourierTransform(object):
     respective DFT-spectrum, by choosing a window that is longer than the input
     signal.
     """
-    def __init__(self, signal=None, window=None, overlap=0.5):
+    def __init__(self, signal=None, window=8192, overlap=0.5):
         """
         @param signal: the Signal that shall be transformed
-        @param window: a Signal instance that is multiplied with each block before the transformation. The length of the window defines the block length
+        @param window: a window Signal that is multiplied with each block before the transformation. Can be abbreviated by passing the integer block length. See the SetWindow method for details
         @param overlap: an integer number of samples by which the blocks shall overlap, or a float that specifies the overlap a factor of the block length
         """
         if signal is None:
@@ -58,14 +58,19 @@ class ShortFourierTransform(object):
     @sumpf.Input(sumpf.Signal, "GetSpectrum")
     def SetWindow(self, window):
         """
-        Sets a window that defines the block length of the short time fourier
-        transfomation with its length. Each Block is multiplied with this window
-        before the transformation, so it is recommended that window specifies a
-        smooth fade in and fade out for the blocks, to avoid unwanted high frequency
-        content from the abrupt endings of the blocks. It is possible to create
-        such a window with the WindowGenerator module.
-        Only the first channel of the window Signal is used.
-        @param window: a Signal instance that specifies the block length and a fade in and out for the blocks
+        Sets a window Signal, with which each block of the input Signal is multiplied
+        This window defines the block length of the short time fourier transfomation.
+        It is recommended that window specifies a smooth fade in and fade out for
+        the blocks, to avoid unwanted high frequency content from the abrupt endings
+        of the blocks. It is possible to create such a window with the WindowGenerator
+        module.
+        If the window Signal has more than one channel, its channel count has to
+        be equal to that of the input Signal.
+        The definition of the window Signal can be abbreviated by passing the integer
+        block length of the transformation. A window with the given length will
+        then be created internally. If the overlap is 0, the window will have a
+        rectangular shape. Otherwise the window will use the VonHann-function.
+        @param window: a Signal instance or an integer
         """
         self.__window = window
 
@@ -89,15 +94,25 @@ class ShortFourierTransform(object):
         Signal.
         @retval : the Spectrum resulting from the transformation
         """
-        window = self.__window
-        if window is None:
-            window = sumpf.modules.WindowGenerator(raise_interval=(0, 4096),
-                                                   fall_interval=(4096, 8192),
-                                                   function=sumpf.modules.WindowGenerator.VonHann(),
+        # prepare the window
+        if isinstance(self.__window, int):
+            if self.__overlap == 0:
+                function = sumpf.modules.WindowGenerator.Rectangle()
+            else:
+                function = sumpf.modules.WindowGenerator.VonHann()
+            window = sumpf.modules.WindowGenerator(rise_interval=(0, self.__window // 2),
+                                                   fall_interval=(self.__window // 2, self.__window),
+                                                   function=function,
                                                    samplingrate=self.__signal.GetSamplingRate(),
-                                                   length=8192).GetSignal()
-        elif self.__signal.GetSamplingRate() != window.GetSamplingRate():
-            raise ValueError("The window has a different sampling rate than the input signal")
+                                                   length=self.__window).GetSignal()
+        else:
+            window = self.__window
+            if self.__signal.GetSamplingRate() != window.GetSamplingRate():
+                raise ValueError("The window has a different sampling rate than the input signal")
+            if len(window.GetChannels()) > 1 and len(window.GetChannels()) != len(self.__signal.GetChannels()):
+                raise ValueError("The window has a different number of channels than the input signal")
+        window = sumpf.modules.CopySignalChannels(signal=window, channelcount=len(self.__signal.GetChannels())).GetOutput()
+        # precompute some values
         block_length = len(window)
         fft_block_length = block_length // 2 + 1
         resolution = self.__signal.GetSamplingRate() / len(window)
@@ -105,21 +120,26 @@ class ShortFourierTransform(object):
         if isinstance(overlap, float):
             overlap = int(round(overlap * block_length))
         elif overlap >= block_length:
-            raise ValueError("The overlap has to be less than the window length")
+            raise ValueError("The overlap has to be less than the block length")
         pre_zeros = (0.0,) * overlap
         post_zeros = (0.0,) * (len(self.__signal) + block_length)
+        # create a DelayFilterGenerator for taking the block's phases into account
+        delay_filter = sumpf.modules.DelayFilterGenerator(resolution=resolution, length=fft_block_length)
+        # compute the transformation
         channels = []
-        for c in self.__signal.GetChannels():
+        for c, w in zip(self.__signal.GetChannels(), window.GetChannels()):
             padded_channel = pre_zeros + c + post_zeros
             channel = (0.0,) * fft_block_length
             for b in range(0, len(c) + overlap, block_length - overlap):
                 block = padded_channel[b:b + block_length]
-                windowed_block = numpy.multiply(block, window.GetChannels()[0])
+                windowed_block = numpy.multiply(block, w)
                 transformed_block = numpy.fft.rfft(windowed_block)
-                group_delay_filter = sumpf.modules.DelayFilterGenerator(delay=(b - overlap) / self.__signal.GetSamplingRate(), resolution=resolution, length=fft_block_length).GetSpectrum()
+                delay_filter.SetDelay(float(b - overlap) / self.__signal.GetSamplingRate())
+                group_delay_filter = delay_filter.GetSpectrum()
                 compensated_block = numpy.multiply(transformed_block, group_delay_filter.GetChannels()[0])
                 channel = numpy.add(channel, compensated_block)
             channels.append(tuple(channel))
+        # create and return the signal
         return sumpf.Spectrum(channels=channels,
                               resolution=resolution,
                               labels=self.__signal.GetLabels())

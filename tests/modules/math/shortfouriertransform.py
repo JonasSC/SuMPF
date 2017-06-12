@@ -42,6 +42,31 @@ class TestShortFourierTransform(unittest.TestCase):
         reference = impulse[0:len(short_impulse)]
         common.compare_signals_almost_equal(testcase=self, signal1=short_impulse, signal2=reference)
 
+    def test_window_abbreviations(self):
+        signal = sumpf.modules.MergeSignals((sumpf.modules.SineWaveGenerator(length=1024).GetSignal(),
+                                             sumpf.modules.ImpulseGenerator(length=1024).GetSignal())).GetOutput()
+        fft = sumpf.modules.ShortFourierTransform(signal=signal, overlap=0)
+        # define some window functions
+        vonhann = sumpf.modules.WindowGenerator(rise_interval=0.5, fall_interval=-0.5, function=sumpf.modules.WindowGenerator.VonHann(), length=256).GetSignal()
+        vonhann2 = sumpf.modules.CopySignalChannels(signal=vonhann, channelcount=2).GetOutput()
+        rect = sumpf.modules.WindowGenerator(rise_interval=0.5, fall_interval=-0.5, function=sumpf.modules.WindowGenerator.Rectangle(), length=256).GetSignal()
+        rect2 = sumpf.modules.CopySignalChannels(signal=rect, channelcount=2).GetOutput()
+        # compute the reference signals
+        fft.SetWindow(rect2)
+        reference_rect = fft.GetSpectrum()
+        fft.SetOverlap(0.5)
+        fft.SetWindow(vonhann2)
+        reference_vonhann = fft.GetSpectrum()
+        # setting the window to a single channel Signal, while having a multichannel input Signal
+        fft.SetWindow(vonhann)
+        self.assertEqual(fft.GetSpectrum(), reference_vonhann)
+        # defining the window by an integer, while having an overlap
+        fft.SetWindow(256)
+        self.assertEqual(fft.GetSpectrum(), reference_vonhann)
+        # defining the window by an integer, without having an overlap
+        fft.SetOverlap(0)
+        self.assertEqual(fft.GetSpectrum(), reference_rect)
+
     @unittest.skipUnless(sumpf.config.get("run_long_tests"), "Long tests are skipped")
     def test_sine_waves(self):
         """
@@ -57,7 +82,7 @@ class TestShortFourierTransform(unittest.TestCase):
         merger.AddInput(sine1)
         merger.AddInput(sine2)
         signal = merger.GetOutput()
-        window = sumpf.modules.WindowGenerator(raise_interval=(0, 2048), fall_interval=(2048, 4096), function=sumpf.modules.WindowGenerator.VonHann(), samplingrate=samplingrate, length=4096).GetSignal()
+        window = sumpf.modules.WindowGenerator(rise_interval=(0, 2048), fall_interval=(2048, 4096), function=sumpf.modules.WindowGenerator.VonHann(), samplingrate=samplingrate, length=4096).GetSignal()
         fft = sumpf.modules.ShortFourierTransform()
         fft.SetSignal(signal)
         fft.SetWindow(window)
@@ -104,6 +129,13 @@ class TestShortFourierTransform(unittest.TestCase):
         fft.SetSignal(signal)
         fft.GetSpectrum()
         fft.SetWindow(window)
+        self.assertRaises(ValueError, fft.GetSpectrum)
+        # test wrong number of window channels
+        window = sumpf.modules.WindowGenerator(length=4, samplingrate=33).GetSignal()
+        fft.SetWindow(window)
+        fft.GetSpectrum()
+        copied = sumpf.modules.CopySignalChannels(signal=window, channelcount=2).GetOutput()
+        fft.SetWindow(copied)
         self.assertRaises(ValueError, fft.GetSpectrum)
 
     def test_connectors(self):
