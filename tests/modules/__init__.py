@@ -22,6 +22,7 @@ from .math import *
 from .metadata import *
 from .models import *
 from .normalize import *
+from .other import *
 from .plotting import *
 from .routing import *
 
