@@ -22,15 +22,21 @@ class SplitChannelData(object):
     This class makes it possible to select certain channels of a ChannelData
     instance and create a new instance from them.
     """
-    ALL = None  # For selecting all channels
+    # flags for the channels parameter
+    ALL = None  # select all channels
+    # flags for the on_invalid_index parameter
+    ERROR = 0   # raise an IndexError
+    SKIP = 1    # skip that channel
+    ZEROS = 2   # add a channel with zeros
 
-    def __init__(self, data, channels):
+    def __init__(self, data, channels, on_invalid_index):
         """
         @param data: the input data, from which the channels shall be taken
         @param channels: the indexes of the selected channels that shall be in the output data set
         """
         self._input = data
         self.__channels = channels
+        self.__on_invalid_index = on_invalid_index
 
     def GetOutput(self):
         """
@@ -58,17 +64,21 @@ class SplitChannelData(object):
         length = len(self._input.GetChannels())
         result = 0
         for i in self.__channels:
-            if i < length:
+            if i < length or self.__on_invalid_index == SplitChannelData.ZEROS:
                 result += 1
-        return result
+        return max(result, 1)
 
-    @sumpf.Input(tuple, ["GetOutput", "GetNumberOfOutputChannels"])
+    @sumpf.Input(tuple, ("GetOutput", "GetNumberOfOutputChannels"))
     def SetOutputChannels(self, channels):
         """
         Sets the channels of the input data set that shall be copied to the output.
-        @param channels: a flag like type(self).ALL or an integer or a tuple of integers that are the indexes of the selected input data set's channels
+        @param channels: a flag like ALL or an integer or a tuple of integers that are the indexes of the selected input data set's channels
         """
         self.__channels = channels
+
+    @sumpf.Input(int, ("GetOutput", "GetNumberOfOutputChannels"))
+    def SetOnInvalidIndex(self, on_invalid_index):
+        self.__on_invalid_index = on_invalid_index
 
     @sumpf.Trigger("GetOutput")
     def DropChannels(self):
@@ -87,19 +97,31 @@ class SplitChannelData(object):
         """
         if self.__channels == SplitChannelData.ALL:
             return (self._input.GetChannels(), self._input.GetLabels())
-        elif isinstance(self.__channels, int):
-            return [self._input.GetChannels()[self.__channels]], [self._input.GetLabels()[self.__channels]]
         else:
+            if isinstance(self.__channels, int):
+                selected = [self.__channels]
+            else:
+                selected = self.__channels
             channels = []
             labels = []
             length = len(self._input.GetChannels())
-            for i in self.__channels:
+            for i in selected:
                 if i < length:
                     channels.append(self._input.GetChannels()[i])
                     labels.append(self._input.GetLabels()[i])
-                else:
+                elif self.__on_invalid_index == SplitChannelData.ERROR:
                     raise IndexError("The channel index %s is higher than the input data's number of channels (%s)." % (i, length))
-            return channels, labels
+                elif self.__on_invalid_index == SplitChannelData.SKIP:
+                    pass
+                elif self.__on_invalid_index == SplitChannelData.ZEROS:
+                    channels.append((0.0,) * len(self._input))
+                    labels.append(None)
+                else:
+                    raise ValueError("Unknown flag for reacting to invalid indices")
+            if len(channels) == 0:  # if no valid channels are selected, return an empty data set
+                return ((0.0, 0.0),), (None,)
+            else:
+                return channels, labels
 
 
 
@@ -119,16 +141,16 @@ class SplitSignal(SplitChannelData):
     whose index is in the given list. Often that list can be generated with the
     range function (e.g. range(7)[4:6]).
     """
-    def __init__(self, data=None, channels=[]):
+    def __init__(self, data=None, channels=SplitChannelData.ALL, on_invalid_index=SplitChannelData.ERROR):
         """
         @param data: the input Signal, from which the channels shall be taken
         @param channels: the indexes of the selected channels that shall be in the output Signal
         """
         if data is None:
             data = sumpf.Signal()
-        SplitChannelData.__init__(self, data, channels)
+        SplitChannelData.__init__(self, data, channels, on_invalid_index)
 
-    @sumpf.Input(sumpf.Signal, ["GetOutput", "GetNumberOfOutputChannels"])
+    @sumpf.Input(sumpf.Signal, ("GetOutput", "GetNumberOfOutputChannels"))
     def SetInput(self, data):
         """
         Sets the Signal from which the channels are taken.
@@ -143,7 +165,7 @@ class SplitSignal(SplitChannelData):
         @retval : the output Signal with only the selected channels
         """
         channels, labels = self._GetChannelsAndLabels()
-        if channels == []:
+        if channels == ():
             result = sumpf.Signal(samplingrate=self._input.GetSamplingRate())
         else:
             result = sumpf.Signal(channels=channels, samplingrate=self._input.GetSamplingRate(), labels=labels)
@@ -167,16 +189,16 @@ class SplitSpectrum(SplitChannelData):
     whose index is in the given list. Often that list can be generated with the
     range function (e.g. range(7)[4:6]).
     """
-    def __init__(self, data=None, channels=[]):
+    def __init__(self, data=None, channels=SplitChannelData.ALL, on_invalid_index=SplitChannelData.ERROR):
         """
         @param data: the input Spectrum, from which the channels shall be taken
         @param channels: the indexes of the selected channels that shall be in the output Spectrum
         """
         if data is None:
             data = sumpf.Spectrum()
-        SplitChannelData.__init__(self, data, channels)
+        SplitChannelData.__init__(self, data, channels, on_invalid_index)
 
-    @sumpf.Input(sumpf.Spectrum, ["GetOutput", "GetNumberOfOutputChannels"])
+    @sumpf.Input(sumpf.Spectrum, ("GetOutput", "GetNumberOfOutputChannels"))
     def SetInput(self, data):
         """
         Sets the Spectrum from which the channels are taken.
@@ -191,7 +213,7 @@ class SplitSpectrum(SplitChannelData):
         @retval : the output Spectrum with only the selected channels
         """
         channels, labels = self._GetChannelsAndLabels()
-        if channels == []:
+        if channels == ():
             result = sumpf.Spectrum(resolution=self._input.GetResolution())
         else:
             result = sumpf.Spectrum(channels=channels, resolution=self._input.GetResolution(), labels=labels)

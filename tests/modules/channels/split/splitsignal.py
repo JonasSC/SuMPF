@@ -36,7 +36,7 @@ class TestSplitSignal(unittest.TestCase):
         """
         spl = sumpf.modules.SplitSignal(data=self.long)
         self.assertEqual(spl.GetOutput().GetSamplingRate(), self.long.GetSamplingRate())        # when an input has been set, the sampling rate should have been taken from the input
-        self.assertEqual(spl.GetOutput().GetChannels(), self.empty.GetChannels())               # when no channels have been picked, the output's channels should be the same as those of an empty Signal
+        self.assertEqual(spl.GetOutput().GetChannels(), self.long.GetChannels())                # when no channels have been picked, the output's channels should be the same as those the input Signal
         spl = sumpf.modules.SplitSignal(data=self.long, channels=2)
         self.assertEqual(spl.GetOutput().GetChannels(), (self.channels[2],))                    # selecting the channels via an integer should be possible
         spl = sumpf.modules.SplitSignal(data=self.long, channels=[1, 4])
@@ -57,7 +57,7 @@ class TestSplitSignal(unittest.TestCase):
         self.splitter.SetInput(self.long)
         output = self.splitter.GetOutput()
         self.assertEqual(output.GetSamplingRate(), self.long.GetSamplingRate())                         # when an input has been set, the sampling rate should have been taken from the input
-        self.assertEqual(output.GetChannels(), self.empty.GetChannels())                                # when no channels have been picked, the output's channels should be the same as those of an empty Signal
+        self.assertEqual(output.GetChannels(), self.long.GetChannels())                                 # when no channels have been picked, the output's channels should be the same as those if the input Signal
         self.splitter.SetOutputChannels(2)
         self.assertEqual(self.splitter.GetOutput().GetChannels(), (self.channels[2],))                  # selecting the channels via an integer should be possible
         self.splitter.SetInput(self.short)
