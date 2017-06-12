@@ -16,6 +16,7 @@
 
 from .energydecaycurvefromimpulseresponse import TestEnergyDecayCurveFromImpulseResponse
 from .findharmonicimpulseresponse import TestFindHarmonicImpulseResponse
+from .findsignalvalues import TestFindSignalValues
 from .regularizedspectruminversion import TestRegularizedSpectrumInversion
 from .signalenvelope import TestSignalEnvelope
 from .signalmaximum import TestSignalMaximum

@@ -15,6 +15,7 @@
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 from ._interpretations.energydecaycurvefromimpulseresponse import EnergyDecayCurveFromImpulseResponse
+from ._interpretations.findsignalvalues import FindSignalValues
 from ._interpretations.minmax import SignalMinimum, SignalMaximum
 
 try:
