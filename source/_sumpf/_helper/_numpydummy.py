@@ -233,6 +233,17 @@ def conjugate(x):
         else:
             return x
 
+def transpose(a):
+    """
+    an alternative for numpy.transpose
+    this only works for one- and twodimensional arrays as expected.
+    """
+    if not isinstance(a, collections.Iterable):
+        return a
+    elif isinstance(a[0], collections.Iterable):
+        return tuple(zip(*a))
+    else:
+        return a
 
 ########################################
 # array functions with a scalar result #

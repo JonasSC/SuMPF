@@ -225,6 +225,13 @@ class TestNumpyDummy(unittest.TestCase):
             r2 = sumpf.helper.numpydummy.conjugate(self.arrayvalues[a][0])
             self.__Compare(r1, r2, a, None)
 
+    def test_transpose(self):
+        # only tests for one- and twodimensional arrays
+        for a in range(0, 1):
+            r1 = numpy.transpose(self.arrayvalues[a])
+            r2 = sumpf.helper.numpydummy.transpose(self.arrayvalues[a])
+            self.__Compare(r1, r2, a, None)
+
     # array functions with a scalar result
 
     def test_min(self):

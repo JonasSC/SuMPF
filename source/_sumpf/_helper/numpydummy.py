@@ -23,7 +23,7 @@ used if NumPy is not available.
 from ._numpydummy import float32, float64, float128, complex_, \
                          zeros, shape, \
                          add, subtract, multiply, divide, true_divide, mod, power, \
-                         abs, angle, real, imag, conjugate, \
+                         abs, angle, real, imag, conjugate, transpose, \
                          min, max, sum, prod, mean, var, \
                          equal, nonzero
 
