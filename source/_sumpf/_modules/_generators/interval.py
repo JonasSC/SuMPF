@@ -1,5 +1,5 @@
 # SuMPF - Sound using a Monkeyforest-like processing framework
-# Copyright (C) 2012-2017 Jonas Schulte-Coerne
+# Copyright (C) 2012-2018 Jonas Schulte-Coerne
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -43,6 +43,10 @@ class CreateSampleInterval(object):
         """
         start = self.__start
         stop = self.__stop
+        if start is None:
+            start = 0
+        if stop is None:
+            stop = 1.0
         if self.__negative_start:
             start *= -1
         if self.__negative_stop:

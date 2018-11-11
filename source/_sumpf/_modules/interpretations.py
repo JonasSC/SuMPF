@@ -1,5 +1,5 @@
 # SuMPF - Sound using a Monkeyforest-like processing framework
-# Copyright (C) 2012-2017 Jonas Schulte-Coerne
+# Copyright (C) 2012-2018 Jonas Schulte-Coerne
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -16,7 +16,9 @@
 
 from ._interpretations.energydecaycurvefromimpulseresponse import EnergyDecayCurveFromImpulseResponse
 from ._interpretations.findsignalvalues import FindSignalValues
-from ._interpretations.minmax import SignalMinimum, SignalMaximum
+from ._interpretations.minmax import SignalMinimum, SignalMaximum, SpectrumMinimum, SpectrumMaximum
+from ._interpretations.signal_minmax_channel import SignalMinimumChannel, SignalMaximumChannel
+from ._interpretations.spectrum_minmax_channel import SpectrumMinimumChannel, SpectrumMaximumChannel
 
 try:
     from ._interpretations.findharmonicimpulseresponse import FindHarmonicImpulseResponse

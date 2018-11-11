@@ -1,5 +1,5 @@
 # SuMPF - Sound using a Monkeyforest-like processing framework
-# Copyright (C) 2012-2017 Jonas Schulte-Coerne
+# Copyright (C) 2012-2018 Jonas Schulte-Coerne
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -266,13 +266,13 @@ class SignalChain(object):
             method_pairs.append((self.__silence_duration.SetDuration, silence_duration))
         fade_length = sumpf.modules.DurationToLength(duration=fade, samplingrate=self.__properties.GetSamplingRate()).GetLength()
         if fade_length == 0:
-            method_pairs.append((self.__generator.SetInterval, None))
-            method_pairs.append((self.__fade_sweep.SetRaiseInterval, None))
-            method_pairs.append((self.__fade_sweep.SetFallInterval, None))
+            method_pairs.append((self.__generator.SetInterval, (0, 1.0)))
+            method_pairs.append((self.__fade_sweep.SetRiseInterval, (0, 0)))
+            method_pairs.append((self.__fade_sweep.SetFallInterval, (1.0, 1.0)))
         else:
             method_pairs.append((self.__generator.SetInterval, (fade_length, -fade_length)))
-            method_pairs.append((self.__fade_sweep.SetRaiseInterval, (0, fade_length)))
-            method_pairs.append((self.__fade_sweep.SetFallInterval, (-fade_length, -1)))
+            method_pairs.append((self.__fade_sweep.SetRiseInterval, fade_length))
+            method_pairs.append((self.__fade_sweep.SetFallInterval, -fade_length))
         method_pairs.append((self.__amplifier.SetValue2, amplitude))
         method_pairs.append((self.__average.SetNumber, averages))
         method_pairs.append((self.__average.Start,))

@@ -1,5 +1,5 @@
 # SuMPF - Sound using a Monkeyforest-like processing framework
-# Copyright (C) 2012-2017 Jonas Schulte-Coerne
+# Copyright (C) 2012-2018 Jonas Schulte-Coerne
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -16,9 +16,11 @@
 
 from .helper import RegEx
 
+
 def CheckWhitespaceAtLineEnd(line):
     if RegEx.LineEndWhitespace.search(line):
         return "whitespace at lineend", ""
+
 
 def CheckNewlineAtFileend(text):
     text = text[0:-1]
@@ -28,6 +30,7 @@ def CheckNewlineAtFileend(text):
             return "No newline at end of file", ""
         elif match.start() < len(text) - 1:
             return "More than one newline at end of file", ""
+
 
 def CheckNewlinesBeforeClasses(lines):
     for i in range(1, len(lines)):
@@ -61,6 +64,7 @@ def CheckNewlinesBeforeClasses(lines):
                 else:
                     return "Got unexpected code", "line " + str(i + 1)
 
+
 def CheckLineEndStyle(path):
     f = open(path, 'rb')
     content = f.read()
@@ -68,13 +72,16 @@ def CheckLineEndStyle(path):
     if RegEx.MacLineEnd.search(content):
         return "Incorrect line end style", ""
 
+
 def CheckNoneComparison(line):
     if RegEx.NoneComparison.search(line.split("#")[0]):
         return "equality operator for comparison with None", ""
 
+
 def CheckBoolComparison(line):
     if RegEx.BoolComparison.search(line.split("#")[0]):
         return "comparison with a boolean value", ""
+
 
 def CheckWrongDocstringKeywords(text):
     keywords = {}
@@ -104,6 +111,7 @@ def CheckWrongDocstringKeywords(text):
                     message = keywords[k]
         start = first
 
+
 def CheckPassUsage(lines):
     for i in range(1, len(lines)):
         if RegEx.Pass.match(lines[i]):
@@ -119,14 +127,16 @@ def CheckPassUsage(lines):
                     elif not RegEx.Comment.match(lines[l]):
                         return "unnecessary use of pass", "line " + str(i + 1)
 
+
 def CheckOsSepUsage(line):
     if RegEx.OsSep.search(line):
         return "string concatenation with os.sep", ""
 
+
 def CheckLicense(lines):
     license = []
     license.append("# SuMPF - Sound using a Monkeyforest-like processing framework")
-    license.append("# Copyright (C) 2012-2017 Jonas Schulte-Coerne")
+    license.append("# Copyright (C) 2012-2018 Jonas Schulte-Coerne")
     license.append("#")
     license.append("# This program is free software: you can redistribute it and/or modify")
     license.append("# it under the terms of the GNU General Public License as published by")

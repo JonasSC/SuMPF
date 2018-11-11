@@ -1,5 +1,5 @@
 # SuMPF - Sound using a Monkeyforest-like processing framework
-# Copyright (C) 2012-2017 Jonas Schulte-Coerne
+# Copyright (C) 2012-2018 Jonas Schulte-Coerne
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -50,9 +50,9 @@ class RectifySignal(object):
     @sumpf.Output(sumpf.Signal)
     def GetOutput(self):
         """
-        Returns the output Signal, which is the sample wise logarithm of the input
+        Returns the output Signal, which is the sample wise absolute of the input
         Signal.
-        @retval : the logarithm Signal
+        @retval : the a Signal with only non-negative sample values
         """
         result = []
         for c in self.__signal.GetChannels():

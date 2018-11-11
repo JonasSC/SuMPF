@@ -1,5 +1,5 @@
 # SuMPF - Sound using a Monkeyforest-like processing framework
-# Copyright (C) 2012-2017 Jonas Schulte-Coerne
+# Copyright (C) 2012-2018 Jonas Schulte-Coerne
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -169,7 +169,7 @@ class Divide(object):
         @retval : the type of the result is defined by the input values
         """
         try:
-            return self.__value1 / self.__value2
+            return 1.0 * self.__value1 / self.__value2
         except TypeError:   # maybe numpy can figure out, how to divide the two values
             return numpy.divide(self.__value1, self.__value2)
 
@@ -184,6 +184,48 @@ class Divide(object):
     def SetValue2(self, value):
         """
         @param value: the denominator for the division
+        """
+        self.__value2 = value
+
+
+
+class Modulo(object):
+    """
+    A class for computing the modulo of two objects.
+    The objects can be of an arbitrary type, but they must be dividable.
+    The type of the result is defined by the input objects.
+    The result of the modulo operation will be "value1 % value2"
+    """
+    def __init__(self, value1=1, value2=1):
+        """
+        @param value1: the numerator for the modulo operation
+        @param value2: the denominator for the modulo operation
+        """
+        self.__value1 = value1
+        self.__value2 = value2
+
+    @sumpf.Output(None)
+    def GetResult(self):
+        """
+        Returns the result of the modulo operation
+        @retval : the type of the result is defined by the input values
+        """
+        try:
+            return self.__value1 % self.__value2
+        except TypeError:   # maybe numpy can figure out, how to compute the modulo of the two values
+            return numpy.mod(self.__value1, self.__value2)
+
+    @sumpf.Input(None, "GetResult")
+    def SetValue1(self, value):
+        """
+        @param value: the numerator for the modulo operation
+        """
+        self.__value1 = value
+
+    @sumpf.Input(None, "GetResult")
+    def SetValue2(self, value):
+        """
+        @param value: the denominator for the modulo operation
         """
         self.__value2 = value
 

@@ -1,5 +1,5 @@
 # SuMPF - Sound using a Monkeyforest-like processing framework
-# Copyright (C) 2012-2017 Jonas Schulte-Coerne
+# Copyright (C) 2012-2018 Jonas Schulte-Coerne
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -154,11 +154,11 @@ class GuiWindow(sumpf.gui.Window):
         self.__controlsizer.Add(self.__clear, 0, wx.EXPAND)
         # plots
         self.__plotnotebook = wx.Notebook(parent=self, size=(800, 600))
-        self.__recordedtransferfunctionpage = sumpf.modules.SpectrumPlotPanel(parent=self.__plotnotebook, hidden_components=set(["Phase", "ContinuousPhase", "GroupDelay"]))
+        self.__recordedtransferfunctionpage = sumpf.modules.SpectrumPlotPanel(parent=self.__plotnotebook)
         self.__plotnotebook.AddPage(self.__recordedtransferfunctionpage, "Recorded Transfer Function")
         self.__recordedimpulseresponsepage = sumpf.modules.SignalPlotPanel(parent=self.__plotnotebook)
         self.__plotnotebook.AddPage(self.__recordedimpulseresponsepage, "Recorded Impulse Response")
-        self.__processedtransferfunctionpage = sumpf.modules.SpectrumPlotPanel(parent=self.__plotnotebook, hidden_components=set(["Phase", "ContinuousPhase", "GroupDelay"]))
+        self.__processedtransferfunctionpage = sumpf.modules.SpectrumPlotPanel(parent=self.__plotnotebook)
         self.__plotnotebook.AddPage(self.__processedtransferfunctionpage, "Processed Transfer Function")
         self.__processedimpulseresponsepage = sumpf.modules.SignalPlotPanel(parent=self.__plotnotebook)
         self.__plotnotebook.AddPage(self.__processedimpulseresponsepage, "Processed Impulse Response")

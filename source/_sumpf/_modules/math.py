@@ -1,5 +1,5 @@
 # SuMPF - Sound using a Monkeyforest-like processing framework
-# Copyright (C) 2012-2017 Jonas Schulte-Coerne
+# Copyright (C) 2012-2018 Jonas Schulte-Coerne
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -14,7 +14,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 
-from ._math.algebra import Add, Subtract, Multiply, Divide, Power
+from ._math.algebra import Add, Subtract, Multiply, Divide, Modulo, Power
 from ._math.statistics import *
 
 from ._math.average import AverageSignals, AverageSpectrums

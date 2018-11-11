@@ -1,5 +1,5 @@
 # SuMPF - Sound using a Monkeyforest-like processing framework
-# Copyright (C) 2012-2017 Jonas Schulte-Coerne
+# Copyright (C) 2012-2018 Jonas Schulte-Coerne
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -122,7 +122,7 @@ class ShortFourierTransform(object):
         elif overlap >= block_length:
             raise ValueError("The overlap has to be less than the block length")
         pre_zeros = (0.0,) * overlap
-        post_zeros = (0.0,) * (len(self.__signal) + block_length)
+        post_zeros = (0.0,) * block_length
         # create a DelayFilterGenerator for taking the block's phases into account
         delay_filter = sumpf.modules.DelayFilterGenerator(resolution=resolution, length=fft_block_length)
         # compute the transformation
@@ -130,6 +130,7 @@ class ShortFourierTransform(object):
         for c, w in zip(self.__signal.GetChannels(), window.GetChannels()):
             padded_channel = pre_zeros + c + post_zeros
             channel = (0.0,) * fft_block_length
+            number_of_blocks = 0
             for b in range(0, len(c) + overlap, block_length - overlap):
                 block = padded_channel[b:b + block_length]
                 windowed_block = numpy.multiply(block, w)
@@ -138,7 +139,8 @@ class ShortFourierTransform(object):
                 group_delay_filter = delay_filter.GetSpectrum()
                 compensated_block = numpy.multiply(transformed_block, group_delay_filter.GetChannels()[0])
                 channel = numpy.add(channel, compensated_block)
-            channels.append(tuple(channel))
+                number_of_blocks += 1
+            channels.append(tuple(numpy.divide(channel, 1.0)))
         # create and return the signal
         return sumpf.Spectrum(channels=channels,
                               resolution=resolution,

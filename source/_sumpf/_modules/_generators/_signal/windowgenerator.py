@@ -1,5 +1,5 @@
 # SuMPF - Sound using a Monkeyforest-like processing framework
-# Copyright (C) 2012-2017 Jonas Schulte-Coerne
+# Copyright (C) 2012-2018 Jonas Schulte-Coerne
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -92,7 +92,7 @@ class WindowGenerator(SignalGenerator):
         """
         return "Window"
 
-    @sumpf.Input((tuple, float), "GetSignal")
+    @sumpf.Input(sumpf.SampleInterval, "GetSignal")
     def SetRiseInterval(self, interval):
         """
         An interval in which the samples of the output Signal shall be raising
@@ -110,7 +110,7 @@ class WindowGenerator(SignalGenerator):
         """
         self.__rise_interval = interval
 
-    @sumpf.Input((tuple, float), "GetSignal")
+    @sumpf.Input(sumpf.SampleInterval, "GetSignal")
     def SetFallInterval(self, interval):
         """
         An interval in which the samples of the output Signal shall be falling

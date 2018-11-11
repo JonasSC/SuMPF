@@ -1,5 +1,5 @@
 # SuMPF - Sound using a Monkeyforest-like processing framework
-# Copyright (C) 2012-2017 Jonas Schulte-Coerne
+# Copyright (C) 2012-2018 Jonas Schulte-Coerne
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -143,11 +143,44 @@ class NoiseGenerator(SignalGenerator):
         """
         Generates the samples for white noise.
         """
+        STANDARD_NORMAL = 0
+        UNIFORM = 1
+        SHAPIRO_RUDIN = 2
+        NEWMAN = 3
+        def __init__(self, remove_dc=True, phase_distribution=STANDARD_NORMAL):
+            self.__remove_dc = remove_dc
+            self.__phase_distribution = phase_distribution
+
         def GetSamples(self, length):
-            fsamples = [0.0]    # first fft-sample is 0.0 to avoid a dc offset
-            factor = 2.0 ** (0.5 * math.log(length, 2.0) - 1.0) * 2.0 ** 0.5
-            for i in range(length // 2):
-                fsamples.append(factor * numpy.exp(2.0j * math.pi * self._random.gauss(0.0, 1.0)))
+            flength = length // 2 + 1
+            if self.__phase_distribution == NoiseGenerator.WhiteNoise.STANDARD_NORMAL:
+                fsamples = numpy.exp([2.0j * math.pi * self._random.gauss(0.0, 1.0) for _ in range(flength)])
+            elif self.__phase_distribution == NoiseGenerator.WhiteNoise.UNIFORM:
+                fsamples = numpy.exp([2.0j * math.pi * self._random.random() for _ in range(flength)])
+            elif self.__phase_distribution == NoiseGenerator.WhiteNoise.SHAPIRO_RUDIN:
+                fsamples = numpy.empty(flength)
+                fsamples[0:2] = (1.0, 1.0)
+                i = 2
+                while i < flength:
+                    try:
+                        fsamples[i:i + i // 2] = fsamples[0:i // 2]
+                    except ValueError:
+                        j = min(i // 2, flength - i)
+                        fsamples[i:i + j] = fsamples[0:j]
+                        break
+                    try:
+                        fsamples[i + i // 2:2 * i] = -fsamples[i // 2:i]
+                    except ValueError:
+                        j = flength - i
+                        fsamples[i + i // 2:i + j] = -fsamples[i // 2:j]
+                    i *= 2
+            elif self.__phase_distribution == NoiseGenerator.WhiteNoise.NEWMAN:
+                fsamples = numpy.exp([(-1.0j * math.pi * i ** 2) / flength for i in range(flength)])
+            else:
+                raise ValueError("Unknown phase distribution: %i" % self.__phase_distribution)
+            fsamples *= 2.0 ** (0.5 * math.log(flength, 2.0) - 1.0) * 2.0 ** 0.5
+            if self.__remove_dc:
+                fsamples[0] = 0.0
             samples = numpy.fft.irfft(fsamples)
             return tuple(samples)
 

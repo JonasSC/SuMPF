@@ -1,5 +1,5 @@
 # SuMPF - Sound using a Monkeyforest-like processing framework
-# Copyright (C) 2012-2017 Jonas Schulte-Coerne
+# Copyright (C) 2012-2018 Jonas Schulte-Coerne
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -184,6 +184,10 @@ class LinePlotPanel(wx.Panel):
                 else:
                     self.__plots[g][c].yaxis.set_major_formatter(self.__ytick_linformatter)
                     self.__plots[g][c].yaxis.set_minor_formatter(self.__ytick_linformatter)
+                self.__plots[g][c].xaxis.set_major_formatter(ScalarFormatter())
+                self.__plots[g][c].xaxis.set_minor_formatter(ScalarFormatter())
+                for label in self.__plots[g][c].xaxis.get_ticklabels(which="both"):
+                    label.set_rotation("vertical")
         self._UpdateGUI()
 
     @sumpf.Trigger()

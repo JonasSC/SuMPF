@@ -1,5 +1,5 @@
 # SuMPF - Sound using a Monkeyforest-like processing framework
-# Copyright (C) 2012-2017 Jonas Schulte-Coerne
+# Copyright (C) 2012-2018 Jonas Schulte-Coerne
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -93,20 +93,23 @@ class AUTO(FileFormat):
     @classmethod
     def Load(cls, filename):
         file_ending = os.path.splitext(filename)[-1].lstrip(".")
+        exception = None
         for f in signalformats:
             if f.ending == file_ending:
                 try:
                     return f.Load(filename)
-                except:
-                    pass
+                except Exception as e:
+                    exception = e
         # reload if still necessary, try all all available formats
         for f in signalformats:
             if f.ending != file_ending:
                 try:
                     return f.Load(filename)
-                except:
+                except Exception:
                     pass
         # if the file could not be loaded, set the data set to be empty
+        if exception is not None:
+            raise exception
         return None
 
     @classmethod

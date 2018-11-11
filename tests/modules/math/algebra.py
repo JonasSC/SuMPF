@@ -1,5 +1,5 @@
 # SuMPF - Sound using a Monkeyforest-like processing framework
-# Copyright (C) 2012-2017 Jonas Schulte-Coerne
+# Copyright (C) 2012-2018 Jonas Schulte-Coerne
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -23,7 +23,6 @@ try:
     import numpy
 except ImportError:
     pass
-
 
 
 class TestAlgebra(unittest.TestCase):
@@ -163,7 +162,11 @@ class TestAlgebra(unittest.TestCase):
                 except ZeroDivisionError:
                     self.assertRaises(ZeroDivisionError, sumpf.modules.Divide(value1=a, value2=b).GetResult)
                 else:
-                    self.assertEqual(sumpf.modules.Divide(value1=a, value2=b).GetResult(), c)
+                    result = sumpf.modules.Divide(value1=a, value2=b).GetResult() == c
+                    if isinstance(result, bool):
+                        self.assertTrue(result)
+                    else:
+                        self.assertTrue(result.all())
                 # power
                 try:
                     c = a ** b

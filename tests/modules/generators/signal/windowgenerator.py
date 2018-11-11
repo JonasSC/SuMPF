@@ -1,5 +1,5 @@
 # SuMPF - Sound using a Monkeyforest-like processing framework
-# Copyright (C) 2012-2017 Jonas Schulte-Coerne
+# Copyright (C) 2012-2018 Jonas Schulte-Coerne
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -146,8 +146,8 @@ class TestWindowGenerator(unittest.TestCase):
         gen = sumpf.modules.WindowGenerator()
         self.assertEqual(gen.SetLength.GetType(), int)
         self.assertEqual(gen.SetSamplingRate.GetType(), float)
-        self.assertEqual(gen.SetRiseInterval.GetType(), (tuple, float))
-        self.assertEqual(gen.SetFallInterval.GetType(), (tuple, float))
+        self.assertEqual(gen.SetRiseInterval.GetType(), sumpf.SampleInterval)
+        self.assertEqual(gen.SetFallInterval.GetType(), sumpf.SampleInterval)
         self.assertEqual(gen.SetFunction.GetType(), sumpf.internal.WindowFunction)
         self.assertEqual(gen.GetSignal.GetType(), sumpf.Signal)
         common.test_connection_observers(testcase=self,

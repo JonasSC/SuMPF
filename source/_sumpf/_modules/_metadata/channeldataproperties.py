@@ -1,5 +1,5 @@
 # SuMPF - Sound using a Monkeyforest-like processing framework
-# Copyright (C) 2012-2017 Jonas Schulte-Coerne
+# Copyright (C) 2012-2018 Jonas Schulte-Coerne
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -28,14 +28,17 @@ class ChannelDataProperties(object):
     equal. This is often required. For example for merging the data sets or
     for algebraic operations.
     """
-    def __init__(self, signal_length=None, samplingrate=None, spectrum_length=None, resolution=None):
+    def __init__(self, signal_length=None, samplingrate=None, spectrum_length=None, resolution=None, allow_uneven_signal_length=False):
         """
         All parameters are optional.
         @param signal_length: the length for Signals (overrides spectrum_length if both are given)
         @param samplingrate: the sampling rate for Signals (overrides resolution if both are given)
         @param spectrum_length: the length for Spectrums
         @param resolution: the resolution for Spectrums
+        @param allow_uneven_signal_length: a boolean value, that causes a ValueError to be raised if it is False and the signal length is uneven. This can be helpful to avoid loosing samples in a fourier transform.
         """
+        # store other parameters
+        self.__allow_uneven_signal_length = allow_uneven_signal_length
         # set length and sampling rate to defaults
         try:
             self.__SetSignalLength(sumpf.config.get("default_signal_length"))
@@ -160,7 +163,7 @@ class ChannelDataProperties(object):
         Spectrums changes as well.
         @param length: the length for Signals as an integer
         """
-        if length % 2 != 0:
+        if not self.__allow_uneven_signal_length and length % 2 != 0:
             raise ValueError("The signal length has to be even, otherwise a sample will be lost in a fourier transform")
         self.__length = int(length)
 
