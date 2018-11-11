@@ -1,0 +1,4 @@
+<map id="_sumpf._modules._generators._signal.squarewavegenerator.SquareWaveGenerator" name="_sumpf._modules._generators._signal.squarewavegenerator.SquareWaveGenerator">
+<area shape="rect" id="node2" href="$class__sumpf_1_1__modules_1_1__generators_1_1__signal_1_1wavegenerator_1_1WaveGenerator.html" title="An abstract base class for modules that generate periodic Signals like Sine&#45; or Square waves..." alt="" coords="9,169,254,211"/>
+<area shape="rect" id="node3" href="$class__sumpf_1_1__modules_1_1__generators_1_1__signal_1_1signalgenerator_1_1SignalGenerator.html" title="An abstract base class for classes whose instances generate Signals. " alt="" coords="5,80,257,121"/>
+</map>

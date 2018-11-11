@@ -1,0 +1,28 @@
+var searchData=
+[
+  ['cachingoutputconnector',['CachingOutputConnector',['../class__sumpf_1_1__base_1_1__connectors_1_1outputconnectors_1_1CachingOutputConnector.html',1,'_sumpf::_base::_connectors::outputconnectors']]],
+  ['channeldata',['ChannelData',['../class__sumpf_1_1__data_1_1channeldata_1_1ChannelData.html',1,'_sumpf::_data::channeldata']]],
+  ['channeldatamean',['ChannelDataMean',['../class__sumpf_1_1__modules_1_1__math_1_1__statistics_1_1mean_1_1ChannelDataMean.html',1,'_sumpf::_modules::_math::_statistics::mean']]],
+  ['channeldataproperties',['ChannelDataProperties',['../class__sumpf_1_1__modules_1_1__metadata_1_1channeldataproperties_1_1ChannelDataProperties.html',1,'_sumpf::_modules::_metadata::channeldataproperties']]],
+  ['chebychev1',['Chebychev1',['../class__sumpf_1_1__modules_1_1__generators_1_1__spectrum_1_1filtergenerator_1_1Chebychev1.html',1,'_sumpf::_modules::_generators::_spectrum::filtergenerator']]],
+  ['clipsignal',['ClipSignal',['../class__sumpf_1_1__modules_1_1__normalize_1_1clipsignal_1_1ClipSignal.html',1,'_sumpf::_modules::_normalize::clipsignal']]],
+  ['comparesignals',['CompareSignals',['../class__sumpf_1_1__modules_1_1__math_1_1comparesignals_1_1CompareSignals.html',1,'_sumpf::_modules::_math::comparesignals']]],
+  ['concatenatesignals',['ConcatenateSignals',['../class__sumpf_1_1__modules_1_1__channels_1_1concatenatesignals_1_1ConcatenateSignals.html',1,'_sumpf::_modules::_channels::concatenatesignals']]],
+  ['config',['Config',['../class__sumpf_1_1__base_1_1__config_1_1config_1_1Config.html',1,'_sumpf::_base::_config::config']]],
+  ['conjugatespectrum',['ConjugateSpectrum',['../class__sumpf_1_1__modules_1_1__math_1_1conjugatespectrum_1_1ConjugateSpectrum.html',1,'_sumpf::_modules::_math::conjugatespectrum']]],
+  ['connector',['Connector',['../class__sumpf_1_1__base_1_1__connectors_1_1baseconnectors_1_1Connector.html',1,'_sumpf::_base::_connectors::baseconnectors']]],
+  ['connectordecorator',['ConnectorDecorator',['../class__sumpf_1_1__base_1_1__connectors_1_1basedecorators_1_1ConnectorDecorator.html',1,'_sumpf::_base::_connectors::basedecorators']]],
+  ['connectorproxy',['ConnectorProxy',['../class__sumpf_1_1__base_1_1__connectors_1_1connectorproxy_1_1ConnectorProxy.html',1,'_sumpf::_base::_connectors::connectorproxy']]],
+  ['constantsignalgenerator',['ConstantSignalGenerator',['../class__sumpf_1_1__modules_1_1__generators_1_1__signal_1_1constantsignalgenerator_1_1ConstantSignalGenerator.html',1,'_sumpf::_modules::_generators::_signal::constantsignalgenerator']]],
+  ['constantspectrumgenerator',['ConstantSpectrumGenerator',['../class__sumpf_1_1__modules_1_1__generators_1_1__spectrum_1_1constantspectrum_1_1ConstantSpectrumGenerator.html',1,'_sumpf::_modules::_generators::_spectrum::constantspectrum']]],
+  ['convolvesignals',['ConvolveSignals',['../class__sumpf_1_1__modules_1_1__math_1_1convolvesignals_1_1ConvolveSignals.html',1,'_sumpf::_modules::_math::convolvesignals']]],
+  ['copychanneldatachannels',['CopyChannelDataChannels',['../class__sumpf_1_1__modules_1_1__channels_1_1copychannels_1_1CopyChannelDataChannels.html',1,'_sumpf::_modules::_channels::copychannels']]],
+  ['copylabels',['CopyLabels',['../class__sumpf_1_1__modules_1_1__metadata_1_1copylabels_1_1CopyLabels.html',1,'_sumpf::_modules::_metadata::copylabels']]],
+  ['copylabelstosignal',['CopyLabelsToSignal',['../class__sumpf_1_1__modules_1_1__metadata_1_1copylabels_1_1CopyLabelsToSignal.html',1,'_sumpf::_modules::_metadata::copylabels']]],
+  ['copylabelstospectrum',['CopyLabelsToSpectrum',['../class__sumpf_1_1__modules_1_1__metadata_1_1copylabels_1_1CopyLabelsToSpectrum.html',1,'_sumpf::_modules::_metadata::copylabels']]],
+  ['copysignalchannels',['CopySignalChannels',['../class__sumpf_1_1__modules_1_1__channels_1_1copychannels_1_1CopySignalChannels.html',1,'_sumpf::_modules::_channels::copychannels']]],
+  ['copyspectrumchannels',['CopySpectrumChannels',['../class__sumpf_1_1__modules_1_1__channels_1_1copychannels_1_1CopySpectrumChannels.html',1,'_sumpf::_modules::_channels::copychannels']]],
+  ['correlatesignals',['CorrelateSignals',['../class__sumpf_1_1__modules_1_1__math_1_1correlatesignals_1_1CorrelateSignals.html',1,'_sumpf::_modules::_math::correlatesignals']]],
+  ['createsampleinterval',['CreateSampleInterval',['../class__sumpf_1_1__modules_1_1__generators_1_1interval_1_1CreateSampleInterval.html',1,'_sumpf::_modules::_generators::interval']]],
+  ['cutsignal',['CutSignal',['../class__sumpf_1_1__modules_1_1__channels_1_1cutsignal_1_1CutSignal.html',1,'_sumpf::_modules::_channels::cutsignal']]]
+];

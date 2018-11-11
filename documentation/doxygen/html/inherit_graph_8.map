@@ -1,0 +1,7 @@
+<map id="Graphical Class Hierarchy" name="Graphical Class Hierarchy">
+<area shape="rect" id="node2" href="$class__sumpf_1_1__modules_1_1__plotting_1_1lineplotpanel_1_1LinePlotPanel.html" title="_sumpf._modules._plotting.lineplotpanel.\lLinePlotPanel" alt="" coords="108,71,367,112"/>
+<area shape="rect" id="node6" href="$class__sumpf_1_1__modules_1_1__plotting_1_1toolbar_1_1Toolbar.html" title="A toolbar for plots. " alt="" coords="125,136,350,177"/>
+<area shape="rect" id="node3" href="$class__sumpf_1_1__modules_1_1__plotting_1_1sequenceplotpanel_1_1SequencePlotPanel.html" title="A wx Panel that contains a plot of an iterable sequence like a tuple or a list. " alt="" coords="415,5,709,47"/>
+<area shape="rect" id="node4" href="$class__sumpf_1_1__modules_1_1__plotting_1_1signalplotpanel_1_1SignalPlotPanel.html" title="A wx Panel that contains a plot of a Signal and the corresponding toolbar. " alt="" coords="426,71,698,112"/>
+<area shape="rect" id="node5" href="$class__sumpf_1_1__modules_1_1__plotting_1_1spectrumplotpanel_1_1SpectrumPlotPanel.html" title="A wx Panel that contains a plot of a Spectrum and the corresponding toolbar. " alt="" coords="416,136,708,177"/>
+</map>

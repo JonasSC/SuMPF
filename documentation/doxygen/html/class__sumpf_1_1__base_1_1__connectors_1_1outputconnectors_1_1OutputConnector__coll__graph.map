@@ -1,0 +1,4 @@
+<map id="_sumpf._base._connectors.outputconnectors.OutputConnector" name="_sumpf._base._connectors.outputconnectors.OutputConnector">
+<area shape="rect" id="node2" href="$class__sumpf_1_1__base_1_1__connectors_1_1baseconnectors_1_1Connector.html" title="Base class for connectors. " alt="" coords="111,5,389,47"/>
+<area shape="rect" id="node4" href="$class__sumpf_1_1__base_1_1__connectors_1_1baseconnectors_1_1TypedConnector.html" title="A mixin for connectors that can only be connected to connectors with the same type. " alt="" coords="111,71,389,112"/>
+</map>

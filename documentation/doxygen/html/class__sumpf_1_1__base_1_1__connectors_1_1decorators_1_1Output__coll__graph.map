@@ -1,0 +1,4 @@
+<map id="_sumpf._base._connectors.decorators.Output" name="_sumpf._base._connectors.decorators.Output">
+<area shape="rect" id="node2" href="$class__sumpf_1_1__base_1_1__connectors_1_1basedecorators_1_1ConnectorDecorator.html" title="An abstract base class for the decoration of methods so they can be used as Connectors. " alt="" coords="111,5,387,47"/>
+<area shape="rect" id="node4" href="$class__sumpf_1_1__base_1_1__connectors_1_1basedecorators_1_1TypedDecorator.html" title="An addition to a ConnectorDecorator for Connectors that are aware of the data type that is passed thr..." alt="" coords="111,71,387,112"/>
+</map>

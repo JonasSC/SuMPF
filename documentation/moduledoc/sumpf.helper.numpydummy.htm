@@ -1,0 +1,221 @@
+<html>
+    <head>
+        <title>ModuleDoc: sumpf.helper.numpydummy</title>
+        <style type='text/css'>
+            *{
+                vertical-align: top;
+            }
+            *.maintable{
+                width: 80%;
+                margin-left: auto;
+                margin-right: auto;
+            }
+            *.maintablecell{
+                width: 25%;
+                font-size: medium;
+                background: #E0F0FF;
+            }
+            *.attribute{
+            }
+            *.attributes{
+                font-size: larger;
+                background: #6080FF;
+            }
+            *.modulepath{
+                font-size: x-large;
+                background: #6080FF;
+            }
+            *.moduledoc{
+                font-size: medium;
+                background: #E0F0FF;
+            }
+            *.headline{
+                font-size: larger;
+                background: #C8E0FF;
+            }
+            *.functiondoc{
+                position: absolute;
+                background-color: #C8E0FF;
+                border-style: solid;
+            }
+        </style>
+        <script type='text/javascript'>
+            function Toggle(id){
+                element = document.getElementById(id);
+                if (element.style.display != 'none')
+                    element.style.display = 'none';
+                else{
+                    HideFunctionDoc();
+                    element.style.display = 'block';
+                }
+            }
+
+            function HideFunctionDoc(){
+                document.getElementById('divide').style.display = 'none';
+                document.getElementById('shape').style.display = 'none';
+                document.getElementById('conjugate').style.display = 'none';
+                document.getElementById('nonzero').style.display = 'none';
+                document.getElementById('angle').style.display = 'none';
+                document.getElementById('min').style.display = 'none';
+                document.getElementById('sum').style.display = 'none';
+                document.getElementById('add').style.display = 'none';
+                document.getElementById('abs').style.display = 'none';
+                document.getElementById('zeros').style.display = 'none';
+                document.getElementById('var').style.display = 'none';
+                document.getElementById('prod').style.display = 'none';
+                document.getElementById('imag').style.display = 'none';
+                document.getElementById('real').style.display = 'none';
+                document.getElementById('power').style.display = 'none';
+                document.getElementById('max').style.display = 'none';
+                document.getElementById('complex_').style.display = 'none';
+                document.getElementById('transpose').style.display = 'none';
+                document.getElementById('multiply').style.display = 'none';
+                document.getElementById('subtract').style.display = 'none';
+                document.getElementById('mod').style.display = 'none';
+                document.getElementById('true_divide').style.display = 'none';
+                document.getElementById('equal').style.display = 'none';
+                document.getElementById('mean').style.display = 'none';
+            }
+        </script>
+    </head>
+    <body onLoad='HideFunctionDoc()'>
+        <script src='../header.js' type='text/javascript'></script>
+        <table class='maintable'>
+            <tr>
+                <td class='maintablecell modulepath'>Module</td>
+                <th colspan='3' class='maintablecell modulepath'><a href='sumpf.htm'>sumpf</a>.<a href='sumpf.helper.htm'>helper</a>.<a href='sumpf.helper.numpydummy.htm'>numpydummy</a></th>
+            </tr>
+            <tr>
+                <td class='maintablecell headline'>Docstring</td>
+                <td colspan='3' class='maintablecell moduledoc'>This name space contains functions that emulate some functions from the NumPy<br />
+library. The functions are far slower than their NumPy equivalents. They are only<br />
+used if NumPy is not available.</td>
+            </tr>
+            <tr>
+                <th colspan='4' class='maintablecell attributes'>Attributes</th>
+            </tr>
+            <tr>
+                <th class='maintablecell headline'>Modules</th>
+                <th class='maintablecell headline'>Classes</th>
+                <th class='maintablecell headline'>Functions</th>
+                <th class='maintablecell headline'>Variables</th>
+            </tr>
+            <tr>
+                <td class='maintablecell'>
+                </td>
+                <td class='maintablecell'>
+                    <div class='attribute'>float</div>
+                </td>
+                <td class='maintablecell'>
+                    <div class='attribute'>
+                        <a href='javascript:Toggle("abs")'>abs<a>
+                        <div class='functiondoc hidden' id='abs'>an alternative for numpy.abs</div>
+                    </div>
+                    <div class='attribute'>
+                        <a href='javascript:Toggle("add")'>add<a>
+                        <div class='functiondoc hidden' id='add'>an alternative for numpy.add</div>
+                    </div>
+                    <div class='attribute'>
+                        <a href='javascript:Toggle("angle")'>angle<a>
+                        <div class='functiondoc hidden' id='angle'>an alternative for numpy.angle</div>
+                    </div>
+                    <div class='attribute'>
+                        <a href='javascript:Toggle("complex_")'>complex_<a>
+                        <div class='functiondoc hidden' id='complex_'>an alternative for numpy.complex_, which casts arrays to contain complex values.</div>
+                    </div>
+                    <div class='attribute'>
+                        <a href='javascript:Toggle("conjugate")'>conjugate<a>
+                        <div class='functiondoc hidden' id='conjugate'>an alternative for numpy.conjugate</div>
+                    </div>
+                    <div class='attribute'>
+                        <a href='javascript:Toggle("divide")'>divide<a>
+                        <div class='functiondoc hidden' id='divide'>an alternative for numpy.divide</div>
+                    </div>
+                    <div class='attribute'>
+                        <a href='javascript:Toggle("equal")'>equal<a>
+                        <div class='functiondoc hidden' id='equal'>an alternative for numpy.equal</div>
+                    </div>
+                    <div class='attribute'>
+                        <a href='javascript:Toggle("imag")'>imag<a>
+                        <div class='functiondoc hidden' id='imag'>an alternative for numpy.imag<br />
+    this does not model numpy's behaviour, that imag returns an array for a scalar<br />
+    input.</div>
+                    </div>
+                    <div class='attribute'>
+                        <a href='javascript:Toggle("max")'>max<a>
+                        <div class='functiondoc hidden' id='max'>an alternative to numpy.max</div>
+                    </div>
+                    <div class='attribute'>
+                        <a href='javascript:Toggle("mean")'>mean<a>
+                        <div class='functiondoc hidden' id='mean'>A simplified alternative to numpy.mean.<br />
+    Other than numpy.mean, this function only takes one dimensional arrays.</div>
+                    </div>
+                    <div class='attribute'>
+                        <a href='javascript:Toggle("min")'>min<a>
+                        <div class='functiondoc hidden' id='min'>an alternative to numpy.min</div>
+                    </div>
+                    <div class='attribute'>
+                        <a href='javascript:Toggle("mod")'>mod<a>
+                        <div class='functiondoc hidden' id='mod'>an alternative for numpy.mod</div>
+                    </div>
+                    <div class='attribute'>
+                        <a href='javascript:Toggle("multiply")'>multiply<a>
+                        <div class='functiondoc hidden' id='multiply'>an alternative for numpy.multiply</div>
+                    </div>
+                    <div class='attribute'>
+                        <a href='javascript:Toggle("nonzero")'>nonzero<a>
+                        <div class='functiondoc hidden' id='nonzero'>an alternative to numpy.nonzero</div>
+                    </div>
+                    <div class='attribute'>
+                        <a href='javascript:Toggle("power")'>power<a>
+                        <div class='functiondoc hidden' id='power'>an alternative for numpy.power</div>
+                    </div>
+                    <div class='attribute'>
+                        <a href='javascript:Toggle("prod")'>prod<a>
+                        <div class='functiondoc hidden' id='prod'>an alternative to numpy.prod</div>
+                    </div>
+                    <div class='attribute'>
+                        <a href='javascript:Toggle("real")'>real<a>
+                        <div class='functiondoc hidden' id='real'>an alternative for numpy.real<br />
+    this does not model numpy's behaviour, that real returns an array for a scalar<br />
+    input.</div>
+                    </div>
+                    <div class='attribute'>
+                        <a href='javascript:Toggle("shape")'>shape<a>
+                        <div class='functiondoc hidden' id='shape'>an alternative to numpy.shape</div>
+                    </div>
+                    <div class='attribute'>
+                        <a href='javascript:Toggle("subtract")'>subtract<a>
+                        <div class='functiondoc hidden' id='subtract'>an alternative for numpy.subtract</div>
+                    </div>
+                    <div class='attribute'>
+                        <a href='javascript:Toggle("sum")'>sum<a>
+                        <div class='functiondoc hidden' id='sum'>an alternative to numpy.sum</div>
+                    </div>
+                    <div class='attribute'>
+                        <a href='javascript:Toggle("transpose")'>transpose<a>
+                        <div class='functiondoc hidden' id='transpose'>an alternative for numpy.transpose<br />
+    this only works for one- and twodimensional arrays as expected.</div>
+                    </div>
+                    <div class='attribute'>
+                        <a href='javascript:Toggle("true_divide")'>true_divide<a>
+                        <div class='functiondoc hidden' id='true_divide'>an alternative for numpy.true_divide</div>
+                    </div>
+                    <div class='attribute'>
+                        <a href='javascript:Toggle("var")'>var<a>
+                        <div class='functiondoc hidden' id='var'>A simplified alternative to numpy.var.<br />
+    Other than numpy.mean, this function only takes one dimensional arrays.<br />
+    Furthermore, it does not calculate the variance of complex values correctly.<br />
+    So please use it for real valued arrays only.</div>
+                    </div>
+                    <div class='attribute'>
+                        <a href='javascript:Toggle("zeros")'>zeros<a>
+                        <div class='functiondoc hidden' id='zeros'>an alternative for numpy.zeros</div>
+                    </div>
+                </td>
+                <td class='maintablecell'>
+                </td>
+            </tr>
+        </table>
+    </body>
+</html>

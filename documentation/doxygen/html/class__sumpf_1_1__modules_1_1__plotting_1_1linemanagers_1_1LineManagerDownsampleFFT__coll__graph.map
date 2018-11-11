@@ -1,0 +1,5 @@
+<map id="_sumpf._modules._plotting.linemanagers.LineManagerDownsampleFFT" name="_sumpf._modules._plotting.linemanagers.LineManagerDownsampleFFT">
+<area shape="rect" id="node2" href="$class__sumpf_1_1__modules_1_1__plotting_1_1linemanagers_1_1LineManager.html" title="An abstract base class for other LineManager implementations. " alt="" coords="421,5,684,47"/>
+<area shape="rect" id="node5" href="$class__sumpf_1_1__modules_1_1__plotting_1_1linemanagers_1_1XDataManager.html" title="This class is an abstract base class for different XDataManager implementations. " alt="" coords="111,68,373,109"/>
+<area shape="rect" id="node4" href="$class__sumpf_1_1__modules_1_1__plotting_1_1linemanagers_1_1XDataManagerCropAndDownsample.html" title="This class is meant to be mixed into a LineManager implementation via multi&#45;inheritance. " alt="" coords="421,71,684,112"/>
+</map>
