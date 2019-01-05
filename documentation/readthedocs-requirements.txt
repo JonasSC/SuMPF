@@ -1,5 +1,9 @@
 connectors
+JACK-Client
 matplotlib
+numexpr
 numpy
+scipy
+SoundFile
 Sphinx
 sphinx-rtd-theme
