@@ -1,3 +1,15 @@
+.cache
+.coverage
+.hypothesis
+.project
+.pydevproject
+.pytest_cache
+.settings
 
+sumpf.egg-info
+dist
+docs
 
+*.pyc
+*__pycache__
 

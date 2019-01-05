@@ -1,0 +1,9 @@
+[flake8]
+ignore = E306,E501,E741,W504
+# E306: allow a nested function without blank lines around it
+# E501: ignore overly long lines, since that is checked with pylint
+# E741: allow variable names such as "l"
+# W504: line break after binary operator
+exclude = __init__.py
+
+max-complexity = 11
