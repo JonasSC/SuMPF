@@ -132,5 +132,7 @@ class ConcatenateSignals:
 
         :param signal_id: the unique identifier, under which the referred signal is stored
         :param signal: the new Signal instance
+        :returns: signal_id
         """
         self.__signals[signal_id] = signal
+        return signal_id

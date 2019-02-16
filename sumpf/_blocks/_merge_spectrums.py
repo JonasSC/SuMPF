@@ -100,8 +100,10 @@ class MergeSpectrums:
 
         :param spectrum_id: the unique identifier, under which the referred spectrum is stored
         :param spectrum: the new :class:`~sumpf.Spectrum` instance
+        :returns: spectrum_id
         """
         self.__spectrums[spectrum_id] = spectrum
+        return spectrum_id
 
     @connectors.Input("output")
     def set_mode(self, mode):
