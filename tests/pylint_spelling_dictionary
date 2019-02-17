@@ -55,6 +55,7 @@ numpy
 NumPy
 Ogg
 oversampled
+OwnPort
 passband
 Passthrough
 precompute
@@ -63,6 +64,7 @@ preponed
 prepones
 pytest
 pytest's
+QJackCtrl
 repr
 repurposed
 Rüdiger
