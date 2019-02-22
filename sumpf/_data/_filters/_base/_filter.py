@@ -156,12 +156,9 @@ class Filter:
 
         :returns: a reasonably short string
         """
-        return ("<{module}.{class_} object "
-                "(channel count: {channel_count}) "
-                "at 0x{address:x}>").format(module=self.__module__,
-                                            class_=self.__class__.__name__,
-                                            channel_count=len(self.__transfer_functions),
-                                            address=id(self))
+        return (f"<{self.__module__}.{self.__class__.__name__} object "
+                f"(channel count: {len(self.__transfer_functions)}) "
+                f"at 0x{id(self):x}>")
 
     def __repr__(self):
         """Operator overload for using the built-in function :func:`repr` to generate
@@ -169,10 +166,8 @@ class Filter:
 
         :returns: a potentially very long string
         """
-        return ("{class_}(transfer_functions={transfer_functions!r}, "
-                "labels={labels})").format(class_=self.__class__.__name__,
-                                           transfer_functions=self.__transfer_functions,
-                                           labels=self.__labels)
+        return (f"{self.__class__.__name__}(transfer_functions={self.__transfer_functions!r}, "
+                f"labels={self.__labels})")
 
     def __eq__(self, other):
         """Operator overload for comparing this filter to another object with ``==``"""

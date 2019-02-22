@@ -109,16 +109,11 @@ class Spectrum(SampledData):
 
         :returns: a reasonably short string
         """
-        return ("<{module}.{class_} object "
-                "(length: {length}, "
-                "resolution: {resolution:.2f}, "
-                "channel count: {channel_count}) "
-                "at 0x{address:x}>").format(module=self.__module__,
-                                            class_=self.__class__.__name__,
-                                            length=self._length,
-                                            resolution=self.__resolution,
-                                            channel_count=len(self),
-                                            address=id(self))
+        return (f"<{self.__module__}.{self.__class__.__name__} object "
+                f"(length: {self._length}, "
+                f"resolution: {self.__resolution:.2f}, "
+                f"channel count: {len(self)}) "
+                f"at 0x{id(self):x}>")
 
     def __repr__(self):
         """Operator overload for using the built-in function :func:`repr` to generate
@@ -130,12 +125,9 @@ class Spectrum(SampledData):
             spectrum_channels = repr(self._channels).replace("\n", "").replace(" ", "")
         else:
             spectrum_channels = "array([[]])"
-        return ("{class_}(channels={channels}, "
-                "resolution={resolution!r}, "
-                "labels={labels})").format(class_=self.__class__.__name__,
-                                           channels=spectrum_channels,
-                                           resolution=self.__resolution,
-                                           labels=self._labels)
+        return (f"{self.__class__.__name__}(channels={spectrum_channels}, "
+                f"resolution={self.__resolution!r}, "
+                f"labels={self._labels})")
 
     def __eq__(self, other):
         """Operator overload for comparing this spectrum to another object with ``==``"""

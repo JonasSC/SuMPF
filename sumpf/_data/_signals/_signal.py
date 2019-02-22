@@ -122,18 +122,12 @@ class Signal(SampledData):
 
         :returns: a reasonably short string
         """
-        return ("<{module}.{class_} object "
-                "(length: {length}, "
-                "sampling rate: {sampling_rate:.2f}, "
-                "offset: {offset}, "
-                "channel count: {channel_count}) "
-                "at 0x{address:x}>").format(module=self.__module__,
-                                            class_=self.__class__.__name__,
-                                            length=self._length,
-                                            sampling_rate=self.__sampling_rate,
-                                            offset=self.__offset,
-                                            channel_count=len(self),
-                                            address=id(self))
+        return (f"<{self.__module__}.{self.__class__.__name__} object "
+                f"(length: {self._length}, "
+                f"sampling rate: {self.__sampling_rate:.2f}, "
+                f"offset: {self.__offset}, "
+                f"channel count: {len(self)}) "
+                f"at 0x{id(self):x}>")
 
     def __repr__(self):
         """Operator overload for using the built-in function :func:`repr` to generate
@@ -146,14 +140,10 @@ class Signal(SampledData):
             signal_channels = repr(self._channels).replace("\n", "").replace(" ", "")
         else:
             signal_channels = "array([[]])"
-        return ("{class_}(channels={channels}, "
-                "sampling_rate={sampling_rate!r}, "
-                "offset={offset}, "
-                "labels={labels})").format(class_=self.__class__.__name__,
-                                           channels=signal_channels,
-                                           sampling_rate=self.__sampling_rate,
-                                           offset=self.__offset,
-                                           labels=self._labels)
+        return (f"{self.__class__.__name__}(channels={signal_channels}, "
+                f"sampling_rate={self.__sampling_rate!r}, "
+                f"offset={self.__offset}, "
+                f"labels={self._labels})")
 
     def __eq__(self, other):
         """Operator overload for comparing this signal to another object with ``==``"""
