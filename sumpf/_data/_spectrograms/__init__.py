@@ -14,18 +14,6 @@
 # You should have received a copy of the GNU Lesser General Public License along
 # with this program. If not, see <http://www.gnu.org/licenses/>.
 
-"""This sub-module contains functionalities, which are used internally in the SuMPF package"""
+"""Contains data containers for spectrograms"""
 
-from ._convolution import *
-from ._enums import *
-from ._indexing import *
-from ._functions import *
-from ._persistence import *
-from ._text import *
-
-from . import _signal_readers as signal_readers
-from . import _signal_writers as signal_writers
-from . import _spectrum_readers as spectrum_readers
-from . import _spectrum_writers as spectrum_writers
-from . import _spectrogram_readers as spectrogram_readers
-from . import _spectrogram_writers as spectrogram_writers
+from ._spectrogram import *

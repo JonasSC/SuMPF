@@ -689,6 +689,88 @@ def test_fourier_transform_calculation(signal):
     assert spectrum.labels() == signal.labels()
 
 
+def test_short_time_fourier_transform_results():
+    """Tests the computation for the short time Fourier transform by finding the
+    maximums in the spectrogram of an exponential sweep
+    """
+    try:
+        import scipy.signal     # noqa; pylint: disable=unused-import; check if SciPy is available
+    except ImportError:
+        with pytest.raises(ImportError):
+            sumpf.ExponentialSweep().short_time_fourier_transform()
+    else:
+        sweep = sumpf.ExponentialSweep()
+        spectrogram = sweep.short_time_fourier_transform(window=2048)
+        frequencies = sweep.instantaneous_frequency(spectrogram.time_samples())
+        for c in spectrogram.magnitude():
+            maximums = numpy.multiply(c.argmax(axis=0), spectrogram.resolution())
+            diff = numpy.abs(frequencies - maximums)
+            assert (diff[0:-1] <= spectrogram.resolution() * 1.2).all()
+
+
+@hypothesis.given(signal=tests.strategies.signals,  # noqa: C901; ignore the complexity warning
+                  window_length=hypothesis.strategies.integers(min_value=1, max_value=8192),
+                  overlap=hypothesis.strategies.floats(min_value=0.0, max_value=0.8),
+                  pad=hypothesis.strategies.booleans())
+def test_short_time_fourier_transform_calculation(signal, window_length, overlap, pad):
+    """Does some generic tests if the short time Fourier transform can be computed
+    for a variety of signals and with a variety of parameters
+    """
+    # pylint: disable=too-many-branches
+    try:
+        import scipy.signal     # noqa; pylint: disable=unused-import; check if SciPy is available
+    except ImportError:
+        with pytest.raises(ImportError):
+            signal.short_time_fourier_transform()
+    else:
+        # sanitize the input data
+        if signal.sampling_rate() > 1e5:
+            signal = sumpf.Signal(channels=signal.channels(),
+                                  sampling_rate=48000.0,
+                                  offset=signal.offset(),
+                                  labels=signal.labels())
+        window_length = min(window_length, signal.length())
+        overlap = min(sumpf_internal.index(overlap, window_length), window_length - 1)
+        # create a window signal
+        if window_length < 2 or overlap == 0:
+            window = sumpf.RectangularWindow(sampling_rate=signal.sampling_rate(), length=window_length, symmetric=False)   # pylint: disable=line-too-long
+        else:
+            window = sumpf.HannWindow(sampling_rate=signal.sampling_rate(), length=window_length, symmetric=False)
+        step = window_length - overlap
+        # compute a reference spectrogram and test its properties
+        reference = signal.short_time_fourier_transform(window=window, overlap=overlap, pad=pad)
+        assert len(reference) == len(signal)
+        assert reference.number_of_frequencies() == window_length // 2 + 1
+        if pad:
+            assert signal.length() / step <= reference.length() <= signal.length() / step + 2
+        else:
+            assert reference.length() == (signal.length() - window_length) // step + 1
+        assert reference.resolution() == pytest.approx(1.0 / window.duration())
+        assert reference.sampling_rate() == signal.sampling_rate() / step
+        assert reference.offset() == int(round(signal.offset() / step))
+        assert reference.labels() == signal.labels()
+        # test other data types for the window and overlap parameters, that should produce the same results
+        if window_length >= 2:
+            assert signal.short_time_fourier_transform(window_length, overlap, pad) == reference
+        for w in (window.channels(),
+                  window.channels()[0],
+                  tuple(window.channels()[0]),
+                  [list(c) for c in window.channels()]):
+            for o in (overlap - window_length,
+                      overlap / window_length,
+                      overlap / window_length - 1.0):
+                assert signal.short_time_fourier_transform(w, o, pad) == reference
+        if len(signal):     # pylint: disable=len-as-condition; signal is a sumpf.Signal and not a built in container
+            multichannel = sumpf.MergeSignals([window] * len(signal)).output()
+            for w in (multichannel,
+                      multichannel.channels(),
+                      [tuple(c) for c in multichannel.channels()]):
+                for o in (overlap - window_length,
+                          overlap / window_length,
+                          overlap / window_length - 1.0):
+                    assert signal.short_time_fourier_transform(w, o, pad) == reference
+
+
 @hypothesis.given(tests.strategies.signals)
 def test_level(signal):
     """Tests the level computation from the Signal class."""

@@ -30,7 +30,11 @@ class SampledData:
         """
         self._channels = channels
         self._labels = sumpf_internal.sanitize_labels(labels=labels, number=len(channels))
-        self._length = channels.shape[1]    # the number of samples per channel
+        self._length = channels.shape[-1]   # the number of samples per channel
+
+    ###########################################
+    # overloaded operators (non math-related) #
+    ###########################################
 
     def __len__(self):
         """Operator overload for retrieving the number of channels with the built-in function :func:`len()`.

@@ -38,6 +38,7 @@ ifft
 IIR
 instantiation
 Institut
+iterable
 kurtosis
 kwargs
 len
@@ -70,9 +71,13 @@ repurposed
 Rüdiger
 Rudin
 Schulte
+SciPy
 serializable
 skewness
 soundfile
+spectrogram
+spectrogram's
+spectrograms
 spectrums
 stderr
 str

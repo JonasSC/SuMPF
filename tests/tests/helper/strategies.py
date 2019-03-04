@@ -24,6 +24,7 @@ import sumpf
 __all__ = ("frequencies", "short_lengths",
            "signal_parameters", "signals", "normalized_signals",
            "spectrum_parameters", "spectrums",
+           "spectrogram_parameters", "spectrograms",
            "terms", "filter_parameters", "filters")
 
 ##################
@@ -70,6 +71,20 @@ _spectrum_parameters = {"channels": stn.arrays(dtype=numpy.complex128,  # pylint
 spectrum_parameters = st.fixed_dictionaries(_spectrum_parameters)
 spectrums = st.builds(sumpf.Spectrum, **_spectrum_parameters)
 
+###############
+# Spectrogram #
+###############
+
+_spectrogram_parameters = {"channels": stn.arrays(dtype=numpy.complex128,  # pylint: disable=no-value-for-parameter; there is a false alarm about a missing parameter for ``draw``
+                                                  shape=stn.array_shapes(min_dims=3, max_dims=3),
+                                                  elements=st.complex_numbers(max_magnitude=1e100, allow_nan=False, allow_infinity=False)),    # pylint: disable=line-too-long
+                           "resolution": resolutions,
+                           "sampling_rate": sampling_rates,
+                           "offset": st.integers(min_value=-2 ** 24, max_value=2 ** 24),
+                           "labels": st.lists(elements=texts)}
+spectrogram_parameters = st.fixed_dictionaries(_spectrogram_parameters)
+spectrograms = st.builds(sumpf.Spectrogram, **_spectrogram_parameters)
+
 ##########
 # Filter #
 ##########
@@ -78,7 +93,7 @@ _polynomial = st.builds(sumpf.Filter.Polynomial,
                         coefficients=st.lists(elements=st.floats(min_value=-1e10, max_value=1e10)),
                         transform=st.booleans())
 _exp = st.builds(sumpf.Filter.Exp,
-                 coefficient=st.floats(min_value=-1e5, max_value=1e5),   # somehow it is necessary to set a lower bound to avoid a value of -inf
+                 coefficient=st.floats(min_value=-1e5, max_value=1e5),   # it is necessary to set a lower bound to avoid a value of -inf
                  transform=st.booleans())
 _quotient = st.builds(sumpf.Filter.Quotient,
                       numerator=st.one_of(_polynomial, _exp),

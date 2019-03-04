@@ -21,3 +21,4 @@
 from ._filters import *
 from ._signals import *
 from ._spectrums import *
+from ._spectrograms import *

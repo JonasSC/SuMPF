@@ -388,6 +388,76 @@ class Signal(SampledData):
                               resolution=resolution,
                               labels=self._labels)
 
+    def short_time_fourier_transform(self, window=4096, overlap=0.5, pad=True):
+        """Computes a :class:`~sumpf.Spectrogram` from this signal.
+
+        This method requires :mod:`scipy` to be installed.
+
+        The spectrogram's offset is rounded to the nearest integer, which corresponds
+        to the scaled offset of this signal. The remainder is then taken into account
+        as a constant addition to the group delay.
+
+        :param window: the window function, that is used to segment this signal.
+                       It can be passed as a :class:`~sumpf.Signal`, as an iterable
+                       or an integer window length. See :func:`~sumpf._internal._functions.get_window`
+                       for details.
+        :param overlap: the overlap of the signal segments. It can be passed as
+                        an integer number of samples or a float fraction of the
+                        window's length. Negative numbers will be added to the
+                        window's length.
+        :param pad: True, if the signal shall be padded with zeros to fit an integer
+                    number of segments. False, if the samples at the end of the
+                    signal, that do not fit a full segment, shall be ignored.
+        """
+        import scipy.signal
+        # create some necessary objects
+        window = sumpf_internal.get_window(window=window,
+                                           overlap=overlap,
+                                           symmetric=False,
+                                           sampling_rate=self.__sampling_rate)
+        window_length = window.length()
+        overlap = sumpf_internal.index(overlap, window_length)
+        step = window_length - overlap
+        # compute the STFT
+        if len(window) == 1:
+            stft = scipy.signal.stft(self._channels,
+                                     fs=self.__sampling_rate,
+                                     window=window.channels()[0],
+                                     nperseg=window_length,
+                                     noverlap=overlap,
+                                     boundary="zeros" if pad else None,
+                                     padded=pad)[2]
+        else:
+            stft = []
+            for c, w in zip(self._channels, window.channels()):
+                stft.append(scipy.signal.stft(c,
+                                              fs=self.__sampling_rate,
+                                              window=w,
+                                              nperseg=window_length,
+                                              noverlap=overlap,
+                                              boundary="zeros" if pad else None,
+                                              padded=pad)[2])
+        channels = sumpf_internal.allocate_array(shape=numpy.shape(stft), dtype=numpy.complex128)
+        channels[:] = stft
+        # deal with the offset
+        resolution = self.__sampling_rate / window_length
+        offset = int(round(self.__offset / step))
+        offset_remainder = self.__offset - (offset * step)
+        if offset_remainder:
+            max_frequency = (window_length - 1) * resolution
+            compensation = numpy.linspace(0.0, max_frequency, window_length // 2 + 1, dtype=numpy.complex128)
+            compensation *= -1j * 2.0 * math.pi * (offset_remainder / self.__sampling_rate)
+            numpy.exp(compensation, out=compensation)
+            for c in channels:
+                t = c.transpose()
+                t *= compensation
+        # return the spectrogram
+        return sumpf.Spectrogram(channels=channels,
+                                 resolution=resolution,
+                                 sampling_rate=self.__sampling_rate / step,
+                                 offset=offset,
+                                 labels=self._labels)
+
     def level(self, single_value=False):
         """Computes the root-mean-square-level of the signal's channels.
 
