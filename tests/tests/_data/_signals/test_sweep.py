@@ -57,6 +57,45 @@ def test_compare_with_other_formula(start_frequency, stop_frequency, sine, sampl
     assert sweep1.channels() == pytest.approx(sweep2.channels(), abs=1e-7)
 
 
+def test_min_and_max_frequencies():
+    """Tests if the methods for computing the minimum and the maximum frequencies work as expected"""
+    r = random.Random()
+    start_frequency = r.uniform(1.0, 300.0)
+    stop_frequency = r.uniform(5 * start_frequency, 10000.0)
+    sampling_rate = r.uniform(3 * stop_frequency, 56000.0)
+    length = r.randint(2 ** 10, 2 ** 16) * 2    # make sure, this is an even number
+    interval = (r.uniform(0.0, 0.2), r.uniform(0.8, 1.0))
+    start, stop = sumpf_internal.index(interval, length)
+    frequency_ratio = stop_frequency / start_frequency
+    sweep_length = stop - start
+    sweep = sumpf.ExponentialSweep(start_frequency=start_frequency,
+                                   stop_frequency=stop_frequency,
+                                   interval=interval,
+                                   sampling_rate=sampling_rate,
+                                   length=length)
+    assert sweep.minimum_frequency() == pytest.approx(start_frequency * frequency_ratio ** (-start / sweep_length))
+    assert sweep.maximum_frequency() == pytest.approx(stop_frequency * frequency_ratio ** ((length - stop) / sweep_length))     # pylint: disable=line-too-long; nothing complicated here, only long variable names
+
+
+def test_instantaneous_frequency():
+    """Tests the instantaneous_frequency method"""
+    r = random.Random()
+    start_frequency = r.uniform(1.0, 300.0)
+    stop_frequency = r.uniform(5 * start_frequency, 10000.0)
+    sampling_rate = r.uniform(3 * stop_frequency, 56000.0)
+    length = r.randint(2 ** 10, 2 ** 16) * 2    # make sure, this is an even number
+    interval = (r.uniform(0.0, 0.2), r.uniform(0.8, 1.0))
+    sweep = sumpf.ExponentialSweep(start_frequency=start_frequency,
+                                   stop_frequency=stop_frequency,
+                                   interval=interval,
+                                   sampling_rate=sampling_rate,
+                                   length=length)
+    assert sweep.instantaneous_frequency(0) == sweep.minimum_frequency()
+    assert sweep.instantaneous_frequency(sweep.duration()) == sweep.maximum_frequency()
+    diff = numpy.diff(sweep.instantaneous_frequency(sweep.time_samples()))
+    assert (diff > 0).all()     # the frequency should increase monotonically
+
+
 def test_interval():
     """Tests if the interval functionality of the ExponentialSweep class works"""
     sweep1 = sumpf.ExponentialSweep(interval=(200, 800), length=2 ** 10)
@@ -69,21 +108,18 @@ def test_interval():
 
 def test_harmonic_impulse_response():
     """Does some trivial tests with the harmonic_impulse_response method"""
-
-    def system(excitation):
-        distorted = 0.5 * excitation ** 3 - 0.6 * excitation ** 2 + 0.1 * excitation + 0.02
-        lowpass = sumpf.ButterworthFilter(cutoff_frequency=1000.0, order=16, highpass=False)
-        highpass = sumpf.ButterworthFilter(cutoff_frequency=1000.0, order=16, highpass=True)
-        filtered = distorted * highpass * lowpass
-        return filtered
-
+    # create a sweep, an inverse sweep and a distorted version of the sweep
     sweep = sumpf.ExponentialSweep(start_frequency=20.0, stop_frequency=7800.0, sampling_rate=48000, length=2 ** 14)
     inverse = sumpf.InverseExponentialSweep(start_frequency=20.0, stop_frequency=7800.0, sampling_rate=48000, length=2 ** 14)   # pylint: disable=line-too-long
-    response = system(sweep)
+    distorted = 0.5 * sweep ** 3 - 0.6 * sweep ** 2 + 0.1 * sweep + 0.02
+    lowpass = sumpf.ButterworthFilter(cutoff_frequency=1000.0, order=16, highpass=False)
+    highpass = sumpf.ButterworthFilter(cutoff_frequency=1000.0, order=16, highpass=True)
+    response = distorted * highpass * lowpass
+    # test with non-circular deconvolution
     impulse_response = response.convolve(inverse, mode=sumpf.Signal.convolution_modes.SPECTRUM_PADDED)
     h1 = sweep.harmonic_impulse_response(impulse_response=impulse_response, harmonic=1)
     h2 = sweep.harmonic_impulse_response(impulse_response=impulse_response, harmonic=2, length=h1.length())
-    h3 = sweep.harmonic_impulse_response(impulse_response=impulse_response, harmonic=3, circular=False)
+    h3 = sweep.harmonic_impulse_response(impulse_response=impulse_response, harmonic=3)
     assert h1.length() == h2.length()   # check if the length parameter has worked
     assert h3.length() < h2.length()    # the impulse responses of the higher order harmonics are shorter
     harmonics = sumpf.MergeSignals([h1, h2, h3]).output()
@@ -92,6 +128,20 @@ def test_harmonic_impulse_response():
     max_indices = magnitude.argmax(axis=1)
     assert max(max_indices) - min(max_indices) <= 1     # the maximums of all harmonics' transfer functions should be roughly the same
     assert max_indices.mean() * spectrum.resolution() == pytest.approx(1000.0, rel=1e-3)    # the maximums should be around 1000Hz
+    # test with circular deconvolution
+    impulse_response = response.convolve(inverse, mode=sumpf.Signal.convolution_modes.SPECTRUM).shift(None)
+    h1 = sweep.harmonic_impulse_response(impulse_response=impulse_response, harmonic=1, length=2048)
+    h2 = sweep.harmonic_impulse_response(impulse_response=impulse_response, harmonic=2, length=2048)
+    h3 = sweep.harmonic_impulse_response(impulse_response=impulse_response, harmonic=3, length=2048)
+    assert h1.length() == 2048
+    assert h2.length() == 2048
+    assert h3.length() == 2048
+    harmonics = sumpf.MergeSignals([h1, h2, h3]).output()
+    spectrum = harmonics.fourier_transform()
+    magnitude = spectrum.magnitude()
+    max_indices = magnitude.argmax(axis=1)
+    assert max(max_indices) - min(max_indices) <= 5     # the maximums of all harmonics' transfer functions should be roughly the same
+    assert max_indices.mean() * spectrum.resolution() == pytest.approx(1000.0, rel=8e-3)    # the maximums should be around 1000Hz
 
 
 @pytest.mark.skip("this benchmark might fail depending on the system's load")
@@ -122,10 +172,7 @@ def test_convolution_with_sweep():
                    {"phase": 2.9, "length": 1024},
                    {"interval": (0.15, 0.9), "length": 2048},
                    {"stop_frequency": 5000.0, "sampling_rate": 18312.7, "length": 1024}):
-        if "interval" in kwargs:
-            a, b = kwargs["interval"]
-        else:
-            a, b = 0, 1.0
+        a, b = kwargs.get("interval", (0, 1.0))
         sweep = sumpf.ExponentialSweep(**kwargs)
         isweep = sumpf.InverseExponentialSweep(**kwargs)
         impulse = sweep[:, a:b].convolve(isweep[:, a:b])
@@ -155,8 +202,27 @@ def test_min_and_max_frequencies_inversed():
                                            interval=(0.1, 0.85),
                                            sampling_rate=sampling_rate,
                                            length=length)
-    assert sweep.minimum_frequency() == isweep.minimum_frequency()
-    assert sweep.maximum_frequency() == isweep.maximum_frequency()
+    assert isweep.minimum_frequency() == pytest.approx(sweep.minimum_frequency())
+    assert isweep.maximum_frequency() == pytest.approx(sweep.maximum_frequency())
+
+
+def test_instantaneous_frequency_inversed():
+    """Tests the instantaneous_frequency method"""
+    r = random.Random()
+    start_frequency = r.uniform(1.0, 300.0)
+    stop_frequency = r.uniform(5 * start_frequency, 10000.0)
+    sampling_rate = r.uniform(3 * stop_frequency, 56000.0)
+    length = r.randint(2 ** 10, 2 ** 16) * 2    # make sure, this is an even number
+    interval = (r.uniform(0.0, 0.2), r.uniform(0.8, 1.0))
+    sweep = sumpf.InverseExponentialSweep(start_frequency=start_frequency,
+                                          stop_frequency=stop_frequency,
+                                          interval=interval,
+                                          sampling_rate=sampling_rate,
+                                          length=length)
+    assert sweep.instantaneous_frequency(0.0) == sweep.maximum_frequency()
+    assert sweep.instantaneous_frequency(sweep.duration()) == sweep.minimum_frequency()
+    diff = numpy.diff(sweep.instantaneous_frequency(sweep.time_samples()))
+    assert (diff < 0).all()     # the frequency should decrease monotonically
 
 
 def test_interval_inversed():

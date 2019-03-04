@@ -107,7 +107,7 @@ Since the sweep's start and stop frequencies are defined for the given interval 
 In addition to the functionality of the :class:`~sumpf.Signal` class, the :class:`~sumpf.ExponentialSweep` class provides methods, that compute these frequencies.
 
 >>> sweep.maximum_frequency()
-7417.395449686142
+7417.395449686136
 
 
 Measuring the response of our system
@@ -225,14 +225,11 @@ Note, that this time, the plot has a legend, that was created from the impulse r
    inverse = sumpf.InverseExponentialSweep(start_frequency=20.0, stop_frequency=5000.0, interval=(4096, -4096), sampling_rate=48000, length=2 ** 16)
    impulse_response = response.convolve(inverse)
    harmonic1 = sweep.harmonic_impulse_response(impulse_response=impulse_response,
-                                               harmonic=1,
-                                               circular=False)
+                                               harmonic=1)
    harmonic2 = sweep.harmonic_impulse_response(impulse_response=impulse_response,
-                                               harmonic=2,
-                                               circular=False)
+                                               harmonic=2)
    harmonic3 = sweep.harmonic_impulse_response(impulse_response=impulse_response,
-                                               harmonic=3,
-                                               circular=False)
+                                               harmonic=3)
    for harmonic in [harmonic1, harmonic2, harmonic3]:                                              # doctest: +SKIP
        pyplot.plot(harmonic.time_samples(), harmonic.channels()[0], label=harmonic.labels()[0])    # doctest: +SKIP
    pyplot.xlabel("time")                                                                           # doctest: +SKIP
@@ -254,7 +251,7 @@ In a scripting application, like this tutorial, the API for merging signals is i
 Rather than being a function, it requires instantiating the :class:`~sumpf.MergeSignals` class and calling its :meth:`~sumpf.MergeSignals.output` method.
 This is due to a :ref:`design decision<concepts>` in *SuMPF*, that all functionalities, that do not fit in the data container classes, are implemented in classes for signal processing blocks, that can be connected to form complex signal processing networks, in which value changes are automatically propagated.
 
-Thanks to the :func:`zip` function, plotting the merged signal is mildly more convenient, than plotting the individual harmonics before.
+Thanks to the :func:`zip` function, plotting the merged signal is a bit more convenient, than plotting the individual harmonics before.
 
 >>> for channel, label in zip(harmonics.channels(), harmonics.labels()):   # doctest: +SKIP
 ...     pyplot.plot(harmonics.time_samples(), channel, label=label)        # doctest: +SKIP
@@ -281,14 +278,11 @@ Thanks to the :func:`zip` function, plotting the merged signal is mildly more co
    inverse = sumpf.InverseExponentialSweep(start_frequency=20.0, stop_frequency=5000.0, interval=(4096, -4096), sampling_rate=48000, length=2 ** 16)
    impulse_response = response.convolve(inverse)
    harmonic1 = sweep.harmonic_impulse_response(impulse_response=impulse_response,
-                                               harmonic=1,
-                                               circular=False)
+                                               harmonic=1)
    harmonic2 = sweep.harmonic_impulse_response(impulse_response=impulse_response,
-                                               harmonic=2,
-                                               circular=False)
+                                               harmonic=2)
    harmonic3 = sweep.harmonic_impulse_response(impulse_response=impulse_response,
-                                               harmonic=3,
-                                               circular=False)
+                                               harmonic=3)
    harmonics = sumpf.MergeSignals([harmonic1, harmonic2, harmonic3]).output()
    for channel, label in zip(harmonics.channels(), harmonics.labels()):    # doctest: +SKIP
        pyplot.plot(harmonics.time_samples(), channel, label=label)         # doctest: +SKIP
@@ -357,14 +351,11 @@ And with that done, it's only a few lines of code to fine tune and display the p
    inverse = sumpf.InverseExponentialSweep(start_frequency=20.0, stop_frequency=5000.0, interval=(4096, -4096), sampling_rate=48000, length=2 ** 16)
    impulse_response = response.convolve(inverse)
    harmonic1 = sweep.harmonic_impulse_response(impulse_response=impulse_response,
-                                               harmonic=1,
-                                               circular=False)
+                                               harmonic=1)
    harmonic2 = sweep.harmonic_impulse_response(impulse_response=impulse_response,
-                                               harmonic=2,
-                                               circular=False)
+                                               harmonic=2)
    harmonic3 = sweep.harmonic_impulse_response(impulse_response=impulse_response,
-                                               harmonic=3,
-                                               circular=False)
+                                               harmonic=3)
    harmonics = sumpf.MergeSignals([harmonic1, harmonic2, harmonic3]).output()
    transfer_function = harmonics.fourier_transform()
    for magnitude, label in zip(transfer_function.magnitude(), transfer_function.labels()):   # doctest: +SKIP
