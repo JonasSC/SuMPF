@@ -65,10 +65,10 @@ def test_scalloping_loss():
     assert window.scalloping_loss() == pytest.approx(10 ** (-1.7514 / 20.0), rel=0.0001)
 
 
-def __check_window(window, function, plateau, sampling_rate, length, overlap):
+def __check_window(window, function, plateau, sampling_rate, length, symmetric, overlap):
     """A helper function, that tests general features of a window function."""
-    __check_metadata(window, sampling_rate, length)
-    __check_samples(window, function, plateau, length)
+    __check_metadata(window, sampling_rate, length, symmetric)
+    __check_samples(window, function, plateau, length, symmetric)
     if length:
         overlap = int(round(overlap * length))
         matrix = __create_shifted_windows_matrix(window, length, overlap)
@@ -81,34 +81,36 @@ def __check_window(window, function, plateau, sampling_rate, length, overlap):
 def __create_shifted_windows_matrix(window, length, overlap):
     """Computes a matrix with shifted copy of the window on each row."""
     if overlap == length:
-        matrix = numpy.ones(shape=(1, length))
+        return numpy.ones(shape=(1, length))
     else:
         step = length - overlap
-        matrix = numpy.zeros(shape=((2 * length) // step + 1, length))
-        i = 0
-        for shift in range(0, length, step):
-            matrix[i, shift:] = window.channels()[0, 0:length - shift]
-            i += 1
-            if shift != 0:
-                matrix[i, 0:length - shift] = window.channels()[0, shift:]
-                i += 1
-    return matrix
+        channel = tuple(window.channels()[0])
+        matrix = [channel]
+        for i in range(step, length, step):
+            matrix.append(channel[i:] + (0.0,) * i)
+            matrix.append((0.0,) * i + channel[0:-i])
+        return numpy.array(matrix, dtype=numpy.float64)
 
 
-def __check_metadata(window, sampling_rate, length):
+def __check_metadata(window, sampling_rate, length, symmetric):
     """Checks the metadata."""
     assert window.sampling_rate() == sampling_rate
     assert window.length() == length
     assert window.shape() == (1, length)
+    assert window.symmetric() == symmetric
     assert window.labels()[0].endswith("window")
 
 
-def __check_samples(window, function, plateau, length):
+def __check_samples(window, function, plateau, length, symmetric):
     """Checks of the window instances samples are equal to those, that are generated with the function."""
     plateau = int(round(plateau * length))
+    assert window.plateau() == plateau
     if plateau == 0:
         # check if the signal equals the window function
-        assert (window.channels()[0] == function(length)).all()
+        if symmetric:
+            assert (window.channels()[0] == function(length)).all()
+        else:
+            assert (window.channels()[0] == function(length + 1)[0:-1]).all()
     else:
         # cut out the plateau and check, that its samples are 1.0
         window_length = 2 * ((length - plateau) // 2)
@@ -119,7 +121,10 @@ def __check_samples(window, function, plateau, length):
         channels = numpy.empty(window_length)
         channels[0:plateau_start] = window.channels()[0, 0:plateau_start]
         channels[plateau_start:] = window.channels()[0, plateau_stop:]
-        assert (channels == function(window_length)).all()
+        if symmetric:
+            assert (channels == function(window_length)).all()
+        else:
+            assert (channels == function(window_length + 1)[0:-1]).all()
 
 
 def __check_scaling_factor(window, length, overlap, matrix):
@@ -168,16 +173,18 @@ def __check_overlap_correlation(window, overlap):
 @hypothesis.given(plateau=hypothesis.strategies.floats(min_value=0.0, max_value=1.0),
                   sampling_rate=tests.strategies.sampling_rates,
                   length=tests.strategies.short_lengths,
+                  symmetric=hypothesis.strategies.booleans(),
                   overlap=hypothesis.strategies.floats(min_value=0.0, max_value=1.0))
-def test_rectangular_window(plateau, sampling_rate, length, overlap):
+def test_rectangular_window(plateau, sampling_rate, length, symmetric, overlap):
     """Tests the implementation of the rectangular window."""
-    window = sumpf.RectangularWindow(plateau, sampling_rate, length)
+    window = sumpf.RectangularWindow(plateau, sampling_rate, length, symmetric)
     assert window.labels() == ("Rectangular window",)
     __check_window(window=window,
                    function=numpy.ones,
                    plateau=plateau,
                    sampling_rate=sampling_rate,
                    length=length,
+                   symmetric=symmetric,
                    overlap=overlap)
     if length:
         if int(round(overlap * length)) == 0:
@@ -194,16 +201,18 @@ def test_rectangular_window(plateau, sampling_rate, length, overlap):
 @hypothesis.given(plateau=hypothesis.strategies.floats(min_value=0.0, max_value=1.0),
                   sampling_rate=tests.strategies.sampling_rates,
                   length=tests.strategies.short_lengths,
+                  symmetric=hypothesis.strategies.booleans(),
                   overlap=hypothesis.strategies.floats(min_value=0.0, max_value=1.0))
-def test_bartlett_window(plateau, sampling_rate, length, overlap):
+def test_bartlett_window(plateau, sampling_rate, length, symmetric, overlap):
     """Tests the implementation of the Bartlett window."""
-    window = sumpf.BartlettWindow(plateau, sampling_rate, length)
+    window = sumpf.BartlettWindow(plateau, sampling_rate, length, symmetric)
     assert window.labels() == ("Bartlett window",)
     __check_window(window=window,
                    function=numpy.bartlett,
                    plateau=plateau,
                    sampling_rate=sampling_rate,
                    length=length,
+                   symmetric=symmetric,
                    overlap=overlap)
     if length:
         plateau = int(round(length * plateau))
@@ -214,16 +223,18 @@ def test_bartlett_window(plateau, sampling_rate, length, overlap):
 @hypothesis.given(plateau=hypothesis.strategies.floats(min_value=0.0, max_value=1.0),
                   sampling_rate=tests.strategies.sampling_rates,
                   length=tests.strategies.short_lengths,
+                  symmetric=hypothesis.strategies.booleans(),
                   overlap=hypothesis.strategies.floats(min_value=0.0, max_value=1.0))
-def test_hann_window(plateau, sampling_rate, length, overlap):
+def test_hann_window(plateau, sampling_rate, length, symmetric, overlap):
     """Tests the implementation of the Hann window."""
-    window = sumpf.HannWindow(plateau, sampling_rate, length)
+    window = sumpf.HannWindow(plateau, sampling_rate, length, symmetric)
     assert window.labels() == ("Hann window",)
     __check_window(window=window,
                    function=numpy.hanning,
                    plateau=plateau,
                    sampling_rate=sampling_rate,
                    length=length,
+                   symmetric=symmetric,
                    overlap=overlap)
     if length:
         plateau = int(round(length * plateau))
@@ -234,22 +245,24 @@ def test_hann_window(plateau, sampling_rate, length, overlap):
 @hypothesis.given(plateau=hypothesis.strategies.floats(min_value=0.0, max_value=1.0),
                   sampling_rate=tests.strategies.sampling_rates,
                   length=tests.strategies.short_lengths,
+                  symmetric=hypothesis.strategies.booleans(),
                   overlap=hypothesis.strategies.floats(min_value=0.0, max_value=1.0))
-def test_hamming_window(plateau, sampling_rate, length, overlap):
+def test_hamming_window(plateau, sampling_rate, length, symmetric, overlap):
     """Tests the implementation of the Hamming window."""
-    window = sumpf.HammingWindow(plateau, sampling_rate, length)
+    window = sumpf.HammingWindow(plateau, sampling_rate, length, symmetric)
     assert window.labels() == ("Hamming window",)
     __check_window(window=window,
                    function=numpy.hamming,
                    plateau=plateau,
                    sampling_rate=sampling_rate,
                    length=length,
+                   symmetric=symmetric,
                    overlap=overlap)
     if length:
         plateau = int(round(length * plateau))
         threshold = 1.0
-        if threshold % 2:   # for uneven lengths, there is no peak in the amplitude flatness for an overlap of 50%, so predicting the recommended overlap to be 50% can be inaccurate
-            threshold += 0.03 * length
+        if bool(length % 2) != plateau:   # for uneven lengths xor asymmetric windows, there is no peak in the amplitude flatness for an overlap of 50%, so predicting the recommended overlap to be 50% can be inaccurate
+            threshold += 0.05 * length
         assert abs(window.recommended_overlap() - (length - plateau) / 2) <= threshold
 
 
@@ -257,16 +270,18 @@ def test_hamming_window(plateau, sampling_rate, length, overlap):
 @hypothesis.given(plateau=hypothesis.strategies.floats(min_value=0.0, max_value=1.0),
                   sampling_rate=tests.strategies.sampling_rates,
                   length=tests.strategies.short_lengths,
+                  symmetric=hypothesis.strategies.booleans(),
                   overlap=hypothesis.strategies.floats(min_value=0.0, max_value=1.0))
-def test_blackman_window(plateau, sampling_rate, length, overlap):
+def test_blackman_window(plateau, sampling_rate, length, symmetric, overlap):
     """Tests the implementation of the Blackman window."""
-    window = sumpf.BlackmanWindow(plateau, sampling_rate, length)
+    window = sumpf.BlackmanWindow(plateau, sampling_rate, length, symmetric)
     assert window.labels() == ("Blackman window",)
     __check_window(window=window,
                    function=numpy.blackman,
                    plateau=plateau,
                    sampling_rate=sampling_rate,
                    length=length,
+                   symmetric=symmetric,
                    overlap=overlap)
 
 
@@ -275,14 +290,16 @@ def test_blackman_window(plateau, sampling_rate, length, overlap):
                   plateau=hypothesis.strategies.floats(min_value=0.0, max_value=1.0),
                   sampling_rate=tests.strategies.sampling_rates,
                   length=tests.strategies.short_lengths,
+                  symmetric=hypothesis.strategies.booleans(),
                   overlap=hypothesis.strategies.floats(min_value=0.0, max_value=1.0))
-def test_kaiser_window(beta, plateau, sampling_rate, length, overlap):
+def test_kaiser_window(beta, plateau, sampling_rate, length, symmetric, overlap):
     """Tests the implementation of the Kaiser window."""
-    window = sumpf.KaiserWindow(beta, plateau, sampling_rate, length)
+    window = sumpf.KaiserWindow(beta, plateau, sampling_rate, length, symmetric)
     assert window.labels() == ("Kaiser window",)
     __check_window(window=window,
                    function=functools.partial(numpy.kaiser, beta=beta),
                    plateau=plateau,
                    sampling_rate=sampling_rate,
                    length=length,
+                   symmetric=symmetric,
                    overlap=overlap)

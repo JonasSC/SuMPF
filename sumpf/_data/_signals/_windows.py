@@ -33,7 +33,7 @@ __all__ = ("RectangularWindow", "BartlettWindow",
 class Window(Signal):
     """Abstract base class for signals, that can be used as window functions."""
 
-    def __init__(self, plateau=0, sampling_rate=48000.0, length=8192):
+    def __init__(self, plateau=0, sampling_rate=48000.0, length=8192, symmetric=True):
         """
         :param plateau: an integer length or a float factor for the signal length,
                         that specifies, how many samples in the middle of the signal
@@ -42,19 +42,46 @@ class Window(Signal):
         :param sampling_rate: the sampling rate of the resulting signal in Hz as
                               an integer or a float
         :param length: the number of samples of the window function
+        :param symmetric: True, if the window's last sample shall be the same as
+                          its first sample. False, if the window's last sample shall
+                          be the same as its second sample. The latter is often
+                          beneficial in segmentation applications, as it makes it
+                          easier to meet the "constant overlap add"-constraint.
         """
-        if not isinstance(plateau, int):
-            plateau = int(round(plateau * length))
+        self.__symmetric = symmetric
+        self.__plateau = sumpf_internal.index(plateau, length)
         channels = sumpf_internal.allocate_array(shape=(1, length), dtype=numpy.float64)
-        if plateau == 0:
-            channels[0, :] = self._function(length)
+        if self.__plateau == 0:
+            if symmetric:
+                channels[0, :] = self._function(length)
+            else:
+                channels[0, :] = self._function(length + 1)[0:-1]
         else:
-            fade_length = (length - plateau) // 2       # the length of the fade in or the fade out
-            fade = self._function(2 * fade_length)
+            fade_length = (length - self.__plateau) // 2    # the length of the fade in or the fade out
+            if symmetric:
+                fade = self._function(2 * fade_length)
+            else:
+                fade = self._function(2 * fade_length + 1)
             channels[0, 0:fade_length] = fade[0:fade_length]
             channels[0, fade_length:length - fade_length] = 1.0
-            channels[0, length - fade_length:] = fade[fade_length:]
+            channels[0, length - fade_length:] = fade[fade_length:2 * fade_length]
         Signal.__init__(self, channels=channels, sampling_rate=sampling_rate, offset=0, labels=(self._label(),))
+
+    def symmetric(self):
+        """Returns ``True`` if the window is symmetric and ``False``, if it is
+        not, which is often beneficial in segmentation applications.
+
+        :returns: a boolean
+        """
+        return self.__symmetric
+
+    def plateau(self):
+        """Returns the number of samples, in the middle of the window, in which
+        the window is one.
+
+        :returns: an integer
+        """
+        return self.__plateau
 
     def bandwidth(self, oversampling=8):
         """Computes the bandwidth of the window.
@@ -149,10 +176,9 @@ class Window(Signal):
         :returns: the scaling factor as a float, if the given overlap is a scalar
                   value, or as an array, if an array of overlaps has been given.
         """
-        if isinstance(overlap, collections.Iterable):
+        if isinstance(overlap, collections.abc.Iterable):
             return numpy.vectorize(self.scaling_factor, otypes=(numpy.float64,))(overlap)
-        if not isinstance(overlap, int):
-            overlap = int(round(overlap * self._length))
+        overlap = sumpf_internal.index(overlap, self._length)
         step = self._length - overlap
         if step == 0:
             return 0.0
@@ -175,28 +201,24 @@ class Window(Signal):
                   scalar value, or as an array, if an array of overlaps has been
                   given.
         """
-        if isinstance(overlap, collections.Iterable):
+        if isinstance(overlap, collections.abc.Iterable):
             return numpy.vectorize(self.amplitude_flatness, otypes=(numpy.float64,))(overlap)
-        if not isinstance(overlap, int):
-            overlap = int(round(overlap * self._length))
-        if overlap == 0:
-            minimum = self._channels[0, 0]
-            maximum = minimum
-        elif overlap == self._length:
+        overlap = sumpf_internal.index(overlap, self._length)
+        if overlap == self._length:
             return 1.0
+        elif overlap == 0:
+            channel = self._channels[0]
+            minimum = min(channel)
+            maximum = max(channel)
         else:
             step = self._length - overlap
-            period = min(overlap, step)
-            overlapping = numpy.zeros(period)
-            for start in range(0, self._length, step):
-                stop = min(start + period, self._length)
-                overlapping[0:stop - start] += self._channels[0, start:stop]
+            overlapping = numpy.empty(self._length)
+            overlapping[:] = self._channels[0]
+            for i in range(step, self._length, step):
+                overlapping[0:-i] += self._channels[0, i:]
+                overlapping[i:] += self._channels[0, 0:-i]
             minimum = min(overlapping)
             maximum = max(overlapping)
-        if overlap * 2 < self._length:
-            non_overlapping = self._channels[0, overlap:(self._length + 1) // 2]    # length+1, so the division result is rounded up
-            minimum = min(minimum, min(non_overlapping))
-            maximum = max(maximum, max(non_overlapping))
         return minimum / maximum
 
     def power_flatness(self, overlap):
@@ -210,30 +232,24 @@ class Window(Signal):
         :returns: the power flatness as a float, if the given overlap is a scalar
                   value, or as an array, if an array of overlaps has been given.
         """
-        if isinstance(overlap, collections.Iterable):
+        if isinstance(overlap, collections.abc.Iterable):
             return numpy.vectorize(self.power_flatness, otypes=(numpy.float64,))(overlap)
-        if not isinstance(overlap, int):
-            overlap = int(round(overlap * self._length))
-        if overlap == 0:
-            minimum = self._channels[0, 0] ** 2
-            maximum = minimum
-        elif overlap == self._length:
+        overlap = sumpf_internal.index(overlap, self._length)
+        if overlap == self._length:
             return 1.0
+        elif overlap == 0:
+            channel = self._channels[0]
+            minimum = min(channel)
+            maximum = max(channel)
+            return (minimum / maximum) ** 2
         else:
             step = self._length - overlap
-            period = min(overlap, step)
-            overlapping = numpy.zeros(period)
-            for start in range(0, self._length, step):
-                stop = min(start + period, self._length)
-                overlapping[0:stop - start] += numpy.square(self._channels[0, start:stop])
-            minimum = min(overlapping)
-            maximum = max(overlapping)
-        if overlap * 2 < self._length:
-            non_overlapping = self._channels[0, overlap:(self._length + 1) // 2]    # length+1, so the division result is rounded up
-            squared = numpy.square(non_overlapping)
-            minimum = min(minimum, min(squared))
-            maximum = max(maximum, max(squared))
-        return minimum / maximum
+            overlapping = numpy.empty(self._length)
+            overlapping[:] = numpy.square(self._channels[0])
+            for i in range(step, self._length, step):
+                overlapping[0:-i] += numpy.square(self._channels[0, i:])
+                overlapping[i:] += numpy.square(self._channels[0, 0:-i])
+            return min(overlapping) / max(overlapping)
 
     def overlap_correlation(self, overlap):
         """Computes an estimate for the wasted computational effort in a block-wise
@@ -249,10 +265,9 @@ class Window(Signal):
                   scalar value, or as an array, if an array of overlaps has been
                   given.
         """
-        if isinstance(overlap, collections.Iterable):
+        if isinstance(overlap, collections.abc.Iterable):
             return numpy.vectorize(self.overlap_correlation, otypes=(numpy.float64,))(overlap)
-        if not isinstance(overlap, int):
-            overlap = int(round(overlap * self._length))
+        overlap = sumpf_internal.index(overlap, self._length)
         numerator = numpy.sum(self._channels[0, 0:overlap] * self._channels[0, self._length - overlap:])
         denominator = numpy.sum(numpy.square(self._channels[0]))
         if denominator == 0.0:
@@ -360,7 +375,7 @@ class KaiserWindow(Window):
     the side lobes (high *beta*).
     """
 
-    def __init__(self, beta=9.4248, plateau=0, sampling_rate=48000.0, length=8192):
+    def __init__(self, beta=9.4248, plateau=0, sampling_rate=48000.0, length=8192, symmetric=True):
         """
         :param beta: the *beta* parameter for the kaiser window. Some literature
                      specifies an *alpha* parameter here, where *beta* = *pi* * *alpha*
@@ -371,9 +386,14 @@ class KaiserWindow(Window):
         :param sampling_rate: the sampling rate of the resulting signal in Hz as
                               an integer or a float
         :param length: the number of samples of the window function
+        :param symmetric: True, if the window's last sample shall be the same as
+                          its first sample. False, if the window's last sample shall
+                          be the same as its second sample. The latter is often
+                          beneficial in segmentation applications, as it makes it
+                          easier to meet the "constant overlap add"-constraint.
         """
         self.__beta = beta
-        Window.__init__(self, plateau=plateau, sampling_rate=sampling_rate, length=length)
+        Window.__init__(self, plateau=plateau, sampling_rate=sampling_rate, length=length, symmetric=symmetric)
 
     def _function(self, length):
         return numpy.kaiser(length, self.__beta)
