@@ -3,9 +3,6 @@ Reference
 
 This section contains the API reference for the *SuMPF* package.
 
-.. module:: sumpf
-
-
 .. toctree::
    :maxdepth: 2
 

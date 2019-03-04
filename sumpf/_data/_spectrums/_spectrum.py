@@ -26,7 +26,8 @@ __all__ = ("Spectrum",)
 
 class Spectrum(SampledData):
     """A base class for storing equidistantly sampled frequency data.
-    This class can be instantiated directly, but SuMPF also provides sub-classes
+
+    This class can be instantiated directly, but *SuMPF* also provides sub-classes
     of this class, which can be used do generate specific spectrums for example
     those of colored noise. These sub-classes may feature additional functionality,
     that is specific for them and is therefore not comprised in this class.
@@ -36,14 +37,14 @@ class Spectrum(SampledData):
 
     * Common operators
        * checking the equality with ``==`` and ``!=``
-       * slicing with ``[]``: returns a Spectrum instance with the selected slice.
-         Slicing in SuMPF works similar to slicing in :mod:`numpy`, so passing a
-         tuple with a slice for the channels and another slice for the channels
-         is possible. In addition to that, the indices can also be specified as
-         floats between 0.0 and 1.0, where 0.0 indices the first element in the
-         array and 1.0 is mapped to the length of the array.
+       * slicing with ``[]``: returns a :class:`~sumpf.Spectrum` instance with
+         the selected slice. Slicing in *SuMPF* works similar to slicing in
+         :mod:`numpy`, so passing a tuple with a slice for the channels and another
+         slice for the channels is possible. In addition to that, the indices can
+         also be specified as floats between 0.0 and 1.0, where 0.0 indices the
+         first element in the array and 1.0 is mapped to the length of the array.
          For example cropping a spectrum to the first half of its channels and the
-         second half of its samples can be done like so: ``signal[0:0.5, 0.5:]``.
+         second half of its samples can be done like so: ``spectrum[0:0.5, 0.5:]``.
          Keep in mind, that cutting away the beginning of the spectrum's channels
          offsets the spectrum, because the first sample is always considered to
          be for a frequency of 0Hz.
@@ -51,15 +52,15 @@ class Spectrum(SampledData):
        * getting the length with :func:`len`: this returns the number of channels,
          just like ``len(spectrums.channels())`` would. To get the number of samples
          per channel, use the :meth:`~sumpf.Spectrum.length` method.
-       * casting to a mildly informative string with :func:`str()`.
-       * casting to a representation with :func:`repr()`. If :func:`~numpy.array`,
+       * casting to a mildly informative string with :class:`str`.
+       * casting to a representation with :func:`repr`. If :func:`~numpy.array`,
          :class:`~numpy.complex128` (both from :mod:`numpy`) and :class:`~sumpf.Spectrum`
          (from *SuMPF*) are defined in the current name space, the spectrum can
          be reproduced by evaluating the representation (``eval(repr(spectrum))``).
          Keep in mind, that the string representation of :mod:`numpy`'s array does
          not include the float values with the full precision, so that the reproduced
          spectrum might differ slightly from the original.
-       * computing the magnitude of the spectrum with :func:`abs()`.
+       * computing the magnitude of the spectrum with :func:`abs`.
     * Math operators
        * computing the negative of the spectrum's samples with ``-spectrum``.
        * sample-wise algebra operations with ``+``, ``-``, ``*``, ``/`` and``**``:
@@ -72,12 +73,12 @@ class Spectrum(SampledData):
          simply ``1 / spectrum``.
     """
 
-    file_formats = sumpf_internal.spectrum_writers.formats    # an enumeration with file formats, whose flags can be passed to :meth:`~sumpf.Spectrum.save`.
+    file_formats = sumpf_internal.spectrum_writers.Formats    #: an enumeration with file formats, whose flags can be passed to :meth:`~sumpf.Spectrum.save` (see the :class:`sumpf._internal._spectrum_writers.Formats` class).
 
     def __init__(self, channels=numpy.empty(shape=(1, 0)), resolution=1.0, labels=None):
         """
         :param channels: a two-dimensional :func:`numpy.array` of channels with complex samples
-        :param resolution: the resolution of the spectrum as a float
+        :param resolution: the frequency resolution of the spectrum as a float
         :param labels: a sequence of string labels for the channels
         """
         SampledData.__init__(self, channels, labels)
@@ -92,7 +93,7 @@ class Spectrum(SampledData):
 
         :param key: an index, a slice or a tuple of indices or slices. Indices may
                     be integers or floats between 0.0 and 1.0.
-        :returns: a Spectrum
+        :returns: a :class:`~sumpf.Spectrum` instance
         """
         slices = sumpf_internal.key_to_slices(key, self._channels.shape)
         if isinstance(slices, tuple):
@@ -105,7 +106,7 @@ class Spectrum(SampledData):
 
     def __str__(self):
         """Operator overload for generating a short description of the spectrum
-        with the built-in function :func:`str()`.
+        with the built-in function :class:`str`.
 
         :returns: a reasonably short string
         """
@@ -145,7 +146,7 @@ class Spectrum(SampledData):
         """Operator overload for computing the magnitude of the spectrum with the
         built-in function :func:`abs`.
 
-        :returns: a Spectrum instance
+        :returns: a :class:`~sumpf.Spectrum` instance
         """
         return Spectrum(channels=numpy.absolute(self._channels, out=sumpf_internal.allocate_array(self.shape())),
                         resolution=self.__resolution,
@@ -154,7 +155,7 @@ class Spectrum(SampledData):
     def __neg__(self):
         """Operator for inverting the phase of the spectrum with ``-spectrum``.
 
-        :returns: a Spectrum instance
+        :returns: a :class:`~sumpf.Spectrum` instance
         """
         return Spectrum(channels=numpy.negative(self._channels, out=sumpf_internal.allocate_array(self.shape(),
                                                                                                   numpy.complex128)),
@@ -176,7 +177,7 @@ class Spectrum(SampledData):
                             overlap due to different lengths). If ``other_pivot`` is ``None``,
                             the data from the other object is copied.
         :param label: the string label for the computed channels
-        :returns: a Spectrum instance
+        :returns: a :class:`~sumpf.Spectrum` instance
         """
         if isinstance(other, Spectrum):
             if len(self) == 1:
@@ -212,7 +213,7 @@ class Spectrum(SampledData):
 
         :param other: the object "on the left side of the operator"
         :param function: a function, that implements the computation for arrays (e.g. numpy.add)
-        :returns: a Spectrum instance
+        :returns: a :class:`~sumpf.Spectrum` instance
         """
         return Spectrum(channels=function(other,
                                           self._channels,
@@ -228,7 +229,7 @@ class Spectrum(SampledData):
         """Rededicated operator overload for inverting this spectrum.
         The inverse of a spectrum is simply ``1 / spectrum``.
 
-        :returns: a Spectrum instance
+        :returns: a :class:`~sumpf.Spectrum` instance
         """
         return Spectrum(channels=numpy.divide(1.0,
                                               self._channels,
@@ -260,7 +261,9 @@ class Spectrum(SampledData):
 
     def magnitude(self):
         """Returns the magnitude of this spectrum's channels.
-        This method returns an array rather than a Spectrum instance like ``abs(spectrum)``.
+
+        This method returns an array rather than a :class:`~sumpf.Spectrum`
+        instance like ``abs(spectrum)``.
 
         :returns: a :func:`numpy.array`
         """
@@ -304,7 +307,7 @@ class Spectrum(SampledData):
 
         :param length: the length of the resulting spectrum
         :param value: the value with which the spectrum shall be padded
-        :returns: a padded or cropped spectrum
+        :returns: a padded or cropped :class:`~sumpf.Spectrum`
         """
         if length == self._length:
             return self
@@ -322,7 +325,7 @@ class Spectrum(SampledData):
     def conjugate(self):
         """Returns a spectrum with the complex conjugate of this spectrum's channels.
 
-        :returns: a spectrum
+        :returns: a :class:`~sumpf.Spectrum`
         """
         channels = sumpf_internal.allocate_array(shape=self.shape(), dtype=numpy.complex128)
         numpy.conjugate(self._channels, out=channels)
@@ -356,7 +359,7 @@ class Spectrum(SampledData):
         """A static method to load a :class:`~sumpf.Spectrum` instance from a file.
 
         :param path: the path to the file.
-        :returns: the loaded spectrum
+        :returns: the loaded :class:`~sumpf.Spectrum`
         """
         return sumpf_internal.read_file(path=path,
                                         readers=sumpf_internal.spectrum_readers.readers,
@@ -369,9 +372,9 @@ class Spectrum(SampledData):
         :param path: the path to the file
         :param file_format: an optional flag from the :attr:`sumpf.Spectrum.file_formats`
                             enumeration, that specifies the file format, in which
-                            the filter shall be stored. If this parameter is omitted
-                            or set to :attr:`~sumpf.Spectrum.file_formats.AUTO`, the
-                            format will be guessed from the ending of the filename.
+                            the spectrum shall be stored. If this parameter is omitted
+                            or set to :attr:`~sumpf.Spectrum.file_formats`.\ ``AUTO``,
+                            the format will be guessed from the ending of the filename.
         :returns: self
         """
         writer = sumpf_internal.get_writer(file_format=file_format,

@@ -39,7 +39,7 @@ class Jack:
     1. create an instance of the JACK interface.
     2. use the sampling rate from the interface to create a playback signal.
     3. pass the signal to the :meth:`~sumpf.Jack.input` method.
-    4. define a couple of capture ports with the :meth:`~sumpf.Jack.create_input_port` method.
+    4. define a couple of capture ports with the :meth:`~sumpf.Jack.add_input_port` method.
     5. connect the instance's ports in JACK with the :meth:`~sumpf.Jack.connect` method.
     6. start the playback and the recording with the :meth:`~sumpf.Jack.start` method.
     7. retrieve the recorded signal through the :meth:`~sumpf.Jack.output` method.

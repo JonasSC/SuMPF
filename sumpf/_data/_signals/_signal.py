@@ -27,7 +27,8 @@ __all__ = ("Signal",)
 
 class Signal(SampledData):
     """A base class for storing equidistantly sampled time data.
-    This class can be instantiated directly, but SuMPF also provides sub-classes
+
+    This class can be instantiated directly, but *SuMPF* also provides sub-classes
     of this class, which can be used do generate specific signals such as sweeps
     and window functions. These sub-classes may feature additional functionality,
     that is specific for them and is therefore not comprised in this class.
@@ -37,28 +38,28 @@ class Signal(SampledData):
 
     * Common operators
        * checking the equality with ``==`` and ``!=``
-       * slicing with ``[]``: returns a Signal instance with the selected slice.
-         Slicing in SuMPF works similar to slicing in :mod:`numpy`, so passing a
-         tuple with a slice for the channels and another slice for the channels
-         is possible. In addition to that, the indices can also be specified as
-         floats between 0.0 and 1.0, where 0.0 indices the first element in the
-         array and 1.0 is mapped to the length of the array.
+       * slicing with ``[]``: returns a :class:`~sumpf.Signal` instance with the
+         selected slice. Slicing in *SuMPF* works similar to slicing in :mod:`numpy`,
+         so passing a tuple with a slice for the channels and another slice for
+         the channels is possible. In addition to that, the indices can also be
+         specified as floats between 0.0 and 1.0, where 0.0 indices the first
+         element in the array and 1.0 is mapped to the length of the array.
          For example cropping a signal to the first half of its channels and the
          second half of its samples can be done like so: ``signal[0:0.5, 0.5:]``
     * Operators for built-in functions
        * getting the length with :func:`len`: this returns the number of channels,
          just like ``len(signal.channels())`` would. To get the number of samples
          per channel, use the :meth:`~sumpf.Signal.length` method.
-       * casting to a mildly informative string with :func:`str()`.
-       * casting to a representation with :func:`repr()`. If :func:`~numpy.array`,
+       * casting to a mildly informative string with :class:`str`.
+       * casting to a representation with :func:`repr`. If :func:`~numpy.array`,
          :class:`~numpy.float64` (both from :mod:`numpy`) and :class:`~sumpf.Signal`
          (from *SuMPF*) are defined in the current name space, the signal can be
          reproduced by evaluating the representation (``eval(repr(signal))``).
          Keep in mind, that the string representation of :func:`numpy.array` does
          not include the float values with the full precision, so that the reproduced
          signal might differ slightly from the original.
-       * computing the absolute of each sample with :func:`abs()`.
-       * reversing the signal with :func:`reversed()`. Only the order of the samples
+       * computing the absolute of each sample with :func:`abs`.
+       * reversing the signal with :func:`reversed`. Only the order of the samples
          is reversed, the channels remain in their original order.
     * Math operators
        * computing the negative of the signal's samples with ``-signal``.
@@ -72,9 +73,9 @@ class Signal(SampledData):
          as a division in the frequency domain: ``iFFT(1 / FFT(signal))``.
     """
 
-    file_formats = sumpf_internal.signal_writers.Formats    # an enumeration with file formats, whose flags can be passed to :meth:`~sumpf.Signal.save`.
-    convolution_modes = sumpf_internal.ConvolutionMode      # an enumeration with modes for the :meth:`~sumpf.Signal.convolve` and :meth:`~sumpf.Signal.correlate` methods
-    shift_modes = sumpf_internal.ShiftMode                  # an enumeration with modes for the :meth:`~sumpf.Signal.shift` method
+    file_formats = sumpf_internal.signal_writers.Formats    #: an enumeration with file formats, whose flags can be passed to :meth:`~sumpf.Signal.save` (see the :class:`sumpf._internal._signal_writers.Formats` class).
+    convolution_modes = sumpf_internal.ConvolutionMode      #: an enumeration with modes for the :meth:`~sumpf.Signal.convolve` and :meth:`~sumpf.Signal.correlate` methods (see the :class:`~sumpf._internal._enums.ConvolutionMode` class).
+    shift_modes = sumpf_internal.ShiftMode                  #: an enumeration with modes for the :meth:`~sumpf.Signal.shift` method (see the :class:`~sumpf._internal._enums.ShiftMode` class).
 
     def __init__(self, channels=numpy.empty(shape=(1, 0)), sampling_rate=48000.0, offset=0, labels=None):
         """
@@ -98,7 +99,7 @@ class Signal(SampledData):
 
         :param key: an index, a slice or a tuple of indices or slices. Indices may
                     be integers or floats between 0.0 and 1.0.
-        :returns: a Signal
+        :returns: a :class:`~sumpf.Signal` instance
         """
         slices = sumpf_internal.key_to_slices(key, self._channels.shape)
         offset = self.__offset
@@ -118,7 +119,7 @@ class Signal(SampledData):
 
     def __str__(self):
         """Operator overload for generating a short description of the signal
-        with the built-in function :func:`str()`.
+        with the built-in function :class:`str`.
 
         :returns: a reasonably short string
         """
@@ -163,7 +164,7 @@ class Signal(SampledData):
         """Operator overload for computing the sample-wise absolute of the signal
         with the built-in function :func:`abs`.
 
-        :returns: a Signal instance
+        :returns: a :class:`~sumpf.Signal` instance
         """
         return Signal(channels=numpy.fabs(self._channels, out=sumpf_internal.allocate_array(self.shape())),
                       sampling_rate=self.__sampling_rate,
@@ -178,7 +179,7 @@ class Signal(SampledData):
         signal equals the original signal for negative time values. E.g. a causal
         signal will therefore be shifted completely before the zero point in time.
 
-        :returns: a Signal instance
+        :returns: a :class:`~sumpf.Signal` instance
         """
         return Signal(channels=self._channels[:, ::-1],
                       sampling_rate=self.__sampling_rate,
@@ -189,7 +190,7 @@ class Signal(SampledData):
         """Operator overload for computing the sample-wise negative of the signal
         with ``-signal``.
 
-        :returns: a Signal instance
+        :returns: a :class:`~sumpf.Signal` instance
         """
         return Signal(channels=numpy.negative(self._channels, out=sumpf_internal.allocate_array(self.shape())),
                       sampling_rate=self.__sampling_rate,
@@ -205,7 +206,7 @@ class Signal(SampledData):
         signal by another signal, an array or number.
 
         :param other: a signal, an array or a number
-        :returns: a Signal instance
+        :returns: a :class:`~sumpf.Signal` instance
         """
         return self._algebra_function(other=other, function=numpy.mod, other_pivot=None, label="Modulo")
 
@@ -213,8 +214,8 @@ class Signal(SampledData):
         """Right hand side Operator overload for computing the remainder of a
         division another signal, an array or number by this signal.
 
-        :param other: a signal, an array or a number
-        :returns: a Signal instance
+        :param other: a :class:`~sumpf.Signal`, an array or a number
+        :returns: a :class:`~sumpf.Signal` instance
         """
         return self._algebra_function_right(other=other, function=numpy.mod)
 
@@ -227,7 +228,7 @@ class Signal(SampledData):
         Convolving a signal with its inverse results in a unit impulse. The inverse
         is computing in the frequency domain: ``ifft(1 / fft(signal))``.
 
-        :returns: a Signal instance
+        :returns: a :class:`~sumpf.Signal` instance
         """
         channels = sumpf_internal.allocate_array(shape=self.shape())
         spectrum = numpy.fft.rfft(self._channels)
@@ -309,6 +310,8 @@ class Signal(SampledData):
         """Returns a signal, which is shifted in time.
 
         Positive shifts result in a delayed signal, while negative shifts prepone it.
+        In mode ``OFFSET``, it is allowed to pass ``None`` for the ``shift`` parameter,
+        which sets the offset of the resulting :class:`~sumpf.Signal` to 0.
 
         The shift can be performed in different ways, which can be specified with
         the ``mode`` parameter. The flags, that can be passed to this parameter
@@ -364,6 +367,7 @@ class Signal(SampledData):
 
     def fourier_transform(self):
         """Computes the channel-wise Fourier transform of this signal.
+
         The offset of the signal is taken into account as a constant addition to
         the group delay.
 
@@ -412,7 +416,7 @@ class Signal(SampledData):
         :param mode: a flag from the :class:`sumpf.Signal.convolution_modes` enumeration
         :returns: the convolution result as a :class:`~sumpf.Signal`
         """
-        if isinstance(other, sumpf.Signal):
+        if isinstance(other, Signal):
             channels, offset = self.__convolve_with_array(other=other.channels(),
                                                           other_offset=other.offset(),
                                                           function=sumpf_internal.convolution,
@@ -450,7 +454,7 @@ class Signal(SampledData):
         :param mode: a flag from the :class:`sumpf.Signal.convolution_modes` enumeration
         :returns: the cross correlation result as a :class:`~sumpf.Signal`
         """
-        if isinstance(other, sumpf.Signal):
+        if isinstance(other, Signal):
             channels, offset = self.__convolve_with_array(other=other.channels(),
                                                           other_offset=other.offset(),
                                                           function=sumpf_internal.correlation,
@@ -553,7 +557,7 @@ class Signal(SampledData):
         :param path: the path to the file.
         :raises ValueError: if the file cannot be read (e.g. because the library
                             for the file's format is missing)
-        :returns: the loaded signal
+        :returns: the loaded :class:`~sumpf.Signal`
         """
         return sumpf_internal.read_file(path=path,
                                         readers=sumpf_internal.signal_readers.readers,
@@ -567,8 +571,8 @@ class Signal(SampledData):
         :param file_format: an optional flag from the :attr:`sumpf.Signal.file_formats`
                             enumeration, that specifies the file format, in which
                             the filter shall be stored. If this parameter is omitted
-                            or set to :attr:`~sumpf.Signal.file_formats.AUTO`, the
-                            format will be guessed from the ending of the filename.
+                            or set to :attr:`~sumpf.Signal.file_formats`.\ ``AUTO``,
+                            the format will be guessed from the ending of the filename.
         :raises ValueError: if the file cannot be written (e.g. because the library
                             for the requested format is missing)
         :returns: self
@@ -594,7 +598,7 @@ class Signal(SampledData):
                             overlap due to offsets). If ``other_pivot`` is ``None``, the data
                             from the other object is copied.
         :param label: the string label for the computed channels
-        :returns: a Signal instance
+        :returns: a :class:`~sumpf.Signal` instance
         """
         if isinstance(other, Signal):
             if len(self) == len(other) and self._length == other.length() and self.__offset == other.offset():
@@ -621,7 +625,7 @@ class Signal(SampledData):
 
         :param other: the object "on the left side of the operator"
         :param function: a function, that implements the computation for arrays (e.g. numpy.add)
-        :returns: a Signal instance
+        :returns: a :class:`~sumpf.Signal` instance
         """
         return Signal(channels=function(other, self._channels, out=sumpf_internal.allocate_array(self.shape())),
                       sampling_rate=self.__sampling_rate,
@@ -677,7 +681,7 @@ class Signal(SampledData):
             if len(other) == 1:
                 for c in range(1, len(channels)):
                     channels[c, channel_slice] = channels[0, channel_slice]
-        # apply the function to the overlapping parts of the two Signals
+        # apply the function to the overlapping parts of the two signals
         overlap_start = max(self.__offset, other.offset())
         overlap_stop = min(self.__offset + self._length, other.offset() + other.length())
         if overlap_start < overlap_stop:

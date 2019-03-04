@@ -8,6 +8,8 @@ The inherited methods of the :class:`~sumpf.Signal` class are not documented her
 
 .. autoclass:: sumpf.ExponentialSweep
    :members:
+   :inherited-members:
 
 .. autoclass:: sumpf.InverseExponentialSweep
    :members:
+   :inherited-members:

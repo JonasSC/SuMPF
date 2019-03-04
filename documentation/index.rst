@@ -1,3 +1,5 @@
+.. module:: sumpf
+
 Welcome to SuMPF's documentation!
 =================================
 

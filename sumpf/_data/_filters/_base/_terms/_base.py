@@ -104,7 +104,7 @@ class Term:
         """Makes sure, that all derived classes implement the overload for the
         built-in function :func:`repr`, which generates a string from which the
         given term can be reproduced with :func:`eval`. This is required for the
-        implementation of :meth:`~sumpf.Filter.__repr__`.
+        implementation of :class:`~sumpf.Filter`.\ ``__repr__``.
         """
         raise NotImplementedError("This method must be implemented by derived classes")
 

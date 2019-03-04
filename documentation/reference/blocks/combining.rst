@@ -13,6 +13,7 @@ This section documents classes, that combine multiple data sets into one.
 
 .. autoclass:: sumpf.MergeSignals
 
+   .. autoattribute:: modes
    .. automethod:: output()
    .. automethod:: add(signal)
    .. automethod:: remove(signal_id)
@@ -22,6 +23,7 @@ This section documents classes, that combine multiple data sets into one.
 
 .. autoclass:: sumpf.MergeSpectrums
 
+   .. autoattribute:: modes
    .. automethod:: output()
    .. automethod:: add(signal)
    .. automethod:: remove(signal_id)

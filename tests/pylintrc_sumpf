@@ -53,7 +53,7 @@ confidence=
 #disable=invalid-name,no-else-return,too-few-public-methods,unused-variable
 # Disable more checks, because these yield false positives or are insufficiently
 # configurable
-disable=assignment-from-no-return,cyclic-import,duplicate-code,invalid-name,no-else-return,too-few-public-methods,unused-variable
+disable=anomalous-backslash-in-string,assignment-from-no-return,cyclic-import,duplicate-code,invalid-name,no-else-return,too-few-public-methods,unused-variable
 
 # Enable the message, report, category or checker with the given id(s). You can
 # either give multiple identifier separated by comma (,) or put this option

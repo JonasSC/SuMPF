@@ -33,7 +33,7 @@ class MergeSignals:
     The methods of this class are enhanced with the functionality of the *Connectors*
     package, so that instances of this class can be connected in a processing network.
     """
-    modes = sumpf_internal.MergeMode
+    modes = sumpf_internal.MergeMode    #: an enumeration, whose flags define the order of the merged signal's channels (see the :class:`~sumpf._internal._enums.MergeMode` enumeration)
 
     def __init__(self, signals=(), mode=sumpf_internal.MergeMode.FIRST_DATASET_FIRST):
         """

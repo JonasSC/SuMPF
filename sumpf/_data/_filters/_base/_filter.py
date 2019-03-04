@@ -85,11 +85,11 @@ class Filter:
          channel of the filter.
     * Operators for builtin functions
        * getting the length with :func:`len`: this returns the number of channels.
-       * casting to a mildly informative string with :func:`str()`.
-       * casting to a representation with :func:`repr()`. If :class:`~sumpf.Filter`
+       * casting to a mildly informative string with :class:`str`.
+       * casting to a representation with :func:`repr`. If :class:`~sumpf.Filter`
          (from SuMPF) is defined in the current name space, the filter can be
          reproduced by evaluating the representation (``eval(repr(filter_))``).
-       * computing the absolute of the filter function with :func:`abs()`.
+       * computing the absolute of the filter function with :func:`abs`.
     * Math operators
        * computing the negative of the filter function with ``-filter_``.
        * algebra operations with ``+``, ``-``, ``*`` and ``/``:
@@ -114,7 +114,7 @@ class Filter:
     Quotient = terms.Quotient.factory
 
     # supported file formats
-    file_formats = persistence.formats
+    file_formats = persistence.Formats  #: an enumeration with file formats, whose flags can be passed to :meth:`~sumpf.Filter.save` (see the :class:`sumpf._data._filters._base._persistence.Formats` class).
 
     def __init__(self, transfer_functions=(Constant(1.0),), labels=("",)):
         """
@@ -152,7 +152,7 @@ class Filter:
 
     def __str__(self):
         """Operator overload for generating a short description of the filter
-        with the built-in function :func:`str()`.
+        with the built-in function :class:`str`.
 
         :returns: a reasonably short string
         """
@@ -193,7 +193,7 @@ class Filter:
         """Operator overload for computing the magnitude of the filter with the
         built-in function :func:`abs`.
 
-        :returns: a Filter instance
+        :returns: a :class:`~sumpf.Filter` instance
         """
         return Filter(transfer_functions=tuple(abs(tf) for tf in self.__transfer_functions),
                       labels=self.__labels)
@@ -201,7 +201,7 @@ class Filter:
     def __neg__(self):
         """Operator for inverting the phase of the filter with ``-filter_``.
 
-        :returns: a Filter instance
+        :returns: a :class:`~sumpf.Filter` instance
         """
         return Filter(transfer_functions=tuple(-tf for tf in self.__transfer_functions),
                       labels=self.__labels)
@@ -217,7 +217,7 @@ class Filter:
         :param other: the other filter
         :param function: a function, that implements the computation
         :param label: the string label for the computed channels
-        :returns: a Filter instance
+        :returns: a :class:`~sumpf.Filter` instance
         """
         if len(self.__transfer_functions) == 1:
             tf1 = self.__transfer_functions[0]
@@ -240,8 +240,8 @@ class Filter:
     def __add__(self, other):
         """Operator overload for adding another filter to this filter.
 
-        :param other: a Filter instance
-        :returns: a Filter instance
+        :param other: a :class:`~sumpf.Filter` instance
+        :returns: a :class:`~sumpf.Filter` instance
         """
         if isinstance(other, Filter):
             return self.__algebra_function(other=other,
@@ -253,8 +253,8 @@ class Filter:
     def __sub__(self, other):
         """Operator overload for subtracting another filter from this filter.
 
-        :param other: a Filter instance
-        :returns: a Filter instance
+        :param other: a :class:`~sumpf.Filter` instance
+        :returns: a :class:`~sumpf.Filter` instance
         """
         if isinstance(other, Filter):
             return self.__algebra_function(other=other,
@@ -265,10 +265,10 @@ class Filter:
 
     def __mul__(self, other):
         """Operator overload for multiplying this filter with another filter or
-        for applying this filter to a Signal or a Spectrum instance.
+        for applying this filter to a :class:`~sumpf.Signal` or a :class:`~sumpf.Spectrum` instance.
 
-        :param other: a Filter, Signal or Spectrum instance
-        :returns: a Filter, Signal or Spectrum instance
+        :param other: a :class:`~sumpf.Filter`, :class:`~sumpf.Signal` or :class:`~sumpf.Spectrum` instance
+        :returns: a :class:`~sumpf.Filter`, :class:`~sumpf.Signal` or :class:`~sumpf.Spectrum` instance
         """
         if isinstance(other, Filter):
             return self.__algebra_function(other=other,
@@ -288,19 +288,19 @@ class Filter:
             return NotImplemented
 
     def __rmul__(self, other):
-        """Right hand side operator overload for applying this filter to a Signal
-        or a Spectrum instance.
+        """Right hand side operator overload for applying this filter to a :class:`~sumpf.Signal`
+        or a :class:`~sumpf.Spectrum` instance.
 
-        :param other: a Signal or Spectrum instance
-        :returns: a Signal or Spectrum instance
+        :param other: a :class:`~sumpf.Signal` or :class:`~sumpf.Spectrum` instance
+        :returns: a :class:`~sumpf.Signal` or :class:`~sumpf.Spectrum` instance
         """
         return self * other
 
     def __truediv__(self, other):
         """Operator overload for dividing this filter by another filter.
 
-        :param other: a Filter instance
-        :returns: a Filter instance
+        :param other: a :class:`~sumpf.Filter` instance
+        :returns: a :class:`~sumpf.Filter` instance
         """
         if isinstance(other, Filter):
             return self.__algebra_function(other=other,
@@ -317,7 +317,7 @@ class Filter:
         """Rededicated operator overload for inverting this filter.
         The inverse of a filter is simply ``1 / filter_``.
 
-        :returns: a Filter instance
+        :returns: a :class:`~sumpf.Filter` instance
         """
         return Filter(transfer_functions=tuple(~tf for tf in self.__transfer_functions),
                       labels=self.__labels)
@@ -350,7 +350,7 @@ class Filter:
 
         :param resolution: the frequency resolution of the resulting spectrum
         :param length: the number of samples per channel of the resulting spectrum
-        :returns: a Spectrum instance
+        :returns: a :class:`~sumpf.Spectrum` instance
         """
         frequencies = numpy.linspace(0.0, (length - 1) * resolution, length)
         s = S(frequencies)
@@ -382,8 +382,8 @@ class Filter:
         :param file_format: an optional flag from the :attr:`sumpf.Filter.file_formats`
                             enumeration, that specifies the file format, in which
                             the filter shall be stored. If this parameter is omitted
-                            or set to :attr:`~sumpf.Filter.file_formats.AUTO`, the
-                            format will be guessed from the ending of the filename.
+                            or set to :attr:`~sumpf.Filter.file_formats`.\ ``AUTO``,
+                            the format will be guessed from the ending of the filename.
         :returns: self
         """
         writer = sumpf_internal.get_writer(file_format=file_format,
