@@ -72,7 +72,7 @@ def test_availability():
 
 def test_playback_and_recording():
     """Tests connecting ports in JACK, playing back and recording a signal."""
-    _create_client()     # skip this test if the JACK server is not running
+    _create_client()     # skip this test if the JACK server is not running or the JACK client library is not available
     excitation = sumpf.MergeSignals([sumpf.GaussianNoise(length=2 ** 15).shift(-5),
                                      sumpf.SineWave(length=2 ** 15),
                                      sumpf.HannWindow(length=2 ** 15)]).output()
@@ -95,6 +95,7 @@ def test_playback_and_recording():
 
 def test_multiple_starts():
     """Tests if the playback and the recording can be started multiple times"""
+    _create_client()     # skip this test if the JACK server is not running or the JACK client library is not available
     excitation = sumpf.SineWave(length=2 ** 15)
     xruns = _XRunHandler()
     jack = sumpf.Jack(input_signal=excitation, input_ports=["capture_1"])
@@ -164,6 +165,7 @@ def test_input_ports():
 
 def test_port_creation_connectors():
     """Tests the connectors to create and destroy connectors."""
+    _create_client()     # skip this test if the JACK server is not running or the JACK client library is not available
     xruns = _XRunHandler()
     jack = sumpf.Jack()
     jack.xruns.connect(xruns.xrun)
@@ -221,7 +223,7 @@ def test_manual_activation():
 
 def test_ports_and_connections_when_deactivated():
     """tests the creation of connections and ports while the client is deactivated."""
-    _create_client()     # skip this test if the JACK server is not running
+    _create_client()     # skip this test if the JACK server is not running or the JACK client library is not available
     # test creating and connecting ports, when the client is deactivated
     signal1 = sumpf.MergeSignals([sumpf.SineWave(length=2 ** 12),
                                   sumpf.HannWindow(length=2 ** 12),
@@ -257,7 +259,7 @@ def test_ports_and_connections_when_deactivated():
 
 def test_ports_and_connections_when_activated():
     """tests the creation of connections and ports while the client is activated."""
-    _create_client()     # skip this test if the JACK server is not running
+    _create_client()     # skip this test if the JACK server is not running or the JACK client library is not available
     # test creating and connecting ports, when the client is deactivated
     signal1 = sumpf.MergeSignals([sumpf.SineWave(length=2 ** 12),
                                   sumpf.HannWindow(length=2 ** 12),
@@ -298,7 +300,7 @@ def test_destruction():
     server, when they are garbage collected.
     """
     with _create_client() as client:
-        # create the SuMPF client and check, that it is connected to the JACL server
+        # create the SuMPF client and check, that it is connected to the JACK server
         xruns = _XRunHandler()
         jack = sumpf.Jack("destructible")
         jack.xruns.connect(xruns.xrun)
