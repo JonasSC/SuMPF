@@ -301,10 +301,10 @@ class Signal(SampledData):
             else:
                 channels[:, 0:self._length] = self._channels
                 channels[:, self._length:] = value
-            return sumpf.Signal(channels=channels,
-                                sampling_rate=self.__sampling_rate,
-                                offset=self.__offset,
-                                labels=self._labels)
+            return Signal(channels=channels,
+                          sampling_rate=self.__sampling_rate,
+                          offset=self.__offset,
+                          labels=self._labels)
 
     def shift(self, shift, mode=sumpf_internal.ShiftMode.OFFSET):
         """Returns a signal, which is shifted in time.
@@ -324,19 +324,19 @@ class Signal(SampledData):
         """
         if shift == 0:
             return self
-        elif mode == sumpf.Signal.shift_modes.OFFSET:
+        elif mode == Signal.shift_modes.OFFSET:
             if shift is None:
-                return sumpf.Signal(channels=self._channels,
-                                    sampling_rate=self.__sampling_rate,
-                                    offset=0,
-                                    labels=self._labels)
+                return Signal(channels=self._channels,
+                              sampling_rate=self.__sampling_rate,
+                              offset=0,
+                              labels=self._labels)
             else:
-                return sumpf.Signal(channels=self._channels,
-                                    sampling_rate=self.__sampling_rate,
-                                    offset=self.__offset + shift,
-                                    labels=self._labels)
+                return Signal(channels=self._channels,
+                              sampling_rate=self.__sampling_rate,
+                              offset=self.__offset + shift,
+                              labels=self._labels)
         else:
-            if mode == sumpf.Signal.shift_modes.CROP:
+            if mode == Signal.shift_modes.CROP:
                 channels = sumpf_internal.allocate_array(shape=self._channels.shape)
                 if shift < 0:
                     channels[:, 0:shift] = self._channels[:, -shift:]
@@ -344,7 +344,7 @@ class Signal(SampledData):
                 else:
                     channels[:, 0:shift] = 0.0
                     channels[:, shift:] = self._channels[:, 0:-shift]
-            elif mode == sumpf.Signal.shift_modes.PAD:
+            elif mode == Signal.shift_modes.PAD:
                 channels = sumpf_internal.allocate_array(shape=(len(self), self._length + abs(shift)))
                 if shift < 0:
                     channels[:, 0:self._length] = self._channels
@@ -352,14 +352,14 @@ class Signal(SampledData):
                 else:
                     channels[:, 0:shift] = 0.0
                     channels[:, shift:] = self._channels
-            elif mode == sumpf.Signal.shift_modes.CYCLE:
+            elif mode == Signal.shift_modes.CYCLE:
                 channels = sumpf_internal.allocate_array(shape=self._channels.shape)
                 channels[:, 0:shift] = self._channels[:, -shift:]
                 channels[:, shift:] = self._channels[:, 0:-shift]
-            return sumpf.Signal(channels=channels,
-                                sampling_rate=self.__sampling_rate,
-                                offset=self.__offset,
-                                labels=self._labels)
+            return Signal(channels=channels,
+                          sampling_rate=self.__sampling_rate,
+                          offset=self.__offset,
+                          labels=self._labels)
 
     #############################
     # signal processing methods #
@@ -380,11 +380,10 @@ class Signal(SampledData):
         if self.__offset == 0:
             channels[:, :] = spectrum
         else:   # add a group delay for the offset
-            delay_factor = -1j * 2.0 * math.pi * (self.__offset / self.__sampling_rate)
-            frequencies = numpy.linspace(0.0, (length - 1) * resolution, length)
-            phase_shift = numpy.multiply(delay_factor, frequencies)
-            exp = numpy.exp(phase_shift)
-            numpy.multiply(spectrum, exp, out=channels)
+            compensation = numpy.linspace(0.0, (length - 1) * resolution, length, dtype=numpy.complex128)
+            compensation *= -1j * 2.0 * math.pi * (self.__offset / self.__sampling_rate)
+            numpy.exp(compensation, out=compensation)
+            numpy.multiply(spectrum, compensation, out=channels)
         return sumpf.Spectrum(channels=channels,
                               resolution=resolution,
                               labels=self._labels)
@@ -428,10 +427,10 @@ class Signal(SampledData):
                                                           function=sumpf_internal.convolution,
                                                           mode=mode)
             labels = self._labels
-        return sumpf.Signal(channels=channels,
-                            sampling_rate=self.__sampling_rate,
-                            offset=offset,
-                            labels=labels)
+        return Signal(channels=channels,
+                      sampling_rate=self.__sampling_rate,
+                      offset=offset,
+                      labels=labels)
 
     def correlate(self, other, mode=sumpf_internal.ConvolutionMode.SPECTRUM_PADDED):
         """Computes the cross-correlation between this signal and a given signal
@@ -466,10 +465,10 @@ class Signal(SampledData):
                                                           function=sumpf_internal.correlation,
                                                           mode=mode)
             labels = self._labels
-        return sumpf.Signal(channels=channels,
-                            sampling_rate=self.__sampling_rate,
-                            offset=offset,
-                            labels=labels)
+        return Signal(channels=channels,
+                      sampling_rate=self.__sampling_rate,
+                      offset=offset,
+                      labels=labels)
 
     ####################################################
     # methods for statistical parameters of the signal #

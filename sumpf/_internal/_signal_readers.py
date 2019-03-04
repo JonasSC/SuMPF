@@ -19,33 +19,24 @@
 import os
 import numpy
 import sumpf
-from ._memory import allocate_array
+from ._functions import allocate_array
 
 __all__ = ("readers", "Reader")
 
 readers = {}    # maps file extensions to reader instances, that can be used for future loading of a signal
 
 
-def from_dict(data):
+def from_dict(dictionary):
     """Deserializes a signal from a dictionary."""
-    if "channels" in data:
-        channels = allocate_array(shape=numpy.shape(data["channels"]))
-        channels[:, :] = data["channels"]
+    if "channels" in dictionary:
+        channels = allocate_array(shape=numpy.shape(dictionary["channels"]))
+        channels[:, :] = dictionary["channels"]
     else:
         channels = numpy.empty(shape=(1, 0))
-    if "sampling_rate" in data:
-        sampling_rate = data["sampling_rate"]
-    else:
-        sampling_rate = 48000.0
-    if "offset" in data:
-        offset = data["offset"]
-    else:
-        offset = 0
-    if "labels" in data:
-        labels = data["labels"]
-    else:
-        labels = ()
-    return sumpf.Signal(channels=channels, sampling_rate=sampling_rate, offset=offset, labels=labels)
+    return sumpf.Signal(channels=channels,
+                        sampling_rate=dictionary.get("sampling_rate", 48000.0),
+                        offset=dictionary.get("offset", 0),
+                        labels=dictionary.get("labels", ()))
 
 
 def from_rows(time_column, data_rows, labels):

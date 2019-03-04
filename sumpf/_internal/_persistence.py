@@ -149,15 +149,15 @@ def term_from_dict(dictionary):
             cls = terms[dictionary["type"]]
         else:
             parameter = dictionary[name]
-            if isinstance(parameter, collections.Mapping):
+            if isinstance(parameter, collections.abc.Mapping):
                 if "type" in parameter:
                     parameters[name] = term_from_dict(parameter)
                 else:
                     parameters[name] = parameter
-            elif isinstance(parameter, collections.Iterable):
+            elif isinstance(parameter, collections.abc.Iterable):
                 values = []
                 for p in parameter:
-                    if isinstance(p, collections.Mapping) and "type" in p:
+                    if isinstance(p, collections.abc.Mapping) and "type" in p:
                         values.append(term_from_dict(p))
                     else:
                         values.append(p)

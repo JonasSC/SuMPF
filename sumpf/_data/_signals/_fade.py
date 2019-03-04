@@ -86,16 +86,16 @@ class Fade(Signal):
         # parse the raise and fall intervals
         if rise_interval is None:
             rise = None
-        elif isinstance(rise_interval, collections.Iterable):
-            rise = sumpf_internal.sample_interval(interval=rise_interval, length=length)
+        elif isinstance(rise_interval, collections.abc.Iterable):
+            rise = sumpf_internal.index(rise_interval, length=length)
         else:
-            rise = sumpf_internal.sample_interval(interval=(0, rise_interval), length=length)
+            rise = (0, sumpf_internal.index(rise_interval, length=length))
         if fall_interval is None:
             fall = None
-        elif isinstance(fall_interval, collections.Iterable):
-            fall = sumpf_internal.sample_interval(interval=fall_interval, length=length)
+        elif isinstance(fall_interval, collections.abc.Iterable):
+            fall = sumpf_internal.index(fall_interval, length=length)
         else:
-            fall = sumpf_internal.sample_interval(interval=(fall_interval, 1.0), length=length)
+            fall = (sumpf_internal.index(fall_interval, length=length), length)
         # initialize the channels
         if rise is None:        # only fade out
             if fall is None:

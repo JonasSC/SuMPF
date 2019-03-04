@@ -21,10 +21,10 @@ import numpy
 import sumpf
 from sumpf import _internal as sumpf_internal
 
-__all__ = ("formats", "readers", "writers", "Reader", "Writer")
+__all__ = ("Formats", "readers", "writers", "Reader", "Writer")
 
 
-class formats(enum.Enum):
+class Formats(enum.Enum):
     """An enumeration of the file formats, that are supported for writing :class:`~sumpf.Filter`
     instances to a file."""
     AUTO = enum.auto()
@@ -35,11 +35,11 @@ class formats(enum.Enum):
     PYTHON_PICKLE = enum.auto()
 
 
-_json = (formats.TEXT_JSON,)
-file_extension_mapping = {".txt": (formats.TEXT_REPR,),     # maps file extensions to formats, that are commonly associated with that format in descending order
+_json = (Formats.TEXT_JSON,)
+file_extension_mapping = {".txt": (Formats.TEXT_REPR,),     # maps file extensions to formats, that are commonly associated with that format in descending order
                           ".json": _json,
                           ".js": _json,
-                          ".pickle": (formats.PYTHON_PICKLE,)}
+                          ".pickle": (Formats.PYTHON_PICKLE,)}
 
 
 class Reader:
@@ -80,7 +80,7 @@ class Writer:
 
 readers = {}    # maps file extensions to reader instances, that can be used for future loading of a filter
 writers = {}    # maps file formats to writer instances, that can be used for future saving of a filter
-writers[formats.AUTO] = sumpf_internal.AutoWriter(file_extension_mapping=file_extension_mapping,
+writers[Formats.AUTO] = sumpf_internal.AutoWriter(file_extension_mapping=file_extension_mapping,
                                                   writers=writers,
                                                   writer_base_class=Writer)
 
@@ -168,7 +168,7 @@ class ReprWriter(Writer):
        the read file, it can be a security hazard, that executes malicious code,
        when reading prepared files.
     """
-    formats = (formats.TEXT_REPR,)
+    formats = (Formats.TEXT_REPR,)
 
     def __call__(self, filter_, path):
         """Saves the given filter in the given file path.
@@ -183,7 +183,7 @@ class ReprWriter(Writer):
 
 class JsonWriter(Writer):
     """Writes a JSON representation of a filter to a file."""
-    formats = (formats.TEXT_JSON,)
+    formats = (Formats.TEXT_JSON,)
 
     def __call__(self, filter_, path):
         """Saves the given filter in the given file path.
@@ -209,7 +209,7 @@ class PickleWriter(Writer):
        the read file, it can be a security hazard, that executes malicious code,
        when reading prepared files.
     """
-    formats = (formats.PYTHON_PICKLE,)
+    formats = (Formats.PYTHON_PICKLE,)
 
     def __call__(self, filter_, path):
         """Saves the given filter in the given file path.

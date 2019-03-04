@@ -17,7 +17,7 @@
 """Contains helper classes for the computation of convolutions and correlations."""
 
 import numpy
-from ._memory import allocate_array
+from ._functions import allocate_array
 from ._enums import ConvolutionMode
 
 __all__ = ("convolution", "correlation")

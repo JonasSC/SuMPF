@@ -19,7 +19,7 @@
 import os
 import numpy
 import sumpf
-from ._memory import allocate_array
+from ._functions import allocate_array
 
 __all__ = ("readers", "Reader")
 
@@ -28,15 +28,9 @@ readers = {}    # maps file extensions to reader instances, that can be used for
 
 def from_dict(channels, dictionary):
     """Deserializes a spectrum from a dictionary."""
-    if "resolution" in dictionary:
-        resolution = dictionary["resolution"]
-    else:
-        resolution = 1.0
-    if "labels" in dictionary:
-        labels = dictionary["labels"]
-    else:
-        labels = ("",) * len(channels)
-    return sumpf.Spectrum(channels=channels, resolution=resolution, labels=labels)
+    return sumpf.Spectrum(channels=channels,
+                          resolution=dictionary.get("resolution", 1.0),
+                          labels=dictionary.get("labels", ()))
 
 
 def from_rows(frequency_column, data_rows, labels):     # pylint: disable=too-many-branches; the branches are not too complicated in this one

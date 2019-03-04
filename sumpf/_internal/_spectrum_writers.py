@@ -20,10 +20,10 @@ import enum
 import numpy
 from ._persistence import AutoWriter
 
-__all__ = ("formats", "Writer")
+__all__ = ("Formats", "Writer")
 
 
-class formats(enum.Enum):
+class Formats(enum.Enum):
     """An enumeration of the file formats, that are supported for writing :class:`~sumpf.Spectrum`
     instances to a file."""
     AUTO = enum.auto()
@@ -36,13 +36,13 @@ class formats(enum.Enum):
     PYTHON_PICKLE = enum.auto()
 
 
-_json = (formats.TEXT_JSON,)
-file_extension_mapping = {".csv": (formats.TEXT_CSV,),  # maps file extensions to formats, that are commonly associated with that format in descending order
+_json = (Formats.TEXT_JSON,)
+file_extension_mapping = {".csv": (Formats.TEXT_CSV,),  # maps file extensions to formats, that are commonly associated with that format in descending order
                           ".json": _json,
                           ".js": _json,
-                          ".npz": (formats.NUMPY_NPZ,),
-                          ".npy": (formats.NUMPY_NPY,),
-                          ".pickle": (formats.PYTHON_PICKLE,)}
+                          ".npz": (Formats.NUMPY_NPZ,),
+                          ".npy": (Formats.NUMPY_NPY,),
+                          ".pickle": (Formats.PYTHON_PICKLE,)}
 
 
 class Writer:
@@ -74,7 +74,7 @@ class Writer:
 
 
 writers = {}    # maps file formats to writer instances, that can be used for future saving of a spectrum
-writers[formats.AUTO] = AutoWriter(file_extension_mapping=file_extension_mapping,
+writers[Formats.AUTO] = AutoWriter(file_extension_mapping=file_extension_mapping,
                                    writers=writers,
                                    writer_base_class=Writer)
 
@@ -95,7 +95,7 @@ class CsvWriter(Writer):
     """Saves the spectrum in a CSV file, in which the first column contains the
     frequency samples.
     """
-    formats = (formats.TEXT_CSV,)
+    formats = (Formats.TEXT_CSV,)
 
     def __call__(self, spectrum, path):
         """Saves the given spectrum in the given file path.
@@ -115,7 +115,7 @@ class CsvWriter(Writer):
 
 class JsonWriter(Writer):
     """Writes a JSON representation of a spectrum to a file."""
-    formats = (formats.TEXT_JSON,)
+    formats = (Formats.TEXT_JSON,)
 
     def __call__(self, spectrum, path):
         """Saves the given spectrum in the given file path.
@@ -132,7 +132,7 @@ class NumpyNpyWriter(Writer):
     """Saves the spectrum in a :mod:`numpy` array file, in which the first column contains
     the frequency samples.
     """
-    formats = (formats.NUMPY_NPY,)
+    formats = (Formats.NUMPY_NPY,)
 
     def __call__(self, spectrum, path):
         """Saves the given spectrum in the given file path.
@@ -149,7 +149,7 @@ class NumpyNpyWriter(Writer):
 
 class NumpyNpzWriter(Writer):
     """Saves the spectrum in a compressed :mod:`numpy` binary file."""
-    formats = (formats.NUMPY_NPZ,)
+    formats = (Formats.NUMPY_NPZ,)
 
     def __call__(self, spectrum, path):
         """Saves the given spectrum in the given file path.
@@ -175,7 +175,7 @@ class PickleWriter(Writer):
        the read file, it can be a security hazard, that executes malicious code,
        when reading prepared files.
     """
-    formats = (formats.PYTHON_PICKLE,)
+    formats = (Formats.PYTHON_PICKLE,)
 
     def __call__(self, spectrum, path):
         """Saves the given spectrum in the given file path.

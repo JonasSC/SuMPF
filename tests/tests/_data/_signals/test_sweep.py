@@ -208,7 +208,7 @@ def numpy_sweep(start_frequency=20.0,
     array = sharedctypes.RawArray(ctypes.c_double, length)
     channels = numpy.frombuffer(array, dtype=numpy.float64).reshape((1, length))
     # generate the sweep
-    start, stop = sumpf_internal.sample_interval(interval, length)
+    start, stop = sumpf_internal.index(interval, length)
     sweep_offset = float(start / sampling_rate)
     sweep_duration = (stop - start) / sampling_rate
     frequency_ratio = stop_frequency / start_frequency

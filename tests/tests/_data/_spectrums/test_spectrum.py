@@ -29,66 +29,72 @@ import tests
 ###########################################
 
 
-def test_getitem():
-    """Tests the slicing of a spectrum with the ``[]`` overload"""
+def test_getitem_channels():
+    """Tests the slicing of a spectrum's channels with the ``[]`` overload"""
     spectrum = sumpf.Spectrum(channels=numpy.array([(1.0, 0.0, 0.0),
                                                     (0.0, 2.0, 0.0),
                                                     (0.0, 0.0, 3.0)]),
                               labels=("one", "two", "three"))
-    # channel selection
-    # # integer
+    # integer
     sliced = spectrum[1]
     assert (sliced.channels() == [(0.0, 2.0, 0.0)]).all()
     assert sliced.labels() == ("two",)
-    # # float
+    # float
     assert spectrum[0.5] == spectrum[1]
-    # # integer slice
+    # integer slice
     sliced = spectrum[1:3]
     assert (sliced.channels() == [(0.0, 2.0, 0.0), (0.0, 0.0, 3.0)]).all()
     assert sliced.labels() == ("two", "three")
-    # # integer slice with step
+    # integer slice with step
     sliced = spectrum[0:3:2]
     assert (sliced.channels() == [(1.0, 0.0, 0.0), (0.0, 0.0, 3.0)]).all()
     assert sliced.labels() == ("one", "three")
-    # # incomplete slices
+    # incomplete slices
     assert spectrum[:] == spectrum
     assert spectrum[:2] == spectrum[0:2]
     assert spectrum[1:] == spectrum[1:3]
     assert spectrum[0::2] == spectrum[0:3:2]
-    # # float slices
+    # float slices
     assert spectrum[0.33:1.0] == spectrum[1:3]
     assert spectrum[0:3:0.66] == spectrum[0:3:2]
-    # # negative slices
+    # negative slices
     assert spectrum[0:-1] == spectrum[0:2]
     assert spectrum[-2:] == spectrum[1:3]
     sliced = spectrum[::-1]
     assert (sliced.channels() == [(0.0, 0.0, 3.0), (0.0, 2.0, 0.0), (1.0, 0.0, 0.0)]).all()
     assert sliced.labels() == ("three", "two", "one")
     assert spectrum[-0.99:-0.01:-0.66] == spectrum[0:3:-2]
-    # sample selection
-    # # integer
+
+
+def test_getitem_samples():
+    """Tests the slicing of a spectrum with the ``[]`` overload"""
+    spectrum = sumpf.Spectrum(channels=numpy.array([(1.0, 0.0, 0.0),
+                                                    (0.0, 2.0, 0.0),
+                                                    (0.0, 0.0, 3.0)]),
+                              labels=("one", "two", "three"))
+    # integer
     sliced = spectrum[1, 1]
     assert (sliced.channels() == [(2.0,)]).all()
     assert sliced.labels() == ("two",)
-    # # float
+    # float
     assert spectrum[:, 0.5] == spectrum[:, 1]
-    # # integer slice
+    # integer slice
     sliced = spectrum[1:3, 1:3]
     assert (sliced.channels() == [(2.0, 0.0), (0.0, 3.0)]).all()
     assert sliced.labels() == ("two", "three")
-    # # integer slice with step
+    # integer slice with step
     sliced = spectrum[:, 0:3:2]
     assert (sliced.channels() == [(1.0, 0.0), (0.0, 0.0), (0.0, 3.0)]).all()
     assert sliced.labels() == ("one", "two", "three")
-    # # incomplete slices
+    # incomplete slices
     assert spectrum[:, :] == spectrum
     assert spectrum[:2, :1] == spectrum[0:2, 0]
     assert spectrum[1:, 2:] == spectrum[1:3, 2]
     assert spectrum[0::2, 0::2] == spectrum[0:3:2, 0:3:2]
-    # # float slices
+    # float slices
     assert spectrum[0.33:1.0, 0.0:0.66] == spectrum[1:3, 0:2]
     assert spectrum[0:3:0.66, 0.0:1.0:0.66] == spectrum[0:3:2, 0:3:2]
-    # # negative slices
+    # negative slices
     assert spectrum[0:-2, 0:-1] == spectrum[0, 0:2]
     assert spectrum[-2:, -1:] == spectrum[1:3, 2]
     sliced = spectrum[::-1, ::-1]
@@ -113,7 +119,7 @@ def test_repr(spectrum):
     # create a spectrum, cast it to a string and restore it from the string
     restored = eval(repr(spectrum))     # pylint: disable=eval-used
     if spectrum.length():
-        # compare the signals manually, because NumPy's repr does not print all required decimals
+        # compare the spectrums manually, because NumPy's repr does not print all required decimals
         assert restored.real() == pytest.approx(spectrum.real(), rel=1e-3)
         assert restored.imaginary() == pytest.approx(spectrum.imaginary(), rel=1e-3)
         assert restored.resolution() == spectrum.resolution()
@@ -421,10 +427,10 @@ def test_derived_parameters(spectrum):
     assert spectrum.length() == len(spectrum.channels()[0])
     assert spectrum.shape() == numpy.shape(spectrum.channels())
     assert spectrum.maximum_frequency() == (spectrum.length() - 1) * spectrum.resolution()
-    assert (spectrum.magnitude() == numpy.absolute(spectrum.channels())).any()
-    assert (spectrum.phase() == numpy.angle(spectrum.channels())).any()
-    assert (spectrum.real() == numpy.real(spectrum.channels())).any()
-    assert (spectrum.imaginary() == numpy.imag(spectrum.channels())).any()
+    assert (spectrum.magnitude() == numpy.absolute(spectrum.channels())).all()
+    assert (spectrum.phase() == numpy.angle(spectrum.channels())).all()
+    assert (spectrum.real() == numpy.real(spectrum.channels())).all()
+    assert (spectrum.imaginary() == numpy.imag(spectrum.channels())).all()
 
 #######################
 # convenience methods #
@@ -467,9 +473,12 @@ def test_conjugate(spectrum):
 #############################
 
 
-def test_inverse_fourier_transform():
+def test_inverse_fourier_transform_results():
     """Tests the inverse Fourier transform of a spectrum with trivial examples."""
-    spectrum = sumpf.Spectrum(channels=numpy.array([(1.0, numpy.exp(-1j * math.pi), numpy.exp(-2j * math.pi)),  # a group delay of 1s
+    # an empty spectrum
+    assert sumpf.Spectrum().inverse_fourier_transform().shape() == (1, 0)
+    # a group delay of 1s
+    spectrum = sumpf.Spectrum(channels=numpy.array([(1.0, numpy.exp(-1j * math.pi), numpy.exp(-2j * math.pi)),
                                                     (2.0, 2.0, 2.0)]),
                               resolution=0.5)
     signal = spectrum.inverse_fourier_transform()
@@ -478,6 +487,13 @@ def test_inverse_fourier_transform():
     assert signal.channels()[0] == pytest.approx((0.0, 0.0, 1.0, 0.0))
     assert (signal[1].channels() == [(2.0, 0.0, 0.0, 0.0)]).all()
 
-#######################
-# persistence methods #
-#######################
+
+@hypothesis.given(tests.strategies.spectrums)
+def test_inverse_fourier_transform_calculation(spectrum):
+    """Does some generic tests if the inverse Fourier transform can be computed for a variety of spectrums"""
+    signal = spectrum.inverse_fourier_transform()
+    assert len(signal) == len(spectrum)
+    assert signal.length() == max(1, (spectrum.length() - 1) * 2)
+    assert signal.duration() == pytest.approx(1.0 / spectrum.resolution())
+    assert signal.offset() == 0
+    assert signal.labels() == spectrum.labels()

@@ -19,7 +19,7 @@
 from ._convolution import *
 from ._enums import *
 from ._indexing import *
-from ._memory import *
+from ._functions import *
 from ._persistence import *
 from ._text import *
 

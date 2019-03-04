@@ -21,6 +21,7 @@ import numpy
 import hypothesis
 import pytest
 import sumpf
+import sumpf._internal as sumpf_internal
 import tests
 
 ###########################################
@@ -28,41 +29,39 @@ import tests
 ###########################################
 
 
-def test_getitem():
-    """Tests the slicing of a signal with the ``[]`` overload"""
-    # pylint: disable=too-many-statements;    spagetti-code with separating comments fits better in the structure of these tests, than individual test functions
+def test_getitem_channels():
+    """Tests the slicing of a signal's channels with the ``[]`` overload"""
     signal = sumpf.Signal(channels=numpy.array([(1.0, 0.0, 0.0),
                                                 (0.0, 2.0, 0.0),
                                                 (0.0, 0.0, 3.0)]),
                           offset=1,
                           labels=("one", "two", "three"))
-    # channel selection
-    # # integer
+    # integer
     sliced = signal[1]
     assert (sliced.channels() == [(0.0, 2.0, 0.0)]).all()
     assert sliced.offset() == signal.offset()
     assert sliced.labels() == ("two",)
-    # # float
+    # float
     assert signal[0.5] == signal[1]
-    # # integer slice
+    # integer slice
     sliced = signal[1:3]
     assert (sliced.channels() == [(0.0, 2.0, 0.0), (0.0, 0.0, 3.0)]).all()
     assert sliced.offset() == signal.offset()
     assert sliced.labels() == ("two", "three")
-    # # integer slice with step
+    # integer slice with step
     sliced = signal[0:3:2]
     assert (sliced.channels() == [(1.0, 0.0, 0.0), (0.0, 0.0, 3.0)]).all()
     assert sliced.offset() == signal.offset()
     assert sliced.labels() == ("one", "three")
-    # # incomplete slices
+    # incomplete slices
     assert signal[:] == signal
     assert signal[:2] == signal[0:2]
     assert signal[1:] == signal[1:3]
     assert signal[0::2] == signal[0:3:2]
-    # # float slices
+    # float slices
     assert signal[0.33:1.0] == signal[1:3]
     assert signal[0:3:0.66] == signal[0:3:2]
-    # # negative slices
+    # negative slices
     assert signal[0:-1] == signal[0:2]
     assert signal[-2:] == signal[1:3]
     sliced = signal[::-1]
@@ -70,33 +69,41 @@ def test_getitem():
     assert sliced.offset() == signal.offset()
     assert sliced.labels() == ("three", "two", "one")
     assert signal[-0.99:-0.01:-0.66] == signal[0:3:-2]
-    # sample selection
-    # # integer
+
+
+def test_getitem_samples():
+    """Tests the slicing of a signal with the ``[]`` overload"""
+    signal = sumpf.Signal(channels=numpy.array([(1.0, 0.0, 0.0),
+                                                (0.0, 2.0, 0.0),
+                                                (0.0, 0.0, 3.0)]),
+                          offset=1,
+                          labels=("one", "two", "three"))
+    # integer
     sliced = signal[1, 1]
     assert (sliced.channels() == [(2.0,)]).all()
     assert sliced.offset() == signal.offset() + 1
     assert sliced.labels() == ("two",)
-    # # float
+    # float
     assert signal[:, 0.5] == signal[:, 1]
-    # # integer slice
+    # integer slice
     sliced = signal[1:3, 1:3]
     assert (sliced.channels() == [(2.0, 0.0), (0.0, 3.0)]).all()
     assert sliced.offset() == signal.offset() + 1
     assert sliced.labels() == ("two", "three")
-    # # integer slice with step
+    # integer slice with step
     sliced = signal[:, 0:3:2]
     assert (sliced.channels() == [(1.0, 0.0), (0.0, 0.0), (0.0, 3.0)]).all()
     assert sliced.offset() == signal.offset()
     assert sliced.labels() == ("one", "two", "three")
-    # # incomplete slices
+    # incomplete slices
     assert signal[:, :] == signal
     assert signal[:2, :1] == signal[0:2, 0]
     assert signal[1:, 2:] == signal[1:3, 2]
     assert signal[0::2, 0::2] == signal[0:3:2, 0:3:2]
-    # # float slices
+    # float slices
     assert signal[0.33:1.0, 0.0:0.66] == signal[1:3, 0:2]
     assert signal[0:3:0.66, 0.0:1.0:0.66] == signal[0:3:2, 0:3:2]
-    # # negative slices
+    # negative slices
     assert signal[0:-2, 0:-1] == signal[0, 0:2]
     assert signal[-2:, -1:] == signal[1:3, 2]
     sliced = signal[::-1, ::-1]
@@ -369,20 +376,20 @@ def test_divide():
     assert quotient.labels() == signal1.labels()
     assert (quotient.channels() == numpy.divide(signal1.channels(), (1.9, -3.8, 5.5))).all()
     assert (((1.9, -3.8, 5.5) / signal1).channels() == numpy.divide((1.9, -3.8, 5.5), signal1.channels())).all()
-    # test dividing by a fully overlapping Signal
+    # test dividing by a fully overlapping signal
     quotient = signal1 / signal1
     assert quotient.offset() == signal1.offset()
     assert quotient.sampling_rate() == signal1.sampling_rate()
     assert quotient.labels() == ("Quotient",) * 2
     assert (quotient.channels() == numpy.ones(shape=signal1.shape())).all()
-    # test dividing by a fully overlapping single channel Signal
+    # test dividing by a fully overlapping single channel signal
     quotient = signal1 / signal1[1]
     assert quotient.offset() == signal1.offset()
     assert quotient.sampling_rate() == signal1.sampling_rate()
     assert quotient.labels() == ("Quotient",) * 2
     assert (quotient.channels() == numpy.divide(signal1.channels(), signal1[1].channels())).all()
     assert ((signal1[1] / signal1).channels() == numpy.divide(signal1[1].channels(), signal1.channels())).all()
-    # test dividing by a partially overlapping Signal
+    # test dividing by a partially overlapping signal
     quotient = signal1 / signal2
     assert quotient.offset() == -1
     assert quotient.sampling_rate() == signal1.sampling_rate()
@@ -393,7 +400,7 @@ def test_divide():
     assert ((signal2 / signal1).channels() == [(2.0, 1.0, 2 / 3, 1.0, 1.0),
                                                (1.0, 0.5, 1.0, 5 / 6, 1.0),
                                                (1.0, 1.0, 0.2, 0.0, 0.0)]).all()
-    # test dividing by a partially overlapping single channel Signal
+    # test dividing by a partially overlapping single channel signal
     quotient = signal1 / signal2[2]
     assert quotient.offset() == -1
     assert quotient.sampling_rate() == signal1.sampling_rate()
@@ -652,7 +659,7 @@ def test_shift(signal, shift):
 #############################
 
 
-def test_fourier_transform():
+def test_fourier_transform_results():
     """Tests the Fourier transformation of a signal by transforming impulses, whose spectrum is known."""
     # test with multiple channels
     signal = sumpf.Signal(channels=numpy.array([(1.0, 0.0, 0.0, 0.0),
@@ -670,6 +677,16 @@ def test_fourier_transform():
     assert spectrum.resolution() == 0.5
     assert numpy.linalg.norm(numpy.subtract(spectrum[0].channels(),
                                             [(1.0 + 0.0j, 1.0 + 0.0j, 1.0 + 0.0j, 1.0 + 0.0j)])) < 1e-15
+
+
+@hypothesis.given(tests.strategies.signals)
+def test_fourier_transform_calculation(signal):
+    """Does some generic tests if the Fourier transform can be computed for a variety of signals"""
+    spectrum = signal.fourier_transform()
+    assert len(spectrum) == len(signal)
+    assert spectrum.length() == signal.length() // 2 + 1
+    assert spectrum.resolution() == pytest.approx(1.0 / signal.duration())
+    assert spectrum.labels() == signal.labels()
 
 
 @hypothesis.given(tests.strategies.signals)

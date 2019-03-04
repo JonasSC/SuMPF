@@ -16,7 +16,32 @@
 
 """Contains helper functions for indexing arrays"""
 
-__all__ = ("key_to_slices", "sample_interval")
+import collections
+
+__all__ = ("index", "key_to_slices")
+
+
+def index(i, length):
+    """Converts a sample index to a positive, integer index.
+    The given sample index ``i`` will be interpreted as follows:
+
+    * a positive integer is interpreted as an index without any modification, even if it is larger than the given length
+    * a negative integer is interpreted as an index from the back of the array
+    * a positive float between 0.0 and 1.0 will be mapped to an integer between 0 and ``length``
+    * a negative float between -1.0 and 0.0 will be mapped accordingly but from the back of the array
+    * for an iterable, a list of indices is returned.
+
+    :param i: the index as an integer, a float or a sequence of integers or floats
+    :param length: the length of the array, that shall be accessed with the returned index
+    :returns: a positive integer or a list of positive integers
+    """
+    if isinstance(i, float):
+        i = int(round(i * length))
+    elif isinstance(i, collections.abc.Iterable):
+        return [index(j, length) for j in i]
+    while i < 0:
+        i += length
+    return i
 
 
 def key_to_slices(key, shape):
@@ -31,30 +56,9 @@ def key_to_slices(key, shape):
     if isinstance(key, int):
         return slice(key, key + 1)
     elif isinstance(key, float):
-        key = int(round((shape[0] - 1) * key))
+        key = index(key, (shape[0] - 1))
         return slice(key, key + 1)
     elif isinstance(key, slice):
-        return slice(*(int(round(shape[0] * e)) if isinstance(e, float) else e for e in (key.start, key.stop, key.step)))   # pylint: disable=line-too-long; this will become even more unreadable, when it's split to multiple lines
+        return slice(*(index(e, shape[0]) if isinstance(e, float) else e for e in (key.start, key.stop, key.step)))   # pylint: disable=line-too-long; this will become even more unreadable, when it's split to multiple lines
     else:
         return tuple(key_to_slices(k, (length,)) for k, length in zip(key, shape))
-
-
-def sample_interval(interval, length):
-    """Converts an interval for sample indices to two positive, integer indices.
-    The interval can be given as a sequence of two numbers, which can be:
-
-    * a positive integer, which is interpreted as an index, without any modification
-    * a negative integer, which is interpreted as an index from the back of the array
-    * a positive float between 0.0 and 1.0, which will be mapped to an integer between 0 and ``length``
-    * a negative float between -1.0 and 0.0, which will be mapped accordingly but from the back of the array
-
-    :param interval: a sequence of two numbers
-    :param length: the length of the array, that shall be accessed with the returned indices
-    :returns: two positive integers
-    """
-    start, stop = (int(round(length * b)) if isinstance(b, float) else b for b in interval)
-    while start < 0:
-        start += length
-    while stop < 0:
-        stop += length
-    return start, stop

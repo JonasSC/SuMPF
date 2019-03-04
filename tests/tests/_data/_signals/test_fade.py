@@ -43,7 +43,7 @@ def test_single_fade(function, start, stop, sampling_rate, length):
     """Tests the behavior, if there is only a fade in or out and not both."""
     # instantiate a fade in and a fade out
     interval = sorted((start, stop))
-    a, b = sumpf_internal.sample_interval(interval=interval, length=length)
+    a, b = sumpf_internal.index(interval, length=length)
     fade_in = sumpf.Fade(function=function, rise_interval=interval, sampling_rate=sampling_rate, length=length)
     fade_out = sumpf.Fade(function=function, fall_interval=interval, sampling_rate=sampling_rate, length=length)
     # instantiate test data
@@ -90,12 +90,12 @@ def test_both_fades(function, rise_start, rise_stop, fall_start, fall_stop, samp
     assert fade.length() == length
     assert fade.shape() == (1, length)
     # compare the signal's channel to a simpler (and slower) implementation
-    a, b = sumpf_internal.sample_interval(interval=rise_interval, length=length)
+    a, b = sumpf_internal.index(rise_interval, length=length)
     rise = numpy.empty(length)
     rise[0:a] = 0.0
     rise[a:b] = function(2 * (b - a))[0:b - a]
     rise[b:] = 1.0
-    c, d = sumpf_internal.sample_interval(interval=fall_interval, length=length)
+    c, d = sumpf_internal.index(fall_interval, length=length)
     fall = numpy.empty(length)
     fall[0:c] = 1.0
     fall[c:d] = function(2 * (d - c))[d - c:]

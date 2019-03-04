@@ -139,7 +139,7 @@ def __check_amplitude_flatness(window, overlap, matrix):
     column_sums = numpy.sum(matrix, axis=0)
     maximum = max(column_sums)
     if maximum != 0.0:
-        assert window.amplitude_flatness(overlap) == pytest.approx(min(column_sums) / max(column_sums))
+        assert window.amplitude_flatness(overlap) == pytest.approx(min(column_sums) / maximum)
     else:
         assert not numpy.isfinite(window.amplitude_flatness(overlap))
 
@@ -149,7 +149,7 @@ def __check_power_flatness(window, overlap, matrix):
     squared_column_sums = numpy.sum(numpy.square(matrix), axis=0)
     maximum = max(squared_column_sums)
     if maximum != 0.0:
-        assert window.power_flatness(overlap) == pytest.approx(min(squared_column_sums) / max(squared_column_sums))
+        assert window.power_flatness(overlap) == pytest.approx(min(squared_column_sums) / maximum)
     else:
         assert not numpy.isfinite(window.power_flatness(overlap))
 

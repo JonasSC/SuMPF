@@ -318,9 +318,9 @@ class Spectrum(SampledData):
             else:
                 channels[:, 0:self._length] = self._channels
                 channels[:, self._length:] = value
-            return sumpf.Spectrum(channels=channels,
-                                  resolution=self.__resolution,
-                                  labels=self._labels)
+            return Spectrum(channels=channels,
+                            resolution=self.__resolution,
+                            labels=self._labels)
 
     def conjugate(self):
         """Returns a spectrum with the complex conjugate of this spectrum's channels.
@@ -329,7 +329,7 @@ class Spectrum(SampledData):
         """
         channels = sumpf_internal.allocate_array(shape=self.shape(), dtype=numpy.complex128)
         numpy.conjugate(self._channels, out=channels)
-        return sumpf.Spectrum(channels=channels, resolution=self.__resolution, labels=self._labels)
+        return Spectrum(channels=channels, resolution=self.__resolution, labels=self._labels)
 
     #############################
     # signal processing methods #
@@ -340,11 +340,15 @@ class Spectrum(SampledData):
 
         :returns: a :class:`~sumpf.Signal` instance
         """
-        length = (self._length - 1) * 2
+        if self._length == 0:
+            return sumpf.Signal(channels=numpy.empty(shape=(len(self), 0)),
+                                sampling_rate=0.0,
+                                offset=0,
+                                labels=self._labels)
+        length = max(1, (self._length - 1) * 2)
         sampling_rate = self.__resolution * length
         channels = sumpf_internal.allocate_array(shape=(len(self._channels), length))
-        signal = numpy.fft.irfft(self._channels)
-        channels[:, :] = signal
+        channels[:, :] = numpy.fft.irfft(self._channels, n=length)
         return sumpf.Signal(channels=channels,
                             sampling_rate=sampling_rate,
                             offset=0,
