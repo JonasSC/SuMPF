@@ -19,7 +19,6 @@
 import ctypes
 import logging
 import math
-import random
 from multiprocessing import sharedctypes
 import timeit
 import hypothesis
@@ -57,14 +56,16 @@ def test_compare_with_other_formula(start_frequency, stop_frequency, sine, sampl
     assert sweep1.channels() == pytest.approx(sweep2.channels(), abs=1e-7)
 
 
-def test_min_and_max_frequencies():
+@hypothesis.given(start_frequency=hypothesis.strategies.floats(min_value=1.0, max_value=300.0),
+                  stop_frequency=hypothesis.strategies.floats(min_value=1000.0, max_value=10000.0),
+                  sampling_rate=hypothesis.strategies.floats(min_value=21000.0, max_value=60000.0),
+                  interval_start=hypothesis.strategies.floats(min_value=0.0, max_value=0.2),
+                  interval_stop=hypothesis.strategies.floats(min_value=0.8, max_value=1.0),
+                  length=hypothesis.strategies.integers(min_value=2 ** 10, max_value=2 ** 16))
+def test_min_and_max_frequencies(start_frequency, stop_frequency, sampling_rate,
+                                 length, interval_start, interval_stop):
     """Tests if the methods for computing the minimum and the maximum frequencies work as expected"""
-    r = random.Random()
-    start_frequency = r.uniform(1.0, 300.0)
-    stop_frequency = r.uniform(5 * start_frequency, 10000.0)
-    sampling_rate = r.uniform(3 * stop_frequency, 56000.0)
-    length = r.randint(2 ** 10, 2 ** 16) * 2    # make sure, this is an even number
-    interval = (r.uniform(0.0, 0.2), r.uniform(0.8, 1.0))
+    interval = (interval_start, interval_stop)
     start, stop = sumpf_internal.index(interval, length)
     frequency_ratio = stop_frequency / start_frequency
     sweep_length = stop - start
@@ -77,20 +78,23 @@ def test_min_and_max_frequencies():
     assert sweep.maximum_frequency() == pytest.approx(stop_frequency * frequency_ratio ** ((length - stop) / sweep_length))     # pylint: disable=line-too-long; nothing complicated here, only long variable names
 
 
-def test_instantaneous_frequency():
-    """Tests the instantaneous_frequency method"""
-    r = random.Random()
-    start_frequency = r.uniform(1.0, 300.0)
-    stop_frequency = r.uniform(5 * start_frequency, 10000.0)
-    sampling_rate = r.uniform(3 * stop_frequency, 56000.0)
-    length = r.randint(2 ** 10, 2 ** 16) * 2    # make sure, this is an even number
-    interval = (r.uniform(0.0, 0.2), r.uniform(0.8, 1.0))
+@hypothesis.given(start_frequency=hypothesis.strategies.floats(min_value=1.0, max_value=300.0),
+                  stop_frequency=hypothesis.strategies.floats(min_value=1000.0, max_value=10000.0),
+                  sampling_rate=hypothesis.strategies.floats(min_value=21000.0, max_value=60000.0),
+                  interval_start=hypothesis.strategies.floats(min_value=0.0, max_value=0.2),
+                  interval_stop=hypothesis.strategies.floats(min_value=0.8, max_value=1.0),
+                  length=hypothesis.strategies.integers(min_value=2 ** 10, max_value=2 ** 16))
+def test_instantaneous_frequency(start_frequency, stop_frequency, sampling_rate,
+                                 length, interval_start, interval_stop):
+    """Tests the instantaneous_frequency method of the ExponentialSweep class"""
     sweep = sumpf.ExponentialSweep(start_frequency=start_frequency,
                                    stop_frequency=stop_frequency,
-                                   interval=interval,
+                                   interval=(interval_start, interval_stop),
                                    sampling_rate=sampling_rate,
                                    length=length)
-    assert sweep.instantaneous_frequency(0) == sweep.minimum_frequency()
+    assert sweep.instantaneous_frequency(0.0) == sweep.minimum_frequency()
+    assert sweep.instantaneous_frequency(round(interval_start * length) / sampling_rate) == pytest.approx(start_frequency)  # pylint: disable=line-too-long
+    assert sweep.instantaneous_frequency(round(interval_stop * length) / sampling_rate) == pytest.approx(stop_frequency)    # pylint: disable=line-too-long
     assert sweep.instantaneous_frequency(sweep.duration()) == sweep.maximum_frequency()
     diff = numpy.diff(sweep.instantaneous_frequency(sweep.time_samples()))
     assert (diff > 0).all()     # the frequency should increase monotonically
@@ -185,41 +189,47 @@ def test_convolution_with_sweep():
         assert peak > 5 * abs(other)            # other peaks and notches should be much smaller than the impulse
 
 
-def test_min_and_max_frequencies_inversed():
+@hypothesis.given(start_frequency=hypothesis.strategies.floats(min_value=1.0, max_value=300.0),
+                  stop_frequency=hypothesis.strategies.floats(min_value=1000.0, max_value=10000.0),
+                  sampling_rate=hypothesis.strategies.floats(min_value=21000.0, max_value=60000.0),
+                  interval_start=hypothesis.strategies.floats(min_value=0.0, max_value=0.2),
+                  interval_stop=hypothesis.strategies.floats(min_value=0.8, max_value=1.0),
+                  length=hypothesis.strategies.integers(min_value=2 ** 10, max_value=2 ** 16))
+def test_min_and_max_frequencies_inversed(start_frequency, stop_frequency, sampling_rate,
+                                          length, interval_start, interval_stop):
     """Tests if the methods for computing the minimum and the maximum frequencies work as expected"""
-    r = random.Random()
-    start_frequency = r.uniform(1.0, 300.0)
-    stop_frequency = r.uniform(5 * start_frequency, 10000.0)
-    sampling_rate = r.uniform(3 * stop_frequency, 56000.0)
-    length = r.randint(256, 512) * 2    # make sure, this is an even number
+    start, stop = sumpf_internal.index((interval_start, interval_stop), length)
     sweep = sumpf.ExponentialSweep(start_frequency=start_frequency,
                                    stop_frequency=stop_frequency,
-                                   interval=(0.15, 0.9),
+                                   interval=(start, stop),
                                    sampling_rate=sampling_rate,
                                    length=length)
     isweep = sumpf.InverseExponentialSweep(start_frequency=start_frequency,
                                            stop_frequency=stop_frequency,
-                                           interval=(0.1, 0.85),
+                                           interval=(length - stop, length - start),
                                            sampling_rate=sampling_rate,
                                            length=length)
     assert isweep.minimum_frequency() == pytest.approx(sweep.minimum_frequency())
     assert isweep.maximum_frequency() == pytest.approx(sweep.maximum_frequency())
 
 
-def test_instantaneous_frequency_inversed():
-    """Tests the instantaneous_frequency method"""
-    r = random.Random()
-    start_frequency = r.uniform(1.0, 300.0)
-    stop_frequency = r.uniform(5 * start_frequency, 10000.0)
-    sampling_rate = r.uniform(3 * stop_frequency, 56000.0)
-    length = r.randint(2 ** 10, 2 ** 16) * 2    # make sure, this is an even number
-    interval = (r.uniform(0.0, 0.2), r.uniform(0.8, 1.0))
+@hypothesis.given(start_frequency=hypothesis.strategies.floats(min_value=1.0, max_value=300.0),
+                  stop_frequency=hypothesis.strategies.floats(min_value=1000.0, max_value=10000.0),
+                  sampling_rate=hypothesis.strategies.floats(min_value=21000.0, max_value=60000.0),
+                  interval_start=hypothesis.strategies.floats(min_value=0.0, max_value=0.2),
+                  interval_stop=hypothesis.strategies.floats(min_value=0.8, max_value=1.0),
+                  length=hypothesis.strategies.integers(min_value=2 ** 10, max_value=2 ** 16))
+def test_instantaneous_frequency_inversed(start_frequency, stop_frequency, sampling_rate,
+                                          length, interval_start, interval_stop):
+    """Tests the instantaneous_frequency method of the InverseExponentialSweep class"""
     sweep = sumpf.InverseExponentialSweep(start_frequency=start_frequency,
                                           stop_frequency=stop_frequency,
-                                          interval=interval,
+                                          interval=(interval_start, interval_stop),
                                           sampling_rate=sampling_rate,
                                           length=length)
     assert sweep.instantaneous_frequency(0.0) == sweep.maximum_frequency()
+    assert sweep.instantaneous_frequency(round(interval_start * length) / sampling_rate) == pytest.approx(stop_frequency)   # pylint: disable=line-too-long
+    assert sweep.instantaneous_frequency(round(interval_stop * length) / sampling_rate) == pytest.approx(start_frequency)   # pylint: disable=line-too-long
     assert sweep.instantaneous_frequency(sweep.duration()) == sweep.minimum_frequency()
     diff = numpy.diff(sweep.instantaneous_frequency(sweep.time_samples()))
     assert (diff < 0).all()     # the frequency should decrease monotonically

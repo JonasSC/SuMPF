@@ -39,7 +39,7 @@ def exponential_sweep_parameters(start_frequency, stop_frequency, interval, samp
     ExponentialSweep and the InverseExponentialSweep.
     """
     start, stop = sumpf_internal.index(interval, length)
-    sweep_offset = float(start / sampling_rate)
+    sweep_offset = start / sampling_rate
     sweep_length = stop - start
     sweep_duration = sweep_length / sampling_rate
     frequency_ratio = stop_frequency / start_frequency
