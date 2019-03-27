@@ -168,6 +168,10 @@ class Spectrogram(SampledData):
             return False
         return super().__eq__(other)
 
+    def __hash__(self):
+        """Operator overload for computing the hash of this spectrogram with :func:`hash`"""
+        return hash((super().__hash__(), self.__resolution, self.__sampling_rate, self.__offset))
+
     ###################################
     # overloaded unary math operators #
     ###################################

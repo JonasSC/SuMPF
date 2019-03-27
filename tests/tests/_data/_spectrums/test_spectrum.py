@@ -16,6 +16,7 @@
 
 """Tests for the Spectrum class"""
 
+import copy
 import logging
 import math
 import hypothesis
@@ -140,6 +141,20 @@ def test_eq(parameters):
         assert spectrum1 != spectrum2[:, 0:-1]  # test for a case, where the NumPy comparison of the channels returns a boolean rather than an array of booleans
     assert spectrum1 != (spectrum2 + spectrum2) * spectrum2
     assert spectrum1 != spectrum1.channels()
+
+
+@hypothesis.given(tests.strategies.spectrum_parameters)
+def test_hash(parameters):
+    """Tests the operator overload for hashing a spectrum with the builtin :func:`hash` function."""
+    parameters2 = copy.copy(parameters)
+    parameters2["channels"] = numpy.empty(shape=parameters["channels"].shape, dtype=numpy.complex128)
+    parameters2["channels"][:] = parameters["channels"][:]
+    spectrum1 = sumpf.Spectrum(**parameters)
+    spectrum2 = sumpf.Spectrum(**parameters2)
+    spectrum3 = (spectrum2 + spectrum2) * spectrum2
+    assert spectrum1.channels() is not spectrum2.channels()
+    assert hash(spectrum1) == hash(spectrum2)
+    assert hash(spectrum1) != hash(spectrum3)
 
 ###################################
 # overloaded unary math operators #

@@ -138,6 +138,10 @@ class Spectrum(SampledData):
             return False
         return super().__eq__(other)
 
+    def __hash__(self):
+        """Operator overload for computing the hash of this spectrum with :func:`hash`"""
+        return hash((super().__hash__(), self.__resolution))
+
     ###################################
     # overloaded unary math operators #
     ###################################

@@ -16,6 +16,7 @@
 
 """Tests for the Spectrogram class"""
 
+import copy
 import logging
 import os
 import tempfile
@@ -209,6 +210,20 @@ def test_eq(parameters):
         assert spectrogram1 != spectrogram2[:, :, 0:-1]  # test for a case, where the NumPy comparison of the channels returns a boolean rather than an array of booleans
     assert spectrogram1 != (spectrogram2 + spectrogram2) * spectrogram2
     assert spectrogram1 != spectrogram1.channels()
+
+
+@hypothesis.given(tests.strategies.spectrogram_parameters)
+def test_hash(parameters):
+    """Tests the operator overload for hashing a spectrogram with the builtin :func:`hash` function."""
+    parameters2 = copy.copy(parameters)
+    parameters2["channels"] = numpy.empty(shape=parameters["channels"].shape, dtype=numpy.complex128)
+    parameters2["channels"][:] = parameters["channels"][:]
+    spectrogram1 = sumpf.Spectrogram(**parameters)
+    spectrogram2 = sumpf.Spectrogram(**parameters2)
+    spectrogram3 = (spectrogram2 + spectrogram2) * spectrogram2
+    assert spectrogram1.channels() is not spectrogram2.channels()
+    assert hash(spectrogram1) == hash(spectrogram2)
+    assert hash(spectrogram1) != hash(spectrogram3)
 
 ###################################
 # overloaded unary math operators #

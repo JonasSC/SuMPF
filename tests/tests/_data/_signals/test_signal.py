@@ -16,6 +16,7 @@
 
 """Tests for the Signal class"""
 
+import copy
 import logging
 import numpy
 import hypothesis
@@ -145,6 +146,20 @@ def test_eq(parameters):
         assert signal1 != signal2[:, 0:-1]  # test for a case, where the NumPy comparison of the channels returns a boolean rather than an array of booleans
     assert signal1 != (signal2 + signal2) * signal2
     assert signal1 != signal1.channels()
+
+
+@hypothesis.given(tests.strategies.signal_parameters)
+def test_hash(parameters):
+    """Tests the operator overload for hashing a signal with the builtin :func:`hash` function."""
+    parameters2 = copy.copy(parameters)
+    parameters2["channels"] = numpy.empty(shape=parameters["channels"].shape)
+    parameters2["channels"][:] = parameters["channels"][:]
+    signal1 = sumpf.Signal(**parameters)
+    signal2 = sumpf.Signal(**parameters2)
+    signal3 = (signal2 + signal2) * signal2
+    assert signal1.channels() is not signal2.channels()
+    assert hash(signal1) == hash(signal2)
+    assert hash(signal1) != hash(signal3)
 
 ###################################
 # overloaded unary math operators #

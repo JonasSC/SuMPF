@@ -57,6 +57,12 @@ class SampledData:
         """Operator overload for comparing this object to another object with ``!=``"""
         return not self == other
 
+    def __hash__(self):
+        """Operator overload for computing the hash of this object with :func:`hash`"""
+        return hash((self._channels.shape,
+                     tuple(self._channels.flat),
+                     self._labels))
+
     ####################################
     # overloaded binary math operators #
     ####################################
