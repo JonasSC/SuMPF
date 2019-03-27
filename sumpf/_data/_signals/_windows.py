@@ -46,7 +46,7 @@ class Window(Signal):
                           its first sample. False, if the window's last sample shall
                           be the same as its second sample. The latter is often
                           beneficial in segmentation applications, as it makes it
-                          easier to meet the "constant overlap add"-constraint.
+                          easier to meet the "constant overlap-add"-constraint.
         """
         self.__symmetric = symmetric
         self.__plateau = sumpf_internal.index(plateau, length)
@@ -109,15 +109,16 @@ class Window(Signal):
         padded_channel[0:self._length] = self._channels[0]
         padded_channel[self._length:] = 0.0
         spectrum = numpy.fft.rfft(padded_channel)
-        threshold = abs(spectrum[0]) / math.sqrt(2.0)
+        magnitude = numpy.abs(spectrum)
+        threshold = magnitude[0] / math.sqrt(2.0)
         i = 0
-        amplitude = 0.0
-        for i, amplitude in enumerate(spectrum[1:]):
-            if abs(amplitude) < threshold:
+        m = 0.0
+        for i, m in enumerate(magnitude[1:]):
+            if m < threshold:
                 break
-        x2 = abs(amplitude)
-        x1 = abs(spectrum[i])
-        frequency_bin = 2.0 * (i + (threshold - x1) / (x2 - x1))
+        y2 = abs(m)
+        y1 = abs(magnitude[i])
+        frequency_bin = 2.0 * (i + (threshold - y1) / (y2 - y1))
         resolution = 1.0 / self.duration() / oversampling
         return frequency_bin * resolution
 
@@ -152,11 +153,11 @@ class Window(Signal):
         that achieves good accuracy with reasonable computational effort.
 
         The recommended overlap was proposed by G. Heinzel, A. Rüdiger and
-        R. Schilling in their paper *`Spectrum and spectral density estimation by
+        R. Schilling in their paper `Spectrum and spectral density estimation by
         the Discrete Fourier transform (DFT), including a comprehensive list of
-        window functions and some new flat-top windows <https://holometer.fnal.gov/GH_FFT.pdf#page=17>`_*,
-        which was published by
-        the Max-Planck-Institut für Gravitationsphysik in February 2002.
+        window functions and some new flat-top windows <https://holometer.fnal.gov/GH_FFT.pdf#page=17>`_,
+        which was published by the Max-Planck-Institut für Gravitationsphysik in
+        February 2002.
 
         :returns: the recommended overlap as an integer number of samples
         """
@@ -238,10 +239,8 @@ class Window(Signal):
         if overlap == self._length:
             return 1.0
         elif overlap == 0:
-            channel = self._channels[0]
-            minimum = min(channel)
-            maximum = max(channel)
-            return (minimum / maximum) ** 2
+            squared = numpy.square(self._channels[0])
+            return min(squared) / max(squared)
         else:
             step = self._length - overlap
             overlapping = numpy.empty(self._length)
@@ -329,8 +328,10 @@ class BartlettWindow(Window):
 
 
 class HannWindow(Window):
-    """The Hann window is a raised cosine window with two terms, that is optimized
+    """The Hann window is sum of cosine window with two terms, that is optimized
     for a fast decay of the side lobes.
+
+    The ``plateau`` parameter can be used to create a Tukey window with this class.
     """
 
     def _function(self, length):
@@ -341,7 +342,7 @@ class HannWindow(Window):
 
 
 class HammingWindow(Window):
-    """The Hamming window is a raised cosine window with two terms, that is optimized
+    """The Hamming window is a sum of cosine window with two terms, that is optimized
     for a minimal amplitude of the highest side lobe.
     """
 
@@ -353,9 +354,9 @@ class HammingWindow(Window):
 
 
 class BlackmanWindow(Window):
-    """The Blackman is a three-term raised cosine window, that approximates the
-    "exact Blackman window", which in turn has the same rate of decay of the side
-    lobes as the Hann window, while using the remaining degree of freedom to
+    """The Blackman window is a three-term sum of cosine window, that approximates
+    the "exact Blackman window", which in turn has the same rate of decay of the
+    side lobes as the Hann window, while using the remaining degree of freedom to
     optimize the attenuation of the highest side lobe.
     """
 
@@ -390,7 +391,7 @@ class KaiserWindow(Window):
                           its first sample. False, if the window's last sample shall
                           be the same as its second sample. The latter is often
                           beneficial in segmentation applications, as it makes it
-                          easier to meet the "constant overlap add"-constraint.
+                          easier to meet the "constant overlap-add"-constraint.
         """
         self.__beta = beta
         Window.__init__(self, plateau=plateau, sampling_rate=sampling_rate, length=length, symmetric=symmetric)

@@ -2,6 +2,7 @@ aiff
 args
 benchmarking
 Blackman
+Bohman
 boolean
 booleans
 Butterworth
@@ -22,6 +23,7 @@ deserializing
 deserialization
 devnull
 DFT
+Dolph
 dtype
 endian
 endianness
@@ -31,6 +33,7 @@ für
 Gravitationsphysik
 Hann
 Heinzel
+HFT
 highpass
 http
 hypergeometric
@@ -54,15 +57,19 @@ noqa
 npy
 numpy
 NumPy
+Nuttall
 Ogg
 oversampled
 OwnPort
+Parzen
 passband
 Passthrough
+pre
 precompute
 prepone
 preponed
 prepones
+prolate
 pytest
 pytest's
 QJackCtrl
@@ -73,7 +80,9 @@ Rudin
 Schulte
 SciPy
 serializable
+SFT
 skewness
+Slepian
 soundfile
 spectrogram
 spectrogram's
@@ -84,6 +93,7 @@ str
 summands
 sumpf
 TransformedS
+Tukey
 unary
 vectorial
 von

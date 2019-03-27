@@ -18,7 +18,7 @@
 
 import enum
 
-__all__ = ("ConvolutionMode", "MergeMode", "ShiftMode")
+__all__ = ("ConvolutionMode", "MergeMode", "ShiftMode", "NuttallWindows", "FlatTopWindows")
 
 
 class ConvolutionMode(enum.Enum):
@@ -79,3 +79,116 @@ class ShiftMode(enum.Enum):
     CROP = enum.auto()
     PAD = enum.auto()
     CYCLE = enum.auto()
+
+
+class NuttallWindows(enum.Enum):
+    """This enumeration defines flags to specify the variant of Nuttall window,
+    when instantiating the :class:`~sumpf.NuttallWindow` class.
+
+    The names of this enumeration's flags are taken from the paper `Spectrum and
+    spectral density estimation by the Discrete Fourier transform (DFT), including
+    a comprehensive list of window functions and some new flat-top windows
+    <https://holometer.fnal.gov/GH_FFT.pdf#page=33>`_ by G. Heinzel, A. Rüdiger and
+    R. Schilling, which was published by the Max-Planck-Institut für Gravitationsphysik
+    in February 2002.
+
+    * ``NUTTALL3`` is a three-term cosine-sum window with maximum decay of the side
+      lobes of 30dB per octave, which comes at the cost of having a high side lobe
+      level of -46.7dB to begin with.
+    * ``NUTTALL3A`` is also a three-term cosine-sum window, that has a reduced
+      maximum side lobe level of -64.2dB, but also a reduced side lobe decay of
+      only 18dB per octave in comparison to ``NUTTALL3``.
+    * ``NUTTALL3B`` is a three-term cosine-sum window, that has a side lobe decay
+      of only 6dB per octave, but maximally suppressed side lobes -71.5dB.
+    * ``NUTTALL4`` is a four-term cosine-sum window with maximum decay of the side
+      lobes of 42dB per octave, which comes at the cost of having a relatively
+      high side lobe level of -60.9dB.
+    * ``NUTTALL4A`` is also a four-term cosine-sum window, that has a reduced
+      maximum side lobe level of -82.6dB, but also a slightly reduced side lobe
+      decay of only 30dB per octave in comparison to ``NUTTALL4``.
+    * ``NUTTALL4B`` is also a four-term cosine-sum window, that has a further reduced
+      maximum side lobe level of -93.3dB, but also a reduced side lobe decay of
+      only 18dB per octave in comparison to ``NUTTALL4`` and ``NUTTALL4A``.
+    * ``NUTTALL4C`` is a four-term cosine-sum window, that has a side lobe decay
+      of only 6dB per octave, but maximally suppressed side lobes -98.1dB.
+    """
+    NUTTALL3 = enum.auto()
+    NUTTALL3A = enum.auto()
+    NUTTALL3B = enum.auto()
+    NUTTALL4 = enum.auto()
+    NUTTALL4A = enum.auto()
+    NUTTALL4B = enum.auto()
+    NUTTALL4C = enum.auto()
+
+
+class FlatTopWindows(enum.Enum):
+    """This enumeration defines flags to specify the flat top window, when instantiating
+    the :class:`~sumpf.FlatTopWindow` class.
+
+    Due to advances in optimization techniques, there are some flat top windows,
+    which have been optimized with the same target, but have different functions,
+    nevertheless. For example, the ``HFT`` windows tend to be better optimized
+    than the ``SFT`` family of windows.
+
+    Most names and functions of this enumeration's flags are taken from the paper
+    `Spectrum and spectral density estimation by the Discrete Fourier transform
+    (DFT), including a comprehensive list of window functions and some new flat-top
+    windows <https://holometer.fnal.gov/GH_FFT.pdf#page=38>`_ by G. Heinzel,
+    A. Rüdiger and R. Schilling, which was published by the Max-Planck-Institut
+    für Gravitationsphysik in February 2002.
+
+    * ``DEFAULT`` uses the :func:`scipy.signal.windows.flattop` function.
+    * ``SFT3F`` is a three-term cosine-sum window, which is optimized for a fast
+      decay of the side lobes.
+    * ``SFT4F`` is a four-term cosine-sum window, which is optimized for a fast
+      decay of the side lobes.
+    * ``SFT5F`` is a five-term cosine-sum window, which is optimized for a fast
+      decay of the side lobes.
+    * ``SFT3M`` is a three-term cosine-sum window, which is optimized for maximum
+      side lobe suppression.
+    * ``SFT4M`` is a four-term cosine-sum window, which is optimized for maximum
+      side lobe suppression.
+    * ``SFT5M`` is a five-term cosine-sum window, which is optimized for maximum
+      side lobe suppression.
+    * ``FTNI`` is a flat top window, that has been published by National Instruments.
+    * ``FTHP`` is a flat top window, that has been used in older HP spectrum analyzers.
+    * ``FTSRS`` is a flat top window, that is used in the Stanford Research SR785
+      spectrum analyzer.
+    * ``HFT70`` is a four-term cosine-sum window, which is optimized for maximum
+      side lobe suppression.
+    * ``HFT90D`` is a five-term cosine-sum window, which is optimized for maximum
+      side lobe suppression, while having a 18dB per octave decay of the side lobes.
+    * ``HFT95`` is a five-term cosine-sum window, which is optimized for maximum
+      side lobe suppression.
+    * ``HFT116D`` is a six-term cosine-sum window, which is optimized for maximum
+      side lobe suppression, while having a 18dB per octave decay of the side lobes.
+    * ``HFT144D`` is a seven-term cosine-sum window, which is optimized for maximum
+      side lobe suppression, while having a 18dB per octave decay of the side lobes.
+    * ``HFT169D`` is a eight-term cosine-sum window, which is optimized for maximum
+      side lobe suppression, while having a 18dB per octave decay of the side lobes.
+    * ``HFT196D`` is a nine-term cosine-sum window, which is optimized for maximum
+      side lobe suppression, while having a 18dB per octave decay of the side lobes.
+    * ``HFT223D`` is a ten-term cosine-sum window, which is optimized for maximum
+      side lobe suppression, while having a 18dB per octave decay of the side lobes.
+    * ``HFT248D`` is a eleven-term cosine-sum window, which is optimized for maximum
+      side lobe suppression, while having a 18dB per octave decay of the side lobes.
+    """
+    DEFAULT = enum.auto()
+    SFT3F = enum.auto()
+    SFT4F = enum.auto()
+    SFT5F = enum.auto()
+    SFT3M = enum.auto()
+    SFT4M = enum.auto()
+    SFT5M = enum.auto()
+    FTNI = enum.auto()
+    FTHP = enum.auto()
+    FTSRS = enum.auto()
+    HFT70 = enum.auto()
+    HFT90D = enum.auto()
+    HFT95 = enum.auto()
+    HFT116D = enum.auto()
+    HFT144D = enum.auto()
+    HFT169D = enum.auto()
+    HFT196D = enum.auto()
+    HFT223D = enum.auto()
+    HFT248D = enum.auto()
