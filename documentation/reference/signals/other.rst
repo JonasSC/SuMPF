@@ -8,3 +8,6 @@ The inherited methods of the :class:`~sumpf.Signal` class are not documented her
 
 .. autoclass:: sumpf.Fade
    :members:
+
+.. autoclass:: sumpf.MaximumLengthSequence
+   :members:

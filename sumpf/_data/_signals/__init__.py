@@ -25,6 +25,10 @@ from ._waves import *
 from ._windows import *
 
 try:
+    from ._mls import *
+except ImportError:
+    pass
+try:
     from ._windows_scipy import *
 except ImportError:
     pass
