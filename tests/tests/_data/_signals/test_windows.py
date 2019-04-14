@@ -296,6 +296,7 @@ def __check_overlap_correlation(window, overlap):
                   length=tests.strategies.short_lengths,
                   symmetric=hypothesis.strategies.booleans(),
                   overlap=hypothesis.strategies.floats(min_value=0.0, max_value=1.0))
+@hypothesis.settings(deadline=None)
 def test_rectangular_window(plateau, sampling_rate, length, symmetric, overlap):
     """Tests the implementation of the rectangular window."""
     window = sumpf.RectangularWindow(plateau, sampling_rate, length, symmetric)
@@ -325,6 +326,7 @@ def test_rectangular_window(plateau, sampling_rate, length, symmetric, overlap):
                   length=tests.strategies.short_lengths,
                   symmetric=hypothesis.strategies.booleans(),
                   overlap=hypothesis.strategies.floats(min_value=0.0, max_value=1.0))
+@hypothesis.settings(deadline=None)
 def test_bartlett_window(plateau, sampling_rate, length, symmetric, overlap):
     """Tests the implementation of the Bartlett window."""
     window = sumpf.BartlettWindow(plateau, sampling_rate, length, symmetric)
@@ -348,6 +350,7 @@ def test_bartlett_window(plateau, sampling_rate, length, symmetric, overlap):
                   length=tests.strategies.short_lengths,
                   symmetric=hypothesis.strategies.booleans(),
                   overlap=hypothesis.strategies.floats(min_value=0.0, max_value=1.0))
+@hypothesis.settings(deadline=None)
 def test_hann_window(plateau, sampling_rate, length, symmetric, overlap):
     """Tests the implementation of the Hann window."""
     window = sumpf.HannWindow(plateau, sampling_rate, length, symmetric)
@@ -371,6 +374,7 @@ def test_hann_window(plateau, sampling_rate, length, symmetric, overlap):
                   length=tests.strategies.short_lengths,
                   symmetric=hypothesis.strategies.booleans(),
                   overlap=hypothesis.strategies.floats(min_value=0.0, max_value=1.0))
+@hypothesis.settings(deadline=None)
 def test_hamming_window(plateau, sampling_rate, length, symmetric, overlap):
     """Tests the implementation of the Hamming window."""
     window = sumpf.HammingWindow(plateau, sampling_rate, length, symmetric)
