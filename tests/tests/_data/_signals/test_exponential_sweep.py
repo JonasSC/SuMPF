@@ -37,6 +37,7 @@ import sumpf._internal as sumpf_internal
                   sine=hypothesis.strategies.booleans(),
                   sampling_rate=hypothesis.strategies.floats(min_value=44100.0, max_value=96000.0),
                   length=hypothesis.strategies.integers(min_value=256, max_value=2 ** 14))
+@hypothesis.settings(deadline=None)
 def test_compare_with_other_formula(start_frequency, stop_frequency, sine, sampling_rate, length):
     """Compares the current implementation with a sweep, that is created by a different but equivalent formula."""
     if sine:
@@ -154,14 +155,16 @@ def test_benchmark():
     # pylint: disable=wrong-spelling-in-comment
     logging.info("benchmarking SuMPF's ExponentialSweep and a pure NumPy implementation")
     # test with a very short sweep, where NumExpr's speed cannot compensate for the time it takes to parse the formula and SuMPF switches to a pure NumPy implementation
-#    numpy_time = timeit.timeit("numpy_sweep(length=256)", globals=globals(), number=1000)
-#    sumpf_time = timeit.timeit("sumpf.ExponentialSweep(length=256)", globals=globals(), number=1000)
-#    logging.info("  performance gain with 256 samples:   {:6.2f}% (NumPy: {:6.2f}ms, SuMPF: {:6.2f}ms)".format(100 * (numpy_time - sumpf_time) / numpy_time, 1000 * numpy_time, 1000 * sumpf_time))
+    numpy_time = timeit.timeit("numpy_sweep(length=512)", globals=globals(), number=1000)
+    sumpf_time = timeit.timeit("sumpf.ExponentialSweep(length=512)", globals=globals(), number=2000)
+    numpy_time += timeit.timeit("numpy_sweep(length=512)", globals=globals(), number=1000)
+    logging.info("  performance gain with 512 samples:   {:6.2f}% (NumPy: {:6.2f}ms, SuMPF: {:6.2f}ms)".format(100 * (numpy_time - sumpf_time) / numpy_time, 1000 * numpy_time, 1000 * sumpf_time))
 #    assert sumpf_time <= numpy_time * 1.1   # since both implementations are very much the same, their run-times are expected to be equal
     # test with a longer sweep, where NumExpr can shine
-    numpy_time = timeit.timeit("numpy_sweep(length=16384)", globals=globals(), number=100)
-    sumpf_time = timeit.timeit("sumpf.ExponentialSweep(length=16384)", globals=globals(), number=100)
-    logging.info("  performance gain with 16384 samples: {:6.2f}% (NumPy: {:6.2f}ms, SuMPF: {:6.2f}ms)".format(100 * (numpy_time - sumpf_time) / numpy_time, 1000 * numpy_time, 1000 * sumpf_time))
+    numpy_time = timeit.timeit("numpy_sweep(length=65536)", globals=globals(), number=100)
+    sumpf_time = timeit.timeit("sumpf.ExponentialSweep(length=65536)", globals=globals(), number=200)
+    numpy_time += timeit.timeit("numpy_sweep(length=65536)", globals=globals(), number=100)
+    logging.info("  performance gain with 65536 samples: {:6.2f}% (NumPy: {:6.2f}ms, SuMPF: {:6.2f}ms)".format(100 * (numpy_time - sumpf_time) / numpy_time, 1000 * numpy_time, 1000 * sumpf_time))
     assert sumpf_time < numpy_time
 
 ##########################################

@@ -27,27 +27,43 @@ try:
 except ImportError:
     numexpr = False
 
-__all__ = ("ExponentialSweep", "InverseExponentialSweep")
+__all__ = ("LinearSweep", "InverseLinearSweep", "ExponentialSweep", "InverseExponentialSweep")
 
 ####################
 # helper functions #
 ####################
 
 
-def exponential_sweep_parameters(start_frequency, stop_frequency, interval, sampling_rate, length):
-    """A helper function that computes parameters, that are used by both the
-    ExponentialSweep and the InverseExponentialSweep.
-    """
+def general_sweep_parameters(interval, sampling_rate, length):
+    """A helper function that computes parameters, that are used by the sweep classes."""
     start, stop = sumpf_internal.index(interval, length)
     sweep_offset = start / sampling_rate
     sweep_length = stop - start
     sweep_duration = sweep_length / sampling_rate
+    t = numpy.linspace(-sweep_offset, (length - 1) / sampling_rate - sweep_offset, length)  # the time values for the samples
+    return start, stop, t, sweep_duration, sweep_offset
+
+
+def linear_sweep_parameters(start_frequency, stop_frequency, interval, sampling_rate, length):
+    """A helper function that computes parameters, that are used by both the
+    LinearSweep and the InverseLinearSweep classes.
+    """
+    start, stop, t, sweep_duration, sweep_offset = general_sweep_parameters(interval, sampling_rate, length)
+    k = (stop_frequency - start_frequency) / sweep_duration
+    a = 2.0 * math.pi * start_frequency
+    b = math.pi * k
+    return start, stop, t, sweep_duration, sweep_offset, a, b, k
+
+
+def exponential_sweep_parameters(start_frequency, stop_frequency, interval, sampling_rate, length):
+    """A helper function that computes parameters, that are used by both the
+    ExponentialSweep and the InverseExponentialSweep classes.
+    """
+    start, stop, t, sweep_duration, sweep_offset = general_sweep_parameters(interval, sampling_rate, length)
     frequency_ratio = stop_frequency / start_frequency
     l = sweep_duration / math.log(frequency_ratio)
     a = 2.0 * math.pi * start_frequency * l
-    t = numpy.linspace(-sweep_offset, (length - 1) / sampling_rate - sweep_offset, length)  # the time values for the samples
-    o = start / sampling_rate
-    return start, stop, t, sweep_duration, l, a, o
+    return start, stop, t, sweep_duration, sweep_offset, l, a
 
 
 def apply_delay(channels, sampling_rate, delay, out):
@@ -220,6 +236,125 @@ class BaseExponentialSweep(Sweep):
                       offset=0,
                       labels=[f"{l} ({h} harmonic)" for l in impulse_response.labels()])
 
+################
+# linear sweep #
+################
+
+
+class LinearSweep(Sweep):
+    """A class for a swept sine signal whose frequency increases linearly with time"""
+
+    def __init__(self, start_frequency=20.0, stop_frequency=20000.0, phase=0.0,
+                 interval=(0, 1.0), sampling_rate=48000.0, length=2 ** 16):
+        """
+        :param start_frequency: the start frequency in Hz
+        :param stop_frequency: the stop frequency in Hz
+        :param phase: a phase offset in radians (e.g. pass pi/2 for a cosine sweep)
+        :param interval: a tuple, list or array of two numbers, that specify the
+                         indices of the samples, at which the start and the stop
+                         frequencies shall be excited. The sweep will continue
+                         outside this interval. This functionality is useful, if
+                         the sweep shall be faded in or out and the range between
+                         the start and the stop frequency shall not be affected
+                         by the fading.
+                         The indices can be specified as integer indices or as
+                         floats between 0.0 and 1.0, which are mapped to 0 and
+                         ``length``. Negative indices (also possible with floats)
+                         are relative to the end of the signal.
+        :param sampling_rate: the sampling rate of the resulting signal in Hz as
+                              an integer or a float
+        :param length: the number of samples of the sweep
+        """
+        # allocate shared memory for the channels
+        channels = sumpf_internal.allocate_array(shape=(1, length), dtype=numpy.float64)
+        # generate the sweep
+        _, _, t, _, sweep_offset, a, b, k = linear_sweep_parameters(start_frequency=start_frequency,
+                                                                    stop_frequency=stop_frequency,
+                                                                    interval=interval,
+                                                                    sampling_rate=sampling_rate,
+                                                                    length=length)
+        if length <= 8192 or not numexpr:   # for short sweeps NumExpr is slower than NumPy
+            array = t * t
+            array *= b
+            array += a * t
+            array += phase
+            numpy.sin(array, out=channels[0, :])
+        else:
+            numexpr.evaluate(ex="sin(phase + a * t + b * (t**2))", out=channels[0, :], optimization="moderate")
+        # store the values and parameters
+        Sweep.__init__(self,
+                       channels=channels,
+                       sampling_rate=sampling_rate,
+                       offset=0,
+                       function=lambda tau: start_frequency + k * (tau - sweep_offset))
+
+
+class InverseLinearSweep(Sweep):
+    """Creates an inverse for a linear sweep.
+    In the excited frequency range, the convolution of a sweep with its inverse
+    results in a unit impulse.
+
+    In order to be able to use the same parameters to generate a sweep and its
+    inverse, the ``start_frequency`` and ``stop_frequency`` parameters are
+    swapped for the inverse sweep. An inverse sweep actually excites the
+    start frequency at the end.
+
+    The offset of this sweep is chosen to work with a non-circular convolution
+    (convolution modes ``FULL`` or ``SPECTRUM_PADDED``). When performing a circular
+    convolution (convolution mode ``SPECTRUM``), the resulting impulse response
+    will be fully non-causal. In this case, it is recommended to set either the
+    inverse sweep's offset or the impulse response's offset to 0 by calling their
+    :meth:`~sumpf.InverseLinearSweep.shift` method with parameter ``None``.
+    """
+
+    def __init__(self, start_frequency=20.0, stop_frequency=20000.0, phase=0.0,
+                 interval=(0, 1.0), sampling_rate=48000.0, length=2 ** 16):
+        """
+        :param start_frequency: the start frequency in Hz
+        :param stop_frequency: the stop frequency in Hz
+        :param phase: a phase offset in radians (e.g. pass pi/2 for a cosine sweep)
+        :param interval: a tuple, list or array of two numbers, that specify the
+                         indices of the samples, at which the start and the stop
+                         frequencies shall be excited. The sweep will continue
+                         outside this interval. This functionality is useful, if
+                         the sweep shall be faded in or out and the range between
+                         the start and the stop frequency shall not be affected
+                         by the fading.
+                         The indices can be specified as integer indices or as
+                         floats between 0.0 and 1.0, which are mapped to 0 and
+                         ``length``. Negative indices (also possible with floats)
+                         are relative to the end of the signal.
+        :param sampling_rate: the sampling rate of the resulting signal in Hz as
+                              an integer or a float
+        :param length: the number of samples of the sweep
+        """
+        # allocate shared memory for the channels
+        channels = sumpf_internal.allocate_array(shape=(1, length), dtype=numpy.float64)
+        # generate the sweep
+        start, stop, t, T, sweep_offset, a, b, k = linear_sweep_parameters(start_frequency=start_frequency,
+                                                                           stop_frequency=stop_frequency,
+                                                                           interval=interval,
+                                                                           sampling_rate=sampling_rate,
+                                                                           length=length)
+        t *= -1.0
+        t += T
+        s = 2.0 / (stop - start)    # a scaling factor, so that the convolution of the sweep and the inverse sweep results in a unit impulse
+        if length <= 8192 or not numexpr:   # for short sweeps NumExpr is slower than NumPy
+            array = t * t
+            array *= b
+            array += a * t
+            array += phase + 0.0
+            numpy.sin(array, out=channels[0, :])
+            channels *= s
+        else:
+            numexpr.evaluate(ex="s * sin(phase + a * t + b * (t**2))", out=channels[0, :], optimization="moderate")
+        # store the values and parameters
+        Sweep.__init__(self,
+                       channels=channels,
+                       sampling_rate=sampling_rate,
+                       offset=-stop - start,
+                       function=lambda tau: stop_frequency - k * (tau - sweep_offset))
+
 ######################
 # exponential sweeps #
 ######################
@@ -252,11 +387,11 @@ class ExponentialSweep(BaseExponentialSweep):
         # allocate shared memory for the channels
         channels = sumpf_internal.allocate_array(shape=(1, length), dtype=numpy.float64)
         # generate the sweep
-        _, _, t, _, l, a, o = exponential_sweep_parameters(start_frequency,
-                                                           stop_frequency,
-                                                           interval,
-                                                           sampling_rate,
-                                                           length)
+        _, _, t, _, sweep_offset, l, a = exponential_sweep_parameters(start_frequency,
+                                                                      stop_frequency,
+                                                                      interval,
+                                                                      sampling_rate,
+                                                                      length)
         if length <= 8192 or not numexpr:   # for short sweeps NumExpr is slower than NumPy
             array = t
             array /= l
@@ -271,18 +406,18 @@ class ExponentialSweep(BaseExponentialSweep):
                                       channels=channels,
                                       sampling_rate=sampling_rate,
                                       offset=0,
-                                      function=lambda tau: start_frequency * math.exp((tau - o) / l),
+                                      function=lambda tau: start_frequency * math.exp((tau - sweep_offset) / l),
                                       l=l)
 
 
 class InverseExponentialSweep(BaseExponentialSweep):
-    """Creates an inverse sine sweep.
+    """Creates an inverse for an exponential sweep.
     In the excited frequency range, the convolution of a sweep with its inverse
     results in a unit impulse.
 
     In order to be able to use the same parameters to generate a sweep and its
     inverse, the ``start_frequency`` and ``stop_frequency`` parameters are
-    exchanged for the inverse sweep. An inverse sweep actually excites the
+    swapped for the inverse sweep. An inverse sweep actually excites the
     start frequency at the end.
 
     The offset of this sweep is chosen to work with a non-circular convolution
@@ -290,7 +425,7 @@ class InverseExponentialSweep(BaseExponentialSweep):
     convolution (convolution mode ``SPECTRUM``), the resulting impulse response
     will be fully non-causal. In this case, it is recommended to set either the
     inverse sweep's offset or the impulse response's offset to 0 by calling their
-    :meth:`~sumpf.Signal.shift` method with parameter ``None``.
+    :meth:`~sumpf.InverseExponentialSweep.shift` method with parameter ``None``.
     """
 
     def __init__(self, start_frequency=20.0, stop_frequency=20000.0, phase=0.0,
@@ -324,11 +459,11 @@ class InverseExponentialSweep(BaseExponentialSweep):
         # allocate shared memory for the channels
         channels = sumpf_internal.allocate_array(shape=(1, length), dtype=numpy.float64)
         # generate the sweep
-        start, stop, t, T, l, a, o = exponential_sweep_parameters(start_frequency,
-                                                                  stop_frequency,
-                                                                  interval,
-                                                                  sampling_rate,
-                                                                  length)
+        start, stop, t, T, sweep_offset, l, a = exponential_sweep_parameters(start_frequency,
+                                                                             stop_frequency,
+                                                                             interval,
+                                                                             sampling_rate,
+                                                                             length)
         s = 2.0 * start_frequency / l / (stop_frequency - start_frequency) / sampling_rate      # a scaling factor, so that the convolution of the sweep and the inverse sweep results in a unit impulse
         if length <= 8192 or not numexpr:   # for short sweeps NumExpr is slower than NumPy
             exponent = numpy.subtract(T, t, out=t)
@@ -352,5 +487,5 @@ class InverseExponentialSweep(BaseExponentialSweep):
                                       channels=channels,
                                       sampling_rate=sampling_rate,
                                       offset=-stop - start,
-                                      function=lambda tau: stop_frequency * math.exp((-tau + o) / l),
+                                      function=lambda tau: stop_frequency * math.exp((-tau + sweep_offset) / l),
                                       l=l)

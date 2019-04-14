@@ -3,8 +3,21 @@ Sweeps
 
 This section documents classes for sine sweeps and their inverses.
 
-The inherited methods of the :class:`~sumpf.Signal` class are not documented here.
 
+Linear sweeps
+-------------
+
+.. autoclass:: sumpf.LinearSweep
+   :members:
+   :inherited-members:
+
+.. autoclass:: sumpf.InverseLinearSweep
+   :members:
+   :inherited-members:
+
+
+Exponential sweeps
+------------------
 
 .. autoclass:: sumpf.ExponentialSweep
    :members:
