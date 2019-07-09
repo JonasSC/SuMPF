@@ -512,3 +512,19 @@ def test_inverse_fourier_transform_calculation(spectrum):
     assert signal.duration() == pytest.approx(1.0 / spectrum.resolution())
     assert signal.offset() == 0
     assert signal.labels() == spectrum.labels()
+
+
+@hypothesis.given(tests.strategies.signals)
+def test_level(signal):
+    """Tests the level computation from the Spectrum class by comparing it to the Signal's level method."""
+    if signal.length() % 2 == 1:    # with uneven signal lengths, the last sample is lost in the FFT, which makes the levels incomparable
+        signal = signal.pad(signal.length() + 1)
+    spectrum = signal.fourier_transform()
+    # compute the level for each channel
+    reference = signal.level()
+    level = spectrum.level()
+    assert len(level) == len(spectrum)
+    assert level == pytest.approx(reference)
+    # compute a scalar level value
+    reference = signal.level(single_value=True)
+    assert spectrum.level(single_value=True) == pytest.approx(reference)

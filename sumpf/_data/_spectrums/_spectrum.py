@@ -16,6 +16,7 @@
 
 """Contains the base container class for spectrums"""
 
+import math
 import numpy
 import sumpf
 import sumpf._internal as sumpf_internal
@@ -357,6 +358,26 @@ class Spectrum(SampledData):
                             sampling_rate=sampling_rate,
                             offset=0,
                             labels=self._labels)
+
+    def level(self, single_value=False):
+        """Computes the root-mean-square-level of the spectrum's channels.
+
+        :param single_value: if False, an :func:`~numpy.array` with the level of
+                             each channel is returned, otherwise a single value
+                             for some sort of "total spectrum level" is computed,
+                             which is the same as the level of the concatenation
+                             of all channels
+        :returns: an :func:`~numpy.array` or a float
+        """
+        signal_length = max(1, (self._length - 1) * 2)
+        abs_ = numpy.abs(self._channels)
+        square = numpy.square(abs_, out=abs_)
+        if single_value:
+            sum_ = math.fsum(math.fsum((math.fsum(c[1:-1]) * 2, c[0], c[-1])) for c in square)
+            return math.sqrt(sum_ / len(self)) / signal_length
+        else:
+            return numpy.fromiter((math.sqrt(math.fsum((math.fsum(c[1:-1]) * 2, c[0], c[-1]))) / signal_length for c in square),
+                                  dtype=numpy.float64)
 
     #######################
     # persistence methods #

@@ -786,6 +786,14 @@ def test_short_time_fourier_transform_calculation(signal, window_length, overlap
                     assert signal.short_time_fourier_transform(w, o, pad) == reference
 
 
+def test_level_manual():
+    """tests the level computation of some known signals"""
+    sine = sumpf.SineWave(length=48000)
+    assert sine.level() == pytest.approx([0.5 ** 0.5])
+    square = sumpf.SquareWave(phase=0.1)
+    assert square.level() == pytest.approx([1.0])
+
+
 @hypothesis.given(tests.strategies.signals)
 def test_level(signal):
     """Tests the level computation from the Signal class."""
