@@ -149,7 +149,6 @@ def test_convolution_with_sweep():
                    {"phase": 2.4, "length": 8192},
                    {"interval": (0.15, 0.9), "length": 8192},
                    {"stop_frequency": 5000.0, "sampling_rate": 18312.7, "length": 4096}):
-        print(kwargs)
         a, b = kwargs.get("interval", (0, 1.0))
         sweep = sumpf.LinearSweep(**kwargs)
         isweep = sumpf.InverseLinearSweep(**kwargs)

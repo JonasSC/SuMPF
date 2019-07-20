@@ -248,8 +248,6 @@ def test_multiply_with_signal_or_spectrum(filter_, signal):
         assert (numpy.nan_to_num(filtered_signal3.channels()) == numpy.nan_to_num(filtered_signal2.channels())).all()
         assert (numpy.nan_to_num(filtered_spectrum3.channels()) == numpy.nan_to_num(filtered_spectrum2.channels())).all()   # pylint: disable=line-too-long
     else:
-        print(repr(filtered_signal1))
-        print(repr(filtered_signal2))
         assert filtered_signal1 == filtered_signal2
         assert filtered_spectrum1 == filtered_spectrum2
         assert filtered_signal3 == filtered_signal2

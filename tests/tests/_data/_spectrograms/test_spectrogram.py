@@ -441,7 +441,6 @@ def test_multiply():
     assert product.resolution() == spectrogram1.resolution()
     assert product.sampling_rate() == spectrogram1.sampling_rate()
     assert product.labels() == ("Product",) * 2
-    print(product.channels())
     assert (product.channels() == [[(1.0, 1.0, 8.0, 1.0, 1.0), (1.0, 1.0, 0.4 * 0.2, 1.0, 1.0)],
                                    [(1.0, 1.0, 4.0, 3.0, 1.0), (1.0, 1.0, 0.4, 0.3, 1.0)]]).all()
     assert ((spectrogram2[2] * spectrogram1).channels() == product.channels()).all()
@@ -508,7 +507,6 @@ def test_divide():
     assert quotient.resolution() == spectrogram1.resolution()
     assert quotient.sampling_rate() == spectrogram1.sampling_rate()
     assert quotient.labels() == ("Quotient",) * 2
-    print(quotient.channels())
     assert (quotient.channels() == [[(1.0, 1.0, 0.25, 1.0, 1.0), (1.0, 1.0, 0.25, 1.0, 1.0)],
                                     [(1.0, 1.0, 0.125, 4.0, 1.0), (1.0, 1.0, 1.25, 0.4, 1.0)]]).all()
     assert ((spectrogram2[2] / spectrogram1).channels() == [[(1.0, 1.0, 4.0, 1.0, 1.0), (1.0, 1.0, 4.0, 1.0, 1.0)],

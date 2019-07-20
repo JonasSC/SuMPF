@@ -155,16 +155,12 @@ class Spectrogram(SampledData):
     def __eq__(self, other):
         """Operator overload for comparing this spectrogram to another object with ``==``"""
         if not isinstance(other, Spectrogram):
-            print("not a spectrogram")
             return False
         elif self.__resolution != other.resolution():
-            print("wrong resolution")
             return False
         elif self.__sampling_rate != other.sampling_rate():
-            print("wrong sampling rate")
             return False
         elif self.__offset != other.offset():
-            print("wrong offset")
             return False
         return super().__eq__(other)
 
