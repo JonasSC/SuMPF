@@ -27,6 +27,18 @@ import tests
                   stop_frequency=tests.strategies.non_zero_frequencies,
                   resolution=tests.strategies.resolutions,
                   length=tests.strategies.short_lengths)
+def test_parameters(start_frequency, stop_frequency, resolution, length):
+    """Does some very basic tests with the constructor parameters of the RudinShapiroNoiseSpectrum class"""
+    start_frequency, stop_frequency = sorted((start_frequency, stop_frequency))
+    noise = sumpf.RudinShapiroNoiseSpectrum(start_frequency, stop_frequency, resolution, length)
+    assert noise.shape() == (1, length)
+    assert noise.resolution() == resolution
+
+
+@hypothesis.given(start_frequency=tests.strategies.frequencies,
+                  stop_frequency=tests.strategies.non_zero_frequencies,
+                  resolution=tests.strategies.resolutions,
+                  length=tests.strategies.short_lengths)
 def test_spectrum(start_frequency, stop_frequency, resolution, length):
     """Tests the properties of the Rudin-Shapiro-Noise-spectrums"""
     start_frequency, stop_frequency = sorted((start_frequency, stop_frequency))

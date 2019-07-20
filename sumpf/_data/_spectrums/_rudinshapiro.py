@@ -69,7 +69,7 @@ class RudinShapiroNoiseSpectrum(Spectrum):
                     i *= 2
         channel[offset + sequence_length:] = 0.0
         # store the parameters
-        Spectrum.__init__(self, channels=channels, labels=("Noise",))
+        Spectrum.__init__(self, channels=channels, resolution=resolution, labels=("Noise",))
         self.__sequence_length = sequence_length
 
     def sequence_length(self):
