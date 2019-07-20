@@ -122,10 +122,10 @@ def test_connectors(signal1, signal2, signal3, signal4):
     """tests the connector functionality of the MergeSignals class."""
     signal1, signal2, signal3, signal4 = _sanitize_offsets((signal1, signal2, signal3, signal4))    # pylint: disable=unbalanced-tuple-unpacking
     merger = sumpf.MergeSignals([signal1])
-    p1 = connectors.blocks.Passthrough().output.connect(merger.add)
+    p1 = connectors.blocks.PassThrough().output.connect(merger.add)
     merger.add(signal3)
-    p2 = connectors.blocks.Passthrough().input.connect(merger.output)
-    p3 = connectors.blocks.Passthrough().output.connect(merger.set_mode)
+    p2 = connectors.blocks.PassThrough().input.connect(merger.output)
+    p3 = connectors.blocks.PassThrough().output.connect(merger.set_mode)
     for mode in sumpf.MergeSignals.modes:
         p1.input(signal2)
         p3.input(mode)

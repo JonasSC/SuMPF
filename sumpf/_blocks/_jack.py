@@ -93,8 +93,8 @@ class Jack:
         for short_name in input_ports:
             self._client.inports.register(short_name)
         # Passthrough instances for asynchronous events
-        self._sampling_rate = connectors.blocks.Passthrough(float(self._client.samplerate))
-        self._xruns = connectors.blocks.Passthrough((0, None))
+        self._sampling_rate = connectors.blocks.PassThrough(float(self._client.samplerate))
+        self._xruns = connectors.blocks.PassThrough((0, None))
         # set the callbacks and activate the client
         self._client.set_process_callback(functools.partial(on_process, instance=weakref.ref(self)))
         self._client.set_shutdown_callback(functools.partial(on_shutdown, event=self._event))

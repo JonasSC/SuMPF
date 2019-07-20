@@ -113,10 +113,10 @@ def test_empty():
 def test_connectors(spectrum1, spectrum2, spectrum3, spectrum4):
     """tests the connector functionality of the MergeSpectrums class."""
     merger = sumpf.MergeSpectrums([spectrum1])
-    p1 = connectors.blocks.Passthrough().output.connect(merger.add)
+    p1 = connectors.blocks.PassThrough().output.connect(merger.add)
     merger.add(spectrum3)
-    p2 = connectors.blocks.Passthrough().input.connect(merger.output)
-    p3 = connectors.blocks.Passthrough().output.connect(merger.set_mode)
+    p2 = connectors.blocks.PassThrough().input.connect(merger.output)
+    p3 = connectors.blocks.PassThrough().output.connect(merger.set_mode)
     for mode in sumpf.MergeSpectrums.modes:
         p1.input(spectrum2)
         p3.input(mode)
