@@ -93,6 +93,7 @@ class MergeSpectrums:
         :param spectrum_id: the unique identifier, under which the referred spectrum is stored
         """
         del self.__spectrums[spectrum_id]
+        return self
 
     @add.replace
     def replace(self, spectrum_id, spectrum):

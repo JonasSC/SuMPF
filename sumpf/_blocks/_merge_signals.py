@@ -95,6 +95,7 @@ class MergeSignals:
         :param signal_id: the unique identifier, under which the referred signal is stored
         """
         del self.__signals[signal_id]
+        return self
 
     @add.replace
     def replace(self, signal_id, signal):
