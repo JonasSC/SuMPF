@@ -224,9 +224,8 @@ class Jack:
 
         Calling this method removes a channel from the recorded output signal.
 
-        :param short_name: a specifier for the port, that shall be destroyed. See
-                           the :meth:``~sumpf.Jack.connect`` method for how to
-                           specify a port.
+        :param port: a specifier for the port, that shall be destroyed. See the
+                     :meth:``~sumpf.Jack.connect`` method for how to specify a port.
         :returns: ``self``
         """
         port = self.__input_port(port)
