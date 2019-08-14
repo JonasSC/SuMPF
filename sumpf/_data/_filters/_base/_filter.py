@@ -214,21 +214,21 @@ class Filter:
         """Private helper function that implements the broadcasting of filters with
         different numbers of channels, when using the overloaded math operators.
 
-        :param other: the other filter
+        :param other: the other transfer function
         :param function: a function, that implements the computation
         :param label: the string label for the computed channels
         :returns: a :class:`~sumpf.Filter` instance
         """
         if len(self.__transfer_functions) == 1:
             tf1 = self.__transfer_functions[0]
-            return Filter(transfer_functions=tuple(function(tf1, tf2) for tf2 in other.transfer_functions()),
+            return Filter(transfer_functions=tuple(function(tf1, tf2) for tf2 in other),
                           labels=(label,) * len(other))
         elif len(other) == 1:
-            tf2 = other.transfer_functions()[0]
+            tf2 = other[0]
             return Filter(transfer_functions=tuple(function(tf1, tf2) for tf1 in self.__transfer_functions),
                           labels=(label,) * len(self.__transfer_functions))
         elif len(self.__transfer_functions) == len(other):
-            transfer_functions = zip(self.__transfer_functions, other.transfer_functions())
+            transfer_functions = zip(self.__transfer_functions, other)
             return Filter(transfer_functions=tuple(function(tf1, tf2) for tf1, tf2 in transfer_functions),
                           labels=(label,) * len(other))
         else:
@@ -244,11 +244,22 @@ class Filter:
         :returns: a :class:`~sumpf.Filter` instance
         """
         if isinstance(other, Filter):
-            return self.__algebra_function(other=other,
+            return self.__algebra_function(other=other.transfer_functions(),
                                            function=lambda a, b: a + b,
                                            label="Sum")
+        elif isinstance(other, (int, float, complex)):
+            if other == 0:
+                return self
+            else:
+                number = terms.Constant(other)
+                return Filter(transfer_functions=tuple(tf + number for tf in self.__transfer_functions),
+                              labels=self.__labels)
         else:
             return NotImplemented
+
+    def __radd__(self, other):
+        """Right hand side operator overload for adding this to a number."""
+        return self + other
 
     def __sub__(self, other):
         """Operator overload for subtracting another filter from this filter.
@@ -257,11 +268,24 @@ class Filter:
         :returns: a :class:`~sumpf.Filter` instance
         """
         if isinstance(other, Filter):
-            return self.__algebra_function(other=other,
+            return self.__algebra_function(other=other.transfer_functions(),
                                            function=lambda a, b: a - b,
                                            label="Difference")
+        elif isinstance(other, (int, float, complex)):
+            if other == 0:
+                return self
+            else:
+                number = terms.Constant(other)
+                return Filter(transfer_functions=tuple(tf - number for tf in self.__transfer_functions),
+                              labels=self.__labels)
         else:
             return NotImplemented
+
+    def __rsub__(self, other):
+        """Right hand side operator overload for subtracting this from a number."""
+        number = terms.Constant(other)
+        return Filter(transfer_functions=tuple(number - tf for tf in self.__transfer_functions),
+                      labels=self.__labels)
 
     def __mul__(self, other):
         """Operator overload for multiplying this filter with another filter or
@@ -271,9 +295,16 @@ class Filter:
         :returns: a :class:`~sumpf.Filter`, :class:`~sumpf.Signal` or :class:`~sumpf.Spectrum` instance
         """
         if isinstance(other, Filter):
-            return self.__algebra_function(other=other,
+            return self.__algebra_function(other=other.transfer_functions(),
                                            function=lambda a, b: a * b,
                                            label="Product")
+        elif isinstance(other, (int, float, complex)):
+            if other == 1:
+                return self
+            else:
+                number = terms.Constant(other)
+                return Filter(transfer_functions=tuple(tf * number for tf in self.__transfer_functions),
+                              labels=self.__labels)
         elif isinstance(other, sumpf.Spectrum):
             filter_ = self.spectrum(resolution=other.resolution(),
                                     length=other.length())
@@ -291,7 +322,7 @@ class Filter:
         """Right hand side operator overload for applying this filter to a :class:`~sumpf.Signal`
         or a :class:`~sumpf.Spectrum` instance.
 
-        :param other: a :class:`~sumpf.Signal` or :class:`~sumpf.Spectrum` instance
+        :param other: a number, a :class:`~sumpf.Signal` or :class:`~sumpf.Spectrum` instance
         :returns: a :class:`~sumpf.Signal` or :class:`~sumpf.Spectrum` instance
         """
         return self * other
@@ -303,11 +334,24 @@ class Filter:
         :returns: a :class:`~sumpf.Filter` instance
         """
         if isinstance(other, Filter):
-            return self.__algebra_function(other=other,
+            return self.__algebra_function(other=other.transfer_functions(),
                                            function=lambda a, b: a / b,
                                            label="Quotient")
+        elif isinstance(other, (int, float, complex)):
+            if other == 1:
+                return self
+            else:
+                number = terms.Constant(other)
+                return Filter(transfer_functions=tuple(tf / number for tf in self.__transfer_functions),
+                              labels=self.__labels)
         else:
             return NotImplemented
+
+    def __rtruediv__(self, other):
+        """Right hand side operator overload for dividing a number by this."""
+        number = terms.Constant(other)
+        return Filter(transfer_functions=tuple(number / tf for tf in self.__transfer_functions),
+                      labels=self.__labels)
 
     #########################################
     # overloaded and misused math operators #

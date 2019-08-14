@@ -96,7 +96,7 @@ class SampledData:
         return self._algebra_function(other=other, function=numpy.add, other_pivot=None, label="Sum")
 
     def __radd__(self, other):
-        """Right hand side operator overload for adding this to another spectrum, an array or number."""
+        """Right hand side operator overload for adding this to an array or number."""
         return self._algebra_function_right(other=other, function=numpy.add)
 
     def __sub__(self, other):
@@ -104,7 +104,7 @@ class SampledData:
         return self._algebra_function(other=other, function=numpy.subtract, other_pivot=0.0, label="Difference")
 
     def __rsub__(self, other):
-        """Right hand side operator overload for subtracting this from another data set, an array or number."""
+        """Right hand side operator overload for subtracting this from an array or number."""
         return self._algebra_function_right(other=other, function=numpy.subtract)
 
     def __mul__(self, other):
@@ -112,7 +112,7 @@ class SampledData:
         return self._algebra_function(other=other, function=numpy.multiply, other_pivot=None, label="Product")
 
     def __rmul__(self, other):
-        """Right hand side operator overload for multiplying this with another data set, an array or number."""
+        """Right hand side operator overload for multiplying this with an array or number."""
         return self._algebra_function_right(other=other, function=numpy.multiply)
 
     def __truediv__(self, other):
@@ -120,7 +120,7 @@ class SampledData:
         return self._algebra_function(other=other, function=numpy.true_divide, other_pivot=1.0, label="Quotient")
 
     def __rtruediv__(self, other):
-        """Right hand side operator overload for dividing another data set, an array or number by this."""
+        """Right hand side operator overload for dividing an array or number by this."""
         return self._algebra_function_right(other=other, function=numpy.true_divide)
 
     def __pow__(self, other):
@@ -128,7 +128,7 @@ class SampledData:
         return self._algebra_function(other=other, function=numpy.power, other_pivot=None, label="Power")
 
     def __rpow__(self, other):
-        """Operator overload for computing the power of another data set, an array or number to this."""
+        """Operator overload for computing the power of an array or number to this."""
         return self._algebra_function_right(other=other, function=numpy.power)
 
     #######################################################

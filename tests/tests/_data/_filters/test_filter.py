@@ -154,6 +154,27 @@ def _compare_results(result, reference):
             assert numpy.divide(res, ref) == pytest.approx(1.0)
 
 
+def _compare_number_results(result, reference, number=None):
+    """Compares the result of a filter computation with a reference, that has been
+    computed with NumPy.
+    This function is used for computations, which involve a filter and a number.
+    """
+    assert numpy.shape(result) == numpy.shape(reference)
+    for ref, res in zip(reference, result):
+        if  numpy.isinf(ref):
+            if number == 0:
+                assert numpy.isinf(res) or numpy.isnan(res) or res == 0
+            else:
+                assert numpy.isinf(res) or numpy.isnan(res)
+        elif numpy.isnan(ref):
+            if number == 0:
+                assert numpy.isnan(res) or res == 0
+            else:
+                assert numpy.isnan(res)
+        else:
+            assert res == pytest.approx(ref)
+
+
 @pytest.mark.filterwarnings("ignore:overflow", "ignore:invalid value")
 @hypothesis.given(filter1=tests.strategies.filters,
                   filter2=tests.strategies.filters,
@@ -171,6 +192,23 @@ def test_add(filter1, filter2, frequency):
     channel_count = max(len(filter1), len(filter2))
     if channel_count:
         assert sum_.labels() == ("Sum",) * channel_count
+
+
+@pytest.mark.filterwarnings("ignore:overflow", "ignore:invalid value")
+@hypothesis.given(filter_=tests.strategies.filters,
+                  number=hypothesis.strategies.one_of(hypothesis.strategies.integers(),
+                                                      hypothesis.strategies.floats(allow_infinity=False, allow_nan=False),
+                                                      hypothesis.strategies.complex_numbers(allow_infinity=False, allow_nan=False)),
+                  frequency=tests.strategies.non_zero_frequencies)
+def test_add_with_number(filter_, number, frequency):
+    """Tests the overload of the ``+`` operator."""
+    reference = numpy.add(filter_(frequency), number)
+    sum1 = filter_ + number
+    _compare_number_results(sum1(frequency), reference)
+    assert sum1.labels() == filter_.labels()
+    sum2 = number + filter_
+    _compare_number_results(sum2(frequency), reference)
+    assert sum2.labels() == filter_.labels()
 
 
 @pytest.mark.filterwarnings("ignore:overflow", "ignore:invalid value")
@@ -193,6 +231,24 @@ def test_subtract(filter1, filter2, frequency):
 
 
 @pytest.mark.filterwarnings("ignore:overflow", "ignore:invalid value")
+@hypothesis.given(filter_=tests.strategies.filters,
+                  number=hypothesis.strategies.one_of(hypothesis.strategies.integers(),
+                                                      hypothesis.strategies.floats(allow_infinity=False, allow_nan=False),
+                                                      hypothesis.strategies.complex_numbers(allow_infinity=False, allow_nan=False)),
+                  frequency=tests.strategies.non_zero_frequencies)
+def test_subtract_number(filter_, number, frequency):
+    """Tests the overload of the ``-`` operator."""
+    reference1 = numpy.subtract(filter_(frequency), number)
+    difference1 = filter_ - number
+    _compare_number_results(difference1(frequency), reference1)
+    assert difference1.labels() == filter_.labels()
+    reference2 = numpy.subtract(number, filter_(frequency))
+    difference2 = number - filter_
+    _compare_number_results(difference2(frequency), reference2)
+    assert difference2.labels() == filter_.labels()
+
+
+@pytest.mark.filterwarnings("ignore:overflow", "ignore:invalid value")
 @hypothesis.given(filter1=tests.strategies.filters,
                   filter2=tests.strategies.filters,
                   frequency=tests.strategies.non_zero_frequencies)
@@ -212,6 +268,26 @@ def test_multiply(filter1, filter2, frequency):
 
 
 @pytest.mark.filterwarnings("ignore:overflow", "ignore:invalid value")
+@hypothesis.given(filter_=tests.strategies.filters,
+                  number=hypothesis.strategies.one_of(hypothesis.strategies.integers(min_value=-1e15, max_value=1e15),
+                                                      hypothesis.strategies.floats(min_value=-1e15, max_value=1e15),
+                                                      hypothesis.strategies.complex_numbers(max_magnitude=1e15, allow_infinity=False, allow_nan=False)),
+                  frequency=tests.strategies.non_zero_frequencies)
+def test_multiply_with_number(filter_, number, frequency):
+    """Tests the overload of the ``*`` operator."""
+    if number == 1:
+        reference = filter_(frequency)
+    else:
+        reference = tuple(f * number for f in filter_(frequency))
+    product1 = filter_ * number
+    _compare_number_results(product1(frequency), reference, number=number)
+    assert product1.labels() == filter_.labels()
+    product2 = number * filter_
+    _compare_number_results(product2(frequency), reference, number=number)
+    assert product2.labels() == filter_.labels()
+
+
+@pytest.mark.filterwarnings("ignore:overflow", "ignore:invalid value", "ignore:divide by zero")
 @hypothesis.given(filter_=tests.strategies.filters,
                   signal=tests.strategies.signals)
 def test_multiply_with_signal_or_spectrum(filter_, signal):
@@ -254,7 +330,7 @@ def test_multiply_with_signal_or_spectrum(filter_, signal):
         assert filtered_spectrum3 == filtered_spectrum2
 
 
-@pytest.mark.filterwarnings("ignore:overflow", "ignore:invalid value")
+@pytest.mark.filterwarnings("ignore:overflow", "ignore:invalid value", "ignore:divide by zero")
 @hypothesis.given(filter1=tests.strategies.filters,
                   filter2=tests.strategies.filters,
                   frequency=tests.strategies.non_zero_frequencies)
@@ -274,6 +350,36 @@ def test_divide(filter1, filter2, frequency):
     channel_count = max(len(filter1), len(filter2))
     if channel_count:
         assert quotient.labels() == ("Quotient",) * channel_count
+
+
+@pytest.mark.filterwarnings("ignore:overflow", "ignore:invalid value", "ignore:divide by zero")
+@hypothesis.given(filter_=tests.strategies.filters,
+                  number=hypothesis.strategies.one_of(hypothesis.strategies.integers(min_value=-(2 ** 63 - 1), max_value=2 ** 63 - 1),
+                                                      hypothesis.strategies.floats(allow_infinity=False, allow_nan=False),
+                                                      hypothesis.strategies.complex_numbers(allow_infinity=False, allow_nan=False)),
+                  frequency=tests.strategies.non_zero_frequencies)
+def test_divide_by_number(filter_, number, frequency):
+    """Tests the overload of the ``/`` operator."""
+    values = filter_(frequency)
+    if number == 1:
+        reference1 = filter_(frequency)
+    else:
+        reference1 = tuple(v / number for v in values)
+    try:
+        quotient1 = filter_ / number
+    except ZeroDivisionError:
+        assert number == 0 and not numpy.equal(values, 0.0).all()
+    else:
+        _compare_number_results(quotient1(frequency), reference1, number=number)
+        assert quotient1.labels() == filter_.labels()
+    reference2 = tuple(numpy.divide(number, f) for f in values)
+    try:
+        quotient2 = number / filter_
+    except ZeroDivisionError:
+        assert numpy.equal(values, 0.0).any() and number != 0
+    else:
+        _compare_number_results(quotient2(frequency), reference2, number=number)
+        assert quotient2.labels() == filter_.labels()
 
 #########################################
 # overloaded and misused math operators #
