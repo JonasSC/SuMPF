@@ -79,12 +79,12 @@ class Signal(SampledData):
 
     def __init__(self, channels=numpy.empty(shape=(1, 0)), sampling_rate=48000.0, offset=0, labels=None):
         """
-        :param channels: a two-dimensional :func:`numpy.array` of channels with float samples
-        :param sampling_rate: the sampling rate of the signal as a float or integer
+        :param channels: a two-dimensional :func:`numpy.array` of channels with float samples.
+        :param sampling_rate: the sampling rate of the signal as a float or integer.
         :param offset: an integer number of samples, by which the first sample of
                        the channel is delayed virtually. The offset can also be
                        negative, if the signal shall be non-causal.
-        :param labels: a sequence of string labels for the channels
+        :param labels: a sequence of string labels for the channels.
         """
         SampledData.__init__(self, channels, labels)
         self.__sampling_rate = sampling_rate
@@ -637,8 +637,7 @@ class Signal(SampledData):
                                         reader_base_class=sumpf_internal.signal_readers.Reader)
 
     def save(self, path, file_format=file_formats.AUTO):
-        """Saves the signal to a file. The file will be created if it does not
-        exist.
+        """Saves the signal to a file. The file will be created if it does not exist.
 
         :param path: the path to the file
         :param file_format: an optional flag from the :attr:`sumpf.Signal.file_formats`

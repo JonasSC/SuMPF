@@ -1,5 +1,6 @@
 aiff
 args
+bandpass
 benchmarking
 Blackman
 Bohman
@@ -31,6 +32,8 @@ eval
 fft
 für
 Gravitationsphysik
+gnuplot
+graphviz
 Hann
 Heinzel
 HFT
@@ -46,6 +49,7 @@ kurtosis
 kwargs
 len
 libsndfile
+logarithmically
 Lomax
 lossy
 lowpass
@@ -74,6 +78,7 @@ prolate
 pytest
 pytest's
 QJackCtrl
+rankdir
 repr
 repurposed
 Rüdiger
@@ -93,6 +98,7 @@ stderr
 str
 summands
 sumpf
+th
 TransformedS
 Tukey
 unary
@@ -100,7 +106,9 @@ vectorial
 von
 Vorbis
 wav
+whitespace
 www
 xrun
 xruns
-
+xs
+ys

@@ -33,7 +33,8 @@ class S:
         """
         :param frequencies: a float or an array of float for frequencies in Hz.
         """
-        self.__s = numpy.multiply(2.0j * math.pi, frequencies)
+        self.__frequencies = frequencies
+        self.__s = None
         self.__transformed = None
 
     def __call__(self):
@@ -41,7 +42,17 @@ class S:
 
         :returns: a :func:`numpy.array` of complex frequency values
         """
+        if self.__s is None:
+            self.__s = numpy.multiply(2.0j * math.pi, self.__frequencies)
         return self.__s
+
+    def frequencies(self):
+        """Returns the frequency values in Hz instead of angular frequencies.
+        Also, these frequencies are not affected by a lowpass-to-highpass transform.
+
+        :returns: a sequence of float frequency values
+        """
+        return self.__frequencies
 
     def fix(self, result):
         """Replaces the samples of the filter's transfer function for 0Hz with 0.0,
@@ -77,21 +88,32 @@ class TransformedS:
         :param origin: the S instance, from which the ``1 / s`` values shall be computed
         """
         self.__origin = weakref.proxy(origin)
-        s = origin()
-        zero = s == 0
-        if zero.any():  # avoid zero division errors by defining the result of a transformed term to be zero at s=0
-            self.__invalid = zero.nonzero()
-            self.__s = numpy.divide(1.0, s, where=(s != 0))
-        else:
-            self.__invalid = None
-            self.__s = numpy.divide(1.0, s)
+        self.__s = None
+        self.__invalid = None
 
     def __call__(self):
         """Returns the values for ``1 / s``
 
         :returns: a :func:`numpy.array` of complex frequency values
         """
+        if self.__s is None:
+            s = self.__origin()
+            zero = s == 0
+            if zero.any():  # avoid zero division errors by defining the result of a transformed term to be zero at s=0
+                self.__invalid = zero.nonzero()
+                self.__s = numpy.divide(1.0, s, where=(s != 0))
+            else:
+                self.__invalid = None
+                self.__s = numpy.divide(1.0, s)
         return self.__s
+
+    def frequencies(self):
+        """Returns the frequency values in Hz instead of angular frequencies.
+        Also, these frequencies are not affected by a lowpass-to-highpass transform.
+
+        :returns: a sequence of float frequency values
+        """
+        return self.__origin.frequencies()
 
     def fix(self, result):
         """Replaces the samples of the filter's transfer function for 0Hz with 0.0,

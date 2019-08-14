@@ -90,8 +90,8 @@ class Term:
 
     def as_dict(self):
         """Returns a dictionary serialization of this term, that can be passed to
-        the static method :func:`~sumpf._internal._persistence.term_from_dict` to
-        create a replica of this term. This dictionary has the class name stored
+        the static method :func:`~sumpf._internal._persistence._filter_readers.term_from_dict`
+        to create a replica of this term. This dictionary has the class name stored
         under the "type" key, while the rest of the values are the keyword arguments
         of the constructor. If any of these arguments are :class:`~sumpf._data._filters._base._terms._base.Term` s
         themselves, they are also serialized as a dictionary.

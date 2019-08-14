@@ -20,12 +20,13 @@ import hypothesis.strategies as st
 import hypothesis.extra.numpy as stn
 import numpy
 import sumpf
+import sumpf._internal as sumpf_internal
 
 __all__ = ("frequencies", "short_lengths",
            "signal_parameters", "signals", "normalized_signals",
            "spectrum_parameters", "spectrums",
            "spectrogram_parameters", "spectrograms",
-           "terms", "filter_parameters", "filters")
+           "terms", "filter_parameters", "filters", "bands")
 
 ##################
 # primitive data #
@@ -90,11 +91,26 @@ spectrograms = st.builds(sumpf.Spectrogram, **_spectrogram_parameters)
 ##########
 
 _polynomial = st.builds(sumpf.Filter.Polynomial,
-                        coefficients=st.lists(elements=st.floats(min_value=-1e10, max_value=1e10)),
+                        coefficients=st.lists(elements=st.floats(min_value=-1e10, max_value=1e10), max_size=6),
                         transform=st.booleans())
 _exp = st.builds(sumpf.Filter.Exp,
                  coefficient=st.floats(min_value=-1e5, max_value=1e5),   # it is necessary to set a lower bound to avoid a value of -inf
                  transform=st.booleans())
+_bands0 = st.builds(sumpf.Filter.Bands,
+                    xs=stn.arrays(dtype=numpy.float64, shape=(0,), elements=non_zero_frequencies, unique=True),
+                    ys=stn.arrays(dtype=numpy.float64, shape=(0,), elements=st.floats(min_value=-1e15, max_value=1e15)),
+                    interpolation=st.sampled_from(sumpf_internal.Interpolations),
+                    extrapolation=st.sampled_from(sumpf_internal.Interpolations))
+_bands1 = st.builds(sumpf.Filter.Bands,
+                    xs=stn.arrays(dtype=numpy.float64, shape=(1,), elements=non_zero_frequencies, unique=True),
+                    ys=stn.arrays(dtype=numpy.float64, shape=(1,), elements=st.floats(min_value=-1e15, max_value=1e15)),
+                    interpolation=st.sampled_from(sumpf_internal.Interpolations),
+                    extrapolation=st.sampled_from(sumpf_internal.Interpolations))
+_bands5 = st.builds(sumpf.Filter.Bands,
+                    xs=stn.arrays(dtype=numpy.float64, shape=(5,), elements=non_zero_frequencies, unique=True),
+                    ys=stn.arrays(dtype=numpy.float64, shape=(5,), elements=st.floats(min_value=-1e15, max_value=1e15)),
+                    interpolation=st.sampled_from(sumpf_internal.Interpolations),
+                    extrapolation=st.sampled_from(sumpf_internal.Interpolations))
 _quotient = st.builds(sumpf.Filter.Quotient,
                       numerator=st.one_of(_polynomial, _exp),
                       denominator=st.one_of(_polynomial, _exp),
@@ -115,9 +131,19 @@ _absolute = st.builds(sumpf.Filter.Absolute,
 _negative = st.builds(sumpf.Filter.Negative,
                       value=st.one_of(_polynomial, _exp, _quotient, _product, _sum, _difference, _absolute),
                       transform=st.booleans())
-terms = st.one_of(_polynomial, _exp, _quotient, _product, _sum, _difference, _absolute, _negative)
+terms = st.one_of(_polynomial, _exp, _bands0, _bands1, _bands5,
+                  _quotient, _product, _sum, _difference,
+                  _absolute, _negative)
 _filter_parameters = {"transfer_functions": st.lists(elements=terms,
                                                      min_size=1),
                       "labels": st.lists(elements=texts)}
 filter_parameters = st.fixed_dictionaries(_filter_parameters)
 filters = st.builds(sumpf.Filter, **_filter_parameters)
+_bands_parameters = {"bands": st.one_of(st.dictionaries(keys=frequencies, values=st.complex_numbers(min_magnitude=0.0, max_magnitude=1e15)),
+                                        st.lists(elements=st.dictionaries(keys=frequencies, values=st.complex_numbers(min_magnitude=0.0, max_magnitude=1e15)), min_size=1)),
+                     "interpolations": st.one_of(st.sampled_from(sumpf_internal.Interpolations),
+                                                 st.lists(elements=st.sampled_from(sumpf_internal.Interpolations), min_size=1)),
+                     "extrapolations": st.one_of(st.sampled_from(sumpf_internal.Interpolations),
+                                                 st.lists(elements=st.sampled_from(sumpf_internal.Interpolations), min_size=1)),
+                     "labels": st.lists(elements=texts)}
+bands = st.builds(sumpf.Bands, **_bands_parameters)

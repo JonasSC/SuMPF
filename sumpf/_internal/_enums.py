@@ -18,7 +18,11 @@
 
 import enum
 
-__all__ = ("ConvolutionMode", "MergeMode", "ShiftMode", "NuttallWindows", "FlatTopWindows")
+__all__ = ("ConvolutionMode",
+           "MergeMode",
+           "ShiftMode",
+           "NuttallWindows", "FlatTopWindows",
+           "Interpolations")
 
 
 class ConvolutionMode(enum.Enum):
@@ -192,3 +196,39 @@ class FlatTopWindows(enum.Enum):
     HFT196D = enum.auto()
     HFT223D = enum.auto()
     HFT248D = enum.auto()
+
+
+class Interpolations(enum.IntEnum):     # must be an IntEnum in order to allow serializing a Bands-Filter to JSON
+    """This enumeration defines flags to specify an interpolation function.
+
+    * ``ZERO`` fills the unknown places with zeros. The result of this interpolation
+      will be an all-zero sequence, if none of the samples falls exactly on one
+      of the supporting points of the interpolated function.
+    * ``ONE`` fills the unknown places with ones. The result of this interpolation
+      will be an all-ones sequence, if none of the samples falls exactly on one
+      of the supporting points of the interpolated function.
+    * ``LINEAR`` specifies a linear interpolation between two neighboring supporting
+      points. If this interpolation is used as extrapolation, the straight line
+      through the two nearest supporting points is used.
+    * ``LOG_X`` specifies a semi-logarithmic interpolation between two neighboring
+      supporting points. For this, the logarithm of the x-values and the linear
+      y-values of the supporting points are used for a linear interpolation. This
+      interpolation might be useful to interpolate dB-representations of n-th octave
+      analyses. When such data sets are plotted with a logarithmic frequency axis
+      and a linear magnitude axis (since the magnitudes are already in dB), the
+      interpolation will yield a straight line in the plot.
+    * ``LOG_Y`` specifies a semi-logarithmic interpolation between two neighboring
+      supporting points. For this, the linear x-values and the linear of the supporting
+      points and logarithmic y-values are used for a linear interpolation.
+    * ``STAIRS_LIN`` will use the supporting point with the nearest x-value as
+      the interpolation value.
+    * ``STAIRS_LOG`` will use the supporting point with the nearest x-value on a
+      logarithmic x-axis as the interpolation value.
+    """
+    ZERO = enum.auto()
+    ONE = enum.auto()
+    LINEAR = enum.auto()
+    LOG_X = enum.auto()
+    LOG_Y = enum.auto()
+    STAIRS_LIN = enum.auto()
+    STAIRS_LOG = enum.auto()

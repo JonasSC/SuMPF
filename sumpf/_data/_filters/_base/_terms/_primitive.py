@@ -18,10 +18,12 @@
 rather than on other terms."""
 
 import numpy
+import sumpf._internal as sumpf_internal
 from ._base import Term
+from . import _binary as binary
 from .. import _functions as functions
 
-__all__ = ("Constant", "Polynomial", "Exp")
+__all__ = ("Constant", "Polynomial", "Exp", "Bands")
 
 
 class Constant(Term):
@@ -357,3 +359,209 @@ class Exp(Term):
         return {"type": "Exp",
                 "coefficient": self.coefficient,
                 "transform": self.transform}
+
+
+class Bands(Term):
+    """A term, for defining a frequency dependent function by supporting points,
+    an interpolation function and an extrapolation function.
+    """
+
+    @staticmethod
+    def factory(xs, ys, interpolation, extrapolation, *args, **kwargs):  # pylint: disable=arguments-differ,unused-argument; this static method overrides a classmethod and does not need the cls argument
+        """A static factory method, that performs some optimizations, which the
+        constructor of this class cannot do.
+
+        :param xs: a sequence of float frequency values of the supporting points
+        :param ys: a sequence of float or complex function values of the supporting points
+        :param interpolation: a flag from the :class:`sumpf.Bands.interpolations` enumeration
+        :param extrapolation: a flag from the :class:`sumpf.Bands.interpolations` enumeration
+        :param `*args,**kwargs`: neglected parameters, which allow to pass a ``transform``
+                                 parameter like in the other term classes
+        :returns: an instance of a subclass of Term
+        """
+        return Bands(xs, ys, interpolation, extrapolation)
+
+    def __init__(self, xs, ys, interpolation, extrapolation, *args, **kwargs):  # pylint: disable=unused-argument
+        """
+        :param xs: a sequence of float frequency values of the supporting points
+        :param ys: a sequence of float or complex function values of the supporting points
+        :param interpolation: a flag from the :class:`sumpf.Bands.interpolations` enumeration
+        :param extrapolation: a flag from the :class:`sumpf.Bands.interpolations` enumeration
+        :param `*args,**kwargs`: neglected parameters, which allow to pass a ``transform``
+                                 parameter like in the other term classes
+        """
+        Term.__init__(self, transform=False)
+        self.xs = xs if isinstance(xs, numpy.ndarray) else numpy.array(xs)
+        self.ys = ys if isinstance(ys, numpy.ndarray) else numpy.array(ys)
+        self.interpolation = sumpf_internal.Interpolations(interpolation)
+        extrapolation = sumpf_internal.Interpolations(extrapolation)
+        if extrapolation is sumpf_internal.Interpolations.STAIRS_LOG:
+            self.extrapolation = sumpf_internal.Interpolations.STAIRS_LIN
+        else:
+            self.extrapolation = extrapolation
+
+    def _compute(self, s, out=None):
+        """Implements the computation of the interpolation of the bands.
+        :param s: an S instance
+        :param out: an optional array of complex values, in which the result shall
+                    be stored (in order to save memory allocations)
+        :returns: the computed transfer function as an array of complex values
+        """
+        f = s.frequencies()
+        if out is None:
+            out = numpy.empty(shape=f.shape, dtype=numpy.complex128)
+        if self.xs.size:
+            mask = (f < self.xs[0]) | (self.xs[-1] < f)
+            extrapolation = sumpf_internal.interpolation.get(self.extrapolation)
+            out[mask] = extrapolation(x=f[mask], xs=self.xs, ys=self.ys)
+            mask = ~mask
+            interpolation = sumpf_internal.interpolation.get(self.interpolation)
+            out[mask] = interpolation(x=f[mask], xs=self.xs, ys=self.ys)
+        else:
+            out[:] = 0.0
+        return out
+
+    def invert_transform(self):
+        """Creates a copy of the term, with the lowpass-to-highpass-transform inverted.
+        In this case, it does nothing and returns ``self``, since a lowpass-to-highpass-transform
+        is not defined for bands spectrums.
+
+        :returns: an instance of a subclass of Term
+        """
+        return self
+
+    def is_zero(self):
+        """Returns, whether this term evaluates to zero for all frequencies.
+        For this check, the term is not evaluated. Instead, the parameters are
+        analyzed statically, so maybe not all conditions, where the term evaluates
+        to zero are covered.
+
+        :returns: True, if the term evaluates to zero, False otherwise
+        """
+        return len(self.xs) == 0 or (self.ys == 0.0).all()
+
+    def __repr__(self):
+        """Operator overload for using the built-in function :func:`repr` to generate
+        a string representation of the term, that can be evaluated with :func:`eval`.
+
+        :returns: a potentially very long string
+        """
+        return (f"Filter.{self.__class__.__name__}("
+                f"xs={self.xs!r}, "
+                f"ys={self.ys!r}, "
+                f"interpolation={self.interpolation}, "
+                f"extrapolation={self.extrapolation})")
+
+    def __eq__(self, other):
+        """An operator overload for comparing two terms with ``==``."""
+        if not isinstance(other, Bands):
+            return False
+        elif (self.interpolation != other.interpolation or
+              self.extrapolation != other.extrapolation or
+              numpy.not_equal(self.xs, other.xs).any() or
+              numpy.not_equal(self.ys, other.ys).any()):
+            return False
+        return super().__eq__(other)
+
+    def __invert__(self):
+        """A repurposed operator overload for inverting a terms with ``~term``.
+        The inverse of a term is ``1 / term``.
+
+        :returns: an instance of a subclass of Term
+        """
+        return Bands(xs=self.xs,
+                     ys=1.0 / self.ys,
+                     interpolation=self.interpolation,
+                     extrapolation=self.extrapolation)
+
+    def __abs__(self):
+        """An operator overload for computing the magnitude of a term with the
+        built-in function :func:`abs`.
+
+        :returns: an instance of a subclass of Term
+        """
+        return Bands(xs=self.xs,
+                     ys=numpy.abs(self.ys),
+                     interpolation=self.interpolation,
+                     extrapolation=self.extrapolation)
+
+    def __neg__(self):
+        """An operator overload for inverting the phase of a terms with ``-term``.
+
+        :returns: an instance of a subclass of Term
+        """
+        non_negative_interpolations = (sumpf_internal.Interpolations.ONE,
+                                       sumpf_internal.Interpolations.LOG_Y)
+        if self.interpolation in non_negative_interpolations or self.extrapolation in non_negative_interpolations:
+            return binary.Difference(minuend=Constant(0.0),
+                                     subtrahend=self)
+        else:
+            return Bands(xs=self.xs,
+                         ys=-self.ys,
+                         interpolation=self.interpolation,
+                         extrapolation=self.extrapolation)
+
+    def __add__(self, other):
+        """An operator overload for adding two terms with ``+``."""
+        if isinstance(other, Bands) and \
+           sumpf_internal.arrays_equal(self.xs, other.xs) and \
+           self.interpolation == other.interpolation and \
+           self.extrapolation == other.extrapolation:
+            return Bands(xs=self.xs,
+                         ys=self.ys + other.ys,
+                         interpolation=self.interpolation,
+                         extrapolation=self.extrapolation)
+        else:
+            return super().__add__(other)
+
+    def __sub__(self, other):
+        """An operator overload for subtracting two terms with ``-``."""
+        if isinstance(other, Bands) and \
+           sumpf_internal.arrays_equal(self.xs, other.xs) and \
+           self.interpolation == other.interpolation and \
+           self.extrapolation == other.extrapolation:
+            return Bands(xs=self.xs,
+                         ys=self.ys - other.ys,
+                         interpolation=self.interpolation,
+                         extrapolation=self.extrapolation)
+        else:
+            return super().__sub__(other)
+
+    def __mul__(self, other):
+        """An operator overload for multiplying two terms with ``*``."""
+        if isinstance(other, Bands) and \
+           sumpf_internal.arrays_equal(self.xs, other.xs) and \
+           self.interpolation == other.interpolation and \
+           self.extrapolation == other.extrapolation:
+            return Bands(xs=self.xs,
+                         ys=self.ys * other.ys,
+                         interpolation=self.interpolation,
+                         extrapolation=self.extrapolation)
+        else:
+            return super().__mul__(other)
+
+    def __truediv__(self, other):
+        """An operator overload for dividing two terms with ``/``."""
+        if isinstance(other, Bands) and \
+           sumpf_internal.arrays_equal(self.xs, other.xs) and \
+           self.interpolation == other.interpolation and \
+           self.extrapolation == other.extrapolation:
+            return Bands(xs=self.xs,
+                         ys=self.ys / other.ys,
+                         interpolation=self.interpolation,
+                         extrapolation=self.extrapolation)
+        else:
+            return super().__truediv__(other)
+
+    def as_dict(self):
+        """Returns a dictionary serialization of this term."""
+        if self.ys.dtype in (numpy.complex128, numpy.complex256, numpy.complex64):
+            ys = {"real": tuple(numpy.real(self.ys)),
+                  "imaginary": tuple(numpy.imag(self.ys))}
+        else:
+            ys = tuple(self.ys)
+        return {"type": "Bands",
+                "xs": tuple(self.xs),
+                "ys": ys,
+                "interpolation": int(self.interpolation),
+                "extrapolation": int(self.extrapolation)}

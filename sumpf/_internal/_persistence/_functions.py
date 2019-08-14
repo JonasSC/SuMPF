@@ -16,11 +16,9 @@
 
 """Contains helper functions and classes for the loading and saving data sets from/to files."""
 
-import collections
 import os
-import sumpf
 
-__all__ = ("read_file", "get_writer", "term_from_dict", "AutoWriter")
+__all__ = ("read_file", "get_writer")
 
 
 def read_file(path, readers, reader_base_class):  # noqa; pylint: disable=too-many-branches; this function is spaghetti code, but the sequence of read attempts is easy to follow
@@ -121,100 +119,3 @@ def get_writer(file_format, writers, writer_base_class):
                     writers[file_format] = writer
                     return writer
         raise ValueError(f"file format cannot be written: {file_format}")
-
-
-def term_from_dict(dictionary):
-    """A helper function for deserializing sub-classes of :class:`~sumpf._data._filters._base._terms._base.Term`
-    from a dictionary with the required parameters. This function operates recursively,
-    so nested terms are also instantiated during the deserialization.
-
-    :param dictionary: a dictionary as it is returned by the
-                       :meth:`~sumpf._data._filters._base._terms._base.Term.as_dict`
-                       method of terms.
-    :returns: a term instance
-    """
-    parameters = {}
-    terms = {"Sum": sumpf.Filter.Sum,
-             "Difference": sumpf.Filter.Difference,
-             "Product": sumpf.Filter.Product,
-             "Quotient": sumpf.Filter.Quotient,
-             "Constant": sumpf.Filter.Constant,
-             "Polynomial": sumpf.Filter.Polynomial,
-             "Exp": sumpf.Filter.Exp,
-             "Absolute": sumpf.Filter.Absolute,
-             "Negative": sumpf.Filter.Negative}
-    cls = None
-    for name in dictionary:
-        if name == "type":
-            cls = terms[dictionary["type"]]
-        else:
-            parameter = dictionary[name]
-            if isinstance(parameter, collections.abc.Mapping):
-                if "type" in parameter:
-                    parameters[name] = term_from_dict(parameter)
-                else:
-                    parameters[name] = parameter
-            elif isinstance(parameter, collections.abc.Iterable):
-                values = []
-                for p in parameter:
-                    if isinstance(p, collections.abc.Mapping) and "type" in p:
-                        values.append(term_from_dict(p))
-                    else:
-                        values.append(p)
-                parameters[name] = values
-            else:
-                parameters[name] = parameter
-    return cls(**parameters)
-
-
-class AutoWriter:
-    """An implementation of the ``AUTO`` file format writer, that tries to guess
-    the actual file format from the extension of the given file name. Instances
-    of this class can be put in the respective ``writers`` dictionaries, so the
-    :func:`get_writer` function finds them. When instantiating this class, it
-    requires constructor parameters, that configure the writer instance for the
-    given data set.
-    """
-
-    def __init__(self, file_extension_mapping, writers, writer_base_class):
-        """
-        :param file_extension_mapping: a dictionary from file extension to lists
-                                       of enumeration flags, that specify formats
-                                       for files, that can have the file extension.
-        :param writers: a dictionary, that maps file format flags to already existing
-                        writer instances. If this function instantiates a new writer,
-                        it will be added to that dictionary.
-        :param writer_base_class: the base class for all writers. This function
-                                  may iterate over all sub-classes of this class,
-                                  when trying to create a suitable writer.
-        """
-        self.__file_extension_mapping = file_extension_mapping
-        self.__writers = writers
-        self.__writer_base_class = writer_base_class
-        self.__extensions = {}
-
-    def __call__(self, data, path):
-        """Saves the given data set in the given file path.
-
-        :param data: the data set
-        :param path: the path of the file, in which the data set shall be saved
-        """
-        extension = os.path.splitext(path)[-1]
-        if extension in self.__extensions:
-            self.__extensions[extension](data, path)
-        else:
-            if extension in self.__file_extension_mapping:
-                for file_format in self.__file_extension_mapping[extension]:
-                    try:
-                        writer = get_writer(file_format, self.__writers, self.__writer_base_class)
-                    except ImportError:
-                        pass
-                    except ValueError:
-                        pass
-                    else:
-                        self.__extensions[extension] = writer
-                        writer(data, path)
-                        return
-                raise ImportError(f"no library found for writing to a {extension}-file")
-            else:
-                raise ValueError(f"file format for extension '{extension}' cannot be determined")

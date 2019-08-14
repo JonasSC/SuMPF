@@ -18,6 +18,7 @@
 
 from ._base import Filter
 
+from ._bands import Bands
 from ._butterworth import ButterworthFilter
 from ._chebyshev import Chebyshev1Filter
 from ._delay import DelayFilter

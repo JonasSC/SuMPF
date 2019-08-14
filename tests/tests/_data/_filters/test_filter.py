@@ -17,13 +17,12 @@
 """Tests for the Filter class"""
 
 import logging
-import os
-import tempfile
 import hypothesis
 import hypothesis.strategies as st
 import numpy
 import pytest
 import sumpf
+import sumpf._internal as sumpf_internal
 import tests
 
 ###########################################
@@ -31,7 +30,7 @@ import tests
 ###########################################
 
 
-@pytest.mark.filterwarnings("ignore:overflow", "ignore:invalid value")
+@pytest.mark.filterwarnings("ignore:overflow", "ignore:invalid value", "ignore:divide by zero")
 @hypothesis.given(filter_=tests.strategies.filters,
                   resolution=tests.strategies.resolutions,
                   length=tests.strategies.short_lengths)
@@ -59,12 +58,15 @@ def test_str(filter_):
 def test_repr(filter_):
     """Checks if a filter can be restored from its string representation."""
     # required symbols for the evaluation of the repr-string
-    Filter = sumpf.Filter   # noqa;
-    array = numpy.array     # noqa; sometimes polynomial coefficients are stored in NumPy arrays
+    Filter = sumpf.Filter                           # noqa;
+    array = numpy.array                             # noqa; sometimes polynomial coefficients are stored in NumPy arrays
+    float64 = numpy.float64                         # noqa;
+    complex128 = numpy.complex128                   # noqa;
+    Interpolations = sumpf_internal.Interpolations  # noqa;
     # create a signal, cast it to a string and restore it from the string
     representation = repr(filter_)
     restored = eval(representation)     # pylint: disable=eval-used
-    if "coefficients=array([" in representation:
+    if "array([" in representation:
         assert repr(restored) == representation     # the string representation of a NumPy array does not have the full numerical precision
     else:
         assert restored == filter_
@@ -453,46 +455,3 @@ def test_constructor_parameters(parameters, frequency):
 #######################
 
 # the "spectrum"-method is already tested in test_call
-
-#######################
-# persistence methods #
-#######################
-
-
-@hypothesis.given(tests.strategies.filters)
-def test_autodetect_format_on_reading(filter_):
-    """Tests if auto-detecting the file format, when reading a file works."""
-    with tempfile.TemporaryDirectory() as d:
-        for file_format in sumpf.Filter.file_formats:
-            if file_format != sumpf.Filter.file_formats.AUTO:
-                path = os.path.join(d, "test_file")
-                assert not os.path.exists(path)
-                filter_.save(path, file_format)
-                loaded = sumpf.Filter.load(path)
-                if (file_format == sumpf.Filter.file_formats.TEXT_REPR and "array" in repr(filter_)):   # repr of a numpy array does not contain all digits of the array's elements
-                    assert repr(loaded) == repr(filter_)
-                else:
-                    assert loaded == filter_
-                os.remove(path)
-
-
-@hypothesis.given(tests.strategies.filters)
-def test_autodetect_format_on_saving(filter_):
-    """Tests if auto-detecting the file format from the file extension, when writing a file works."""
-    import sumpf._data._filters._base._persistence as persistence
-    file_formats = [(".txt", persistence.ReprReader),
-                    (".json", persistence.JsonReader),
-                    (".js", persistence.JsonReader),
-                    (".pickle", persistence.PickleReader)]
-    with tempfile.TemporaryDirectory() as d:
-        for ending, Reader in file_formats:
-            reader = Reader()
-            path = os.path.join(d, "test_file" + ending)
-            assert not os.path.exists(path)
-            filter_.save(path)
-            loaded = reader(path)
-            if (Reader is persistence.ReprReader and "array" in repr(filter_)):     # repr of a numpy array does not contain all digits of the array's elements
-                assert repr(loaded) == repr(filter_)
-            else:
-                assert loaded == filter_
-            os.remove(path)

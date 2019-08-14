@@ -18,11 +18,11 @@
 
 import numpy
 import sumpf
-from ._functions import allocate_array
+from .._functions import allocate_array
 
 __all__ = ("readers", "Reader")
 
-readers = {}    # maps file extensions to reader instances, that can be used for future loading of a spectrum
+readers = {}    # maps file extensions to reader instances, that can be used for future loading of a spectrogram
 
 
 def from_dict(channels, dictionary):

@@ -19,7 +19,7 @@
 import os
 import numpy
 import sumpf
-from ._functions import allocate_array
+from .._functions import allocate_array
 
 __all__ = ("readers", "Reader")
 

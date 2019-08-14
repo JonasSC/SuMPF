@@ -14,16 +14,14 @@
 # You should have received a copy of the GNU Lesser General Public License along
 # with this program. If not, see <http://www.gnu.org/licenses/>.
 
-"""This sub-module contains functionalities, which are used internally in the SuMPF package"""
+"""Contains classes and functions, that implement saving data sets to files or loading them."""
 
-from ._persistence import *
-
-from ._convolution import *
-from ._enums import *
-from ._indexing import *
 from ._functions import *
-from ._text import *
-
-from . import _interpolation as interpolation
-
-from .._data._filters._base import _terms as filter_terms
+from . import _filter_readers as filter_readers
+from . import _filter_writers as filter_writers
+from . import _signal_readers as signal_readers
+from . import _signal_writers as signal_writers
+from . import _spectrum_readers as spectrum_readers
+from . import _spectrum_writers as spectrum_writers
+from . import _spectrogram_readers as spectrogram_readers
+from . import _spectrogram_writers as spectrogram_writers

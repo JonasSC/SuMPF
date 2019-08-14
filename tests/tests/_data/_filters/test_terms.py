@@ -27,5 +27,5 @@ def test_as_dict(term):
     """Tests the serialization and deserialization of terms to/from a dictionary."""
     dictionary = term.as_dict()
     assert json.dumps(dictionary) is not None   # the dictionaries should be serializable to a JSON string
-    restored = sumpf_internal.term_from_dict(dictionary)
+    restored = sumpf_internal.filter_readers.term_from_dict(dictionary)
     assert restored == term

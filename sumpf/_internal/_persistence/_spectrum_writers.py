@@ -18,7 +18,7 @@
 
 import enum
 import numpy
-from ._persistence import AutoWriter
+from ._auto_writer import AutoWriter
 
 __all__ = ("Formats", "Writer")
 

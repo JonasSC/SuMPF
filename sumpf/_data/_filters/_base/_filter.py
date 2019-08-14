@@ -21,7 +21,6 @@ import sumpf
 import sumpf._internal as sumpf_internal
 from ._s import S
 from . import _terms as terms
-from . import _persistence as persistence
 
 __all__ = ("Filter",)
 
@@ -49,6 +48,9 @@ class Filter:
     * :attr:`~Filter.Exp` defines an exponential function with the multiplication
       of ``s`` and a coefficient in the exponent. The coefficient can be passed
       as constructor parameter.
+    * :attr:`~Filter.Bands` defines supporting points and an interpolation function
+      between them. This functionality might be useful to define an n-th-octave
+      spectrum.
     * :attr:`~Filter.Absolute` defines the absolute value (magnitude) of the term,
       that it gets passed as constructor parameter.
     * :attr:`~Filter.Negative` defines the negative (inverted phase) of the term,
@@ -106,6 +108,7 @@ class Filter:
     Constant = terms.Constant.factory
     Polynomial = terms.Polynomial.factory
     Exp = terms.Exp.factory
+    Bands = terms.Bands.factory
     Absolute = terms.Absolute.factory
     Negative = terms.Negative.factory
     Sum = terms.Sum.factory
@@ -114,7 +117,7 @@ class Filter:
     Quotient = terms.Quotient.factory
 
     # supported file formats
-    file_formats = persistence.Formats  #: an enumeration with file formats, whose flags can be passed to :meth:`~sumpf.Filter.save` (see the :class:`sumpf._data._filters._base._persistence.Formats` class).
+    file_formats = sumpf_internal.filter_writers.FilterFormats  #: an enumeration with file formats, whose flags can be passed to :meth:`~sumpf.Filter.save`
 
     def __init__(self, transfer_functions=(Constant(1.0),), labels=("",)):
         """
@@ -415,12 +418,11 @@ class Filter:
         :returns: the loaded filter
         """
         return sumpf_internal.read_file(path=path,
-                                        readers=persistence.readers,
-                                        reader_base_class=persistence.Reader)
+                                        readers=sumpf_internal.filter_readers.readers,
+                                        reader_base_class=sumpf_internal.filter_readers.Reader)
 
     def save(self, path, file_format=file_formats.AUTO):
-        """Saves the filter to a file. The file will be created if it does not
-        exist.
+        """Saves the filter to a file. The file will be created if it does not exist.
 
         :param path: the path to the file
         :param file_format: an optional flag from the :attr:`sumpf.Filter.file_formats`
@@ -431,7 +433,7 @@ class Filter:
         :returns: self
         """
         writer = sumpf_internal.get_writer(file_format=file_format,
-                                           writers=persistence.writers,
-                                           writer_base_class=persistence.Writer)
+                                           writers=sumpf_internal.filter_writers.filter_writers,
+                                           writer_base_class=sumpf_internal.filter_writers.Writer)
         writer(self, path)
         return self
