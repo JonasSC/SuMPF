@@ -376,7 +376,7 @@ class Spectrum(SampledData):
             sum_ = math.fsum(math.fsum((math.fsum(c[1:-1]) * 2, c[0], c[-1])) for c in square)
             return math.sqrt(sum_ / len(self)) / signal_length
         else:
-            return numpy.fromiter((math.sqrt(math.fsum((math.fsum(c[1:-1]) * 2, c[0], c[-1]))) / signal_length for c in square),
+            return numpy.fromiter((math.sqrt(math.fsum((math.fsum(c[1:-1]) * 2, c[0], c[-1]))) / signal_length for c in square),    # pylint: disable=line-too-long; don't know where to break without making the readability even worse
                                   dtype=numpy.float64)
 
     #######################
