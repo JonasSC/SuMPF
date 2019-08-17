@@ -36,15 +36,16 @@ def test_exact_formats_with_metadata(signal):
                                (signal_readers.NumpyReader, signal_writers.NumpyNpzWriter),
                                (signal_readers.PickleReader, signal_writers.PickleWriter)]:
             reader = Reader()
-            writer = Writer(Writer.formats[0])
-            assert not os.path.exists(path)
-            writer(signal, path)
-            loaded = reader(path)
-            assert (loaded.channels() == signal.channels()).all()
-            assert loaded.sampling_rate() == signal.sampling_rate()
-            assert loaded.offset() == signal.offset()
-            assert loaded.labels() == signal.labels()
-            os.remove(path)
+            for file_format in Writer.formats:
+                writer = Writer(file_format)
+                assert not os.path.exists(path)
+                writer(signal, path)
+                loaded = reader(path)
+                assert (loaded.channels() == signal.channels()).all()
+                assert loaded.sampling_rate() == signal.sampling_rate()
+                assert loaded.offset() == signal.offset()
+                assert loaded.labels() == signal.labels()
+                os.remove(path)
 
 
 @hypothesis.given(tests.strategies.signals)
@@ -57,28 +58,29 @@ def test_exact_with_time_column(signal):
         for Reader, Writer, supports_labels in [(signal_readers.CsvReader, signal_writers.CsvWriter, True),
                                                 (signal_readers.NumpyReader, signal_writers.NumpyNpyWriter, False)]:
             reader = Reader()
-            writer = Writer(Writer.formats[0])
-            assert not os.path.exists(path)
-            writer(signal, path)
-            loaded = reader(path)
-            assert (loaded.channels() == signal.channels()).all()
-            if signal.length() <= 1:
-                if signal.offset() == 0:
-                    assert loaded.sampling_rate() == 48000.0
-                    assert loaded.offset() == 0
+            for file_format in Writer.formats:
+                writer = Writer(file_format)
+                assert not os.path.exists(path)
+                writer(signal, path)
+                loaded = reader(path)
+                assert (loaded.channels() == signal.channels()).all()
+                if signal.length() <= 1:
+                    if signal.offset() == 0:
+                        assert loaded.sampling_rate() == 48000.0
+                        assert loaded.offset() == 0
+                    else:
+                        assert loaded.sampling_rate() == pytest.approx(abs(1.0 / signal.time_samples()[0]))
+                        assert abs(loaded.offset()) == 1
                 else:
-                    assert loaded.sampling_rate() == pytest.approx(abs(1.0 / signal.time_samples()[0]))
-                    assert abs(loaded.offset()) == 1
-            else:
-                factor = abs(signal.offset() / 1e15)
-                offset_margin = int(round(abs(signal.offset()) * factor))
-                assert loaded.sampling_rate() == pytest.approx(signal.sampling_rate(), rel=max(factor, 1e-10))
-                assert signal.offset() - offset_margin <= loaded.offset() <= signal.offset() + offset_margin
-            if supports_labels:
-                assert loaded.labels() == signal.labels()
-            else:
-                assert loaded.labels() == tuple(f"test_file {index}" for index in range(1, len(signal) + 1))
-            os.remove(path)
+                    factor = abs(signal.offset() / 1e15)
+                    offset_margin = int(round(abs(signal.offset()) * factor))
+                    assert loaded.sampling_rate() == pytest.approx(signal.sampling_rate(), rel=max(factor, 1e-10))
+                    assert signal.offset() - offset_margin <= loaded.offset() <= signal.offset() + offset_margin
+                if supports_labels:
+                    assert loaded.labels() == signal.labels()
+                else:
+                    assert loaded.labels() == tuple(f"test_file {index}" for index in range(1, len(signal) + 1))
+                os.remove(path)
 
 
 @hypothesis.given(tests.strategies.normalized_signals)
