@@ -158,7 +158,7 @@ def test_db_conversion(bands, reference, factor):
     db = bands.to_db(reference=reference, factor=factor)
     assert len(bands) == len(db)
     for t, d in zip(bands.transfer_functions(), db.transfer_functions()):
-        assert sumpf_internal.arrays_equal(t.xs, d.xs)
+        assert numpy.array_equal(t.xs, d.xs)
         assert len(t.xs) == len(d.xs) == len(t.ys) == len(d.ys)
         for y1, y2 in zip(t.ys, d.ys):
             if y1 == 0.0:
@@ -172,7 +172,7 @@ def test_db_conversion(bands, reference, factor):
     lin = db.from_db(reference=reference, factor=factor)
     assert len(bands) == len(lin)
     for t, l in zip(bands.transfer_functions(), lin.transfer_functions()):
-        assert sumpf_internal.arrays_equal(t.xs, l.xs)
+        assert numpy.array_equal(t.xs, l.xs)
         assert len(t.xs) == len(l.xs) == len(t.ys) == len(l.ys)
         for y1, y2 in zip(t.ys, l.ys):
             if y1 != 0.0 and factor != 0.0:

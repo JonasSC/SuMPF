@@ -504,7 +504,7 @@ class Bands(Term):
     def __add__(self, other):
         """An operator overload for adding two terms with ``+``."""
         if isinstance(other, Bands) and \
-           sumpf_internal.arrays_equal(self.xs, other.xs) and \
+           numpy.array_equal(self.xs, other.xs) and \
            self.interpolation == other.interpolation and \
            self.extrapolation == other.extrapolation:
             return Bands(xs=self.xs,
@@ -517,7 +517,7 @@ class Bands(Term):
     def __sub__(self, other):
         """An operator overload for subtracting two terms with ``-``."""
         if isinstance(other, Bands) and \
-           sumpf_internal.arrays_equal(self.xs, other.xs) and \
+           numpy.array_equal(self.xs, other.xs) and \
            self.interpolation == other.interpolation and \
            self.extrapolation == other.extrapolation:
             return Bands(xs=self.xs,
@@ -530,7 +530,7 @@ class Bands(Term):
     def __mul__(self, other):
         """An operator overload for multiplying two terms with ``*``."""
         if isinstance(other, Bands) and \
-           sumpf_internal.arrays_equal(self.xs, other.xs) and \
+           numpy.array_equal(self.xs, other.xs) and \
            self.interpolation == other.interpolation and \
            self.extrapolation == other.extrapolation:
             return Bands(xs=self.xs,
@@ -543,7 +543,7 @@ class Bands(Term):
     def __truediv__(self, other):
         """An operator overload for dividing two terms with ``/``."""
         if isinstance(other, Bands) and \
-           sumpf_internal.arrays_equal(self.xs, other.xs) and \
+           numpy.array_equal(self.xs, other.xs) and \
            self.interpolation == other.interpolation and \
            self.extrapolation == other.extrapolation:
             return Bands(xs=self.xs,

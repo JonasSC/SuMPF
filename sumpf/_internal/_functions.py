@@ -14,7 +14,7 @@
 # You should have received a copy of the GNU Lesser General Public License along
 # with this program. If not, see <http://www.gnu.org/licenses/>.
 
-"""Contains common functionalities"""
+"""Contains helper functions for common functionalities."""
 
 import collections
 import ctypes
@@ -22,29 +22,7 @@ from multiprocessing import sharedctypes
 import numpy
 import sumpf
 
-__all__ = ("arrays_equal", "allocate_array", "get_window", "sanitize_labels")
-
-
-def arrays_equal(a, b):
-    """Compares two :func:`numpy.array` instances for equality.
-
-    This function is necessary because of the inconsistent behavior of how :mod:`numpy`
-    handles equality checks. Usually, a ``==``-comparison returns a :func:`numpy.array`
-    of booleans, while in some situations, a boolean is returned directly.
-
-    Also, if one array is empty, the result of a ``==``-comparison is an empty
-    array, too, whose :meth:`~numpy.ndarray.all` method evaluates to ``True``.
-    This is of course unexpected, if the other array from the comparison is not
-    empty.
-
-    :param `a,b`: :func:`numpy.array` instances
-    :returns: a boolean
-    """
-    result = a == b
-    if isinstance(result, bool):
-        return result
-    else:
-        return result.all() and a.shape == b.shape
+__all__ = ("allocate_array", "get_window", "sanitize_labels")
 
 
 def allocate_array(shape, dtype=numpy.float64):
