@@ -22,7 +22,7 @@ import numpy
 import sumpf
 import sumpf._internal as sumpf_internal
 
-__all__ = ("frequencies", "short_lengths",
+__all__ = ("frequencies", "short_lengths", "labels",
            "signal_parameters", "signals", "normalized_signals",
            "spectrum_parameters", "spectrums",
            "spectrogram_parameters", "spectrograms",
@@ -38,6 +38,7 @@ sampling_rates = st.floats(min_value=1e-8, max_value=1e8)
 resolutions = sampling_rates
 short_lengths = st.integers(min_value=0, max_value=2 ** 10)
 texts = st.text(alphabet=st.characters(blacklist_categories=("Cs",), blacklist_characters=("\x00",)))
+labels = st.lists(elements=texts)
 
 ##########
 # Signal #
@@ -48,7 +49,7 @@ _signal_parameters = {"channels": stn.arrays(dtype=numpy.float64,       # pylint
                                              elements=st.floats(min_value=-1e100, max_value=1e100)),
                       "sampling_rate": sampling_rates,
                       "offset": st.integers(min_value=-2 ** 24, max_value=2 ** 24),
-                      "labels": st.lists(elements=texts)}
+                      "labels": labels}
 signal_parameters = st.fixed_dictionaries(_signal_parameters)
 signals = st.builds(sumpf.Signal, **_signal_parameters)
 _normalized_signal_parameters = {"channels": stn.arrays(dtype=numpy.float64,       # pylint: disable=no-value-for-parameter; there is a false alarm about a missing parameter for ``draw``
@@ -56,7 +57,7 @@ _normalized_signal_parameters = {"channels": stn.arrays(dtype=numpy.float64,    
                                                         elements=st.floats(min_value=-255.0 / 256.0, max_value=254.0 / 256.0)),     # pylint: disable=line-too-long
                                  "sampling_rate": sampling_rates,
                                  "offset": st.integers(min_value=-2 ** 24, max_value=2 ** 24),
-                                 "labels": st.lists(elements=texts)}
+                                 "labels": labels}
 normalized_signal_parameters = st.fixed_dictionaries(_normalized_signal_parameters)
 normalized_signals = st.builds(sumpf.Signal, **_normalized_signal_parameters)
 
@@ -68,7 +69,7 @@ _spectrum_parameters = {"channels": stn.arrays(dtype=numpy.complex128,  # pylint
                                                shape=stn.array_shapes(min_dims=2, max_dims=2),
                                                elements=st.complex_numbers(max_magnitude=1e100, allow_nan=False, allow_infinity=False)),    # pylint: disable=line-too-long
                         "resolution": resolutions,
-                        "labels": st.lists(elements=texts)}
+                        "labels": labels}
 spectrum_parameters = st.fixed_dictionaries(_spectrum_parameters)
 spectrums = st.builds(sumpf.Spectrum, **_spectrum_parameters)
 
@@ -82,7 +83,7 @@ _spectrogram_parameters = {"channels": stn.arrays(dtype=numpy.complex128,  # pyl
                            "resolution": resolutions,
                            "sampling_rate": sampling_rates,
                            "offset": st.integers(min_value=-2 ** 24, max_value=2 ** 24),
-                           "labels": st.lists(elements=texts)}
+                           "labels": labels}
 spectrogram_parameters = st.fixed_dictionaries(_spectrogram_parameters)
 spectrograms = st.builds(sumpf.Spectrogram, **_spectrogram_parameters)
 
@@ -136,7 +137,7 @@ terms = st.one_of(_polynomial, _exp, _bands0, _bands1, _bands5,
                   _absolute, _negative)
 _filter_parameters = {"transfer_functions": st.lists(elements=terms,
                                                      min_size=1),
-                      "labels": st.lists(elements=texts)}
+                      "labels": labels}
 filter_parameters = st.fixed_dictionaries(_filter_parameters)
 filters = st.builds(sumpf.Filter, **_filter_parameters)
 _bands_parameters = {"bands": st.one_of(st.dictionaries(keys=frequencies, values=st.complex_numbers(min_magnitude=0.0, max_magnitude=1e15)),
@@ -145,5 +146,5 @@ _bands_parameters = {"bands": st.one_of(st.dictionaries(keys=frequencies, values
                                                  st.lists(elements=st.sampled_from(sumpf_internal.Interpolations), min_size=1)),
                      "extrapolations": st.one_of(st.sampled_from(sumpf_internal.Interpolations),
                                                  st.lists(elements=st.sampled_from(sumpf_internal.Interpolations), min_size=1)),
-                     "labels": st.lists(elements=texts)}
+                     "labels": labels}
 bands = st.builds(sumpf.Bands, **_bands_parameters)
