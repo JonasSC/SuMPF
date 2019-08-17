@@ -18,10 +18,11 @@
 
 from ._signal import *
 
-from ._sweep import *
+from ._constant import *
 from ._energy_decay import *
 from ._fade import *
 from ._noise import *
+from ._sweep import *
 from ._waves import *
 from ._windows import *
 
