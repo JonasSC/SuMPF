@@ -14,8 +14,8 @@
 # You should have received a copy of the GNU Lesser General Public License along
 # with this program. If not, see <http://www.gnu.org/licenses/>.
 
-"""Contains the Jack class, that allows playback and recording of audio through
-the JACK Audio Connection Kit"""
+"""Contains the :class:`~sumpf.Jack` class, that allows playback and recording
+of audio through the JACK Audio Connection Kit."""
 
 import dataclasses
 import functools

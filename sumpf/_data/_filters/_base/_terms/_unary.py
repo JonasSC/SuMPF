@@ -27,13 +27,18 @@ class Absolute(Term):
 
     @staticmethod
     def factory(value, transform=False):    # pylint: disable=arguments-differ; this static method overrides a classmethod and does not need the cls argument
-        """A static factory method, that performs some optimizations, which the
-        constructor of this class cannot do.
+        """A class for computing the absolute (magnitude) of another term.
+
+        This is a static factory method, that is meant to instantiate a
+        :class:`~sumpf._data._filters._base._terms._unary.Absolute` instance. But
+        due to optimizations, it might return an instance of another subclass of
+        :class:`~sumpf._data._filters._base._terms._base.Term`, if that is simpler
+        and more efficient.
 
         :param value: a term
         :param transform: True, if a lowpass-to-highpass-transformation shall be
                           performed, False otherwise
-        :returns: an instance of a subclass of Term
+        :returns: an instance of a subclass of :class:`~sumpf._data._filters._base._terms._base.Term`
         """
         if transform:
             return abs(value.invert_transform())
@@ -51,7 +56,7 @@ class Absolute(Term):
 
     def _compute(self, s, out=None):
         """Implements the computation of the magnitude.
-        :param s: an S instance
+        :param s: an :class:`sumpf._data._filters._base._s.S` instance
         :param out: an optional array of complex values, in which the result shall
                     be stored (in order to save memory allocations)
         :returns: the computed transfer function as an array of complex values
@@ -106,13 +111,18 @@ class Negative(Term):
 
     @staticmethod
     def factory(value, transform=False):    # pylint: disable=arguments-differ; this static method overrides a classmethod and does not need the cls argument
-        """A static factory method, that performs some optimizations, which the
-        constructor of this class cannot do.
+        """A class for computing the negative (invert the phase) of another term.
+
+        This is a static factory method, that is meant to instantiate a
+        :class:`~sumpf._data._filters._base._terms._unary.Negative` instance. But
+        due to optimizations, it might return an instance of another subclass of
+        :class:`~sumpf._data._filters._base._terms._base.Term`, if that is simpler
+        and more efficient.
 
         :param value: a term
         :param transform: True, if a lowpass-to-highpass-transformation shall be
                           performed, False otherwise
-        :returns: an instance of a subclass of Term
+        :returns: an instance of a subclass of :class:`~sumpf._data._filters._base._terms._base.Term`
         """
         if transform:
             return -value.invert_transform()
@@ -130,7 +140,7 @@ class Negative(Term):
 
     def _compute(self, s, out=None):
         """Implements the inversion of the phase.
-        :param s: an S instance
+        :param s: an :class:`sumpf._data._filters._base._s.S` instance
         :param out: an optional array of complex values, in which the result shall
                     be stored (in order to save memory allocations)
         :returns: the computed transfer function as an array of complex values

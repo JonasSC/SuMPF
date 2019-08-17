@@ -49,7 +49,7 @@ class Term:
     def __call__(self, s, out=None):
         """Samples the transfer function by evaluating the term for the given values of ``s``.
 
-        :param s: an S instance
+        :param s: an :class:`sumpf._data._filters._base._s.S` instance
         :param out: an optional array of complex values, in which the result shall
                     be stored (in order to save memory allocations)
         :returns: the computed transfer function as an array of complex values
@@ -62,7 +62,7 @@ class Term:
     def _compute(self, s, out):
         """An abstract method, in which sub-classes can implement their computations.
 
-        :param s: an S instance
+        :param s: an :class:`sumpf._data._filters._base._s.S` instance
         :param out: an optional array of complex values, in which the result shall
                     be stored (in order to save memory allocations)
         :returns: the computed transfer function as an array of complex values
@@ -82,7 +82,7 @@ class Term:
     def invert_transform(self):
         """Creates a copy of the term, with the lowpass-to-highpass-transform inverted.
 
-        :returns: an instance of a subclass of Term
+        :returns: an instance of a subclass of :class:`~sumpf._data._filters._base._terms._base.Term`
         """
         kwargs = self.__dict__.copy()
         kwargs["transform"] = not self.transform
@@ -116,7 +116,7 @@ class Term:
         """A repurposed operator overload for inverting a terms with ``~term``.
         The inverse of a term is ``1 / term``.
 
-        :returns: an instance of a subclass of Term
+        :returns: an instance of a subclass of :class:`~sumpf._data._filters._base._terms._base.Term`
         """
         from ._primitive import Constant  # pylint: disable=cyclic-import
         from ._binary import Quotient     # pylint: disable=cyclic-import

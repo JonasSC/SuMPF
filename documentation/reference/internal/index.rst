@@ -10,5 +10,6 @@ may change without further notice.
 
    enumerations
    filter_terms
+   filter_other
    functions
    persistence

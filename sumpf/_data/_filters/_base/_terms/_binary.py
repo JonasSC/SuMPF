@@ -30,13 +30,18 @@ class Sum(Term):
 
     @staticmethod
     def factory(summands, transform=False):     # pylint: disable=arguments-differ; this static method overrides a classmethod and does not need the cls argument
-        """A static factory method, that performs some optimizations, which the
-        constructor of this class cannot do.
+        """A class for summing up a sequence of terms.
+
+        This is a static factory method, that is meant to instantiate a
+        :class:`~sumpf._data._filters._base._terms._binary.Sum` instance. But due
+        to optimizations, it might return an instance of another subclass of
+        :class:`~sumpf._data._filters._base._terms._base.Term`, if that is simpler
+        and more efficient.
 
         :param summands: a sequence of terms, that shall be summed up
         :param transform: True, if a lowpass-to-highpass-transformation shall be
                           performed, False otherwise
-        :returns: an instance of a subclass of Term
+        :returns: an instance of a subclass of :class:`~sumpf._data._filters._base._terms._base.Term`
         """
         summands = tuple(s for s in summands if not s.is_zero())
         if len(summands) == 0:                                      # pylint: disable=len-as-condition; the length is also compared to other values
@@ -65,7 +70,7 @@ class Sum(Term):
 
     def _compute(self, s, out=None):
         """Implements the summation.
-        :param s: an S instance
+        :param s: an :class:`sumpf._data._filters._base._s.S` instance
         :param out: an optional array of complex values, in which the result shall
                     be stored (in order to save memory allocations)
         :returns: the computed transfer function as an array of complex values
@@ -138,14 +143,19 @@ class Difference(Term):
 
     @staticmethod
     def factory(minuend, subtrahend, transform=False):  # pylint: disable=arguments-differ; this static method overrides a classmethod and does not need the cls argument
-        """A static factory method, that performs some optimizations, which the
-        constructor of this class cannot do.
+        """A class for subtracting two terms from each other.
+
+        This is a static factory method, that is meant to instantiate a
+        :class:`~sumpf._data._filters._base._terms._binary.Difference` instance.
+        But due to optimizations, it might return an instance of another subclass
+        of :class:`~sumpf._data._filters._base._terms._base.Term`, if that is
+        simpler and more efficient.
 
         :param minuend: a term, from which the subtrahend shall be subtracted
         :param subtrahend: a term, which the shall be subtracted from the minuend
         :param transform: True, if a lowpass-to-highpass-transformation shall be
                           performed, False otherwise
-        :returns: an instance of a subclass of Term
+        :returns: an instance of a subclass of :class:`~sumpf._data._filters._base._terms._base.Term`
         """
         if subtrahend.is_zero():
             if minuend.is_zero():
@@ -174,7 +184,7 @@ class Difference(Term):
 
     def _compute(self, s, out=None):
         """Implements the subtraction.
-        :param s: an S instance
+        :param s: an :class:`sumpf._data._filters._base._s.S` instance
         :param out: an optional array of complex values, in which the result shall
                     be stored (in order to save memory allocations)
         :returns: the computed transfer function as an array of complex values
@@ -258,13 +268,18 @@ class Product(Term):
 
     @staticmethod
     def factory(factors, transform=False):  # pylint: disable=arguments-differ; this static method overrides a classmethod and does not need the cls argument
-        """A static factory method, that performs some optimizations, which the
-        constructor of this class cannot do.
+        """A class for multiplying all terms from a sequence of terms.
+
+        This is a static factory method, that is meant to instantiate a
+        :class:`~sumpf._data._filters._base._terms._binary.Product` instance. But
+        due to optimizations, it might return an instance of another subclass of
+        :class:`~sumpf._data._filters._base._terms._base.Term`, if that is simpler
+        and more efficient.
 
         :param factors: a sequence of terms, that shall be multiplied
         :param transform: True, if a lowpass-to-highpass-transformation shall be
                           performed, False otherwise
-        :returns: an instance of a subclass of Term
+        :returns: an instance of a subclass of :class:`~sumpf._data._filters._base._terms._base.Term`
         """
         if len(factors) == 0 or any(f.is_zero() for f in factors):  # pylint: disable=len-as-condition; the length is also compared to other values
             return Constant(0.0)
@@ -292,7 +307,7 @@ class Product(Term):
 
     def _compute(self, s, out=None):
         """Implements the multiplication.
-        :param s: an S instance
+        :param s: an :class:`sumpf._data._filters._base._s.S` instance
         :param out: an optional array of complex values, in which the result shall
                     be stored (in order to save memory allocations)
         :returns: the computed transfer function as an array of complex values
@@ -373,14 +388,19 @@ class Quotient(Term):
 
     @staticmethod
     def factory(numerator, denominator, transform=False):   # pylint: disable=arguments-differ; this static method overrides a classmethod and does not need the cls argument
-        """A static factory method, that performs some optimizations, which the
-        constructor of this class cannot do.
+        """A class for dividing two terms by each other.
+
+        This is a static factory method, that is meant to instantiate a
+        :class:`~sumpf._data._filters._base._terms._binary.Quotient` instance.
+        But due to optimizations, it might return an instance of another subclass
+        of :class:`~sumpf._data._filters._base._terms._base.Term`, if that is simpler
+        and more efficient.
 
         :param numerator: a term, that shall be divided by the denominator
         :param denominator: a term, by which the numerator shall be divided
         :param transform: True, if a lowpass-to-highpass-transformation shall be
                           performed, False otherwise
-        :returns: an instance of a subclass of Term
+        :returns: an instance of a subclass of :class:`~sumpf._data._filters._base._terms._base.Term`
         """
         if numerator.is_zero():
             return Constant(0.0)
@@ -402,7 +422,7 @@ class Quotient(Term):
 
     def _compute(self, s, out=None):
         """Implements the division.
-        :param s: an S instance
+        :param s: an :class:`sumpf._data._filters._base._s.S` instance
         :param out: an optional array of complex values, in which the result shall
                     be stored (in order to save memory allocations)
         :returns: the computed transfer function as an array of complex values

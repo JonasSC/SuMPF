@@ -85,7 +85,8 @@ class TransformedS:
 
     def __init__(self, origin):
         """
-        :param origin: the S instance, from which the ``1 / s`` values shall be computed
+        :param origin: the :class:`sumpf._data._filters._base._s.S` instance, from
+                       which the ``1 / s`` values shall be computed
         """
         self.__origin = weakref.proxy(origin)
         self.__s = None
@@ -130,6 +131,6 @@ class TransformedS:
     def transform(self):
         """Returns the original manager for the frequency variable ``s``.
 
-        :returns: a S instance
+        :returns: an :class:`sumpf._data._filters._base._s.S` instance
         """
         return self.__origin

@@ -121,7 +121,7 @@ class Bands(Filter):
     def to_db(self, reference=1.0, factor=20.0):
         """Computes a bands filter with the values of this filter converted to
         decibels. It will use the same interpolation and extrapolation functions
-         as the original filter.
+        as the original filter.
 
         This method takes the values from the bands filter as they are, which might
         not make sense in case of complex of negative filter values. Consider

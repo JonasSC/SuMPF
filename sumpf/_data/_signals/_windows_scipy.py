@@ -171,7 +171,7 @@ class FlatTopWindow(Window):
     The coefficients of most flat top windows are taken from the paper `Spectrum
     and spectral density estimation by the Discrete Fourier transform (DFT),
     including a comprehensive list of window functions and some new flat-top windows
-    <https://holometer.fnal.gov/GH_FFT.pdf#page=38>`_ by G. Heinzel, A. Rüdiger
+    <https://holometer.fnal.gov/GH_FFT.pdf#page=38>`__ by G. Heinzel, A. Rüdiger
     and R. Schilling, which was published by the Max-Planck-Institut für Gravitationsphysik
     in February 2002.
     """

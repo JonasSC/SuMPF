@@ -27,9 +27,20 @@ __all__ = ("Constant", "Polynomial", "Exp", "Bands")
 
 
 class Constant(Term):
-    """A class for defining a constant transfer function, that does not depend on
-    the frequency.
-    """
+    """A class for defining a constant transfer function, that does not depend on the frequency."""
+
+    @staticmethod
+    def factory(value, *args, **kwargs):    # pylint: disable=arguments-differ,unused-argument; this static method overrides a classmethod and does not need the cls argument
+        """A class for defining a constant transfer function, that does not depend on the frequency.
+
+        This is a static factory method.
+
+        :param value: a term
+        :param `*args,**kwargs`: neglected parameters, which allow to pass a ``transform``
+                                 parameter like in the other term classes
+        :returns: an instance of a subclass of :class:`~sumpf._data._filters._base._terms._base.Term`
+        """
+        return Constant(value)
 
     def __init__(self, value, *args, **kwargs):     # pylint: disable=unused-argument
         """
@@ -42,7 +53,7 @@ class Constant(Term):
 
     def _compute(self, s, out=None):
         """Generates an array and fills it with the constant value.
-        :param s: an S instance
+        :param s: an :class:`sumpf._data._filters._base._s.S` instance
         :param out: an optional array of complex values, in which the result shall
                     be stored (in order to save memory allocations)
         :returns: the computed transfer function as an array of complex values
@@ -53,7 +64,7 @@ class Constant(Term):
     def invert_transform(self):
         """Creates a copy of the term, with the lowpass-to-highpass-transform inverted.
 
-        :returns: an instance of a subclass of Term
+        :returns: an instance of a subclass of :class:`~sumpf._data._filters._base._terms._base.Term`
         """
         return self
 
@@ -89,7 +100,7 @@ class Constant(Term):
         """A repurposed operator overload for inverting a terms with ``~term``.
         The inverse of a term is ``1 / term``.
 
-        :returns: an instance of a subclass of Term
+        :returns: an instance of a subclass of :class:`~sumpf._data._filters._base._terms._base.Term`
         """
         return Constant(1.0 / self.value)
 
@@ -97,14 +108,14 @@ class Constant(Term):
         """An operator overload for computing the magnitude of a term with the
         built-in function :func:`abs`.
 
-        :returns: an instance of a subclass of Term
+        :returns: an instance of a subclass of :class:`~sumpf._data._filters._base._terms._base.Term`
         """
         return Constant(abs(self.value))
 
     def __neg__(self):
         """An operator overload for inverting the phase of a terms with ``-term``.
 
-        :returns: an instance of a subclass of Term
+        :returns: an instance of a subclass of :class:`~sumpf._data._filters._base._terms._base.Term`
         """
         return Constant(-self.value)
 
@@ -159,14 +170,19 @@ class Polynomial(Term):
 
     @staticmethod
     def factory(coefficients, transform=False):     # pylint: disable=arguments-differ; this static method overrides a classmethod and does not need the cls argument
-        """A static factory method, that performs some optimizations, which the
-        constructor of this class cannot do.
+        """A class for defining a polynomial of the frequency variable ``s``.
+
+        This is a static factory method, that is meant to instantiate a
+        :class:`~sumpf._data._filters._base._terms._primitive.Polynomial` instance.
+        But due to optimizations, it might return an instance of another subclass
+        of :class:`~sumpf._data._filters._base._terms._base.Term`, if that is
+        simpler and more efficient.
 
         :param coefficients: a sequence of coefficients for the polynomial, in which
                              the first coefficient is that of the highest power of ``s``.
         :param transform: True, if a lowpass-to-highpass-transformation shall be
                           performed, False otherwise
-        :returns: an instance of a subclass of Term
+        :returns: an instance of a subclass of :class:`~sumpf._data._filters._base._terms._base.Term`
         """
         if len(coefficients):                           # pylint: disable=len-as-condition; coefficients might be a NumPy array, where __nonzero__ is not equivalent to len(.)
             non_zero = numpy.nonzero(coefficients)[0]
@@ -193,7 +209,7 @@ class Polynomial(Term):
 
     def _compute(self, s, out=None):
         """Implements the computation of the polynomial.
-        :param s: an S instance
+        :param s: an :class:`sumpf._data._filters._base._s.S` instance
         :param out: an optional array of complex values, in which the result shall
                     be stored (in order to save memory allocations)
         :returns: the computed transfer function as an array of complex values
@@ -295,13 +311,19 @@ class Exp(Term):
 
     @staticmethod
     def factory(coefficient, transform=False):  # pylint: disable=arguments-differ; this static method overrides a classmethod and does not need the cls argument
-        """A static factory method, that performs some optimizations, which the
-        constructor of this class cannot do.
+        """A class for defining an exponential function with the multiplication
+        of ``s`` and a coefficient in the exponent: ``exp(c * s)``.
+
+        This is a static factory method, that is meant to instantiate a
+        :class:`~sumpf._data._filters._base._terms._primitive.Exp` instance. But
+        due to optimizations, it might return an instance of another subclass of
+        :class:`~sumpf._data._filters._base._terms._base.Term`, if that is simpler
+        and more efficient.
 
         :param coefficient: a value for the coefficient ``c`` in ``exp(c * s)``
         :param transform: True, if a lowpass-to-highpass-transformation shall be
                           performed, False otherwise
-        :returns: an instance of a subclass of Term
+        :returns: an instance of a subclass of :class:`~sumpf._data._filters._base._terms._base.Term`
         """
         if coefficient == 0.0:
             return Constant(1.0)
@@ -319,7 +341,7 @@ class Exp(Term):
 
     def _compute(self, s, out=None):
         """Implements the computation of the exponential function.
-        :param s: an S instance
+        :param s: an :class:`sumpf._data._filters._base._s.S` instance
         :param out: an optional array of complex values, in which the result shall
                     be stored (in order to save memory allocations)
         :returns: the computed transfer function as an array of complex values
@@ -350,7 +372,7 @@ class Exp(Term):
         """A repurposed operator overload for inverting a terms with ``~term``.
         The inverse of a term is ``1 / term``.
 
-        :returns: an instance of a subclass of Term
+        :returns: an instance of a subclass of :class:`~sumpf._data._filters._base._terms._base.Term`
         """
         return Exp(coefficient=-self.coefficient, transform=self.transform)
 
@@ -368,8 +390,14 @@ class Bands(Term):
 
     @staticmethod
     def factory(xs, ys, interpolation, extrapolation, *args, **kwargs):  # pylint: disable=arguments-differ,unused-argument; this static method overrides a classmethod and does not need the cls argument
-        """A static factory method, that performs some optimizations, which the
-        constructor of this class cannot do.
+        """A term, for defining a frequency dependent function by supporting points,
+        an interpolation function and an extrapolation function.
+
+        This is a static factory method, that is meant to instantiate a
+        :class:`~sumpf._data._filters._base._terms._primitive.Bands` instance. But
+        due to optimizations, it might return an instance of another subclass of
+        :class:`~sumpf._data._filters._base._terms._base.Term`, if that is simpler
+        and more efficient.
 
         :param xs: a sequence of float frequency values of the supporting points
         :param ys: a sequence of float or complex function values of the supporting points
@@ -377,7 +405,7 @@ class Bands(Term):
         :param extrapolation: a flag from the :class:`sumpf.Bands.interpolations` enumeration
         :param `*args,**kwargs`: neglected parameters, which allow to pass a ``transform``
                                  parameter like in the other term classes
-        :returns: an instance of a subclass of Term
+        :returns: an instance of a subclass of :class:`~sumpf._data._filters._base._terms._base.Term`
         """
         return Bands(xs, ys, interpolation, extrapolation)
 
@@ -402,7 +430,7 @@ class Bands(Term):
 
     def _compute(self, s, out=None):
         """Implements the computation of the interpolation of the bands.
-        :param s: an S instance
+        :param s: an :class:`sumpf._data._filters._base._s.S` instance
         :param out: an optional array of complex values, in which the result shall
                     be stored (in order to save memory allocations)
         :returns: the computed transfer function as an array of complex values
@@ -426,7 +454,7 @@ class Bands(Term):
         In this case, it does nothing and returns ``self``, since a lowpass-to-highpass-transform
         is not defined for bands spectrums.
 
-        :returns: an instance of a subclass of Term
+        :returns: an instance of a subclass of :class:`~sumpf._data._filters._base._terms._base.Term`
         """
         return self
 
@@ -467,7 +495,7 @@ class Bands(Term):
         """A repurposed operator overload for inverting a terms with ``~term``.
         The inverse of a term is ``1 / term``.
 
-        :returns: an instance of a subclass of Term
+        :returns: an instance of a subclass of :class:`~sumpf._data._filters._base._terms._base.Term`
         """
         return Bands(xs=self.xs,
                      ys=1.0 / self.ys,
@@ -478,7 +506,7 @@ class Bands(Term):
         """An operator overload for computing the magnitude of a term with the
         built-in function :func:`abs`.
 
-        :returns: an instance of a subclass of Term
+        :returns: an instance of a subclass of :class:`~sumpf._data._filters._base._terms._base.Term`
         """
         return Bands(xs=self.xs,
                      ys=numpy.abs(self.ys),
@@ -488,7 +516,7 @@ class Bands(Term):
     def __neg__(self):
         """An operator overload for inverting the phase of a terms with ``-term``.
 
-        :returns: an instance of a subclass of Term
+        :returns: an instance of a subclass of :class:`~sumpf._data._filters._base._terms._base.Term`
         """
         non_negative_interpolations = (sumpf_internal.Interpolations.ONE,
                                        sumpf_internal.Interpolations.LOG_Y)

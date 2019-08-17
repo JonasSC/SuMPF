@@ -155,7 +155,7 @@ class Window(Signal):
         The recommended overlap was proposed by G. Heinzel, A. Rüdiger and
         R. Schilling in their paper `Spectrum and spectral density estimation by
         the Discrete Fourier transform (DFT), including a comprehensive list of
-        window functions and some new flat-top windows <https://holometer.fnal.gov/GH_FFT.pdf#page=17>`_,
+        window functions and some new flat-top windows <https://holometer.fnal.gov/GH_FFT.pdf#page=17>`__,
         which was published by the Max-Planck-Institut für Gravitationsphysik in
         February 2002.
 

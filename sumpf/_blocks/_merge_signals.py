@@ -14,7 +14,7 @@
 # You should have received a copy of the GNU Lesser General Public License along
 # with this program. If not, see <http://www.gnu.org/licenses/>.
 
-"""Contains the MergeSignals class"""
+"""Contains the :class:`~sumpf.MergeSignals` class."""
 
 import connectors
 import numpy

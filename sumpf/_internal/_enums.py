@@ -92,7 +92,7 @@ class NuttallWindows(enum.Enum):
     The names of this enumeration's flags are taken from the paper `Spectrum and
     spectral density estimation by the Discrete Fourier transform (DFT), including
     a comprehensive list of window functions and some new flat-top windows
-    <https://holometer.fnal.gov/GH_FFT.pdf#page=33>`_ by G. Heinzel, A. Rüdiger and
+    <https://holometer.fnal.gov/GH_FFT.pdf#page=33>`__ by G. Heinzel, A. Rüdiger and
     R. Schilling, which was published by the Max-Planck-Institut für Gravitationsphysik
     in February 2002.
 
@@ -137,7 +137,7 @@ class FlatTopWindows(enum.Enum):
     Most names and functions of this enumeration's flags are taken from the paper
     `Spectrum and spectral density estimation by the Discrete Fourier transform
     (DFT), including a comprehensive list of window functions and some new flat-top
-    windows <https://holometer.fnal.gov/GH_FFT.pdf#page=38>`_ by G. Heinzel,
+    windows <https://holometer.fnal.gov/GH_FFT.pdf#page=38>`__ by G. Heinzel,
     A. Rüdiger and R. Schilling, which was published by the Max-Planck-Institut
     für Gravitationsphysik in February 2002.
 
