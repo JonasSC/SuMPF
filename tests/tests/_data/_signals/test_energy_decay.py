@@ -75,6 +75,7 @@ def test_reverberation_time(before_length, decay_length, after_length, start_lev
         assert reverberation_time == pytest.approx(reference, rel=1e-8)
 
 
+@pytest.mark.filterwarnings("ignore:overflow")
 @hypothesis.given(before_length=hypothesis.strategies.integers(min_value=2, max_value=2 ** 12),
                   decay_length=hypothesis.strategies.integers(min_value=2, max_value=2 ** 12),
                   after_length=hypothesis.strategies.integers(min_value=2, max_value=2 ** 12),

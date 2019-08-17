@@ -177,7 +177,7 @@ def _compare_number_results(result, reference, number=None):
             assert res == pytest.approx(ref)
 
 
-@pytest.mark.filterwarnings("ignore:overflow", "ignore:invalid value")
+@pytest.mark.filterwarnings("ignore:overflow", "ignore:invalid value", "ignore:divide by zero")
 @hypothesis.given(filter1=tests.strategies.filters,
                   filter2=tests.strategies.filters,
                   frequency=tests.strategies.non_zero_frequencies)
@@ -213,7 +213,7 @@ def test_add_with_number(filter_, number, frequency):
     assert sum2.labels() == filter_.labels()
 
 
-@pytest.mark.filterwarnings("ignore:overflow", "ignore:invalid value")
+@pytest.mark.filterwarnings("ignore:overflow", "ignore:invalid value", "ignore:divide by zero")
 @hypothesis.given(filter1=tests.strategies.filters,
                   filter2=tests.strategies.filters,
                   frequency=tests.strategies.non_zero_frequencies)
@@ -250,7 +250,7 @@ def test_subtract_number(filter_, number, frequency):
     assert difference2.labels() == filter_.labels()
 
 
-@pytest.mark.filterwarnings("ignore:overflow", "ignore:invalid value")
+@pytest.mark.filterwarnings("ignore:overflow", "ignore:invalid value", "ignore:divide by zero")
 @hypothesis.given(filter1=tests.strategies.filters,
                   filter2=tests.strategies.filters,
                   frequency=tests.strategies.non_zero_frequencies)

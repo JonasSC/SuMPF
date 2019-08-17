@@ -54,7 +54,7 @@ def test_equality_with_filter(bands):
 
 
 @pytest.mark.filterwarnings("ignore:divide by zero")
-@hypothesis.given(xs=hypothesis.extra.numpy.arrays(dtype=numpy.float64, shape=2, elements=hypothesis.strategies.floats(min_value=0.0, max_value=1e15), unique=True),
+@hypothesis.given(xs=hypothesis.extra.numpy.arrays(dtype=numpy.float64, shape=2, elements=hypothesis.strategies.floats(min_value=0.0, max_value=1e10), unique=True),
                   ys=hypothesis.extra.numpy.arrays(dtype=numpy.complex128, shape=2, elements=hypothesis.strategies.complex_numbers(min_magnitude=0.0, max_magnitude=1e15)),
                   interpolation=hypothesis.strategies.sampled_from(sumpf.Bands.interpolations),
                   k=hypothesis.strategies.floats(min_value=0.0, max_value=1.0))

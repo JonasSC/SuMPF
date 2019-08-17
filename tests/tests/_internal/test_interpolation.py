@@ -72,7 +72,7 @@ def test_x_as_scalar_and_vector(interpolation, data, x):
     assert scalar == pytest.approx(vector)
 
 
-@pytest.mark.filterwarnings("ignore:divide by zero encountered in log")
+@pytest.mark.filterwarnings("ignore:divide by zero")
 @hypothesis.given(interpolation=hypothesis.strategies.sampled_from(sumpf_internal.Interpolations),
                   xs=hypothesis.extra.numpy.arrays(dtype=numpy.float64, shape=2, elements=hypothesis.strategies.floats(min_value=-1e15, max_value=1e15), unique=True),
                   ys=hypothesis.extra.numpy.arrays(dtype=numpy.complex128, shape=2, elements=hypothesis.strategies.complex_numbers(min_magnitude=0.0, max_magnitude=1e15)),

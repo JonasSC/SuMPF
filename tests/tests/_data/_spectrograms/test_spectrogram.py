@@ -730,6 +730,7 @@ def test_conjugate(spectrogram):
 #############################
 
 
+@pytest.mark.filterwarnings("ignore:NOLA condition failed")
 @hypothesis.given(tests.strategies.normalized_signals)
 def test_inverse_short_time_fourier_transform(signal):
     """tests if a signal can be restored from its spectrogram with the

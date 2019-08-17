@@ -202,7 +202,7 @@ def __check_sample_range(window, symmetric):
         if length % 2:
             assert window.channels()[0, length // 2] == pytest.approx(1.0, rel=1e-4)
         else:
-            assert window.channels()[0, length // 2] <= 1.0 + 1e-8
+            assert window.channels()[0, length // 2] <= 1.0 + 1e-6
         assert min(window.channels()[0]) > -1.0
 
 

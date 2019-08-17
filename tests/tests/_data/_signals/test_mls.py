@@ -82,7 +82,7 @@ def test_properties(bits, seed, sampling_rate, length):
     assert set(mls.channels().flat) <= {-1.0, 1.0}
 
 
-@hypothesis.given(bits=hypothesis.strategies.integers(min_value=2, max_value=13),
+@hypothesis.given(bits=hypothesis.strategies.integers(min_value=2, max_value=12),
                   seed=hypothesis.strategies.integers(),
                   sampling_rate=tests.strategies.sampling_rates)
 def test_auto_correlation(bits, seed, sampling_rate):
