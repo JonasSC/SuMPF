@@ -100,7 +100,7 @@ class EnergyDecayCurve(Signal):
         channels = sumpf_internal.allocate_array(shape=self.shape())
         i = numpy.arange(self._length)
         for c, (m, n) in zip(channels, self.__solve(start, stop)):
-            c[:] = numpy.power(10.0, (m / 20.0) * i + (n / 20.0))
+            c[:] = numpy.power(10.0, (m / 10.0) * i + (n / 10.0))
         return Signal(channels=channels,
                       sampling_rate=self.sampling_rate(),
                       offset=self.offset(),
@@ -130,5 +130,5 @@ class EnergyDecayCurve(Signal):
             x = numpy.empty(shape=(len(i), 2))
             x[:, 0] = i
             x[:, 1] = 1.0
-            y = 20.0 * numpy.log10(c[start_index:stop_index])
+            y = 10.0 * numpy.log10(c[start_index:stop_index])
             yield numpy.linalg.lstsq(x, y, rcond=None)[0]

@@ -70,7 +70,7 @@ def test_reverberation_time(before_length, decay_length, after_length, start_lev
     model = edc.decay_model(before_length, decay_stop)
     reverberation_times = edc.reverberation_time(before_length, decay_stop)
     for channel, reverberation_time in zip(model.channels(), reverberation_times):
-        slope = 20.0 * numpy.average(numpy.diff(numpy.log10(channel)))
+        slope = 10.0 * numpy.average(numpy.diff(numpy.log10(channel)))
         reference = -60 / slope / model.sampling_rate()
         assert reverberation_time == pytest.approx(reference, rel=1e-8)
 
