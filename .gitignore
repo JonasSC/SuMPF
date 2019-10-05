@@ -1,15 +1,23 @@
-.cache
-.coverage
-.hypothesis
-.project
-.pydevproject
-.pytest_cache
-.settings
+# Python bytecode
+*.pyc
+*__pycache__
 
+# build files
 sumpf.egg-info
 dist
 docs
 
-*.pyc
-*__pycache__
+# test caches
+.coverage
+.hypothesis
+.pytest_cache
 
+# IDE config files
+.cache
+.idea
+.project
+.pydevproject
+.settings
+
+# OSX garbage
+.DS_Store
