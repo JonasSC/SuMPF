@@ -43,7 +43,7 @@ def test_constructor():
     assert sumpf.Bands(b3, i2, i2) == sumpf.Bands(bands=b3, interpolations=i3, extrapolations=i3, labels=("Bands",) * 3)
 
 
-@hypothesis.given(bands=tests.strategies.bands)
+@hypothesis.given(bands=tests.strategies.bands())
 def test_equality_with_filter(bands):
     """Tests if a bands filter is recognized to be equal to a generic filter with
     the same transfer functions.
@@ -149,7 +149,7 @@ def test_extrapolations(xs, ys, extrapolation, delta_x):
 
 
 @pytest.mark.filterwarnings("ignore:invalid value", "ignore:divide by zero")
-@hypothesis.given(bands=tests.strategies.bands,
+@hypothesis.given(bands=tests.strategies.bands(),
                   reference=hypothesis.strategies.floats(min_value=1e-12, max_value=1e12),
                   factor=hypothesis.strategies.floats(min_value=-1e12, max_value=1e12))
 def test_db_conversion(bands, reference, factor):

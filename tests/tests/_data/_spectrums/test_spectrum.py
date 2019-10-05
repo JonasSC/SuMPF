@@ -104,13 +104,13 @@ def test_getitem_samples():
     assert spectrum[-0.99:-0.01:-0.66, -0.99:-0.01:-0.66] == spectrum[0:3:-2, 0:3:-2]
 
 
-@hypothesis.given(tests.strategies.spectrums)
+@hypothesis.given(tests.strategies.spectrums())
 def test_str(spectrum):
     """Checks if casting a Spectrum instance to a string raises an error."""
     logging.info(str(spectrum))
 
 
-@hypothesis.given(tests.strategies.spectrums)
+@hypothesis.given(tests.strategies.spectrums())
 def test_repr(spectrum):
     """Checks if a spectrum can be restored from its string representation."""
     # required symbols for the evaluation of the repr-string
@@ -123,7 +123,7 @@ def test_repr(spectrum):
 
 
 @pytest.mark.filterwarnings("ignore:overflow", "ignore:invalid value")
-@hypothesis.given(tests.strategies.spectrum_parameters)
+@hypothesis.given(tests.strategies.spectrum_parameters())
 def test_eq(parameters):
     """Tests the operator overloads for ``==`` and ``!=``."""
     spectrum1 = sumpf.Spectrum(**parameters)
@@ -136,7 +136,7 @@ def test_eq(parameters):
     assert spectrum1 != spectrum1.channels()
 
 
-@hypothesis.given(tests.strategies.spectrum_parameters)
+@hypothesis.given(tests.strategies.spectrum_parameters())
 def test_hash(parameters):
     """Tests the operator overload for hashing a spectrum with the builtin :func:`hash` function."""
     parameters2 = copy.copy(parameters)
@@ -154,7 +154,7 @@ def test_hash(parameters):
 ###################################
 
 
-@hypothesis.given(tests.strategies.spectrums)
+@hypothesis.given(tests.strategies.spectrums())
 def test_absolute(spectrum):
     """Tests if computing the magnitude of a spectrum yields the expected result."""
     assert abs(spectrum) == sumpf.Spectrum(channels=numpy.absolute(spectrum.channels()),
@@ -162,7 +162,7 @@ def test_absolute(spectrum):
                                            labels=spectrum.labels())
 
 
-@hypothesis.given(tests.strategies.spectrums)
+@hypothesis.given(tests.strategies.spectrums())
 def test_negative(spectrum):
     """Tests if inverting the phase of a spectrum yields the expected result."""
     assert -spectrum == sumpf.Spectrum(channels=numpy.subtract(0.0, spectrum.channels()),
@@ -396,7 +396,7 @@ def test_power():
 
 
 @pytest.mark.filterwarnings("ignore:divide by zero", "ignore:invalid value")
-@hypothesis.given(tests.strategies.spectrums)
+@hypothesis.given(tests.strategies.spectrums())
 def test_invert(spectrum):
     """Tests if computing the inverse of a spectrum yields the expected result."""
     inverse = ~spectrum
@@ -411,7 +411,7 @@ def test_invert(spectrum):
 ##############
 
 
-@hypothesis.given(tests.strategies.spectrum_parameters)
+@hypothesis.given(tests.strategies.spectrum_parameters())
 def test_constructor_parameters(parameters):
     """Tests if the constructor parameters are interpreted correctly and have the expected default values."""
     # test an empty Spectrum
@@ -429,7 +429,7 @@ def test_constructor_parameters(parameters):
     assert spectrum.labels() == labels
 
 
-@hypothesis.given(tests.strategies.spectrums)
+@hypothesis.given(tests.strategies.spectrums())
 def test_derived_parameters(spectrum):
     """Tests if the spectrum's parameters, that are derived from its constructor parameters are correct."""
     assert spectrum.length() == len(spectrum.channels()[0])
@@ -445,7 +445,7 @@ def test_derived_parameters(spectrum):
 #######################
 
 
-@hypothesis.given(tests.strategies.spectrums)
+@hypothesis.given(tests.strategies.spectrums())
 def test_frequency_samples(spectrum):
     """Tests the method, that generates the frequency samples for the spectrum."""
     f = spectrum.frequency_samples()
@@ -453,7 +453,7 @@ def test_frequency_samples(spectrum):
     assert f == pytest.approx(reference)
 
 
-@hypothesis.given(spectrum=tests.strategies.spectrums,
+@hypothesis.given(spectrum=tests.strategies.spectrums(),
                   length=tests.strategies.short_lengths,
                   value=hypothesis.strategies.complex_numbers(allow_nan=False, allow_infinity=False))
 def test_pad(spectrum, length, value):
@@ -468,7 +468,7 @@ def test_pad(spectrum, length, value):
         assert padded == spectrum
 
 
-@hypothesis.given(tests.strategies.spectrums)
+@hypothesis.given(tests.strategies.spectrums())
 def test_conjugate(spectrum):
     """Tests computing the complex conjugate of a spectrum."""
     conjugate = spectrum.conjugate()
@@ -496,7 +496,7 @@ def test_inverse_fourier_transform_results():
     assert (signal[1].channels() == [(2.0, 0.0, 0.0, 0.0)]).all()
 
 
-@hypothesis.given(tests.strategies.spectrums)
+@hypothesis.given(tests.strategies.spectrums())
 def test_inverse_fourier_transform_calculation(spectrum):
     """Does some generic tests if the inverse Fourier transform can be computed for a variety of spectrums"""
     signal = spectrum.inverse_fourier_transform()
@@ -507,7 +507,7 @@ def test_inverse_fourier_transform_calculation(spectrum):
     assert signal.labels() == spectrum.labels()
 
 
-@hypothesis.given(tests.strategies.signals)
+@hypothesis.given(tests.strategies.signals())
 def test_level(signal):
     """Tests the level computation from the Spectrum class by comparing it to the Signal's level method."""
     if signal.length() % 2 == 1:    # with uneven signal lengths, the last sample is lost in the FFT, which makes the levels incomparable

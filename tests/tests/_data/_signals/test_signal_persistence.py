@@ -27,7 +27,7 @@ import tests
 # pylint: disable=line-too-long; this file contains many table-like dictionaries, that would be harder to read, if the rows were broken into multiple lines
 
 
-@hypothesis.given(tests.strategies.signals)
+@hypothesis.given(tests.strategies.signals(max_channels=9))
 def test_exact_formats_with_metadata(signal):
     """Tests formats, from which a signal can be restored exactly."""
     with tempfile.TemporaryDirectory() as d:
@@ -48,7 +48,7 @@ def test_exact_formats_with_metadata(signal):
                 os.remove(path)
 
 
-@hypothesis.given(tests.strategies.signals)
+@hypothesis.given(tests.strategies.signals(max_channels=9))
 def test_exact_with_time_column(signal):
     """Tests formats, from which a signal can be restored almost exactly with
     the exception of the sampling rate and the offset, if the signal is shorter
@@ -83,7 +83,7 @@ def test_exact_with_time_column(signal):
                 os.remove(path)
 
 
-@hypothesis.given(tests.strategies.normalized_signals)
+@hypothesis.given(tests.strategies.signals(max_channels=9, min_value=-255 / 256, max_value=254 / 256))
 def test_exact_formats_without_metadata(signal):
     """Tests formats, from which a signal's samples can be restored exactly."""
     pytest.importorskip("soundfile")
@@ -109,8 +109,9 @@ def test_exact_formats_without_metadata(signal):
                     os.remove(path)
 
 
-@hypothesis.given(tests.strategies.normalized_signals)  # noqa;
-def test_lossless_formats(signal):                      # pylint: disable=too-many-branches
+@hypothesis.given(tests.strategies.signals(max_channels=9, min_value=-255 / 256, max_value=254 / 256))  # noqa;
+@hypothesis.settings(deadline=None)
+def test_lossless_formats(signal):                                                                      # pylint: disable=too-many-branches
     """Tests lossless file formats."""
     # create a dictionary: file format -> [reader classes, writer classes, bits per sample, maximum number of channels]
     try:
@@ -187,7 +188,7 @@ def test_lossless_formats(signal):                      # pylint: disable=too-ma
                     os.remove(path)
 
 
-@hypothesis.given(tests.strategies.normalized_signals)
+@hypothesis.given(tests.strategies.signals(max_channels=9, min_value=-255 / 256, max_value=254 / 256))
 def test_lossy_formats(signal):
     """Tests lossy file formats."""
     pytest.importorskip("soundfile")

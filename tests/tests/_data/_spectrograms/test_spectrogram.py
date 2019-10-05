@@ -172,13 +172,13 @@ def test_getitem_samples():
     assert spectrogram[-0.99:-0.01:-0.66, -0.99:-0.01:-0.66, -0.99:-0.01:-0.66] == spectrogram[0:3:-2, 0:3:-2, 0:3:-2]
 
 
-@hypothesis.given(tests.strategies.spectrograms)
+@hypothesis.given(tests.strategies.spectrograms())
 def test_str(spectrogram):
     """Checks if casting a Spectrogram instance to a string raises an error."""
     logging.info(str(spectrogram))
 
 
-@hypothesis.given(tests.strategies.spectrograms)
+@hypothesis.given(tests.strategies.spectrograms())
 def test_repr(spectrogram):
     """Checks if a spectrogram can be restored from its string representation."""
     # required symbols for the evaluation of the repr-string
@@ -190,7 +190,7 @@ def test_repr(spectrogram):
     assert restored == spectrogram
 
 
-@hypothesis.given(tests.strategies.spectrogram_parameters)
+@hypothesis.given(tests.strategies.spectrogram_parameters())
 def test_eq(parameters):
     """Tests the operator overloads for ``==`` and ``!=``."""
     spectrogram1 = sumpf.Spectrogram(**parameters)
@@ -203,7 +203,7 @@ def test_eq(parameters):
     assert spectrogram1 != spectrogram1.channels()
 
 
-@hypothesis.given(tests.strategies.spectrogram_parameters)
+@hypothesis.given(tests.strategies.spectrogram_parameters())
 def test_hash(parameters):
     """Tests the operator overload for hashing a spectrogram with the builtin :func:`hash` function."""
     parameters2 = copy.copy(parameters)
@@ -221,7 +221,7 @@ def test_hash(parameters):
 ###################################
 
 
-@hypothesis.given(tests.strategies.spectrograms)
+@hypothesis.given(tests.strategies.spectrograms())
 def test_absolute(spectrogram):
     """Tests if computing the absolute of a spectrogram yields the expected result."""
     assert abs(spectrogram) == sumpf.Spectrogram(channels=numpy.absolute(spectrogram.channels()),
@@ -231,7 +231,7 @@ def test_absolute(spectrogram):
                                                  labels=spectrogram.labels())
 
 
-@hypothesis.given(tests.strategies.spectrograms)
+@hypothesis.given(tests.strategies.spectrograms())
 def test_negative(spectrogram):
     """Tests if computing the negative of a spectrogram yields the expected result."""
     assert -spectrogram == sumpf.Spectrogram(channels=numpy.subtract(0.0, spectrogram.channels()),
@@ -575,7 +575,7 @@ def test_power():
 ##############
 
 
-@hypothesis.given(tests.strategies.spectrogram_parameters)
+@hypothesis.given(tests.strategies.spectrogram_parameters())
 def test_constructor_parameters(parameters):
     """Tests if the constructor parameters are interpreted correctly and have the expected default values."""
     # test an empty Spectrogram
@@ -599,7 +599,7 @@ def test_constructor_parameters(parameters):
     assert spectrogram.labels() == labels
 
 
-@hypothesis.given(tests.strategies.spectrograms)
+@hypothesis.given(tests.strategies.spectrograms())
 def test_derived_parameters(spectrogram):
     """Tests if the spectrogram's parameters, that are derived from its constructor parameters are correct."""
     assert spectrogram.number_of_frequencies() == len(spectrogram.channels()[0])
@@ -617,7 +617,7 @@ def test_derived_parameters(spectrogram):
 #######################
 
 
-@hypothesis.given(tests.strategies.spectrograms)
+@hypothesis.given(tests.strategies.spectrograms())
 def test_time_samples(spectrogram):
     """Tests the method, that generates the time samples for the spectrogram."""
     t = spectrogram.time_samples()
@@ -628,7 +628,7 @@ def test_time_samples(spectrogram):
     assert t == pytest.approx(reference)
 
 
-@hypothesis.given(tests.strategies.spectrograms)
+@hypothesis.given(tests.strategies.spectrograms())
 def test_frequency_samples(spectrogram):
     """Tests the method, that generates the frequency samples for the spectrogram."""
     f = spectrogram.frequency_samples()
@@ -636,7 +636,7 @@ def test_frequency_samples(spectrogram):
     assert f == pytest.approx(reference)
 
 
-@hypothesis.given(spectrogram=tests.strategies.spectrograms,
+@hypothesis.given(spectrogram=tests.strategies.spectrograms(),
                   length=tests.strategies.short_lengths,
                   value=hypothesis.strategies.floats(allow_nan=False, allow_infinity=False))
 def test_pad(spectrogram, length, value):
@@ -651,7 +651,7 @@ def test_pad(spectrogram, length, value):
         assert padded == spectrogram
 
 
-@hypothesis.given(spectrogram=tests.strategies.spectrograms,
+@hypothesis.given(spectrogram=tests.strategies.spectrograms(),
                   shift=hypothesis.strategies.integers(min_value=-100, max_value=100))
 def test_shift(spectrogram, shift):
     """Tests the method for shifting the spectrogram"""
@@ -706,7 +706,7 @@ def test_shift(spectrogram, shift):
     assert shifted.labels() == spectrogram.labels()
 
 
-@hypothesis.given(tests.strategies.spectrograms)
+@hypothesis.given(tests.strategies.spectrograms())
 def test_conjugate(spectrogram):
     """Tests computing the complex conjugate of a spectrogram."""
     conjugate = spectrogram.conjugate()
@@ -722,7 +722,7 @@ def test_conjugate(spectrogram):
 
 
 @pytest.mark.filterwarnings("ignore:NOLA condition failed")
-@hypothesis.given(tests.strategies.normalized_signals)
+@hypothesis.given(tests.strategies.signals(min_value=-1e3, max_value=1e3))
 def test_inverse_short_time_fourier_transform(signal):
     """tests if a signal can be restored from its spectrogram with the
     :meth:`sumpf.Spectrogram.inverse_short_time_fourier_transform` method.
@@ -770,7 +770,7 @@ def test_inverse_short_time_fourier_transform(signal):
 #######################
 
 
-@hypothesis.given(tests.strategies.spectrograms)
+@hypothesis.given(tests.strategies.spectrograms())
 def test_loading_and_saving(spectrogram):
     """Tests writing a spectrogram to a file and loading it again."""
     with tempfile.TemporaryDirectory() as d:

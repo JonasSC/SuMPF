@@ -22,11 +22,13 @@ import numpy
 import sumpf
 import sumpf._internal as sumpf_internal
 
-__all__ = ("frequencies", "short_lengths", "labels",
-           "signal_parameters", "signals", "normalized_signals",
-           "spectrum_parameters", "spectrums",
-           "spectrogram_parameters", "spectrograms",
-           "terms", "filter_parameters", "filters", "bands")
+__all__ = ("frequencies", "non_zero_frequencies",
+           "sampling_rates", "resolutions",
+           "short_lengths", "labels",
+           "signals", "signal_parameters",
+           "spectrums", "spectrum_parameters",
+           "spectrograms", "spectrogram_parameters",
+           "filters", "filter_parameters", "terms", "bands")
 
 ##################
 # primitive data #
@@ -37,79 +39,157 @@ non_zero_frequencies = st.floats(min_value=1e-15, max_value=1e15)
 sampling_rates = st.floats(min_value=1e-8, max_value=1e8)
 resolutions = sampling_rates
 short_lengths = st.integers(min_value=0, max_value=2 ** 10)
-texts = st.text(alphabet=st.characters(blacklist_categories=("Cs",), blacklist_characters=("\x00",)))
-labels = st.lists(elements=texts)
+
+
+def labels(min_channels=None, max_channels=None):
+    """A strategy that creates tuples of labels for SuMPF data sets."""
+    texts = st.text(alphabet=st.characters(blacklist_categories=("Cs",), blacklist_characters=("\x00",)))
+    return st.lists(texts, min_size=min_channels, max_size=max_channels)
+
+
+_offsets = st.integers(min_value=-2 ** 24, max_value=2 ** 24)
 
 ##########
 # Signal #
 ##########
 
-_signal_parameters = {"channels": stn.arrays(dtype=numpy.float64,       # pylint: disable=no-value-for-parameter; there is a false alarm about a missing parameter for ``draw``
-                                             shape=stn.array_shapes(min_dims=2, max_dims=2),
-                                             elements=st.floats(min_value=-1e100, max_value=1e100)),
-                      "sampling_rate": sampling_rates,
-                      "offset": st.integers(min_value=-2 ** 24, max_value=2 ** 24),
-                      "labels": labels}
-signal_parameters = st.fixed_dictionaries(_signal_parameters)
-signals = st.builds(sumpf.Signal, **_signal_parameters)
-_normalized_signal_parameters = {"channels": stn.arrays(dtype=numpy.float64,       # pylint: disable=no-value-for-parameter; there is a false alarm about a missing parameter for ``draw``
-                                                        shape=stn.array_shapes(min_dims=2, max_dims=2),
-                                                        elements=st.floats(min_value=-255.0 / 256.0, max_value=254.0 / 256.0)),     # pylint: disable=line-too-long
-                                 "sampling_rate": sampling_rates,
-                                 "offset": st.integers(min_value=-2 ** 24, max_value=2 ** 24),
-                                 "labels": labels}
-normalized_signal_parameters = st.fixed_dictionaries(_normalized_signal_parameters)
-normalized_signals = st.builds(sumpf.Signal, **_normalized_signal_parameters)
+
+def _signal_parameters(min_channels, max_channels,
+                       min_length, max_length,
+                       min_value, max_value):
+    """A helper function, that creates a dictionary with strategies for generating a Signal instance."""
+    elements = st.floats(min_value=min_value, max_value=max_value)
+    shape = st.tuples(st.integers(min_value=min_channels, max_value=max_channels),
+                      st.integers(min_value=min_length, max_value=max_length))
+    return {"channels": stn.arrays(dtype=numpy.float64, shape=shape, elements=elements),
+            "sampling_rate": sampling_rates,
+            "offset": _offsets,
+            "labels": labels(min_channels, max_channels)}
+
+
+def signals(min_channels=1, max_channels=5,
+            min_length=1, max_length=65,
+            min_value=-1e100, max_value=1e100):
+    """A strategy that creates Signal instances."""
+    return st.builds(sumpf.Signal, **_signal_parameters(min_channels, max_channels,
+                                                        min_length, max_length,
+                                                        min_value, max_value))
+
+
+def signal_parameters(min_channels=1, max_channels=5,
+                      min_length=1, max_length=65,
+                      min_value=-1e100, max_value=1e100):
+    """A strategy that creates parameter sets for instantiating the Signal class."""
+    return st.fixed_dictionaries(_signal_parameters(min_channels, max_channels,
+                                                    min_length, max_length,
+                                                    min_value, max_value))
 
 ############
 # Spectrum #
 ############
 
-_spectrum_parameters = {"channels": stn.arrays(dtype=numpy.complex128,  # pylint: disable=no-value-for-parameter; there is a false alarm about a missing parameter for ``draw``
-                                               shape=stn.array_shapes(min_dims=2, max_dims=2),
-                                               elements=st.complex_numbers(max_magnitude=1e100, allow_nan=False, allow_infinity=False)),    # pylint: disable=line-too-long
-                        "resolution": resolutions,
-                        "labels": labels}
-spectrum_parameters = st.fixed_dictionaries(_spectrum_parameters)
-spectrums = st.builds(sumpf.Spectrum, **_spectrum_parameters)
+
+def _spectrum_parameters(min_channels, max_channels,
+                         min_length, max_length,
+                         min_magnitude, max_magnitude):
+    """A helper function, that creates a dictionary with strategies for generating a Spectrum instance."""
+    elements = st.complex_numbers(min_magnitude=min_magnitude,
+                                  max_magnitude=max_magnitude,
+                                  allow_nan=False,
+                                  allow_infinity=False)
+    shape = st.tuples(st.integers(min_value=min_channels, max_value=max_channels),
+                      st.integers(min_value=min_length, max_value=max_length))
+    return {"channels": stn.arrays(dtype=numpy.complex128, shape=shape, elements=elements),
+            "resolution": resolutions,
+            "labels": labels(min_channels, max_channels)}
+
+
+def spectrums(min_channels=1, max_channels=5,
+              min_length=1, max_length=65,
+              min_magnitude=0.0, max_magnitude=1e100):
+    """A strategy that creates Spectrum instances."""
+    return st.builds(sumpf.Spectrum, **_spectrum_parameters(min_channels, max_channels,
+                                                            min_length, max_length,
+                                                            min_magnitude, max_magnitude))
+
+
+def spectrum_parameters(min_channels=1, max_channels=5,
+                        min_length=1, max_length=65,
+                        min_magnitude=0.0, max_magnitude=1e100):
+    """A strategy that creates parameter sets for instantiating the Spectrum class."""
+    return st.fixed_dictionaries(_spectrum_parameters(min_channels, max_channels,
+                                                      min_length, max_length,
+                                                      min_magnitude, max_magnitude))
 
 ###############
 # Spectrogram #
 ###############
 
-_spectrogram_parameters = {"channels": stn.arrays(dtype=numpy.complex128,  # pylint: disable=no-value-for-parameter; there is a false alarm about a missing parameter for ``draw``
-                                                  shape=stn.array_shapes(min_dims=3, max_dims=3),
-                                                  elements=st.complex_numbers(max_magnitude=1e100, allow_nan=False, allow_infinity=False)),    # pylint: disable=line-too-long
-                           "resolution": resolutions,
-                           "sampling_rate": sampling_rates,
-                           "offset": st.integers(min_value=-2 ** 24, max_value=2 ** 24),
-                           "labels": labels}
-spectrogram_parameters = st.fixed_dictionaries(_spectrogram_parameters)
-spectrograms = st.builds(sumpf.Spectrogram, **_spectrogram_parameters)
+
+def _spectrogram_parameters(min_channels, max_channels,
+                            min_number_of_frequencies, max_number_of_frequencies,
+                            min_length, max_length,
+                            min_magnitude, max_magnitude):
+    """A helper function, that creates a dictionary with strategies for generating a Spectrogram instance."""
+    elements = st.complex_numbers(min_magnitude=min_magnitude,
+                                  max_magnitude=max_magnitude,
+                                  allow_nan=False,
+                                  allow_infinity=False)
+    shape = st.tuples(st.integers(min_value=min_channels, max_value=max_channels),
+                      st.integers(min_value=min_number_of_frequencies, max_value=max_number_of_frequencies),
+                      st.integers(min_value=min_length, max_value=max_length))
+    return {"channels": stn.arrays(dtype=numpy.complex128, shape=shape, elements=elements),
+            "resolution": resolutions,
+            "sampling_rate": sampling_rates,
+            "offset": _offsets,
+            "labels": labels(min_channels, max_channels)}
+
+
+def spectrograms(min_channels=1, max_channels=5,
+                 min_number_of_frequencies=1, max_number_of_frequencies=64,
+                 min_length=1, max_length=65,
+                 min_magnitude=0.0, max_magnitude=1e100):
+    """A strategy that creates Spectrogram instances."""
+    return st.builds(sumpf.Spectrogram, **_spectrogram_parameters(min_channels, max_channels,
+                                                                  min_number_of_frequencies, max_number_of_frequencies,
+                                                                  min_length, max_length,
+                                                                  min_magnitude, max_magnitude))
+
+
+def spectrogram_parameters(min_channels=1, max_channels=5,
+                           min_number_of_frequencies=1, max_number_of_frequencies=64,
+                           min_length=1, max_length=65,
+                           min_magnitude=0.0, max_magnitude=1e100):
+    """A strategy that creates parameter sets for instantiating the Spectrogram class."""
+    return st.fixed_dictionaries(_spectrogram_parameters(min_channels, max_channels,
+                                                         min_number_of_frequencies, max_number_of_frequencies,
+                                                         min_length, max_length,
+                                                         min_magnitude, max_magnitude))
 
 ##########
 # Filter #
 ##########
 
+
 _polynomial = st.builds(sumpf.Filter.Polynomial,
                         coefficients=st.lists(elements=st.floats(min_value=-1e10, max_value=1e10), max_size=6),
                         transform=st.booleans())
 _exp = st.builds(sumpf.Filter.Exp,
-                 coefficient=st.floats(min_value=-1e5, max_value=1e5),   # it is necessary to set a lower bound to avoid a value of -inf
+                 coefficient=st.floats(min_value=-1e5, max_value=1e5),  # it is necessary to set a lower bound to avoid a value of -inf
                  transform=st.booleans())
 _bands0 = st.builds(sumpf.Filter.Bands,
                     xs=stn.arrays(dtype=numpy.float64, shape=(0,), elements=non_zero_frequencies, unique=True),
-                    ys=stn.arrays(dtype=numpy.float64, shape=(0,), elements=st.floats(min_value=-1e15, max_value=1e15)),
+                    ys=stn.arrays(dtype=numpy.float64, shape=(0,), elements=st.floats(min_value=-1e15, max_value=1e15)),    # pylint: disable=line-too-long
                     interpolation=st.sampled_from(sumpf_internal.Interpolations),
                     extrapolation=st.sampled_from(sumpf_internal.Interpolations))
 _bands1 = st.builds(sumpf.Filter.Bands,
                     xs=stn.arrays(dtype=numpy.float64, shape=(1,), elements=non_zero_frequencies, unique=True),
-                    ys=stn.arrays(dtype=numpy.float64, shape=(1,), elements=st.floats(min_value=-1e15, max_value=1e15)),
+                    ys=stn.arrays(dtype=numpy.float64, shape=(1,), elements=st.floats(min_value=-1e15, max_value=1e15)),    # pylint: disable=line-too-long
                     interpolation=st.sampled_from(sumpf_internal.Interpolations),
                     extrapolation=st.sampled_from(sumpf_internal.Interpolations))
 _bands5 = st.builds(sumpf.Filter.Bands,
                     xs=stn.arrays(dtype=numpy.float64, shape=(5,), elements=non_zero_frequencies, unique=True),
-                    ys=stn.arrays(dtype=numpy.float64, shape=(5,), elements=st.floats(min_value=-1e15, max_value=1e15)),
+                    ys=stn.arrays(dtype=numpy.float64, shape=(5,), elements=st.floats(min_value=-1e15, max_value=1e15)),    # pylint: disable=line-too-long
                     interpolation=st.sampled_from(sumpf_internal.Interpolations),
                     extrapolation=st.sampled_from(sumpf_internal.Interpolations))
 _quotient = st.builds(sumpf.Filter.Quotient,
@@ -135,16 +215,42 @@ _negative = st.builds(sumpf.Filter.Negative,
 terms = st.one_of(_polynomial, _exp, _bands0, _bands1, _bands5,
                   _quotient, _product, _sum, _difference,
                   _absolute, _negative)
-_filter_parameters = {"transfer_functions": st.lists(elements=terms,
-                                                     min_size=1),
-                      "labels": labels}
-filter_parameters = st.fixed_dictionaries(_filter_parameters)
-filters = st.builds(sumpf.Filter, **_filter_parameters)
-_bands_parameters = {"bands": st.one_of(st.dictionaries(keys=frequencies, values=st.complex_numbers(min_magnitude=0.0, max_magnitude=1e15)),
-                                        st.lists(elements=st.dictionaries(keys=frequencies, values=st.complex_numbers(min_magnitude=0.0, max_magnitude=1e15)), min_size=1)),
-                     "interpolations": st.one_of(st.sampled_from(sumpf_internal.Interpolations),
-                                                 st.lists(elements=st.sampled_from(sumpf_internal.Interpolations), min_size=1)),
-                     "extrapolations": st.one_of(st.sampled_from(sumpf_internal.Interpolations),
-                                                 st.lists(elements=st.sampled_from(sumpf_internal.Interpolations), min_size=1)),
-                     "labels": labels}
-bands = st.builds(sumpf.Bands, **_bands_parameters)
+
+
+def _filter_parameters(min_channels, max_channels):
+    """A helper function, that creates a dictionary with strategies for generating a Filter instance."""
+    return {"transfer_functions": st.lists(elements=terms, min_size=min_channels, max_size=max_channels),
+            "labels": labels(min_channels, max_channels)}
+
+
+def filters(min_channels=1, max_channels=5):
+    """A strategy that creates Filter instances."""
+    return st.builds(sumpf.Filter, **_filter_parameters(min_channels, max_channels))
+
+
+def filter_parameters(min_channels=1, max_channels=5):
+    """A strategy that creates parameter sets for instantiating the Filter class."""
+    return st.fixed_dictionaries(_filter_parameters(min_channels, max_channels))
+
+
+def bands(min_channels=1, max_channels=5,
+          min_magnitude=0.0, max_magnitude=1e100):
+    """A strategy that creates Bands instances."""
+    return st.builds(sumpf.Bands,
+                     bands=st.one_of(st.dictionaries(keys=frequencies,
+                                                     values=st.complex_numbers(min_magnitude=min_magnitude,
+                                                                               max_magnitude=max_magnitude)),
+                                     st.lists(elements=st.dictionaries(keys=frequencies,
+                                                                       values=st.complex_numbers(min_magnitude=min_magnitude,       # pylint: disable=line-too-long
+                                                                                                 max_magnitude=max_magnitude)),     # pylint: disable=line-too-long
+                                              min_size=min_channels,
+                                              max_size=max_channels)),
+                     interpolations=st.one_of(st.sampled_from(sumpf.Bands.interpolations),
+                                              st.lists(elements=st.sampled_from(sumpf.Bands.interpolations),
+                                                       min_size=min_channels,
+                                                       max_size=max_channels)),
+                     extrapolations=st.one_of(st.sampled_from(sumpf.Bands.interpolations),
+                                              st.lists(elements=st.sampled_from(sumpf.Bands.interpolations),
+                                                       min_size=min_channels,
+                                                       max_size=max_channels)),
+                     labels=labels(min_channels, max_channels))

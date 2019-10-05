@@ -25,7 +25,7 @@ import sumpf._internal as sumpf_internal
 import tests
 
 
-@hypothesis.given(tests.strategies.filters)
+@hypothesis.given(tests.strategies.filters())
 def test_autodetect_format_on_reading(filter_):
     """Tests if auto-detecting the file format, when reading a file works."""
     with tempfile.TemporaryDirectory() as d:
@@ -39,7 +39,7 @@ def test_autodetect_format_on_reading(filter_):
                 os.remove(path)
 
 
-@hypothesis.given(tests.strategies.filters)
+@hypothesis.given(tests.strategies.filters())
 def test_autodetect_format_on_saving(filter_):
     """Tests if auto-detecting the file format from the file extension, when writing a file works."""
     file_formats = [(".txt", sumpf_internal.filter_readers.ReprReader),
@@ -60,7 +60,7 @@ def test_autodetect_format_on_saving(filter_):
             os.remove(path)
 
 
-@hypothesis.given(tests.strategies.bands)
+@hypothesis.given(tests.strategies.bands())
 def test_bands_as_table(bands):
     """Tests loading and saving bands filters in tabular text files."""
     with tempfile.TemporaryDirectory() as d:
@@ -84,7 +84,7 @@ def test_bands_as_table(bands):
                     os.remove(path)
 
 
-@hypothesis.given(tests.strategies.bands)
+@hypothesis.given(tests.strategies.bands())
 def test_bands_as_csv(bands):
     """Tests loading and saving bands filters in csv files."""
     with tempfile.TemporaryDirectory() as d:
@@ -102,7 +102,7 @@ def test_bands_as_csv(bands):
         os.remove(path)
 
 
-@hypothesis.given(tests.strategies.bands)
+@hypothesis.given(tests.strategies.bands())
 def test_bands_as_repr(bands):
     """Tests loading and saving bands filters' reprs in text files."""
     with tempfile.TemporaryDirectory() as d:
@@ -122,7 +122,7 @@ def test_bands_as_repr(bands):
         os.remove(path)
 
 
-@hypothesis.given(tests.strategies.bands)
+@hypothesis.given(tests.strategies.bands())
 def test_bands_as_serialization(bands):
     """Tests loading and saving bands filters in common serializations."""
     with tempfile.TemporaryDirectory() as d:
@@ -140,7 +140,7 @@ def test_bands_as_serialization(bands):
                     os.remove(path)
 
 
-@hypothesis.given(tests.strategies.bands)
+@hypothesis.given(tests.strategies.bands())
 def test_bands_as_numpy(bands):
     """Tests loading and saving bands filters in numpy files."""
     with tempfile.TemporaryDirectory() as d:
@@ -164,7 +164,7 @@ def test_bands_as_numpy(bands):
                     os.remove(path)
 
 
-@hypothesis.given(tests.strategies.bands)
+@hypothesis.given(tests.strategies.bands())
 def test_autodetect_format_on_reading_bands(bands):
     """Tests if auto-detecting the file format, when reading a file works."""
     with tempfile.TemporaryDirectory() as d:
@@ -198,7 +198,7 @@ def test_autodetect_format_on_reading_bands(bands):
                 os.remove(path)
 
 
-@hypothesis.given(tests.strategies.bands)
+@hypothesis.given(tests.strategies.bands())
 def test_autodetect_format_on_saving_bands(bands):
     """Tests if auto-detecting the file format from the file extension, when writing a file works."""
     file_formats = [(".txt", sumpf_internal.filter_readers.TableReader),

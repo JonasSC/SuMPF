@@ -25,7 +25,7 @@ from sumpf._internal import spectrum_readers, spectrum_writers
 import tests
 
 
-@hypothesis.given(tests.strategies.spectrums)
+@hypothesis.given(tests.strategies.spectrums())
 def test_exact_formats_with_metadata(spectrum):
     """Tests formats, from which a spectrum can be restored exactly."""
     with tempfile.TemporaryDirectory() as d:
@@ -44,7 +44,7 @@ def test_exact_formats_with_metadata(spectrum):
             os.remove(path)
 
 
-@hypothesis.given(tests.strategies.spectrums)
+@hypothesis.given(tests.strategies.spectrums())
 def test_exact_with_frequency_column(spectrum):
     """Tests formats, from which a spectrum can be restored almost exactly with
     the exception of the resolution."""

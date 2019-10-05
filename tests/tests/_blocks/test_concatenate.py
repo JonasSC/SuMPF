@@ -48,7 +48,7 @@ def test_manual():
     assert tests.compare_signals_approx(sumpf.ConcatenateSignals([signal2, signal1]).output(), signal21)
 
 
-@hypothesis.given(signals=hypothesis.strategies.lists(elements=tests.strategies.signals, min_size=2, max_size=5),
+@hypothesis.given(signals=hypothesis.strategies.lists(elements=tests.strategies.signals(), min_size=2, max_size=5),
                   index=hypothesis.strategies.integers(min_value=1, max_value=5))
 def test_concatenate_signals(signals, index):
     """Tests the concatenation behavior with automatically generated signals."""
@@ -78,9 +78,9 @@ def test_empty():
     assert sumpf.ConcatenateSignals().output() == sumpf.Signal()
 
 
-@hypothesis.given(signal1=tests.strategies.signals,
-                  signal2=tests.strategies.signals,
-                  signal3=tests.strategies.signals)
+@hypothesis.given(signal1=tests.strategies.signals(),
+                  signal2=tests.strategies.signals(),
+                  signal3=tests.strategies.signals())
 def test_connectors(signal1, signal2, signal3):
     """tests the connector functionality of the ConcatenateSignals class."""
     signal1, signal2, signal3 = _sanitize_offsets((signal1, signal2, signal3))          # pylint: disable=unbalanced-tuple-unpacking

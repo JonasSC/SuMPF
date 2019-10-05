@@ -59,7 +59,7 @@ def test_manual():
     assert sumpf.MergeSignals([signal2, signal1], mode=FIRST_CHANNELS_FIRST).output() == signal21c
 
 
-@hypothesis.given(signals=hypothesis.strategies.lists(elements=tests.strategies.signals, min_size=2, max_size=5),
+@hypothesis.given(signals=hypothesis.strategies.lists(elements=tests.strategies.signals(), min_size=2, max_size=5),
                   index=hypothesis.strategies.integers(min_value=0, max_value=5))
 def test_merge_first_signal_first(signals, index):
     """Tests the merging with the FIRST_DATASET_FIRST mode, which is the default."""
@@ -84,7 +84,7 @@ def test_merge_first_signal_first(signals, index):
                                       merged=merger.output())
 
 
-@hypothesis.given(signals=hypothesis.strategies.lists(elements=tests.strategies.signals, min_size=2, max_size=5),
+@hypothesis.given(signals=hypothesis.strategies.lists(elements=tests.strategies.signals(), min_size=2, max_size=5),
                   index=hypothesis.strategies.integers(min_value=0, max_value=5))
 def test_merge_first_channel_first(signals, index):
     """Tests the merging with the FIRST_CHANNEL_FIRST mode."""
@@ -114,10 +114,10 @@ def test_empty():
     assert sumpf.MergeSignals().output() == sumpf.Signal()
 
 
-@hypothesis.given(signal1=tests.strategies.signals,
-                  signal2=tests.strategies.signals,
-                  signal3=tests.strategies.signals,
-                  signal4=tests.strategies.signals)
+@hypothesis.given(signal1=tests.strategies.signals(),
+                  signal2=tests.strategies.signals(),
+                  signal3=tests.strategies.signals(),
+                  signal4=tests.strategies.signals())
 def test_connectors(signal1, signal2, signal3, signal4):
     """tests the connector functionality of the MergeSignals class."""
     signal1, signal2, signal3, signal4 = _sanitize_offsets((signal1, signal2, signal3, signal4))    # pylint: disable=unbalanced-tuple-unpacking

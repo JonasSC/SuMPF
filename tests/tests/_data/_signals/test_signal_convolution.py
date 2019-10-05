@@ -23,7 +23,7 @@ import sumpf
 import tests
 
 
-@hypothesis.given(signal=tests.strategies.signals,
+@hypothesis.given(signal=tests.strategies.signals(),
                   number=hypothesis.strategies.floats(min_value=-1e100, max_value=1e100),
                   mode=hypothesis.strategies.sampled_from(sumpf.Signal.convolution_modes))
 def test_convolve_with_number(signal, number, mode):
@@ -31,8 +31,8 @@ def test_convolve_with_number(signal, number, mode):
     assert signal.convolve(number, mode) == signal * number
 
 
-@hypothesis.given(signal1=tests.strategies.signals,
-                  signal2=tests.strategies.signals,
+@hypothesis.given(signal1=tests.strategies.signals(),
+                  signal2=tests.strategies.signals(),
                   mode=hypothesis.strategies.sampled_from(sumpf.Signal.convolution_modes))
 def test_convolve_with_single_channel(signal1, signal2, mode):
     """Tests if the convolution with a single channel signal or a one dimensional
@@ -60,8 +60,8 @@ def test_convolve_with_single_channel(signal1, signal2, mode):
     assert signal_convolution == signal1.convolve(multi_signal, mode=mode)
 
 
-@hypothesis.given(signal1=tests.strategies.signals,
-                  signal2=tests.strategies.signals,
+@hypothesis.given(signal1=tests.strategies.signals(),
+                  signal2=tests.strategies.signals(),
                   mode=hypothesis.strategies.sampled_from(sumpf.Signal.convolution_modes))
 def test_convolve_with_multiple_channels(signal1, signal2, mode):   # pylint: disable=too-many-statements; this function is long, but not too complex
     """Tests the convolution of two multi-channel signals and the convolution of
@@ -156,8 +156,8 @@ def test_convolve_offset(length1, length2, mode):
             assert numpy.argmax(result.channels()[i]) == zero_index
 
 
-@hypothesis.given(signal1=tests.strategies.normalized_signals,
-                  signal2=tests.strategies.normalized_signals)
+@hypothesis.given(signal1=tests.strategies.signals(min_value=-1.0, max_value=1.0),
+                  signal2=tests.strategies.signals(min_value=-1.0, max_value=1.0))
 def test_convolve_spectrum_padded(signal1, signal2):
     """Compares NumPy's full convolution with the frequency domain multiplication of padded signals."""
     padded = signal1.convolve(signal2, mode=sumpf.Signal.convolution_modes.SPECTRUM_PADDED)
@@ -165,7 +165,7 @@ def test_convolve_spectrum_padded(signal1, signal2):
     assert padded.channels() == pytest.approx(full.channels())
 
 
-@hypothesis.given(signal=tests.strategies.signals,
+@hypothesis.given(signal=tests.strategies.signals(),
                   number=hypothesis.strategies.floats(min_value=-1e100, max_value=1e100),
                   mode=hypothesis.strategies.sampled_from(sumpf.Signal.convolution_modes))
 def test_correlate_with_number(signal, number, mode):
@@ -173,8 +173,8 @@ def test_correlate_with_number(signal, number, mode):
     assert signal.correlate(number, mode) == signal * number
 
 
-@hypothesis.given(signal1=tests.strategies.signals,
-                  signal2=tests.strategies.signals,
+@hypothesis.given(signal1=tests.strategies.signals(),
+                  signal2=tests.strategies.signals(),
                   mode=hypothesis.strategies.sampled_from(sumpf.Signal.convolution_modes))
 def test_correlate_with_single_channel(signal1, signal2, mode):
     """Tests if the correlation with a single channel signal or a one dimensional
@@ -202,8 +202,8 @@ def test_correlate_with_single_channel(signal1, signal2, mode):
     assert signal_correlation == signal1.correlate(multi_signal, mode=mode)
 
 
-@hypothesis.given(signal1=tests.strategies.signals,                 # noqa; this function is long, but not too complex
-                  signal2=tests.strategies.signals,
+@hypothesis.given(signal1=tests.strategies.signals(),               # noqa; this function is long, but not too complex
+                  signal2=tests.strategies.signals(),
                   mode=hypothesis.strategies.sampled_from(sumpf.Signal.convolution_modes))
 def test_correlate_with_multiple_channels(signal1, signal2, mode):  # pylint: disable=too-many-branches,too-many-statements
     # pylint: disable=line-too-long
@@ -318,8 +318,8 @@ def test_correlate_offset(length1, length2, mode):
             assert zero_index == peak_index
 
 
-@hypothesis.given(signal1=tests.strategies.normalized_signals,
-                  signal2=tests.strategies.normalized_signals)
+@hypothesis.given(signal1=tests.strategies.signals(min_value=-1.0, max_value=1.0),
+                  signal2=tests.strategies.signals(min_value=-1.0, max_value=1.0))
 def test_correlate_spectrum_padded(signal1, signal2):
     """Compares NumPy's full correlation with the frequency domain multiplication of padded signals."""
     padded = signal1.correlate(signal2, mode=sumpf.Signal.convolution_modes.SPECTRUM_PADDED)
@@ -327,8 +327,8 @@ def test_correlate_spectrum_padded(signal1, signal2):
     assert padded.channels() == pytest.approx(full.channels())
 
 
-@hypothesis.given(signal1=tests.strategies.normalized_signals,
-                  signal2=tests.strategies.normalized_signals,
+@hypothesis.given(signal1=tests.strategies.signals(min_value=-10.0, max_value=10.0),
+                  signal2=tests.strategies.signals(min_value=-10.0, max_value=10.0),
                   mode=hypothesis.strategies.sampled_from(sumpf.Signal.convolution_modes))
 def test_correlation_as_convolution_with_reverse(signal1, signal2, mode):
     """Checks if computing the correlation is equivalent to computing the convolution with the first signal reversed."""

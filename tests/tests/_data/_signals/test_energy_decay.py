@@ -24,7 +24,7 @@ import sumpf
 import tests
 
 
-@hypothesis.given(tests.strategies.signals)
+@hypothesis.given(tests.strategies.signals())
 def test_metadata(signal):
     """tests if the energy decay curve computation preserves the original signal's metadata."""
     edc = sumpf.EnergyDecayCurve(signal)
@@ -43,7 +43,7 @@ def test_channels_manual():
     assert (edc == ref).all()
 
 
-@hypothesis.given(tests.strategies.signals)
+@hypothesis.given(tests.strategies.signals())
 def test_channels(signal):
     """compares the energy decay curve computation to a straight forward numpy implementation."""
     edc = sumpf.EnergyDecayCurve(signal).channels()
@@ -60,7 +60,7 @@ def test_channels(signal):
                   decays=hypothesis.strategies.lists(elements=hypothesis.strategies.floats(min_value=5e-4, max_value=1.0 - 1e-6), min_size=1, max_size=5),
                   sampling_rate=tests.strategies.sampling_rates,
                   offset=hypothesis.strategies.integers(),
-                  labels=tests.strategies.labels)
+                  labels=tests.strategies.labels())
 def test_reverberation_time(before_length, decay_length, after_length, start_level, decays, sampling_rate, offset, labels):
     """Tests the reverberation time computation with a manual computation from the
     slope of the decay_model method's result.
@@ -83,7 +83,7 @@ def test_reverberation_time(before_length, decay_length, after_length, start_lev
                   decays=hypothesis.strategies.lists(elements=hypothesis.strategies.floats(min_value=1e-4, max_value=1.0), min_size=1, max_size=5),
                   sampling_rate=tests.strategies.sampling_rates,
                   offset=hypothesis.strategies.integers(),
-                  labels=tests.strategies.labels)
+                  labels=tests.strategies.labels())
 def test_decay_model(before_length, decay_length, after_length, start_level, decays, sampling_rate, offset, labels):
     """Tests the decay_model method."""
     decay_stop = before_length + decay_length

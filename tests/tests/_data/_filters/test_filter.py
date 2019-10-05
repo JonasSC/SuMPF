@@ -31,7 +31,7 @@ import tests
 
 
 @pytest.mark.filterwarnings("ignore:overflow", "ignore:invalid value", "ignore:divide by zero")
-@hypothesis.given(filter_=tests.strategies.filters,
+@hypothesis.given(filter_=tests.strategies.filters(),
                   resolution=tests.strategies.resolutions,
                   length=tests.strategies.short_lengths)
 def test_call(filter_, resolution, length):
@@ -47,14 +47,14 @@ def test_call(filter_, resolution, length):
         assert eq.all()
 
 
-@hypothesis.given(tests.strategies.filters)
+@hypothesis.given(tests.strategies.filters())
 def test_str(filter_):
     """Checks if casting a Filter instance to a string raises an error."""
     text = str(filter_)
     logging.info(text)
 
 
-@hypothesis.given(tests.strategies.filters)
+@hypothesis.given(tests.strategies.filters())
 def test_repr(filter_):
     """Checks if a filter can be restored from its string representation."""
     # required symbols for the evaluation of the repr-string
@@ -69,7 +69,7 @@ def test_repr(filter_):
     assert restored == filter_
 
 
-@hypothesis.given(tests.strategies.filter_parameters)
+@hypothesis.given(tests.strategies.filter_parameters())
 def test_eq(parameters):
     """Tests the operator overloads for ``==`` and ``!=``."""
     filter1 = sumpf.Filter(**parameters)
@@ -83,7 +83,7 @@ def test_eq(parameters):
 
 
 @pytest.mark.filterwarnings("ignore:overflow", "ignore:invalid value")
-@hypothesis.given(filter_=tests.strategies.filters,
+@hypothesis.given(filter_=tests.strategies.filters(),
                   frequency=tests.strategies.frequencies)
 def test_absolute(filter_, frequency):
     """Tests if computing the absolute of a filter yields the expected result."""
@@ -98,7 +98,7 @@ def test_absolute(filter_, frequency):
 
 
 @pytest.mark.filterwarnings("ignore:overflow", "ignore:invalid value")
-@hypothesis.given(filter_=tests.strategies.filters,
+@hypothesis.given(filter_=tests.strategies.filters(),
                   frequency=tests.strategies.frequencies)
 def test_negative(filter_, frequency):
     """Tests if computing the negative of a filter yields the expected result."""
@@ -175,8 +175,8 @@ def _compare_number_results(result, reference, number=None):
 
 
 @pytest.mark.filterwarnings("ignore:overflow", "ignore:invalid value", "ignore:divide by zero")
-@hypothesis.given(filter1=tests.strategies.filters,
-                  filter2=tests.strategies.filters,
+@hypothesis.given(filter1=tests.strategies.filters(),
+                  filter2=tests.strategies.filters(),
                   frequency=tests.strategies.non_zero_frequencies)
 def test_add(filter1, filter2, frequency):
     """Tests the overload of the ``+`` operator."""
@@ -194,7 +194,7 @@ def test_add(filter1, filter2, frequency):
 
 
 @pytest.mark.filterwarnings("ignore:overflow", "ignore:invalid value")
-@hypothesis.given(filter_=tests.strategies.filters,
+@hypothesis.given(filter_=tests.strategies.filters(),
                   number=hypothesis.strategies.one_of(hypothesis.strategies.integers(),
                                                       hypothesis.strategies.floats(allow_infinity=False, allow_nan=False),
                                                       hypothesis.strategies.complex_numbers(allow_infinity=False, allow_nan=False)),
@@ -211,8 +211,8 @@ def test_add_with_number(filter_, number, frequency):
 
 
 @pytest.mark.filterwarnings("ignore:overflow", "ignore:invalid value", "ignore:divide by zero")
-@hypothesis.given(filter1=tests.strategies.filters,
-                  filter2=tests.strategies.filters,
+@hypothesis.given(filter1=tests.strategies.filters(),
+                  filter2=tests.strategies.filters(),
                   frequency=tests.strategies.non_zero_frequencies)
 def test_subtract(filter1, filter2, frequency):
     """Tests the overload of the ``-`` operator."""
@@ -230,7 +230,7 @@ def test_subtract(filter1, filter2, frequency):
 
 
 @pytest.mark.filterwarnings("ignore:overflow", "ignore:invalid value")
-@hypothesis.given(filter_=tests.strategies.filters,
+@hypothesis.given(filter_=tests.strategies.filters(),
                   number=hypothesis.strategies.one_of(hypothesis.strategies.integers(),
                                                       hypothesis.strategies.floats(allow_infinity=False, allow_nan=False),
                                                       hypothesis.strategies.complex_numbers(allow_infinity=False, allow_nan=False)),
@@ -248,8 +248,8 @@ def test_subtract_number(filter_, number, frequency):
 
 
 @pytest.mark.filterwarnings("ignore:overflow", "ignore:invalid value", "ignore:divide by zero")
-@hypothesis.given(filter1=tests.strategies.filters,
-                  filter2=tests.strategies.filters,
+@hypothesis.given(filter1=tests.strategies.filters(),
+                  filter2=tests.strategies.filters(),
                   frequency=tests.strategies.non_zero_frequencies)
 def test_multiply(filter1, filter2, frequency):
     """Tests the overload of the ``*`` operator."""
@@ -267,7 +267,7 @@ def test_multiply(filter1, filter2, frequency):
 
 
 @pytest.mark.filterwarnings("ignore:overflow", "ignore:invalid value")
-@hypothesis.given(filter_=tests.strategies.filters,
+@hypothesis.given(filter_=tests.strategies.filters(),
                   number=hypothesis.strategies.one_of(hypothesis.strategies.integers(min_value=-1e15, max_value=1e15),
                                                       hypothesis.strategies.floats(min_value=-1e15, max_value=1e15),
                                                       hypothesis.strategies.complex_numbers(max_magnitude=1e15, allow_infinity=False, allow_nan=False)),
@@ -287,8 +287,8 @@ def test_multiply_with_number(filter_, number, frequency):
 
 
 @pytest.mark.filterwarnings("ignore:overflow", "ignore:invalid value", "ignore:divide by zero")
-@hypothesis.given(filter_=tests.strategies.filters,
-                  signal=tests.strategies.signals)
+@hypothesis.given(filter_=tests.strategies.filters(),
+                  signal=tests.strategies.signals())
 def test_multiply_with_signal_or_spectrum(filter_, signal):
     """Tests the multiplication of a filter with a signal or a spectrum."""
     hypothesis.assume(signal.length() >= 2)
@@ -330,8 +330,8 @@ def test_multiply_with_signal_or_spectrum(filter_, signal):
 
 
 @pytest.mark.filterwarnings("ignore:overflow", "ignore:invalid value", "ignore:divide by zero")
-@hypothesis.given(filter1=tests.strategies.filters,
-                  filter2=tests.strategies.filters,
+@hypothesis.given(filter1=tests.strategies.filters(),
+                  filter2=tests.strategies.filters(),
                   frequency=tests.strategies.non_zero_frequencies)
 def test_divide(filter1, filter2, frequency):
     """Tests the overload of the ``/`` operator."""
@@ -352,7 +352,7 @@ def test_divide(filter1, filter2, frequency):
 
 
 @pytest.mark.filterwarnings("ignore:overflow", "ignore:invalid value", "ignore:divide by zero")
-@hypothesis.given(filter_=tests.strategies.filters,
+@hypothesis.given(filter_=tests.strategies.filters(),
                   number=hypothesis.strategies.one_of(hypothesis.strategies.integers(min_value=-(2 ** 63 - 1), max_value=2 ** 63 - 1),
                                                       hypothesis.strategies.floats(allow_infinity=False, allow_nan=False),
                                                       hypothesis.strategies.complex_numbers(allow_infinity=False, allow_nan=False)),
@@ -429,7 +429,7 @@ def test_invert(p_coefficients, e_coefficient, p_transform, e_transform, a_trans
 ##############
 
 
-@hypothesis.given(parameters=tests.strategies.filter_parameters,
+@hypothesis.given(parameters=tests.strategies.filter_parameters(),
                   frequency=tests.strategies.frequencies)
 def test_constructor_parameters(parameters, frequency):
     """Tests if the constructor parameters are interpreted correctly and have the expected default values."""

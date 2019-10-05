@@ -53,7 +53,7 @@ def test_manual():
     assert sumpf.MergeSpectrums([spectrum2, spectrum1], mode=FIRST_CHANNELS_FIRST).output() == spectrum21c
 
 
-@hypothesis.given(spectrums=hypothesis.strategies.lists(elements=tests.strategies.spectrums, min_size=2, max_size=5),
+@hypothesis.given(spectrums=hypothesis.strategies.lists(elements=tests.strategies.spectrums(), min_size=2, max_size=5),
                   index=hypothesis.strategies.integers(min_value=0, max_value=5))
 def test_merge_first_spectrum_first(spectrums, index):
     """Tests the merging with the FIRST_DATASET_FIRST mode, which is the default."""
@@ -77,7 +77,7 @@ def test_merge_first_spectrum_first(spectrums, index):
                                         merged=merger.output())
 
 
-@hypothesis.given(spectrums=hypothesis.strategies.lists(elements=tests.strategies.spectrums, min_size=2, max_size=5),
+@hypothesis.given(spectrums=hypothesis.strategies.lists(elements=tests.strategies.spectrums(), min_size=2, max_size=5),
                   index=hypothesis.strategies.integers(min_value=0, max_value=5))
 def test_merge_first_channel_first(spectrums, index):
     """Tests the merging with the FIRST_CHANNEL_FIRST mode."""
@@ -106,10 +106,10 @@ def test_empty():
     assert sumpf.MergeSpectrums().output() == sumpf.Spectrum()
 
 
-@hypothesis.given(spectrum1=tests.strategies.spectrums,
-                  spectrum2=tests.strategies.spectrums,
-                  spectrum3=tests.strategies.spectrums,
-                  spectrum4=tests.strategies.spectrums)
+@hypothesis.given(spectrum1=tests.strategies.spectrums(),
+                  spectrum2=tests.strategies.spectrums(),
+                  spectrum3=tests.strategies.spectrums(),
+                  spectrum4=tests.strategies.spectrums())
 def test_connectors(spectrum1, spectrum2, spectrum3, spectrum4):
     """tests the connector functionality of the MergeSpectrums class."""
     merger = sumpf.MergeSpectrums([spectrum1])

@@ -114,13 +114,13 @@ def test_getitem_samples():
     assert signal[-0.99:-0.01:-0.66, -0.99:-0.01:-0.66] == signal[0:3:-2, 0:3:-2]
 
 
-@hypothesis.given(tests.strategies.signals)
+@hypothesis.given(tests.strategies.signals())
 def test_str(signal):
     """Checks if casting a Signal instance to a string raises an error."""
     logging.info(str(signal))
 
 
-@hypothesis.given(tests.strategies.signals)
+@hypothesis.given(tests.strategies.signals())
 def test_repr(signal):
     """Checks if a signal can be restored from its string representation."""
     # required symbols for the evaluation of the repr-string
@@ -132,7 +132,7 @@ def test_repr(signal):
     assert restored == signal
 
 
-@hypothesis.given(tests.strategies.signal_parameters)
+@hypothesis.given(tests.strategies.signal_parameters())
 def test_eq(parameters):
     """Tests the operator overloads for ``==`` and ``!=``."""
     signal1 = sumpf.Signal(**parameters)
@@ -145,7 +145,7 @@ def test_eq(parameters):
     assert signal1 != signal1.channels()
 
 
-@hypothesis.given(tests.strategies.signal_parameters)
+@hypothesis.given(tests.strategies.signal_parameters())
 def test_hash(parameters):
     """Tests the operator overload for hashing a signal with the builtin :func:`hash` function."""
     parameters2 = copy.copy(parameters)
@@ -163,7 +163,7 @@ def test_hash(parameters):
 ###################################
 
 
-@hypothesis.given(tests.strategies.signals)
+@hypothesis.given(tests.strategies.signals())
 def test_absolute(signal):
     """Tests if computing the absolute of a signal yields the expected result."""
     assert abs(signal) == sumpf.Signal(channels=numpy.absolute(signal.channels()),
@@ -172,7 +172,7 @@ def test_absolute(signal):
                                        labels=signal.labels())
 
 
-@hypothesis.given(tests.strategies.signals)
+@hypothesis.given(tests.strategies.signals())
 def test_reversed(signal):
     """Tests if reversing a signal works as expected"""
     reverse = reversed(signal)
@@ -182,7 +182,7 @@ def test_reversed(signal):
     assert reverse.labels() == signal.labels()
 
 
-@hypothesis.given(tests.strategies.signals)
+@hypothesis.given(tests.strategies.signals())
 def test_negative(signal):
     """Tests if computing the negative of a signal yields the expected result."""
     assert -signal == sumpf.Signal(channels=numpy.subtract(0.0, signal.channels()),
@@ -555,7 +555,7 @@ def test_invert():
 ##############
 
 
-@hypothesis.given(tests.strategies.signal_parameters)
+@hypothesis.given(tests.strategies.signal_parameters())
 def test_constructor_parameters(parameters):
     """Tests if the constructor parameters are interpreted correctly and have the expected default values."""
     # test an empty Signal
@@ -576,7 +576,7 @@ def test_constructor_parameters(parameters):
     assert signal.labels() == labels
 
 
-@hypothesis.given(tests.strategies.signals)
+@hypothesis.given(tests.strategies.signals())
 def test_derived_parameters(signal):
     """Tests if the signal's parameters, that are derived from its constructor parameters are correct."""
     assert signal.length() == len(signal.channels()[0])
@@ -588,7 +588,7 @@ def test_derived_parameters(signal):
 #######################
 
 
-@hypothesis.given(tests.strategies.signals)
+@hypothesis.given(tests.strategies.signals())
 def test_time_samples(signal):
     """Tests the method, that generates the time samples for the signal."""
     t = signal.time_samples()
@@ -599,7 +599,7 @@ def test_time_samples(signal):
     assert t == pytest.approx(reference)
 
 
-@hypothesis.given(signal=tests.strategies.signals,
+@hypothesis.given(signal=tests.strategies.signals(),
                   length=tests.strategies.short_lengths,
                   value=hypothesis.strategies.floats(allow_nan=False, allow_infinity=False))
 def test_pad(signal, length, value):
@@ -614,7 +614,7 @@ def test_pad(signal, length, value):
         assert padded == signal
 
 
-@hypothesis.given(signal=tests.strategies.signals,
+@hypothesis.given(signal=tests.strategies.signals(),
                   shift=hypothesis.strategies.integers(min_value=-100, max_value=100))
 def test_shift(signal, shift):
     """Tests the method for shifting the signal"""
@@ -691,7 +691,7 @@ def test_fourier_transform_results():
                                             [(1.0 + 0.0j, 1.0 + 0.0j, 1.0 + 0.0j, 1.0 + 0.0j)])) < 1e-15
 
 
-@hypothesis.given(tests.strategies.signals)
+@hypothesis.given(tests.strategies.signals())
 def test_fourier_transform_calculation(signal):
     """Does some generic tests if the Fourier transform can be computed for a variety of signals"""
     spectrum = signal.fourier_transform()
@@ -720,7 +720,7 @@ def test_short_time_fourier_transform_results():
             assert (diff[0:-1] <= spectrogram.resolution() * 1.2).all()
 
 
-@hypothesis.given(signal=tests.strategies.signals,  # noqa: C901; ignore the complexity warning
+@hypothesis.given(signal=tests.strategies.signals(),    # noqa: C901; ignore the complexity warning
                   window_length=hypothesis.strategies.integers(min_value=1, max_value=8192),
                   overlap=hypothesis.strategies.floats(min_value=0.0, max_value=0.8),
                   pad=hypothesis.strategies.booleans())
@@ -791,7 +791,7 @@ def test_level_manual():
     assert square.level() == pytest.approx([1.0])
 
 
-@hypothesis.given(tests.strategies.signals)
+@hypothesis.given(tests.strategies.signals())
 def test_level(signal):
     """Tests the level computation from the Signal class."""
     # compute the level for each channel
@@ -808,7 +808,7 @@ def test_level(signal):
 ####################################################
 
 
-@hypothesis.given(tests.strategies.signals)
+@hypothesis.given(tests.strategies.signals())
 def test_mean(signal):
     """Tests the computation the mean from the Signal class."""
     # compute the mean for each channel
@@ -820,7 +820,7 @@ def test_mean(signal):
     assert signal.mean(single_value=True) == numpy.mean(signal.channels())
 
 
-@hypothesis.given(tests.strategies.signals)
+@hypothesis.given(tests.strategies.signals())
 def test_standard_deviation(signal):
     """Tests the computation the standard deviation from the Signal class."""
     # compute the standard deviation for each channel
@@ -832,7 +832,7 @@ def test_standard_deviation(signal):
     assert signal.standard_deviation(single_value=True) == numpy.std(signal.channels())
 
 
-@hypothesis.given(tests.strategies.signals)
+@hypothesis.given(tests.strategies.signals())
 def test_variance(signal):
     """Tests the computation the variance from the Signal class."""
     # compute the variance for each channel
@@ -844,7 +844,7 @@ def test_variance(signal):
     assert signal.variance(single_value=True) == numpy.var(signal.channels())
 
 
-@hypothesis.given(tests.strategies.signals)
+@hypothesis.given(tests.strategies.signals())
 def test_skewness(signal):
     """Tests the computation the skewness from the Signal class."""
     try:
@@ -862,7 +862,7 @@ def test_skewness(signal):
         assert signal.skewness(single_value=True) == scipy.stats.skew(signal.channels(), axis=None)
 
 
-@hypothesis.given(tests.strategies.normalized_signals)
+@hypothesis.given(tests.strategies.signals(min_value=-1e15, max_value=1e15))
 def test_kurtosis(signal):
     """Tests the computation the kurtosis from the Signal class."""
     try:
