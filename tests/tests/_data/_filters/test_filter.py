@@ -66,10 +66,7 @@ def test_repr(filter_):
     # create a signal, cast it to a string and restore it from the string
     representation = repr(filter_)
     restored = eval(representation)     # pylint: disable=eval-used
-    if "array([" in representation:
-        assert repr(restored) == representation     # the string representation of a NumPy array does not have the full numerical precision
-    else:
-        assert restored == filter_
+    assert restored == filter_
 
 
 @hypothesis.given(tests.strategies.filter_parameters)

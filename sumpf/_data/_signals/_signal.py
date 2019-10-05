@@ -136,12 +136,11 @@ class Signal(SampledData):
 
         :returns: a potentially very long string
         """
-        # pylint: disable=duplicate-code; this looks similar to the spectrum's __repr__ method
-        if self._length:
-            signal_channels = repr(self._channels).replace("\n", "").replace(" ", "")
-        else:
-            signal_channels = "array([[]])"
-        return (f"{self.__class__.__name__}(channels={signal_channels}, "
+        channels = numpy.array2string(self._channels,
+                                      separator=",",
+                                      formatter={"all": repr},
+                                      threshold=self._channels.size).replace("\n", "").replace(" ", "")
+        return (f"{self.__class__.__name__}(channels=array({channels}), "
                 f"sampling_rate={self.__sampling_rate!r}, "
                 f"offset={self.__offset}, "
                 f"labels={self._labels})")

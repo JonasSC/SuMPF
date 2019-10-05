@@ -123,11 +123,11 @@ class Spectrum(SampledData):
 
         :returns: a potentially very long string
         """
-        if self._length:
-            spectrum_channels = repr(self._channels).replace("\n", "").replace(" ", "")
-        else:
-            spectrum_channels = "array([[]])"
-        return (f"{self.__class__.__name__}(channels={spectrum_channels}, "
+        channels = numpy.array2string(self._channels,
+                                      separator=",",
+                                      formatter={"all": repr},
+                                      threshold=self._channels.size).replace("\n", "").replace(" ", "")
+        return (f"{self.__class__.__name__}(channels=array({channels}), "
                 f"resolution={self.__resolution!r}, "
                 f"labels={self._labels})")
 

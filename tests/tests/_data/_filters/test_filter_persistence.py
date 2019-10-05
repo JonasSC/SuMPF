@@ -19,7 +19,7 @@
 import os
 import tempfile
 import hypothesis
-import pytest
+import numpy
 import sumpf
 import sumpf._internal as sumpf_internal
 import tests
@@ -35,10 +35,7 @@ def test_autodetect_format_on_reading(filter_):
                 assert not os.path.exists(path)
                 filter_.save(path, file_format)
                 loaded = sumpf.Filter.load(path)
-                if file_format == sumpf.Filter.file_formats.TEXT_REPR and "array" in repr(filter_):     # repr of a numpy array does not contain all digits of the array's elements
-                    assert repr(loaded) == repr(filter_)
-                else:
-                    assert loaded == filter_
+                assert loaded == filter_
                 os.remove(path)
 
 
@@ -117,8 +114,8 @@ def test_bands_as_repr(bands):
         loaded = reader(path)
         assert len(loaded) == len(bands)
         for t1, t2 in zip(loaded.transfer_functions(), bands.transfer_functions()):
-            assert t1.xs == pytest.approx(t2.xs)    # repr of a numpy array does not contain all digits of the array's elements
-            assert t1.ys == pytest.approx(t2.ys)    # repr of a numpy array does not contain all digits of the array's elements
+            assert numpy.array_equal(t1.xs, t2.xs)
+            assert numpy.array_equal(t1.ys, t2.ys)
             assert t1.interpolation is t2.interpolation
             assert t1.extrapolation is t2.extrapolation
         assert loaded.labels() == bands.labels()
@@ -177,12 +174,10 @@ def test_autodetect_format_on_reading_bands(bands):
                 assert not os.path.exists(path)
                 bands.save(path, file_format)
                 loaded = sumpf.Bands.load(path)
-                if file_format == sumpf.Bands.file_formats.TEXT_REPR and "array" in repr(bands):   # repr of a numpy array does not contain all digits of the array's elements
-                    assert repr(loaded) == repr(bands)
-                elif file_format in (sumpf.Bands.file_formats.TEXT_JSON,
-                                     sumpf.Bands.file_formats.TEXT_REPR,
-                                     sumpf.Bands.file_formats.NUMPY_NPZ,
-                                     sumpf.Bands.file_formats.PYTHON_PICKLE):
+                if file_format in (sumpf.Bands.file_formats.TEXT_JSON,
+                                   sumpf.Bands.file_formats.TEXT_REPR,
+                                   sumpf.Bands.file_formats.NUMPY_NPZ,
+                                   sumpf.Bands.file_formats.PYTHON_PICKLE):
                     assert loaded == bands
                 elif file_format is sumpf.Bands.file_formats.TEXT_CSV:
                     assert len(loaded) == len(bands.transfer_functions())

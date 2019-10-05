@@ -119,14 +119,7 @@ def test_repr(spectrum):
     Spectrum = sumpf.Spectrum       # noqa
     # create a spectrum, cast it to a string and restore it from the string
     restored = eval(repr(spectrum))     # pylint: disable=eval-used
-    if spectrum.length():
-        # compare the spectrums manually, because NumPy's repr does not print all required decimals
-        assert restored.real() == pytest.approx(spectrum.real(), rel=1e-3)
-        assert restored.imaginary() == pytest.approx(spectrum.imaginary(), rel=1e-3)
-        assert restored.resolution() == spectrum.resolution()
-        assert restored.labels() == spectrum.labels()
-    else:
-        assert restored == spectrum
+    assert restored == spectrum
 
 
 @pytest.mark.filterwarnings("ignore:overflow", "ignore:invalid value")

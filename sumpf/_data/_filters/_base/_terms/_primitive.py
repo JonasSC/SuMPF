@@ -84,7 +84,7 @@ class Constant(Term):
 
         :returns: a potentially very long string
         """
-        return "Filter.{class_}(value={value!r})".format(class_=self.__class__.__name__, value=self.value)
+        return f"Filter.{self.__class__.__name__}(value={self.value!r})"
 
     def __eq__(self, other):
         """An operator overload for comparing two terms with ``==``."""
@@ -236,10 +236,15 @@ class Polynomial(Term):
 
         :returns: a potentially very long string
         """
-        mask = "Filter.{class_}(coefficients={coefficients!r}, transform={transform})"
-        return mask.format(class_=self.__class__.__name__,
-                           coefficients=self.coefficients,
-                           transform=self.transform)
+        if isinstance(self.coefficients, numpy.ndarray):
+            array = numpy.array2string(self.coefficients,
+                                       separator=",",
+                                       formatter={"all": repr},
+                                       threshold=self.coefficients.size).replace(" ", "")
+            coefficients = f"array({array})"
+        else:
+            coefficients = repr(self.coefficients)
+        return f"Filter.{self.__class__.__name__}(coefficients={coefficients}, transform={self.transform})"
 
     def __eq__(self, other):
         """An operator overload for comparing two terms with ``==``."""
@@ -355,10 +360,7 @@ class Exp(Term):
 
         :returns: a potentially very long string
         """
-        mask = "Filter.{class_}(coefficient={coefficient!r}, transform={transform})"
-        return mask.format(class_=self.__class__.__name__,
-                           coefficient=self.coefficient,
-                           transform=self.transform)
+        return f"Filter.{self.__class__.__name__}(coefficient={self.coefficient!r}, transform={self.transform})"
 
     def __eq__(self, other):
         """An operator overload for comparing two terms with ``==``."""
@@ -474,9 +476,25 @@ class Bands(Term):
 
         :returns: a potentially very long string
         """
+        if isinstance(self.xs, numpy.ndarray):
+            array = numpy.array2string(self.xs,
+                                       separator=",",
+                                       formatter={"all": repr},
+                                       threshold=self.xs.size).replace(" ", "")
+            xs = f"array({array})"
+        else:
+            xs = repr(self.xs)
+        if isinstance(self.ys, numpy.ndarray):
+            array = numpy.array2string(self.ys,
+                                       separator=",",
+                                       formatter={"all": repr},
+                                       threshold=self.ys.size).replace(" ", "")
+            ys = f"array({array})"
+        else:
+            ys = repr(self.ys)
         return (f"Filter.{self.__class__.__name__}("
-                f"xs={self.xs!r}, "
-                f"ys={self.ys!r}, "
+                f"xs={xs}, "
+                f"ys={ys}, "
                 f"interpolation={self.interpolation}, "
                 f"extrapolation={self.extrapolation})")
 

@@ -187,16 +187,7 @@ def test_repr(spectrogram):
     Spectrogram = sumpf.Spectrogram     # noqa
     # create a spectrogram, cast it to a string and restore it from the string
     restored = eval(repr(spectrogram))   # pylint: disable=eval-used
-    if spectrogram.length():
-        # compare the spectrograms approximately, because NumPy's repr does not print all required decimals
-        assert restored.real() == pytest.approx(spectrogram.real(), rel=1e-3)
-        assert restored.imaginary() == pytest.approx(spectrogram.imaginary(), rel=1e-3)
-        assert restored.resolution() == spectrogram.resolution()
-        assert restored.sampling_rate() == spectrogram.sampling_rate()
-        assert restored.offset() == spectrogram.offset()
-        assert restored.labels() == spectrogram.labels()
-    else:
-        assert restored == spectrogram
+    assert restored == spectrogram
 
 
 @hypothesis.given(tests.strategies.spectrogram_parameters)

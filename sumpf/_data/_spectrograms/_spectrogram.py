@@ -142,11 +142,11 @@ class Spectrogram(SampledData):
 
         :returns: a potentially very long string
         """
-        if self._length:
-            channels = repr(self._channels).replace("\n", "").replace(" ", "")
-        else:
-            channels = "array([[[]]])"
-        return (f"{self.__class__.__name__}(channels={channels}, "
+        channels = numpy.array2string(self._channels,
+                                      separator=",",
+                                      formatter={"all": repr},
+                                      threshold=self._channels.size).replace("\n", "").replace(" ", "")
+        return (f"{self.__class__.__name__}(channels=array({channels}), "
                 f"resolution={self.__resolution}, "
                 f"sampling_rate={self.__sampling_rate!r}, "
                 f"offset={self.__offset}, "

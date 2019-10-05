@@ -129,10 +129,7 @@ def test_repr(signal):
     Signal = sumpf.Signal       # noqa
     # create a signal, cast it to a string and restore it from the string
     restored = eval(repr(signal))   # pylint: disable=eval-used
-    if signal.length():
-        tests.compare_signals_approx(restored, signal)  # compare the signals approximately, because NumPy's repr does not print all required decimals
-    else:
-        assert restored == signal
+    assert restored == signal
 
 
 @hypothesis.given(tests.strategies.signal_parameters)
