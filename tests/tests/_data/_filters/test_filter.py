@@ -82,7 +82,7 @@ def test_eq(parameters):
 ###################################
 
 
-@pytest.mark.filterwarnings("ignore:overflow", "ignore:invalid value")
+@pytest.mark.filterwarnings("ignore:overflow", "ignore:invalid value", "ignore:divide by zero")
 @hypothesis.given(filter_=tests.strategies.filters(),
                   frequency=tests.strategies.frequencies)
 def test_absolute(filter_, frequency):
@@ -98,7 +98,7 @@ def test_absolute(filter_, frequency):
         assert result == reference(frequency)
 
 
-@pytest.mark.filterwarnings("ignore:overflow", "ignore:invalid value")
+@pytest.mark.filterwarnings("ignore:overflow", "ignore:invalid value", "ignore:divide by zero")
 @hypothesis.given(filter_=tests.strategies.filters(),
                   frequency=tests.strategies.frequencies)
 def test_negative(filter_, frequency):
@@ -233,7 +233,7 @@ def test_subtract(filter1, filter2, frequency):
         assert difference.labels() == ("Difference",) * channel_count
 
 
-@pytest.mark.filterwarnings("ignore:overflow", "ignore:invalid value")
+@pytest.mark.filterwarnings("ignore:overflow", "ignore:invalid value", "ignore:divide by zero")
 @hypothesis.given(filter_=tests.strategies.filters(),
                   number=hypothesis.strategies.one_of(hypothesis.strategies.integers(),
                                                       hypothesis.strategies.floats(allow_infinity=False,
