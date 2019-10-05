@@ -53,7 +53,7 @@ confidence=
 #disable=attribute-defined-outside-init,duplicate-code,invalid-name,no-else-return,no-member,too-few-public-methods,unused-variable,invalid-slice-index
 # Disable more checks, because these yield false positives or are insufficiently
 # configurable
-disable=assignment-from-no-return,attribute-defined-outside-init,duplicate-code,invalid-name,no-else-return,no-member,too-few-public-methods,unused-variable,invalid-slice-index
+disable=assignment-from-no-return,attribute-defined-outside-init,duplicate-code,invalid-name,no-else-return,no-member,no-value-for-parameter,too-few-public-methods,unused-variable,invalid-slice-index
 
 # Enable the message, report, category or checker with the given id(s). You can
 # either give multiple identifier separated by comma (,) or put this option

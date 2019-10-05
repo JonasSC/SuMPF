@@ -41,8 +41,8 @@ def xs_ys(data, interpolation):
 
 
 @hypothesis.given(interpolation=hypothesis.strategies.sampled_from(sumpf_internal.Interpolations),
-                  data=hypothesis.strategies.lists(elements=hypothesis.strategies.tuples(hypothesis.strategies.floats(min_value=-1e15, max_value=1e15),
-                                                                                         hypothesis.strategies.complex_numbers(min_magnitude=0.0, max_magnitude=1e15)),
+                  data=hypothesis.strategies.lists(elements=hypothesis.strategies.tuples(hypothesis.strategies.floats(min_value=-1e15, max_value=1e15),                     # pylint: disable=line-too-long
+                                                                                         hypothesis.strategies.complex_numbers(min_magnitude=0.0, max_magnitude=1e15)),     # pylint: disable=line-too-long
                                                    min_size=0, max_size=2 ** 12,
                                                    unique_by=lambda t: t[0]))
 def test_supporting_points(interpolation, data):
@@ -53,11 +53,11 @@ def test_supporting_points(interpolation, data):
 
 
 @hypothesis.given(interpolation=hypothesis.strategies.sampled_from(sumpf_internal.Interpolations),
-                  data=hypothesis.strategies.lists(elements=hypothesis.strategies.tuples(hypothesis.strategies.floats(min_value=-1e15, max_value=1e15),
-                                                                                         hypothesis.strategies.complex_numbers(min_magnitude=0.0, max_magnitude=1e15)),
+                  data=hypothesis.strategies.lists(elements=hypothesis.strategies.tuples(hypothesis.strategies.floats(min_value=-1e15, max_value=1e15),                     # pylint: disable=line-too-long
+                                                                                         hypothesis.strategies.complex_numbers(min_magnitude=0.0, max_magnitude=1e15)),     # pylint: disable=line-too-long
                                                    min_size=1, max_size=2 ** 12,
                                                    unique_by=lambda t: t[0]),
-                  x=hypothesis.strategies.lists(elements=hypothesis.strategies.floats(min_value=-1e15, max_value=1e15), min_size=0, max_size=2 ** 12))
+                  x=hypothesis.strategies.lists(elements=hypothesis.strategies.floats(min_value=-1e15, max_value=1e15), min_size=0, max_size=2 ** 12))                      # pylint: disable=line-too-long
 def test_x_as_scalar_and_vector(interpolation, data, x):
     """Tests if running a vectorized interpolation returns the same result as the scalar version."""
     func = sumpf_internal.interpolation.get(interpolation)
@@ -72,16 +72,16 @@ def test_x_as_scalar_and_vector(interpolation, data, x):
     assert scalar == pytest.approx(vector)
 
 
-@pytest.mark.filterwarnings("ignore:divide by zero")
+@pytest.mark.filterwarnings("ignore:divide by zero")    # noqa: C901; the method is not complex, it's just a long switch case
 @hypothesis.given(interpolation=hypothesis.strategies.sampled_from(sumpf_internal.Interpolations),
-                  xs=hypothesis.extra.numpy.arrays(dtype=numpy.float64, shape=2, elements=hypothesis.strategies.floats(min_value=-1e15, max_value=1e15), unique=True),
-                  ys=hypothesis.extra.numpy.arrays(dtype=numpy.complex128, shape=2, elements=hypothesis.strategies.complex_numbers(min_magnitude=0.0, max_magnitude=1e15)),
+                  xs=hypothesis.extra.numpy.arrays(dtype=numpy.float64, shape=2, elements=hypothesis.strategies.floats(min_value=-1e15, max_value=1e15), unique=True),          # pylint: disable=line-too-long
+                  ys=hypothesis.extra.numpy.arrays(dtype=numpy.complex128, shape=2, elements=hypothesis.strategies.complex_numbers(min_magnitude=0.0, max_magnitude=1e15)),     # pylint: disable=line-too-long
                   k=hypothesis.strategies.floats(min_value=1e-15, max_value=1.0 - 1e-15))
-def test_interpolation(interpolation, xs, ys, k):
+def test_interpolation(interpolation, xs, ys, k):       # pylint: disable=too-many-branches
     """Tests the computation of an interpolated value."""
     func = sumpf_internal.interpolation.get(interpolation)
     xs = numpy.array(sorted(xs))
-    if interpolation in (sumpf_internal.Interpolations.LOG_X, sumpf_internal.Interpolations.STAIRS_LOG) and min(xs) < 0.0:
+    if interpolation in (sumpf_internal.Interpolations.LOG_X, sumpf_internal.Interpolations.STAIRS_LOG) and min(xs) < 0.0:  # pylint: disable=line-too-long
         xs -= min(xs)
     elif interpolation is sumpf_internal.Interpolations.LOG_Y:
         ys = numpy.abs(ys)
@@ -121,16 +121,16 @@ def test_interpolation(interpolation, xs, ys, k):
         raise ValueError(f"Unknown interpolation: {interpolation}.")
 
 
-@pytest.mark.filterwarnings("ignore:divide by zero encountered in log", "ignore:invalid value encountered", "ignore:overflow encountered in exp")
-@hypothesis.given(xs=hypothesis.extra.numpy.arrays(dtype=numpy.float64, shape=2, elements=hypothesis.strategies.floats(min_value=0.0, max_value=1e12), unique=True),
-                  ys=hypothesis.extra.numpy.arrays(dtype=numpy.complex128, shape=2, elements=hypothesis.strategies.complex_numbers(min_magnitude=0.0, max_magnitude=1e15)),
+@pytest.mark.filterwarnings("ignore:divide by zero encountered in log", "ignore:invalid value encountered", "ignore:overflow encountered in exp")                               # pylint: disable=line-too-long
+@hypothesis.given(xs=hypothesis.extra.numpy.arrays(dtype=numpy.float64, shape=2, elements=hypothesis.strategies.floats(min_value=0.0, max_value=1e12), unique=True),            # pylint: disable=line-too-long
+                  ys=hypothesis.extra.numpy.arrays(dtype=numpy.complex128, shape=2, elements=hypothesis.strategies.complex_numbers(min_magnitude=0.0, max_magnitude=1e15)),     # pylint: disable=line-too-long
                   interpolation=hypothesis.strategies.sampled_from(sumpf_internal.Interpolations),
                   delta_x=hypothesis.strategies.floats(min_value=1e-15, max_value=1e15))
 def test_extrapolation(xs, ys, interpolation, delta_x):
     """Tests the computation of an extrapolated value."""
     func = sumpf_internal.interpolation.get(interpolation)
     xs = numpy.array(sorted(xs))
-    if interpolation in (sumpf_internal.Interpolations.LOG_X, sumpf_internal.Interpolations.STAIRS_LOG) and min(xs) < 0.0:
+    if interpolation in (sumpf_internal.Interpolations.LOG_X, sumpf_internal.Interpolations.STAIRS_LOG) and min(xs) < 0.0:  # pylint: disable=line-too-long
         xs -= min(xs)
     elif interpolation is sumpf_internal.Interpolations.LOG_Y:
         ys = numpy.abs(ys)

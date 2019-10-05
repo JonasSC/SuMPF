@@ -88,7 +88,8 @@ def test_eq(parameters):
 def test_absolute(filter_, frequency):
     """Tests if computing the absolute of a filter yields the expected result."""
     absolute = abs(filter_)
-    reference = sumpf.Filter(transfer_functions=tuple(sumpf.Filter.Absolute(tf) for tf in filter_.transfer_functions()),
+    reference = sumpf.Filter(transfer_functions=tuple(sumpf.Filter.Absolute(tf)
+                                                      for tf in filter_.transfer_functions()),
                              labels=filter_.labels())
     result = absolute(frequency)
     if numpy.isnan(result).any():
@@ -103,7 +104,8 @@ def test_absolute(filter_, frequency):
 def test_negative(filter_, frequency):
     """Tests if computing the negative of a filter yields the expected result."""
     negative = -filter_
-    reference = sumpf.Filter(transfer_functions=tuple(sumpf.Filter.Negative(tf) for tf in filter_.transfer_functions()),
+    reference = sumpf.Filter(transfer_functions=tuple(sumpf.Filter.Negative(tf)
+                                                      for tf in filter_.transfer_functions()),
                              labels=filter_.labels())
     result = negative(frequency)
     ref = reference(frequency)
@@ -160,7 +162,7 @@ def _compare_number_results(result, reference, number=None):
     """
     assert numpy.shape(result) == numpy.shape(reference)
     for ref, res in zip(reference, result):
-        if  numpy.isinf(ref):
+        if numpy.isinf(ref):
             if number == 0:
                 assert numpy.isinf(res) or numpy.isnan(res) or res == 0
             else:
@@ -196,8 +198,10 @@ def test_add(filter1, filter2, frequency):
 @pytest.mark.filterwarnings("ignore:overflow", "ignore:invalid value")
 @hypothesis.given(filter_=tests.strategies.filters(),
                   number=hypothesis.strategies.one_of(hypothesis.strategies.integers(),
-                                                      hypothesis.strategies.floats(allow_infinity=False, allow_nan=False),
-                                                      hypothesis.strategies.complex_numbers(allow_infinity=False, allow_nan=False)),
+                                                      hypothesis.strategies.floats(allow_infinity=False,
+                                                                                   allow_nan=False),
+                                                      hypothesis.strategies.complex_numbers(allow_infinity=False,
+                                                                                            allow_nan=False)),
                   frequency=tests.strategies.non_zero_frequencies)
 def test_add_with_number(filter_, number, frequency):
     """Tests the overload of the ``+`` operator."""
@@ -232,8 +236,10 @@ def test_subtract(filter1, filter2, frequency):
 @pytest.mark.filterwarnings("ignore:overflow", "ignore:invalid value")
 @hypothesis.given(filter_=tests.strategies.filters(),
                   number=hypothesis.strategies.one_of(hypothesis.strategies.integers(),
-                                                      hypothesis.strategies.floats(allow_infinity=False, allow_nan=False),
-                                                      hypothesis.strategies.complex_numbers(allow_infinity=False, allow_nan=False)),
+                                                      hypothesis.strategies.floats(allow_infinity=False,
+                                                                                   allow_nan=False),
+                                                      hypothesis.strategies.complex_numbers(allow_infinity=False,
+                                                                                            allow_nan=False)),
                   frequency=tests.strategies.non_zero_frequencies)
 def test_subtract_number(filter_, number, frequency):
     """Tests the overload of the ``-`` operator."""
@@ -268,9 +274,13 @@ def test_multiply(filter1, filter2, frequency):
 
 @pytest.mark.filterwarnings("ignore:overflow", "ignore:invalid value")
 @hypothesis.given(filter_=tests.strategies.filters(),
-                  number=hypothesis.strategies.one_of(hypothesis.strategies.integers(min_value=-1e15, max_value=1e15),
-                                                      hypothesis.strategies.floats(min_value=-1e15, max_value=1e15),
-                                                      hypothesis.strategies.complex_numbers(max_magnitude=1e15, allow_infinity=False, allow_nan=False)),
+                  number=hypothesis.strategies.one_of(hypothesis.strategies.integers(min_value=-1e15,
+                                                                                     max_value=1e15),
+                                                      hypothesis.strategies.floats(min_value=-1e15,
+                                                                                   max_value=1e15),
+                                                      hypothesis.strategies.complex_numbers(max_magnitude=1e15,
+                                                                                            allow_infinity=False,
+                                                                                            allow_nan=False)),
                   frequency=tests.strategies.non_zero_frequencies)
 def test_multiply_with_number(filter_, number, frequency):
     """Tests the overload of the ``*`` operator."""
@@ -353,9 +363,12 @@ def test_divide(filter1, filter2, frequency):
 
 @pytest.mark.filterwarnings("ignore:overflow", "ignore:invalid value", "ignore:divide by zero")
 @hypothesis.given(filter_=tests.strategies.filters(),
-                  number=hypothesis.strategies.one_of(hypothesis.strategies.integers(min_value=-(2 ** 63 - 1), max_value=2 ** 63 - 1),
-                                                      hypothesis.strategies.floats(allow_infinity=False, allow_nan=False),
-                                                      hypothesis.strategies.complex_numbers(allow_infinity=False, allow_nan=False)),
+                  number=hypothesis.strategies.one_of(hypothesis.strategies.integers(min_value=-(2 ** 63 - 1),
+                                                                                     max_value=2 ** 63 - 1),
+                                                      hypothesis.strategies.floats(allow_infinity=False,
+                                                                                   allow_nan=False),
+                                                      hypothesis.strategies.complex_numbers(allow_infinity=False,
+                                                                                            allow_nan=False)),
                   frequency=tests.strategies.non_zero_frequencies)
 def test_divide_by_number(filter_, number, frequency):
     """Tests the overload of the ``/`` operator."""
@@ -385,7 +398,7 @@ def test_divide_by_number(filter_, number, frequency):
 #########################################
 
 
-@hypothesis.given(p_coefficients=st.lists(elements=st.floats(min_value=-1e10, max_value=1e10), min_size=1, max_size=10),
+@hypothesis.given(p_coefficients=st.lists(elements=st.floats(min_value=-1e10, max_value=1e10), min_size=1, max_size=10),    # pylint: disable=line-too-long
                   e_coefficient=st.floats(min_value=-1e5, max_value=1e5),
                   p_transform=st.booleans(),
                   e_transform=st.booleans(),
@@ -444,7 +457,7 @@ def test_constructor_parameters(parameters, frequency):
     filter_ = sumpf.Filter(**parameters)
     assert len(filter_) == len(transfer_functions)  # this has to be checked here to make sure, that the following zip() covers everything
     for tff, tfp in zip(filter_.transfer_functions(), transfer_functions):
-        assert tff == tfp                   # checking the behavior here is hard, therefore only the implementation of the transfer functions is checked
+        assert tff == tfp                           # checking the behavior here is hard, therefore only the implementation of the transfer functions is checked
     assert filter_.labels() == labels
 
 #######################

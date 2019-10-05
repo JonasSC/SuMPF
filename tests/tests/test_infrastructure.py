@@ -61,7 +61,7 @@ def test_license():
                                 line = f.readline()
 
 
-def test_sphinx_documentation():
+def test_sphinx_documentation():    # noqa: C901; pylint: disable=too-many-locals,too-many-branches,too-many-statements; alright, this is complex...
     """Tests if all classes and their attributes are included in the *Sphinx* documentation."""
     # get all documented methods
     documentation = os.path.join("documentation", "reference")
@@ -97,7 +97,8 @@ def test_sphinx_documentation():
                                 if method_match:
                                     assert current_class is not None
                                     method = method_match.group(1)
-                                    args = [a.strip().lstrip("*") for a in method_match.group(2).split(",") if a.strip() != ""]
+                                    args = [a.strip().lstrip("*")
+                                            for a in method_match.group(2).split(",") if a.strip() != ""]
                                     documented_methods[current_class][method] = args
                                 else:
                                     attribute_match = attribute_mask.match(l)
@@ -108,7 +109,7 @@ def test_sphinx_documentation():
     implemented_methods = {}
     implemented_connectors = {}
     implemented_attributes = {}
-    for e in dir(sumpf):
+    for e in dir(sumpf):    # pylint: disable=too-many-nested-blocks
         if not e.startswith("_"):
             current_class = f"sumpf.{e}"
             implemented_methods[current_class] = {}
@@ -118,7 +119,7 @@ def test_sphinx_documentation():
             for a in dir(o):
                 if not a.startswith("_"):
                     m = getattr(o, a)
-                    if inspect.isclass(m) and issubclass(m, enum.Enum):     # Enums are callable, but shall not be considered as methods
+                    if inspect.isclass(m) and issubclass(m, enum.Enum):     # enumerations are callable, but shall not be considered as methods
                         implemented_attributes[current_class].add(a)
                     elif isinstance(m, collections.abc.Callable):
                         parameters = [p for p in inspect.signature(m).parameters if p != "self"]
@@ -127,10 +128,15 @@ def test_sphinx_documentation():
                             implemented_connectors[current_class].add(a)
                         else:
                             implemented_methods[current_class][a] = parameters
-                            if isinstance(m, (connectors.connectors.OutputConnector, connectors.connectors.OutputProxy,
-                                              connectors.connectors.MultiOutputConnector, connectors.connectors.MultiOutputProxy,
-                                              connectors.connectors.SingleInputConnector, connectors.connectors.SingleInputProxy,
-                                              connectors.connectors.MultiInputConnector, connectors.connectors.MultiInputProxy, connectors.connectors.MultiInputAssociateProxy,
+                            if isinstance(m, (connectors.connectors.OutputConnector,
+                                              connectors.connectors.OutputProxy,
+                                              connectors.connectors.MultiOutputConnector,
+                                              connectors.connectors.MultiOutputProxy,
+                                              connectors.connectors.SingleInputConnector,
+                                              connectors.connectors.SingleInputProxy,
+                                              connectors.connectors.MultiInputConnector,
+                                              connectors.connectors.MultiInputProxy,
+                                              connectors.connectors.MultiInputAssociateProxy,
                                               connectors.connectors.MacroOutputConnector)):
                                 implemented_connectors[current_class].add(a)
                     else:
@@ -142,34 +148,48 @@ def test_sphinx_documentation():
             pytest.fail(f"The class {current_class} is not included in the Sphinx documentation", pytrace=False)
         # test if the class's documentation contains a :members:-field, which does not work with connectors
         if implemented_connectors[current_class] and current_class in with_members:
-            pytest.fail(f"The class {current_class} has connectors, which do not work with the auto-generated documentation from the :members: field.", pytrace=False)
+            pytest.fail(f"The class {current_class} has connectors, which do not work "
+                        "with the auto-generated documentation from the :members: field.",
+                        pytrace=False)
         # check if the class's attributes and methods are documented
-        if not current_class in with_members:
+        if current_class not in with_members:
             if implemented_attributes[current_class] != documented_attributes[current_class]:
-                pytest.fail(f"The class {current_class}'s attributes are not properly documented: "
-                            f"expected {implemented_attributes[current_class]}, found {documented_attributes[current_class]}",
+                pytest.fail(f"The class {current_class}'s attributes are not properly"
+                            f"documented: expected {implemented_attributes[current_class]}, "
+                            f"found {documented_attributes[current_class]}",
                             pytrace=False)
             for method in implemented_methods[current_class]:
                 if method not in documented_methods[current_class]:
-                    pytest.fail(f"The method {current_class}.{method} is not included in the Sphinx documentation", pytrace=False)
+                    pytest.fail(f"The method {current_class}.{method} is not included "
+                                "in the Sphinx documentation",
+                                pytrace=False)
                 if "*" in implemented_methods[current_class][method]:
                     index = implemented_methods[current_class][method].index("*")
-                    if implemented_methods[current_class][method][0:index] != documented_methods[current_class][method][0:index]:
-                        pytest.fail(f"The parameters of method {current_class}.{method} are not included in the Sphinx documentation: "
-                                    f"expected {implemented_methods[current_class][method]}, found {documented_methods[current_class][method]}",
+                    if implemented_methods[current_class][method][0:index] != documented_methods[current_class][method][0:index]:   # pylint: disable=line-too-long
+                        pytest.fail(f"The parameters of method {current_class}.{method} "
+                                    "are not included in the Sphinx documentation: "
+                                    f"expected {implemented_methods[current_class][method]}, "
+                                    f"found {documented_methods[current_class][method]}",
                                     pytrace=False)
                     if not documented_methods[current_class][method][index:]:
-                        pytest.fail(f"Expected more parameters of the method {current_class}.{method} to be documented",
+                        pytest.fail(f"Expected more parameters of the method "
+                                    "{current_class}.{method} to be documented",
                                     pytrace=False)
                 else:
                     if implemented_methods[current_class][method] != documented_methods[current_class][method]:
-                        pytest.fail(f"The parameters of method {current_class}.{method} are not included in the Sphinx documentation: "
-                                    f"expected {implemented_methods[current_class][method]}, found {documented_methods[current_class][method]}",
+                        pytest.fail(f"The parameters of method {current_class}.{method} "
+                                    "are not included in the Sphinx documentation: "
+                                    f"expected {implemented_methods[current_class][method]}, "
+                                    f"found {documented_methods[current_class][method]}",
                                     pytrace=False)
         # check if there are surplus methods or attributes in the documentation
         for method in documented_methods[current_class]:
             if method not in implemented_methods[current_class]:
-                pytest.fail(f"The non-existent method {current_class}.{method} is dispensable in the Sphinx documentation", pytrace=False)
+                pytest.fail(f"The non-existent method {current_class}.{method} is "
+                            "dispensable in the Sphinx documentation",
+                            pytrace=False)
         for attribute in documented_attributes[current_class]:
             if attribute not in implemented_attributes[current_class]:
-                pytest.fail(f"The non-existent attribute {current_class}.{attribute} is dispensable in the Sphinx documentation", pytrace=False)
+                pytest.fail(f"The non-existent attribute {current_class}.{attribute} "
+                            "is dispensable in the Sphinx documentation",
+                            pytrace=False)

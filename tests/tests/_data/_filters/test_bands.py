@@ -20,7 +20,6 @@ import hypothesis.extra.numpy
 import numpy
 import pytest
 import sumpf
-import sumpf._internal as sumpf_internal
 import tests
 
 
@@ -30,17 +29,29 @@ def test_constructor():
     """
     b0 = {100.0: 93.93}
     b1 = [b0]
-    b2 = (b0, {150: 44.27, 200:12.8})
+    b2 = (b0, {150: 44.27, 200: 12.8})
     b3 = [b0, b2[1], {250: 473.2}]
     i0 = sumpf.Bands.interpolations.ZERO
     i1 = (i0,)
     i2 = [i0, sumpf.Bands.interpolations.ONE]
     i3 = (i0, i2[1], i2[1])
-    assert sumpf.Bands() == sumpf.Bands({}, sumpf.Bands.interpolations.LINEAR, sumpf.Bands.interpolations.STAIRS_LIN, ("Bands",))
-    assert sumpf.Bands(b0, i0, i0, ("Bands",)) == sumpf.Bands(bands=b1, interpolations=i1, extrapolations=i1)
-    assert sumpf.Bands(b2, i0, i0) == sumpf.Bands(bands=b2, interpolations=(i0, i0), extrapolations=(i0, i0))
-    assert sumpf.Bands(b2, i1, i1) == sumpf.Bands(bands=b2, interpolations=(i0, i0), extrapolations=(i0, i0))
-    assert sumpf.Bands(b3, i2, i2) == sumpf.Bands(bands=b3, interpolations=i3, extrapolations=i3, labels=("Bands",) * 3)
+    assert sumpf.Bands() == sumpf.Bands({},
+                                        sumpf.Bands.interpolations.LINEAR,
+                                        sumpf.Bands.interpolations.STAIRS_LIN,
+                                        ("Bands",))
+    assert sumpf.Bands(b0, i0, i0, ("Bands",)) == sumpf.Bands(bands=b1,
+                                                              interpolations=i1,
+                                                              extrapolations=i1)
+    assert sumpf.Bands(b2, i0, i0) == sumpf.Bands(bands=b2,
+                                                  interpolations=(i0, i0),
+                                                  extrapolations=(i0, i0))
+    assert sumpf.Bands(b2, i1, i1) == sumpf.Bands(bands=b2,
+                                                  interpolations=(i0, i0),
+                                                  extrapolations=(i0, i0))
+    assert sumpf.Bands(b3, i2, i2) == sumpf.Bands(bands=b3,
+                                                  interpolations=i3,
+                                                  extrapolations=i3,
+                                                  labels=("Bands",) * 3)
 
 
 @hypothesis.given(bands=tests.strategies.bands())
@@ -53,15 +64,15 @@ def test_equality_with_filter(bands):
     assert bands == filter_
 
 
-@pytest.mark.filterwarnings("ignore:divide by zero")
-@hypothesis.given(xs=hypothesis.extra.numpy.arrays(dtype=numpy.float64, shape=2, elements=hypothesis.strategies.floats(min_value=0.0, max_value=1e10), unique=True),
-                  ys=hypothesis.extra.numpy.arrays(dtype=numpy.complex128, shape=2, elements=hypothesis.strategies.complex_numbers(min_magnitude=0.0, max_magnitude=1e15)),
+@pytest.mark.filterwarnings("ignore:invalid value", "ignore:divide by zero")    # noqa: C901; the method is not complex, it's just a long switch case
+@hypothesis.given(xs=hypothesis.extra.numpy.arrays(dtype=numpy.float64, shape=2, elements=hypothesis.strategies.floats(min_value=0.0, max_value=1e10), unique=True),            # pylint: disable=line-too-long
+                  ys=hypothesis.extra.numpy.arrays(dtype=numpy.complex128, shape=2, elements=hypothesis.strategies.complex_numbers(min_magnitude=0.0, max_magnitude=1e15)),     # pylint: disable=line-too-long
                   interpolation=hypothesis.strategies.sampled_from(sumpf.Bands.interpolations),
                   k=hypothesis.strategies.floats(min_value=0.0, max_value=1.0))
-def test_interpolations(xs, ys, interpolation, k):
+def test_interpolations(xs, ys, interpolation, k):  # pylint: disable=too-many-branches
     """Tests the functionality of the interpolation functions."""
     xs = sorted(xs)
-    bands = sumpf.Bands(bands={x:y for x, y in zip(xs, ys)}, interpolations=interpolation)
+    bands = sumpf.Bands(bands={x: y for x, y in zip(xs, ys)}, interpolations=interpolation)
     x = xs[0] + k * (xs[1] - xs[0])
     if x == xs[0]:
         assert bands(x)[0] == ys[0]
@@ -78,7 +89,7 @@ def test_interpolations(xs, ys, interpolation, k):
             log_xs = numpy.log2(xs)
             assert bands(x)[0] == pytest.approx(numpy.interp(numpy.log2(x), log_xs, ys), nan_ok=True)
         elif interpolation is sumpf.Bands.interpolations.LOG_Y:
-            bands = sumpf.Bands(bands={x:abs(y) for x, y in zip(xs, ys)}, interpolations=interpolation)
+            bands = sumpf.Bands(bands={x: abs(y) for x, y in zip(xs, ys)}, interpolations=interpolation)
             log_ys = numpy.log(numpy.abs(ys))
             assert bands(x)[0] == pytest.approx(numpy.exp(numpy.interp(x, xs, log_ys)), nan_ok=True)
         elif interpolation is sumpf.Bands.interpolations.STAIRS_LIN:
@@ -96,15 +107,15 @@ def test_interpolations(xs, ys, interpolation, k):
 
 
 @pytest.mark.filterwarnings("ignore:overflow", "ignore:invalid value", "ignore:divide by zero")
-@hypothesis.given(xs=hypothesis.extra.numpy.arrays(dtype=numpy.float64, shape=2, elements=hypothesis.strategies.floats(min_value=0.0, max_value=1e12), unique=True),
-                  ys=hypothesis.extra.numpy.arrays(dtype=numpy.complex128, shape=2, elements=hypothesis.strategies.complex_numbers(min_magnitude=0.0, max_magnitude=1e15)),
+@hypothesis.given(xs=hypothesis.extra.numpy.arrays(dtype=numpy.float64, shape=2, elements=hypothesis.strategies.floats(min_value=0.0, max_value=1e12), unique=True),            # pylint: disable=line-too-long
+                  ys=hypothesis.extra.numpy.arrays(dtype=numpy.complex128, shape=2, elements=hypothesis.strategies.complex_numbers(min_magnitude=0.0, max_magnitude=1e15)),     # pylint: disable=line-too-long
                   extrapolation=hypothesis.strategies.sampled_from(sumpf.Bands.interpolations),
                   delta_x=hypothesis.strategies.floats(min_value=0.0, max_value=1e15))
 def test_extrapolations(xs, ys, extrapolation, delta_x):
     """Tests the functionality of the extrapolation functions."""
     xs = sorted(xs)
     assert xs[1] - xs[0]
-    bands = sumpf.Bands(bands={x:y for x, y in zip(xs, ys)}, extrapolations=extrapolation)
+    bands = sumpf.Bands(bands={x: y for x, y in zip(xs, ys)}, extrapolations=extrapolation)
     if delta_x == 0.0:
         assert bands(xs[0])[0] == ys[0]
         assert bands(xs[1])[0] == ys[1]
@@ -131,7 +142,7 @@ def test_extrapolations(xs, ys, extrapolation, delta_x):
             assert (numpy.isnan(bands(x0)[0]) and numpy.isnan(r0)) or (bands(x0)[0] == pytest.approx(r0))
             assert (numpy.isnan(bands(x1)[0]) and numpy.isnan(r1)) or (bands(x1)[0] == pytest.approx(r1))
         elif extrapolation is sumpf.Bands.interpolations.LOG_Y:
-            bands = sumpf.Bands(bands={x:abs(y) for x, y in zip(xs, ys)}, extrapolations=extrapolation)
+            bands = sumpf.Bands(bands={x: abs(y) for x, y in zip(xs, ys)}, extrapolations=extrapolation)
             log_ys = numpy.log2(numpy.abs(ys))
             m = (log_ys[1] - log_ys[0]) / (xs[1] - xs[0])
             n0 = log_ys[0] - m * xs[0]

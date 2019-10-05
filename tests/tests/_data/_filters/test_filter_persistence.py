@@ -65,11 +65,11 @@ def test_bands_as_table(bands):
     """Tests loading and saving bands filters in tabular text files."""
     with tempfile.TemporaryDirectory() as d:
         path = os.path.join(d, "test_file")
-        for Reader, Writer in [(sumpf_internal.filter_readers.TableReader, sumpf_internal.filter_writers.TextTabIWriter),
-                               (sumpf_internal.filter_readers.TableReader, sumpf_internal.filter_writers.TextTabJWriter),
-                               (sumpf_internal.filter_readers.TableReader, sumpf_internal.filter_writers.TextPipeIWriter),
-                               (sumpf_internal.filter_readers.TableReader, sumpf_internal.filter_writers.TextPipeJWriter),
-                               (sumpf_internal.filter_readers.TableReader, sumpf_internal.filter_writers.TextGnuplotWriter)]:
+        for Reader, Writer in [(sumpf_internal.filter_readers.TableReader, sumpf_internal.filter_writers.TextTabIWriter),       # pylint: disable=line-too-long
+                               (sumpf_internal.filter_readers.TableReader, sumpf_internal.filter_writers.TextTabJWriter),       # pylint: disable=line-too-long
+                               (sumpf_internal.filter_readers.TableReader, sumpf_internal.filter_writers.TextPipeIWriter),      # pylint: disable=line-too-long
+                               (sumpf_internal.filter_readers.TableReader, sumpf_internal.filter_writers.TextPipeJWriter),      # pylint: disable=line-too-long
+                               (sumpf_internal.filter_readers.TableReader, sumpf_internal.filter_writers.TextGnuplotWriter)]:   # pylint: disable=line-too-long
             reader = Reader()
             for file_format in Writer.formats:
                 if file_format in sumpf.Bands.file_formats:
@@ -86,7 +86,7 @@ def test_bands_as_table(bands):
 
 @hypothesis.given(tests.strategies.bands())
 def test_bands_as_csv(bands):
-    """Tests loading and saving bands filters in csv files."""
+    """Tests loading and saving bands filters in CSV files."""
     with tempfile.TemporaryDirectory() as d:
         path = os.path.join(d, "test_file")
         assert not os.path.exists(path)
@@ -104,7 +104,7 @@ def test_bands_as_csv(bands):
 
 @hypothesis.given(tests.strategies.bands())
 def test_bands_as_repr(bands):
-    """Tests loading and saving bands filters' reprs in text files."""
+    """Tests loading and saving bands filters' string representations in text files."""
     with tempfile.TemporaryDirectory() as d:
         path = os.path.join(d, "test_file")
         assert not os.path.exists(path)
@@ -128,7 +128,7 @@ def test_bands_as_serialization(bands):
     with tempfile.TemporaryDirectory() as d:
         path = os.path.join(d, "test_file")
         for Reader, Writer in [(sumpf_internal.filter_readers.JsonReader, sumpf_internal.filter_writers.JsonWriter),
-                               (sumpf_internal.filter_readers.PickleReader, sumpf_internal.filter_writers.PickleWriter)]:
+                               (sumpf_internal.filter_readers.PickleReader, sumpf_internal.filter_writers.PickleWriter)]:   # pylint: disable=line-too-long
             reader = Reader()
             for file_format in Writer.formats:
                 if file_format in sumpf.Bands.file_formats:
@@ -145,8 +145,8 @@ def test_bands_as_numpy(bands):
     """Tests loading and saving bands filters in numpy files."""
     with tempfile.TemporaryDirectory() as d:
         path = os.path.join(d, "test_file")
-        for Reader, Writer in [(sumpf_internal.filter_readers.NumpyReader, sumpf_internal.filter_writers.NumpyNpyWriter),
-                               (sumpf_internal.filter_readers.NumpyReader, sumpf_internal.filter_writers.NumpyNpzWriter)]:
+        for Reader, Writer in [(sumpf_internal.filter_readers.NumpyReader, sumpf_internal.filter_writers.NumpyNpyWriter),   # pylint: disable=line-too-long
+                               (sumpf_internal.filter_readers.NumpyReader, sumpf_internal.filter_writers.NumpyNpzWriter)]:  # pylint: disable=line-too-long
             reader = Reader()
             for file_format in Writer.formats:
                 if file_format in sumpf.Bands.file_formats:
@@ -154,7 +154,7 @@ def test_bands_as_numpy(bands):
                     assert not os.path.exists(path)
                     writer(bands, path)
                     loaded = reader(path)
-                    if not file_format is sumpf.Bands.file_formats.NUMPY_NPY:
+                    if file_format is not sumpf.Bands.file_formats.NUMPY_NPY:
                         assert loaded == bands
                     else:
                         assert len(loaded) == len(bands)
