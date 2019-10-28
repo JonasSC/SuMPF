@@ -898,6 +898,45 @@ def test_level(signal):
     reference = numpy.sqrt(numpy.mean(numpy.square(signal.channels())))
     assert signal.level(single_value=True) == pytest.approx(reference)
 
+
+@hypothesis.given(signal=tests.strategies.signals(min_value=-1e100, max_value=1e100),
+                  integration_time=hypothesis.strategies.floats(min_value=0.0, max_value=1e-15),
+                  pad=hypothesis.strategies.booleans())
+def test_level_vs_time(signal, integration_time, pad):
+    """tests the level_vs_time method by comparing it to a simple but slow algorithm."""
+    # compute the level vs. time with a simple but slow algorithm
+    samples = integration_time * signal.sampling_rate()
+    if samples < 1.0:
+        reference = abs(signal)
+    else:
+        full_samples = int((samples - 1) / 2)
+        remainder = (samples - 1) / 2 - full_samples
+        result = numpy.empty(signal.shape())
+        for c, channel in enumerate(signal.channels()):
+            square = numpy.square(channel)
+            for i in range(len(square)):
+                corners = 0.0
+                normalization = 0.0
+                if i > full_samples:
+                    corners += remainder * square[i - full_samples - 1]
+                    normalization += remainder
+                window = square[max(0, i - full_samples):min(i + full_samples + 1, len(square))]
+                if i < len(square) - full_samples - 1:
+                    corners += remainder * square[i + full_samples + 1]
+                    normalization += remainder
+                if pad:
+                    mean = math.fsum([corners, *window]) / samples
+                else:
+                    mean = math.fsum([corners, *window]) / (normalization + len(window))
+                result[c, i] = math.sqrt(mean)
+        reference = sumpf.Signal(channels=result,
+                                 sampling_rate=signal.sampling_rate(),
+                                 offset=signal.offset(),
+                                 labels=signal.labels())
+    # do the test
+    result = signal.level_vs_time(integration_time, pad)
+    assert tests.compare_signals_approx(result, reference)
+
 ####################################################
 # methods for statistical parameters of the signal #
 ####################################################

@@ -583,6 +583,79 @@ class Signal(SampledData):
         else:
             return numpy.linalg.norm(self._channels, axis=1) / math.sqrt(self._length)
 
+    def level_vs_time(self, integration_time=1.0, pad=False):   # pylint: disable=too-many-branches; with the comments, this is relatively straight forward
+        """Computes a time-dependent level of the signal.
+
+        The level is computed individually for each sample with the integration
+        interval being placed symmetrically around the given sample.
+
+        :param integration_time: the time span in seconds, that shall be taken into
+                                 account when computing the level. Common values
+                                 are 1.0s and 0.125s.
+        :param pad: if True, it is assumed, that the signal is zero for those points
+                    in time, where the integration interval spans beyond the signal.
+                    If False, the integration time is reduced for the samples at
+                    the beginning and the end of the signal, so that the whole
+                    integration interval is covered by the signal.
+        """
+        window_length = integration_time * self.__sampling_rate
+        if window_length <= 1.0:
+            return abs(self)
+        half_window_length_float = (window_length - 1.0) / 2.0
+        half_window_length = int(math.ceil(half_window_length_float))
+        channels = sumpf_internal.allocate_array(shape=self._channels.shape)
+        if 1 + half_window_length >= self._length:
+            # if half the integration time is longer than the whole signal, the level is constant over time
+            if pad:
+                levels = numpy.linalg.norm(self._channels, axis=1) / math.sqrt(window_length)
+            else:
+                levels = self.level()
+            for c, l in zip(channels, levels):
+                c[:] = l
+        else:
+            # generate a window, that does the averaging of the squared signal
+            remainder = half_window_length - half_window_length_float
+            window = numpy.full(1 + 2 * half_window_length, 1.0 / window_length)
+            if remainder:
+                corner = remainder / window_length
+                window[0] = corner
+                window[-1] = corner
+            square = numpy.square(self._channels)
+            if len(window) < self._length:
+                # compute the levels by convolving the squared signal with the window
+                for s, c in zip(square, channels):
+                    numpy.sqrt(numpy.convolve(s, window, mode="same"), out=c)
+                if not pad:
+                    # compute a compensation for the start and the end of the level signal, where the convolution has assumed a zero padding
+                    effective_window_lengths = numpy.linspace(1 + half_window_length_float,
+                                                              half_window_length + half_window_length_float,
+                                                              half_window_length)
+                    correction = numpy.sqrt(window_length / effective_window_lengths)
+                    channels[:, 0:half_window_length] *= correction
+                    channels[:, -half_window_length:] *= correction[::-1]
+            else:
+                # if the window is longer than the signal itself, there is no sample, that is computed with a whole integration window
+                a = (len(window) + 1 - self._length) // 2
+                b = a + self._length
+                for s, c in zip(square, channels):
+                    numpy.sqrt(numpy.convolve(s, window, mode="same")[a:b], out=c)
+                if not pad:
+                    # compute a compensation for the start and the end of the level signal, where the convolution has assumed a zero padding
+                    correction = numpy.empty(self._length)
+                    correction[0:half_window_length] = numpy.linspace(1 + half_window_length_float,
+                                                                      half_window_length + half_window_length_float,
+                                                                      half_window_length)
+                    half_correction = correction[0:(self._length + 1) // 2]
+                    numpy.clip(half_correction, a_min=0, a_max=self._length, out=half_correction)
+                    numpy.divide(window_length, half_correction, out=half_correction)
+                    numpy.sqrt(half_correction, out=half_correction)
+                    correction[self._length - 1:(self._length + 1) // 2 - 1:-1] = correction[0:self._length // 2]   # copy the first half of the correction to the second half and reverse it
+                    channels *= correction
+        return sumpf.Signal(channels=channels,
+                            sampling_rate=self.__sampling_rate,
+                            offset=self.__offset,
+                            labels=self._labels)
+
     def convolve(self, other, mode=sumpf_internal.ConvolutionMode.SPECTRUM_PADDED):
         """Convolves this signal with another signal or an :func:`~numpy.array`.
 
