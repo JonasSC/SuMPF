@@ -234,9 +234,18 @@ class Signal(SampledData):
         :returns: a :class:`~sumpf.Signal` instance
         """
         channels = sumpf_internal.allocate_array(shape=self.shape())
-        spectrum = numpy.fft.rfft(self._channels)
-        inverse = numpy.divide(1.0, spectrum)
-        channels[:] = numpy.fft.irfft(inverse)
+        if self._length % 2 == 0:
+            spectrum = numpy.fft.rfft(self._channels)
+            channels[:] = numpy.fft.irfft(1.0 / spectrum)
+        else:
+            # odd-length signals require zero padding, so that there is no sample lost in the FFT
+            padded = numpy.empty((len(self), 2 * self._length))
+            padded[:, 0:self._length] = self._channels
+            padded[:, self._length:] = 0.0
+            spectrum = numpy.fft.rfft(padded)
+            padded = numpy.fft.irfft(1.0 / spectrum)
+            channels[:] = padded[:, 0:self._length]
+            channels += padded[:, self._length:]
         return Signal(channels=channels,
                       sampling_rate=self.__sampling_rate,
                       offset=-self.__offset,

@@ -539,8 +539,9 @@ def test_power():
 #########################################
 
 
-def test_invert():
-    """Tests if computing the inverse of a signal yields the expected result."""
+def test_invert_results():
+    """Tests if computing the inverse of a signal with known inverse yields the expected result."""
+    # test with an even-length signal
     signal = sumpf.Signal(channels=numpy.array([(2.0, 0.0, 0.0, 0.0),
                                                 (0.0, 1.0, 0.0, 0.0)]),
                           offset=-1,
@@ -549,6 +550,16 @@ def test_invert():
                                                          (0.0, 0.0, 0.0, 1.0)]),
                                    offset=1,
                                    labels=("one", "two"))
+    # test with an odd-length signal, which shall not drop a sample in the FFT
+    signal = sumpf.Signal(channels=numpy.array([(2.0, 0.0, 0.0),
+                                                (0.0, 1.0, 0.0)]),
+                          offset=-1,
+                          labels=("one", "two"))
+    inverse = ~signal
+    assert inverse.channels() == pytest.approx(numpy.array([(0.5, 0.0, 0.0), (0.0, 0.0, 1.0)]))
+    assert inverse.offset() == -signal.offset()
+    assert inverse.sampling_rate() == signal.sampling_rate()
+    assert inverse.labels() == signal.labels()
 
 ##############
 # parameters #
