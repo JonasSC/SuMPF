@@ -183,11 +183,10 @@ class Window(Signal):
         step = self._length - overlap
         if step == 0:
             return 0.0
-        added = 0.0
-        for shift in range(0, self._length, step):
+        added = numpy.sum(self._channels[0])
+        for shift in range(step, self._length, step):
             added += numpy.sum(self._channels[0, 0:self._length - shift])
-            if shift != 0:
-                added += numpy.sum(self._channels[0, shift:])
+            added += numpy.sum(self._channels[0, shift:])
         return self._length / added
 
     def amplitude_flatness(self, overlap):

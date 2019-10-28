@@ -17,7 +17,9 @@
 """Tests for the Signal class"""
 
 import copy
+import itertools
 import logging
+import math
 import numpy
 import hypothesis
 import pytest
@@ -710,6 +712,88 @@ def test_fourier_transform_calculation(signal):
     assert spectrum.length() == signal.length() // 2 + 1
     assert spectrum.resolution() == pytest.approx(1.0 / signal.duration())
     assert spectrum.labels() == signal.labels()
+
+
+def test_block_wise_fourier_transform_with_known_signals():
+    """tests the block-wise Fourier transform with signals, where it results in
+    a down-sampled spectrum of the full Fourier transform."""
+    l = 2 ** 16 - 2 ** 13
+    for signal in (sumpf.MergeSignals([sumpf.ExponentialSweep(length=l),
+                                       sumpf.GaussianNoise(length=l)]).output(),
+                   sumpf.UniformNoise(length=2 ** 18) * sumpf.BlackmanWindow(length=2 ** 18)):
+        for overlap in (0, 0.5):
+            full_spectrum = signal.fourier_transform()
+            short_spectrum = signal.fourier_transform(window=2 ** 13, overlap=overlap)
+            ratio = int(round(short_spectrum.resolution() / full_spectrum.resolution()))
+            downsampled = full_spectrum.channels()[:, ::ratio]
+            assert short_spectrum.channels() == pytest.approx(downsampled)
+            assert short_spectrum.resolution() == pytest.approx(full_spectrum.resolution() * ratio)
+            assert short_spectrum.labels() == signal.labels()
+
+
+def test_block_wise_fourier_transform_without_padding():
+    """tests the block-wise Fourier transform without zero padding with a known signal"""
+    start_frequency = 1500.0
+    stop_frequency = 20000.0
+    sweep = sumpf.LinearSweep(start_frequency=start_frequency, stop_frequency=stop_frequency, interval=(4096, -4096))
+    fade = sumpf.Fade(rise_interval=(0, 4096), fall_interval=(-4096, 1.0))
+    signal = sweep * fade
+    full_spectrum = signal.fourier_transform()
+    short_spectrum = signal.fourier_transform(window=4096, pad=False)
+    ratio = int(round(short_spectrum.resolution() / full_spectrum.resolution()))
+    downsampled = full_spectrum.channels()[:, ::ratio]
+    a = int(math.ceil(start_frequency / short_spectrum.resolution()))
+    b = int(math.floor(stop_frequency / short_spectrum.resolution())) - 96
+    assert short_spectrum.channels()[:, a:b] == pytest.approx(downsampled[:, a:b], rel=1e-5)
+
+
+@hypothesis.given(signal=tests.strategies.signals())
+@hypothesis.settings(deadline=None)
+def test_block_wise_fourier_transform_window_functions(signal):
+    """tests the different methods for defining a window for the block-wise Fourier transform."""
+    # pylint: disable=line-too-long
+    # test the default parameters for overlap and pad
+    assert signal.fourier_transform(window=2048) == signal.fourier_transform(window=sumpf.HannWindow(sampling_rate=signal.sampling_rate(),
+                                                                                                     length=2048,
+                                                                                                     symmetric=False),
+                                                                             overlap=0.5,
+                                                                             pad=True)
+    # test, that the default window for an overlap of 0 is the rectangular window
+    assert signal.fourier_transform(window=1345,
+                                    overlap=0) == signal.fourier_transform(window=sumpf.RectangularWindow(sampling_rate=signal.sampling_rate(),
+                                                                                                          length=1345,
+                                                                                                          symmetric=False),
+                                                                           overlap=0.0)
+    # test defining the window as a sumpf window signal
+    assert signal.fourier_transform(window=sumpf.BlackmanWindow(length=1024),
+                                    pad=False) == signal.fourier_transform(window=sumpf.BlackmanWindow(length=1024),
+                                                                           pad=False)
+    # test defining the window as a list
+    assert signal.fourier_transform(window=[0.0, 0.5, 1.0, 0.5],
+                                    overlap=3) == signal.fourier_transform(window=sumpf.BartlettWindow(sampling_rate=signal.sampling_rate(),
+                                                                                                       length=4,
+                                                                                                       symmetric=False),
+                                                                           overlap=0.75)
+    # test defining the window as an ordinary signal (not a window signal), but with multiple channels
+    windows = itertools.cycle([sumpf.RectangularWindow(length=2048),
+                               sumpf.BartlettWindow(length=2048),
+                               sumpf.HannWindow(length=2048),
+                               sumpf.HammingWindow(length=2048),
+                               sumpf.BlackmanWindow(length=2048)])
+    window = sumpf.MergeSignals([next(windows) for _ in range(len(signal))]).output()
+    spectrum = signal.fourier_transform(window=window, overlap=0.3)
+    assert len(spectrum) == len(signal)
+    for i in range(len(spectrum)):  # pylint: disable=consider-using-enumerate; these are SuMPF classes, for which the zip function will not work
+        assert spectrum[i] == signal[i].fourier_transform(window=window[i], overlap=0.3)
+
+
+@hypothesis.given(signal=tests.strategies.signals(min_channels=1, max_length=2 ** 12))
+def test_block_wise_fourier_transform_rectangular_window(signal):
+    """tests, that a rectangular window, that covers the full signal gives the same
+    results with the block-wise Fourier transform as with the full Fourier transform."""
+    spectrum = signal.fourier_transform()
+    assert signal.fourier_transform(window=signal.length(), overlap=0, pad=True) == spectrum
+    assert signal.fourier_transform(window=signal.length(), overlap=0, pad=False) == spectrum
 
 
 def test_short_time_fourier_transform_results():

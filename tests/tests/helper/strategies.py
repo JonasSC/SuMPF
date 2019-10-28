@@ -21,10 +21,11 @@ import hypothesis.extra.numpy as stn
 import numpy
 import sumpf
 import sumpf._internal as sumpf_internal
+from . import index
 
 __all__ = ("frequencies", "non_zero_frequencies",
            "sampling_rates", "resolutions",
-           "short_lengths", "labels",
+           "short_lengths", "indices", "labels",
            "signals", "signal_parameters",
            "spectrums", "spectrum_parameters",
            "spectrograms", "spectrogram_parameters",
@@ -39,6 +40,9 @@ non_zero_frequencies = st.floats(min_value=1e-15, max_value=1e15)
 sampling_rates = st.floats(min_value=1e-8, max_value=1e8)
 resolutions = sampling_rates
 short_lengths = st.integers(min_value=0, max_value=2 ** 10)
+indices = st.builds(index.Index,
+                    index=st.floats(min_value=0.0, max_value=1.0),
+                    mode=st.sampled_from(index.IndexMode))
 
 
 def labels(min_channels=None, max_channels=None):
@@ -56,11 +60,14 @@ _offsets = st.integers(min_value=-2 ** 24, max_value=2 ** 24)
 
 def _signal_parameters(min_channels, max_channels,
                        min_length, max_length,
-                       min_value, max_value):
+                       min_value, max_value,
+                       even_length=False):
     """A helper function, that creates a dictionary with strategies for generating a Signal instance."""
+    length = st.integers(min_value=min_length, max_value=max_length)
+    if even_length:
+        length = st.builds(lambda x: 2 * x, length)
     elements = st.floats(min_value=min_value, max_value=max_value)
-    shape = st.tuples(st.integers(min_value=min_channels, max_value=max_channels),
-                      st.integers(min_value=min_length, max_value=max_length))
+    shape = st.tuples(st.integers(min_value=min_channels, max_value=max_channels), length)
     return {"channels": stn.arrays(dtype=numpy.float64, shape=shape, elements=elements),
             "sampling_rate": sampling_rates,
             "offset": _offsets,
@@ -69,20 +76,24 @@ def _signal_parameters(min_channels, max_channels,
 
 def signals(min_channels=1, max_channels=5,
             min_length=1, max_length=65,
-            min_value=-1e100, max_value=1e100):
+            min_value=-1e100, max_value=1e100,
+            even_length=False):
     """A strategy that creates Signal instances."""
     return st.builds(sumpf.Signal, **_signal_parameters(min_channels, max_channels,
                                                         min_length, max_length,
-                                                        min_value, max_value))
+                                                        min_value, max_value,
+                                                        even_length))
 
 
 def signal_parameters(min_channels=1, max_channels=5,
                       min_length=1, max_length=65,
-                      min_value=-1e100, max_value=1e100):
+                      min_value=-1e100, max_value=1e100,
+                      even_length=False):
     """A strategy that creates parameter sets for instantiating the Signal class."""
     return st.fixed_dictionaries(_signal_parameters(min_channels, max_channels,
                                                     min_length, max_length,
-                                                    min_value, max_value))
+                                                    min_value, max_value,
+                                                    even_length))
 
 ############
 # Spectrum #

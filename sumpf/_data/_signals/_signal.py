@@ -377,28 +377,126 @@ class Signal(SampledData):
     # signal processing methods #
     #############################
 
-    def fourier_transform(self):
+    def fourier_transform(self, window=None, overlap=0.5, pad=True):
         """Computes the channel-wise Fourier transform of this signal.
+
+        If a window is specified, the Fourier transform is performed block-wise
+        with the window defining the block size and being applied to each block
+        before the transform.
 
         The offset of the signal is taken into account as a constant addition to
         the group delay.
 
+        :param window: either None to transform the signal in a single transform
+                       and have a spectrum with the full resolution. Or a window
+                       function, that is used for a block-wise transform of the
+                       signal. The window function can be passed as a :class:`~sumpf.Signal`,
+                       as an iterable or an integer window length. See
+                       :func:`~sumpf._internal._functions.get_window` for details.
+        :param overlap: the overlap of the signal segments. It can be passed as
+                        an integer number of samples or a float fraction of the
+                        window's length. Negative numbers will be added to the
+                        window's length. This parameter is only considered when
+                        performing a block-wise Fourier transform.
+        :param pad: True, if the signal shall be padded with zeros to fit an integer
+                    number of segments. False, if the samples at the end of the
+                    signal, that do not fit a full segment, shall be ignored. This
+                    parameter is only considered when performing a block-wise
+                    Fourier transform.
         :returns: a :class:`~sumpf.Spectrum` instance
         """
-        length = self._length // 2 + 1
-        resolution = self.__sampling_rate / self._length
-        channels = sumpf_internal.allocate_array(shape=(len(self._channels), length), dtype=numpy.complex128)
-        spectrum = numpy.fft.rfft(self._channels)
-        if self.__offset == 0:
-            channels[:, :] = spectrum
-        else:   # add a group delay for the offset
-            compensation = numpy.linspace(0.0, (length - 1) * resolution, length, dtype=numpy.complex128)
-            compensation *= -1j * 2.0 * math.pi * (self.__offset / self.__sampling_rate)
-            numpy.exp(compensation, out=compensation)
-            numpy.multiply(spectrum, compensation, out=channels)
+        if window is None:
+            channels, resolution = self.__full_fourier_transform()
+        else:
+            channels, resolution = self.__block_wise_fourier_transform(window, overlap, pad)
         return sumpf.Spectrum(channels=channels,
                               resolution=resolution,
                               labels=self._labels)
+
+    def __full_fourier_transform(self):
+        """Helper method for computing a full Fourier transform of this signal."""
+        length = self._length // 2 + 1
+        if len(self._channels) == 0:                                            # pylint: disable=len-as-condition; self._channels is a numpy array, that does not evaluate to False if empty
+            resolution = self.__sampling_rate / max(self._length, 1)
+            channels = sumpf_internal.allocate_array(shape=(0, length), dtype=numpy.complex128)
+        elif self._length == 0:
+            resolution = self.__sampling_rate
+            channels = sumpf_internal.allocate_array(shape=(len(self._channels), 1), dtype=numpy.complex128)
+            channels[:, :] = 0.0
+        else:
+            resolution = self.__sampling_rate / self._length
+            channels = sumpf_internal.allocate_array(shape=(len(self._channels), length), dtype=numpy.complex128)
+            spectrum = numpy.fft.rfft(self._channels)
+            if self.__offset == 0:
+                channels[:, :] = spectrum
+            else:  # add a group delay for the offset
+                max_compensation = (length - 1) * resolution * -2j * math.pi * self.__offset / self.__sampling_rate
+                compensation = numpy.linspace(0.0, max_compensation, length, dtype=numpy.complex128)
+                numpy.exp(compensation, out=compensation)
+                numpy.multiply(spectrum, compensation, out=channels)
+        return channels, resolution
+
+    def __block_wise_fourier_transform(self, window, overlap, pad):
+        """Helper method for computing a block-wise Fourier transform of this signal."""
+        window = sumpf_internal.get_window(window, overlap, symmetric=False, sampling_rate=self.__sampling_rate)
+        window_length = window.length()
+        length = window_length // 2 + 1
+        if len(self._channels) == 0 or len(window) == 0 or window_length == 0:  # pylint: disable=len-as-condition; these are numpy arrays, that do not evaluate to False if empty
+            resolution = window.sampling_rate() / max(window_length, 1)
+            channels = sumpf_internal.allocate_array(shape=(max(len(self._channels), len(window)), length),
+                                                     dtype=numpy.complex128)
+            channels[:, :] = 0.0
+        else:
+            window_channels = window.channels()
+            overlap = sumpf_internal.index(overlap, window_length)
+            resolution = window.sampling_rate() / window_length
+            channels = sumpf_internal.allocate_array(shape=(max(len(self._channels), len(window)), length),
+                                                     dtype=numpy.complex128)
+            channels[:, :] = 0.0
+            windowed = numpy.empty(shape=(max(len(self._channels), len(window)), window_length))
+            compensated = numpy.empty(shape=channels.shape, dtype=channels.dtype)
+            compensation_factor = (length - 1) * resolution * -2j * math.pi
+            step = window_length - overlap
+            if pad:
+                for i in range(-step, -window_length, -step):
+                    l = min(window_length + i, self._length)
+                    windowed[:, 0:-i] = 0.0
+                    windowed[:, l - i:] = 0.0
+                    numpy.multiply(self._channels[:, 0:l],
+                                   window_channels[:, -i:l - i],
+                                   out=windowed[:, -i:l - i])
+                    spectrum = numpy.fft.rfft(windowed)
+                    max_compensation = compensation_factor * (self.__offset + i) / self.__sampling_rate
+                    compensation = numpy.linspace(0.0, max_compensation, length, dtype=numpy.complex128)
+                    numpy.exp(compensation, out=compensated)
+                    compensated *= spectrum
+                    channels += compensated
+            i = 0
+            for i in range(0, self._length - window_length + 1, step):
+                numpy.multiply(self._channels[:, i:window_length + i],
+                               window_channels,
+                               out=windowed)
+                spectrum = numpy.fft.rfft(windowed)
+                max_compensation = compensation_factor * (self.__offset + i) / self.__sampling_rate
+                compensation = numpy.linspace(0.0, max_compensation, length, dtype=numpy.complex128)
+                numpy.exp(compensation, out=compensated)
+                compensated *= spectrum
+                channels += compensated
+            if pad:
+                for i in range(i + step, self._length, step):
+                    k = self._length - i
+                    windowed[:, k:] = 0.0
+                    numpy.multiply(self._channels[:, i:],
+                                   window_channels[:, 0:k],
+                                   out=windowed[:, 0:k])
+                    spectrum = numpy.fft.rfft(windowed)
+                    max_compensation = compensation_factor * (self.__offset + i) / self.__sampling_rate
+                    compensation = numpy.linspace(0.0, max_compensation, length, dtype=numpy.complex128)
+                    numpy.exp(compensation, out=compensated)
+                    compensated *= spectrum
+                    channels += compensated
+            channels.transpose()[:] *= sumpf_internal.scaling_factor(window, overlap)
+        return channels, resolution
 
     def short_time_fourier_transform(self, window=4096, overlap=0.5, pad=True):
         """Computes a :class:`~sumpf.Spectrogram` from this signal.

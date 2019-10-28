@@ -21,8 +21,9 @@ import ctypes
 from multiprocessing import sharedctypes
 import numpy
 import sumpf
+from ._indexing import index
 
-__all__ = ("allocate_array", "get_window", "sanitize_labels")
+__all__ = ("allocate_array", "get_window", "sanitize_labels", "scaling_factor")
 
 
 def allocate_array(shape, dtype=numpy.float64):
@@ -71,7 +72,7 @@ def get_window(window, overlap, symmetric=True, sampling_rate=48000.0):
         if len(window.shape) == 1:
             return sumpf.Signal(channels=numpy.array([window]), sampling_rate=sampling_rate, labels=("Window",))
         elif len(window.shape) == 2:
-            return sumpf.Signal(channels=numpy.array(window), sampling_rate=sampling_rate, labels=("Window",) * len(window))    # pylint: disable=line-too-long; breaking this line would not make the code more readable
+            return sumpf.Signal(channels=window, sampling_rate=sampling_rate, labels=("Window",) * len(window))
         else:
             raise ValueError(f"Array of shape {window.shape} cannot be wrapped in a Signal")
     elif isinstance(window, collections.abc.Iterable):
@@ -103,3 +104,32 @@ def sanitize_labels(labels, number):
         return tuple(labels[0:number])
     else:
         return tuple(labels)
+
+
+def scaling_factor(signal, overlap):
+    """Is similar to the :meth:`~sumpf.HannWindow.scaling_factor` method of the
+    window signals. The following things are different:
+
+    * it works with any signal
+    * it returns an :func:`~numpy.array` with one value for each channel
+    * the overlap must be a scalar value.
+
+    Computes a correction factor for block-wise processed signals, that are
+    split and weighted with the given signal, that maintains the original signal's
+    amplitude in the processed signal.
+
+    :param overlap: the overlap of the weighted segments as an integer of samples,
+                    a float factor of the window's length.
+    :returns: the scaling factors for the channels as an :func:`~numpy.array`
+    """
+    length = signal.length()
+    overlap = index(overlap, length)
+    step = length - overlap
+    if step == 0:
+        return numpy.zeros(len(signal))
+    channels = signal.channels()
+    added = numpy.sum(channels, axis=1)
+    for shift in range(step, length, step):
+        added += numpy.sum(channels[:, 0:length - shift], axis=1)
+        added += numpy.sum(channels[:, shift:], axis=1)
+    return length / added
