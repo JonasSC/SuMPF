@@ -237,13 +237,13 @@ class Jack:
                     break
             connections = []
             for o, i in self.__connections:
-                if isinstance(i, jack.OwnPort):     # a workaround, because the __eq__ method of jack.OwnPort does not check if other is an OwnPort instance before comparing attributes.
+                if isinstance(i, (jack.OwnPort, jack.Port)):     # a workaround, because the __eq__ methods of OwnPort and Port do not check if the other object is of the same class before comparing attributes.
                     if i == port:
                         continue
                 elif i in (index, port.shortname, port.name):
                     continue
                 if isinstance(i, int):              # indices must be adapted, if previous ports have been deleted
-                    connections.append((o, len(connections)))
+                    connections.append((o, i if i < index else i - 1))
                 else:
                     connections.append((o, i))
             self.__connections = connections
@@ -339,7 +339,8 @@ class Jack:
         o = self.__output_port(output_port, own=False)
         i = self.__input_port(input_port, own=False)
         if not isinstance(o, jack.OwnPort) or not o.is_connected_to(i):
-            self._client.connect(o, i)
+            if not isinstance(i, jack.OwnPort) or not i.is_connected_to(o):
+                self._client.connect(o, i)
 
     def _store_connections(self):
         """A helper method, that stores the current JACK connections to this instance's
@@ -351,7 +352,7 @@ class Jack:
             connections.extend([(i, p) for p in c.connections if not self._client.owns(p)])
         for i, c in enumerate(self._client.inports):
             connections.extend([(p, i) for p in c.connections])
-        if connections != []:   # connections can be empty, if the client is already deactivated, so we don't want to overwrite the stored connections
+        if connections:     # connections can be empty, if the client is already deactivated, so we don't want to overwrite the stored connections
             self.__connections = connections
 
     def __update_output_ports(self):
