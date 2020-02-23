@@ -1,5 +1,5 @@
 # This file is a part of the "SuMPF" package
-# Copyright (C) 2018-2019 Jonas Schulte-Coerne
+# Copyright (C) 2018-2020 Jonas Schulte-Coerne
 #
 # This program is free software: you can redistribute it and/or modify it under
 # the terms of the GNU Lesser General Public License as published by the Free
