@@ -191,9 +191,9 @@ def test_geometric_noise(p, seed, sampling_rate, length):
                       label="Geometric noise")
 
 
-@hypothesis.given(acceptable=hypothesis.strategies.integers(min_value=0),
-                  non_acceptable=hypothesis.strategies.integers(min_value=0),
-                  draws=hypothesis.strategies.integers(min_value=1),
+@hypothesis.given(acceptable=hypothesis.strategies.integers(min_value=0, max_value=2 ** 15),
+                  non_acceptable=hypothesis.strategies.integers(min_value=0, max_value=2 ** 15),
+                  draws=hypothesis.strategies.integers(min_value=1, max_value=2 ** 15),
                   seed=hypothesis.strategies.integers(min_value=0, max_value=2 ** 32 - 1),
                   sampling_rate=tests.strategies.sampling_rates,
                   length=tests.strategies.short_lengths)
@@ -213,7 +213,7 @@ def test_hypergeometric_noise(acceptable, non_acceptable, draws, seed, sampling_
 
 
 @hypothesis.given(p=hypothesis.strategies.floats(min_value=0.0, max_value=1.0),
-                  draws=hypothesis.strategies.integers(min_value=0),
+                  draws=hypothesis.strategies.integers(min_value=0, max_value=2 ** 32 - 1),
                   seed=hypothesis.strategies.integers(min_value=0, max_value=2 ** 32 - 1),
                   sampling_rate=tests.strategies.sampling_rates,
                   length=tests.strategies.short_lengths)
