@@ -8,7 +8,7 @@ This section contains the API reference for the *SuMPF* package.
 
    signals/index
    spectrums/index
+   spectrograms/index
    filters/index
-   other_data/index
    blocks/index
    internal/index

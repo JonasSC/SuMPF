@@ -17,3 +17,5 @@
 """Contains data containers for spectrograms"""
 
 from ._spectrogram import *
+
+from ._constant import *
