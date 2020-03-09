@@ -18,8 +18,9 @@
 
 from ._base import Filter
 
-from ._bands import Bands
-from ._butterworth import ButterworthFilter
-from ._chebyshev import Chebyshev1Filter
-from ._delay import DelayFilter
-from ._derivative import DerivativeFilter
+from ._bands import *
+from ._butterworth import *
+from ._chebyshev import *
+from ._delay import *
+from ._derivative import *
+from ._weighting import *

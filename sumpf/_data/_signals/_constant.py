@@ -39,4 +39,4 @@ class ConstantSignal(Signal):
                         channels=channels,
                         sampling_rate=sampling_rate,
                         offset=0,
-                        labels="Constant")
+                        labels=("Constant",))

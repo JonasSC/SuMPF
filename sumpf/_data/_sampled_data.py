@@ -37,7 +37,7 @@ class SampledData:
     ###########################################
 
     def __len__(self):
-        """Operator overload for retrieving the number of channels with the built-in function :func:`len()`.
+        """Operator overload for retrieving the number of channels with the built-in function :func:`len`.
 
         :returns: an integer
         """
