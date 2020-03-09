@@ -210,6 +210,9 @@ class Interpolations(enum.IntEnum):     # must be an IntEnum in order to allow s
     * ``LINEAR`` specifies a linear interpolation between two neighboring supporting
       points. If this interpolation is used as extrapolation, the straight line
       through the two nearest supporting points is used.
+    * ``LOGARITHMIC`` specifies a logarithmic interpolation between two neighboring
+      supporting points. For this, the logarithms of both the x-values and the
+      y-values of the supporting points are used for a linear interpolation.
     * ``LOG_X`` specifies a semi-logarithmic interpolation between two neighboring
       supporting points. For this, the logarithm of the x-values and the linear
       y-values of the supporting points are used for a linear interpolation. This
@@ -228,6 +231,7 @@ class Interpolations(enum.IntEnum):     # must be an IntEnum in order to allow s
     ZERO = enum.auto()
     ONE = enum.auto()
     LINEAR = enum.auto()
+    LOGARITHMIC = enum.auto()
     LOG_X = enum.auto()
     LOG_Y = enum.auto()
     STAIRS_LIN = enum.auto()

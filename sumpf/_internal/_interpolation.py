@@ -20,7 +20,7 @@ import functools
 import numpy
 from ._enums import Interpolations
 
-__all__ = ("get", "zero", "one", "linear", "log_x", "log_y", "stairs_lin", "stairs_log")
+__all__ = ("get", "zero", "one", "linear", "logarithmic", "log_x", "log_y", "stairs_lin", "stairs_log")
 
 
 def get(flag):
@@ -43,6 +43,8 @@ def get(flag):
         return one
     elif flag is Interpolations.LINEAR:
         return linear
+    elif flag is Interpolations.LOGARITHMIC:
+        return logarithmic
     elif flag is Interpolations.LOG_X:
         return log_x
     elif flag is Interpolations.LOG_Y:
@@ -131,9 +133,7 @@ def _linear(x, xs, ys, scalar):
         if scalar:
             return ys[0]
         else:
-            result = numpy.empty(len(x), dtype=ys.dtype)
-            result[:] = ys[0]
-            return result
+            return numpy.full(len(x), fill_value=ys[0], dtype=ys.dtype)
     else:
         if scalar:
             if x < xs[0]:
@@ -180,6 +180,23 @@ def linear(x, xs, ys, scalar):
 #                  parameter is set by the "interpolation"-decorator and is not
 #                  exposed to the user of the interpolation function.
     return _linear(x, xs, ys, scalar)
+
+
+@interpolation
+def logarithmic(x, xs, ys, scalar):
+    """An interpolation, that hat interpolates logarithmically on both axes.
+
+    :param x: an array or a scalar value, where the function shall be evaluated
+    :param xs: an array of x values of the supporting points
+    :param ys: an array of function values of the supporting points. This array
+               must have the same length as the xs array.
+    :returns: the interpolated or extrapolated function values as an array or a
+              scalar, depending on x being an array or a number
+    """
+#   :param scalar: True if x is a scalar value, False if x is an array. This
+#                  parameter is set by the "interpolation"-decorator and is not
+#                  exposed to the user of the interpolation function.
+    return numpy.exp2(_linear(numpy.log2(x), numpy.log2(xs), numpy.log2(ys), scalar))    # the actual base of the logarithm does not matter, but the log2 function proved to be twice as fast as log or log10, while exp was only slightly faster than exp2
 
 
 @interpolation

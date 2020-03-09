@@ -36,7 +36,7 @@ def test_constructor():
     i2 = [i0, sumpf.Bands.interpolations.ONE]
     i3 = (i0, i2[1], i2[1])
     assert sumpf.Bands() == sumpf.Bands({},
-                                        sumpf.Bands.interpolations.LINEAR,
+                                        sumpf.Bands.interpolations.LOGARITHMIC,
                                         sumpf.Bands.interpolations.STAIRS_LIN,
                                         ("Bands",))
     assert sumpf.Bands(b0, i0, i0, ("Bands",)) == sumpf.Bands(bands=b1,
@@ -85,6 +85,11 @@ def test_interpolations(xs, ys, interpolation, k):  # pylint: disable=too-many-b
             assert bands(x)[0] == 1.0
         elif interpolation is sumpf.Bands.interpolations.LINEAR:
             assert bands(x)[0] == pytest.approx(numpy.interp(x, xs, ys))
+        elif interpolation is sumpf.Bands.interpolations.LOGARITHMIC:
+            bands = sumpf.Bands(bands={x: abs(y) for x, y in zip(xs, ys)}, interpolations=interpolation)
+            log_xs = numpy.log2(xs)
+            log_ys = numpy.log(numpy.abs(ys))
+            assert bands(x)[0] == pytest.approx(numpy.exp(numpy.interp(numpy.log2(x), log_xs, log_ys)), nan_ok=True)
         elif interpolation is sumpf.Bands.interpolations.LOG_X:
             log_xs = numpy.log2(xs)
             assert bands(x)[0] == pytest.approx(numpy.interp(numpy.log2(x), log_xs, ys), nan_ok=True)
@@ -134,6 +139,17 @@ def test_extrapolations(xs, ys, extrapolation, delta_x):
             n1 = ys[1] - m * xs[1]
             assert bands(x0)[0] == pytest.approx(m * x0 + n0)
             assert bands(x1)[0] == pytest.approx(m * x1 + n1)
+        elif extrapolation is sumpf.Bands.interpolations.LOGARITHMIC:
+            bands = sumpf.Bands(bands={x: abs(y) for x, y in zip(xs, ys)}, extrapolations=extrapolation)
+            log_xs = numpy.log2(xs)
+            log_ys = numpy.log2(numpy.abs(ys))
+            m = (log_ys[1] - log_ys[0]) / (log_xs[1] - log_xs[0])
+            n0 = log_ys[0] - m * log_xs[0]
+            n1 = log_ys[1] - m * log_xs[1]
+            r0 = n0 + log_ys[0] - m * log_xs[0]
+            r1 = n1 + log_ys[1] - m * log_xs[1]
+            assert bands(x0)[0] == pytest.approx(numpy.exp2(m * numpy.log2(x0) + n0), nan_ok=True)
+            assert bands(x1)[0] == pytest.approx(numpy.exp2(m * numpy.log2(x1) + n1), nan_ok=True)
         elif extrapolation is sumpf.Bands.interpolations.LOG_X:
             log_xs = numpy.log2(xs)
             m = (ys[1] - ys[0]) / (log_xs[1] - log_xs[0])

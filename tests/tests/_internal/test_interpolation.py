@@ -31,11 +31,14 @@ def xs_ys(data, interpolation):
     else:
         xs = numpy.empty(0)
         ys = numpy.empty(0)
-    if interpolation in (sumpf_internal.Interpolations.LOG_X, sumpf_internal.Interpolations.STAIRS_LOG):
+    if interpolation in (sumpf_internal.Interpolations.LOGARITHMIC,
+                         sumpf_internal.Interpolations.LOG_X,
+                         sumpf_internal.Interpolations.STAIRS_LOG):
         if (xs <= 0).any():
             xs -= xs.min()
             xs += 1e-15
-    elif interpolation is sumpf_internal.Interpolations.LOG_Y:
+    if interpolation in (sumpf_internal.Interpolations.LOGARITHMIC,
+                         sumpf_internal.Interpolations.LOG_Y):
         ys = numpy.abs(ys) + 1e-15
     return xs, ys
 
@@ -63,13 +66,15 @@ def test_x_as_scalar_and_vector(interpolation, data, x):
     func = sumpf_internal.interpolation.get(interpolation)
     xs, ys = xs_ys(data, interpolation)
     x = numpy.array(x)
-    if interpolation in (sumpf_internal.Interpolations.LOG_X, sumpf_internal.Interpolations.STAIRS_LOG):
+    if interpolation in (sumpf_internal.Interpolations.LOGARITHMIC,
+                         sumpf_internal.Interpolations.LOG_X,
+                         sumpf_internal.Interpolations.STAIRS_LOG):
         if (x <= 0).any():
             x -= x.min()
             x += 1e-15
     scalar = [func(s, xs, ys) for s in x]
     vector = list(func(x, xs, ys))
-    assert scalar == pytest.approx(vector)
+    assert scalar == pytest.approx(vector, nan_ok=True)
 
 
 @pytest.mark.filterwarnings("ignore:divide by zero")    # noqa: C901; the method is not complex, it's just a long switch case
@@ -81,9 +86,12 @@ def test_interpolation(interpolation, xs, ys, k):       # pylint: disable=too-ma
     """Tests the computation of an interpolated value."""
     func = sumpf_internal.interpolation.get(interpolation)
     xs = numpy.array(sorted(xs))
-    if interpolation in (sumpf_internal.Interpolations.LOG_X, sumpf_internal.Interpolations.STAIRS_LOG) and min(xs) < 0.0:  # pylint: disable=line-too-long
+    if interpolation in (sumpf_internal.Interpolations.LOGARITHMIC,
+                         sumpf_internal.Interpolations.LOG_X,
+                         sumpf_internal.Interpolations.STAIRS_LOG) and \
+       min(xs) < 0.0:
         xs -= min(xs)
-    elif interpolation is sumpf_internal.Interpolations.LOG_Y:
+    if interpolation in (sumpf_internal.Interpolations.LOGARITHMIC, sumpf_internal.Interpolations.LOG_Y):
         ys = numpy.abs(ys)
     x = xs[0] + k * (xs[1] - xs[0])
     hypothesis.assume(x not in xs)  # due to the limited precision of floating point numbers, this can still happen
@@ -93,20 +101,16 @@ def test_interpolation(interpolation, xs, ys, k):       # pylint: disable=too-ma
         assert func(x, xs, ys) == 1.0
     elif interpolation is sumpf_internal.Interpolations.LINEAR:
         assert func(x, xs, ys) == pytest.approx(numpy.interp(x, xs, ys))
+    elif interpolation is sumpf_internal.Interpolations.LOGARITHMIC:
+        log_xs = numpy.log2(xs)
+        log_ys = numpy.log(numpy.abs(ys))
+        assert func(x, xs, ys) == pytest.approx(numpy.exp(numpy.interp(numpy.log2(x), log_xs, log_ys)), nan_ok=True)
     elif interpolation is sumpf_internal.Interpolations.LOG_X:
         log_xs = numpy.log2(xs)
-        if 0.0 in xs and numpy.log2(x) not in log_xs:
-            assert numpy.isnan(func(x, xs, ys))
-        else:
-            assert func(x, xs, ys) == pytest.approx(numpy.interp(numpy.log2(x), log_xs, ys))
+        assert func(x, xs, ys) == pytest.approx(numpy.interp(numpy.log2(x), log_xs, ys))
     elif interpolation is sumpf_internal.Interpolations.LOG_Y:
-        if ys[0] == 0.0:
-            assert numpy.isnan(func(x, xs, ys))
-        elif ys[1] == 0.0:
-            assert func(x, xs, ys) == 0.0
-        else:
-            log_ys = numpy.log(numpy.abs(ys))
-            assert func(x, xs, ys) == pytest.approx(numpy.exp(numpy.interp(x, xs, log_ys)))
+        log_ys = numpy.log(numpy.abs(ys))
+        assert func(x, xs, ys) == pytest.approx(numpy.exp(numpy.interp(x, xs, log_ys)), nan_ok=True)
     elif interpolation is sumpf_internal.Interpolations.STAIRS_LIN:
         if k < 0.5:
             assert func(x, xs, ys) == ys[0]
@@ -130,9 +134,12 @@ def test_extrapolation(xs, ys, interpolation, delta_x):
     """Tests the computation of an extrapolated value."""
     func = sumpf_internal.interpolation.get(interpolation)
     xs = numpy.array(sorted(xs))
-    if interpolation in (sumpf_internal.Interpolations.LOG_X, sumpf_internal.Interpolations.STAIRS_LOG) and min(xs) < 0.0:  # pylint: disable=line-too-long
+    if interpolation in (sumpf_internal.Interpolations.LOGARITHMIC,
+                         sumpf_internal.Interpolations.LOG_X,
+                         sumpf_internal.Interpolations.STAIRS_LOG) and \
+       min(xs) < 0.0:
         xs -= min(xs)
-    elif interpolation is sumpf_internal.Interpolations.LOG_Y:
+    if interpolation in (sumpf_internal.Interpolations.LOGARITHMIC, sumpf_internal.Interpolations.LOG_Y):
         ys = numpy.abs(ys)
     x0 = xs[0] * (1.0 - delta_x) - delta_x
     x1 = xs[1] * (1.0 + delta_x) + delta_x
@@ -148,6 +155,18 @@ def test_extrapolation(xs, ys, interpolation, delta_x):
         n1 = ys[1] - m * xs[1]
         assert func(x0, xs, ys) == pytest.approx(m * x0 + n0)
         assert func(x1, xs, ys) == pytest.approx(m * x1 + n1)
+    elif interpolation is sumpf_internal.Interpolations.LOGARITHMIC:
+        if 0.0 in ys:
+            assert numpy.isnan(func(x0, xs, ys))
+            assert numpy.isnan(func(x1, xs, ys))
+        else:
+            log_xs = numpy.log2(xs)
+            log_ys = numpy.log2(ys)
+            m = (log_ys[1] - log_ys[0]) / (log_xs[1] - log_xs[0])
+            r0 = numpy.exp2(m * numpy.log2(x0) + log_ys[0] - m * log_xs[0])
+            r1 = numpy.exp2(m * numpy.log2(x1) + log_ys[1] - m * log_xs[1])
+            assert (numpy.isnan(func(x0, xs, ys)) and numpy.isnan(r0)) or (func(x0, xs, ys) == pytest.approx(r0))
+            assert (numpy.isnan(func(x1, xs, ys)) and numpy.isnan(r1)) or (func(x1, xs, ys) == pytest.approx(r1))
     elif interpolation is sumpf_internal.Interpolations.LOG_X:
         log_xs = numpy.log2(xs)
         m = (ys[1] - ys[0]) / (log_xs[1] - log_xs[0])

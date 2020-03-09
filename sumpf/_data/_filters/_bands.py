@@ -35,7 +35,7 @@ class Bands(Filter):
 
     def __init__(self,
                  bands=({},),
-                 interpolations=sumpf_internal.Interpolations.LINEAR,
+                 interpolations=sumpf_internal.Interpolations.LOGARITHMIC,
                  extrapolations=sumpf_internal.Interpolations.STAIRS_LIN,
                  labels=("Bands",)):
         """

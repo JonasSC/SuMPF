@@ -272,7 +272,7 @@ def test_multiply(filter1, filter2, frequency):
         assert product.labels() == ("Product",) * channel_count
 
 
-@pytest.mark.filterwarnings("ignore:overflow", "ignore:invalid value")
+@pytest.mark.filterwarnings("ignore:overflow", "ignore:invalid value", "ignore:divide by zero")
 @hypothesis.given(filter_=tests.strategies.filters(),
                   number=hypothesis.strategies.one_of(hypothesis.strategies.integers(min_value=-1e15,
                                                                                      max_value=1e15),

@@ -537,6 +537,7 @@ class Bands(Term):
         :returns: an instance of a subclass of :class:`~sumpf._data._filters._base._terms._base.Term`
         """
         non_negative_interpolations = (sumpf_internal.Interpolations.ONE,
+                                       sumpf_internal.Interpolations.LOGARITHMIC,
                                        sumpf_internal.Interpolations.LOG_Y)
         if self.interpolation in non_negative_interpolations or self.extrapolation in non_negative_interpolations:
             return binary.Difference(minuend=Constant(0.0),
