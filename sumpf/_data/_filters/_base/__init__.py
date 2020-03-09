@@ -20,3 +20,6 @@ from ._filter import *
 
 from ._functions import frequency_scaling
 from ._iir import IIRFilter, RolloffFilter
+
+from ._s import S
+from ._terms import *

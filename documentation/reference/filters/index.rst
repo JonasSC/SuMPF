@@ -8,5 +8,6 @@ This section contains the API reference for the :class:`~sumpf.Filter` class and
 
    base
    iir
+   weighting
    bands
    operations
