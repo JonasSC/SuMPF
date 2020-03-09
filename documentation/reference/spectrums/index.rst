@@ -8,3 +8,4 @@ This section contains the API reference for the :class:`~sumpf.Spectrum` class a
 
    base
    pseudonoise
+   other

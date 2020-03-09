@@ -14,9 +14,20 @@
 # You should have received a copy of the GNU Lesser General Public License along
 # with this program. If not, see <http://www.gnu.org/licenses/>.
 
-"""Contains data containers for spectrums"""
+"""Contains tests for the ConstantSpectrum class."""
 
-from ._spectrum import *
+import hypothesis
+import sumpf
+import tests
 
-from ._constant import *
-from ._rudinshapiro import *
+
+@hypothesis.given(value=hypothesis.strategies.complex_numbers(allow_nan=False, allow_infinity=False),
+                  resolution=tests.strategies.resolutions,
+                  length=hypothesis.strategies.integers(min_value=0, max_value=2 ** 18))
+def test_constant_spectrum(value, resolution, length):
+    """tests the ConstantSpectrum class"""
+    constant = sumpf.ConstantSpectrum(value, resolution, length)
+    assert constant == sumpf.ConstantSpectrum(value=value, resolution=resolution, length=length)
+    assert constant.shape() == (1, length)
+    assert (constant.channels() == value).all()
+    assert constant.resolution() == resolution
