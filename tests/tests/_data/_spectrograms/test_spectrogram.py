@@ -570,6 +570,122 @@ def test_power():
     assert ((spectrogram2[2] ** spectrogram1).channels() == [[(1.0, 1.0, 16.0, 1.0, 1.0), (1.0, 1.0, 7 ** 5, 1.0, 1.0)],
                                                              [(1.0, 1.0, 4.0, 3.0, 1.0), (1.0, 1.0, 7.0, 6.0, 1.0)]]).all()
 
+
+@pytest.mark.filterwarnings("ignore:overflow", "ignore:invalid value", "ignore:divide by zero")
+@hypothesis.given(spectrogram=tests.strategies.spectrograms(max_magnitude=1e15, max_channels=9, max_number_of_frequencies=33, max_length=33),
+                  signal=tests.strategies.signals(min_value=-1e15, max_value=1e15, max_channels=9, max_length=33))
+def test_algebra_with_signal(spectrogram, signal):
+    """Tests computations, that combine a spectrogram with a signal."""
+    # sanitize the offsets to avoid an excessively large result spectrogram
+    if signal.offset() < spectrogram.offset():
+        signal = signal.shift(None).shift(spectrogram.offset() - (spectrogram.offset() - signal.offset()) % 10)
+    elif signal.offset() > spectrogram.offset():
+        signal = signal.shift(None).shift(spectrogram.offset() + (signal.offset() - spectrogram.offset()) % 10)
+    # create a spectrogram. which has the signal's samples in each frequency bin for the reference computations
+    channels = numpy.empty(shape=(len(signal), spectrogram.number_of_frequencies(), signal.length()), dtype=numpy.complex128)
+    for s, c in zip(signal.channels(), channels):
+        for b in c:
+            b[:] = s
+    signal_spectrogram = sumpf.Spectrogram(
+        channels=channels,
+        resolution=spectrogram.resolution(),
+        sampling_rate=spectrogram.sampling_rate(),
+        offset=signal.offset(),
+        labels=spectrogram.labels(),
+    )
+    # addition
+    reference = spectrogram + signal_spectrogram
+    result = spectrogram + signal
+    assert result == reference
+    assert result == signal + spectrogram
+    # subtraction
+    reference = spectrogram - signal_spectrogram
+    result = spectrogram - signal
+    assert result == reference
+    assert signal - spectrogram == signal_spectrogram - spectrogram
+    # multiplication
+    reference = spectrogram * signal_spectrogram
+    result = spectrogram * signal
+    assert result == reference
+    assert result == signal * spectrogram
+    # division
+    reference = spectrogram / signal_spectrogram
+    result = spectrogram / signal
+    assert tests.compare_spectrograms_approx(result, reference)
+    assert tests.compare_spectrograms_approx(signal / spectrogram, signal_spectrogram / spectrogram)
+    # power
+    reference = spectrogram ** signal_spectrogram
+    result = spectrogram ** signal
+    assert tests.compare_spectrograms_approx(result, reference)
+    assert tests.compare_spectrograms_approx(signal ** spectrogram, signal_spectrogram ** spectrogram)
+
+
+@pytest.mark.filterwarnings("ignore:overflow", "ignore:invalid value", "ignore:divide by zero")
+@hypothesis.given(spectrogram=tests.strategies.spectrograms(max_magnitude=1e15, max_channels=9, max_number_of_frequencies=33, max_length=33),
+                  spectrum=tests.strategies.spectrums(max_magnitude=1e15, max_channels=9, max_length=33))
+def test_algebra_with_spectrum(spectrogram, spectrum):
+    """Tests computations, that combine a spectrogram with a spectrum."""
+    # if the numbers of frequency values are different for the spectrogram and the spectrum, a ValueError must be raised
+    if spectrum.length() != spectrogram.number_of_frequencies():
+        with pytest.raises(ValueError):
+            spectrogram + spectrum
+        with pytest.raises(ValueError):
+            spectrum + spectrogram
+        with pytest.raises(ValueError):
+            spectrogram - spectrum
+        with pytest.raises(ValueError):
+            spectrum - spectrogram
+        with pytest.raises(ValueError):
+            spectrogram * spectrum
+        with pytest.raises(ValueError):
+            spectrum * spectrogram
+        with pytest.raises(ValueError):
+            spectrogram / spectrum
+        with pytest.raises(ValueError):
+            spectrum / spectrogram
+        with pytest.raises(ValueError):
+            spectrogram ** spectrum
+        with pytest.raises(ValueError):
+            spectrum ** spectrogram
+        return
+    # create a spectrogram. which has the signal's samples in each frequency bin for the reference computations
+    channels = numpy.empty(shape=(len(spectrum), spectrum.length(), spectrogram.length()), dtype=numpy.complex128)
+    for s, c in zip(spectrum.channels(), channels.transpose((0, 2, 1))):
+        for b in c:
+            b[:] = s
+    spectrum_spectrogram = sumpf.Spectrogram(
+        channels=channels,
+        resolution=spectrogram.resolution(),
+        sampling_rate=spectrogram.sampling_rate(),
+        offset=spectrogram.offset(),
+        labels=spectrogram.labels(),
+    )
+    # addition
+    reference = spectrogram + spectrum_spectrogram
+    result = spectrogram + spectrum
+    assert result == reference
+    assert result == spectrum + spectrogram
+    # subtraction
+    reference = spectrogram - spectrum_spectrogram
+    result = spectrogram - spectrum
+    assert result == reference
+    assert spectrum - spectrogram == spectrum_spectrogram - spectrogram
+    # multiplication
+    reference = spectrogram * spectrum_spectrogram
+    result = spectrogram * spectrum
+    assert result == reference
+    assert result == spectrum * spectrogram
+    # division
+    reference = spectrogram / spectrum_spectrogram
+    result = spectrogram / spectrum
+    assert tests.compare_spectrograms_approx(result, reference)
+    assert tests.compare_spectrograms_approx(spectrum / spectrogram, spectrum_spectrogram / spectrogram)
+    # power
+    reference = spectrogram ** spectrum_spectrogram
+    result = spectrogram ** spectrum
+    assert tests.compare_spectrograms_approx(result, reference)
+    assert tests.compare_spectrograms_approx(spectrum ** spectrogram, spectrum_spectrogram ** spectrogram)
+
 ##############
 # parameters #
 ##############

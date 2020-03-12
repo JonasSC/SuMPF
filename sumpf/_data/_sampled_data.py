@@ -82,11 +82,16 @@ class SampledData:
         """
         raise NotImplementedError("This method should have been implemented in a derived class.")
 
-    def _algebra_function_right(self, other, function):
+    def _algebra_function_right(self, other, function, other_pivot, label):
         """Protected helper function for overloading the right hand side operators.
 
         :param other: the object "on the left side of the operator"
         :param function: a function, that implements the computation for arrays (e.g. numpy.add)
+        :param other_pivot: a default value, that is used as first operand for samples, where
+                            only the other object has data (e.g. when the two data sets don't
+                            overlap due to different lengths). If ``other_pivot`` is ``None``,
+                            the data from the other object is copied.
+        :param label: the string label for the computed channels
         :returns: an instance of the derived class, in which this method has been overridden
         """
         raise NotImplementedError("This method should have been implemented in a derived class.")
@@ -97,7 +102,7 @@ class SampledData:
 
     def __radd__(self, other):
         """Right hand side operator overload for adding this to an array or number."""
-        return self._algebra_function_right(other=other, function=numpy.add)
+        return self._algebra_function_right(other=other, function=numpy.add, other_pivot=None, label="Sum")
 
     def __sub__(self, other):
         """Operator overload for subtracting another data set, an array or number from this."""
@@ -105,7 +110,7 @@ class SampledData:
 
     def __rsub__(self, other):
         """Right hand side operator overload for subtracting this from an array or number."""
-        return self._algebra_function_right(other=other, function=numpy.subtract)
+        return self._algebra_function_right(other=other, function=numpy.subtract, other_pivot=0.0, label="Difference")
 
     def __mul__(self, other):
         """Operator overload for multiplying this with another data set, an array or number."""
@@ -113,7 +118,7 @@ class SampledData:
 
     def __rmul__(self, other):
         """Right hand side operator overload for multiplying this with an array or number."""
-        return self._algebra_function_right(other=other, function=numpy.multiply)
+        return self._algebra_function_right(other=other, function=numpy.multiply, other_pivot=None, label="Product")
 
     def __truediv__(self, other):
         """Operator overload for dividing this by another data set, an array or number."""
@@ -121,7 +126,7 @@ class SampledData:
 
     def __rtruediv__(self, other):
         """Right hand side operator overload for dividing an array or number by this."""
-        return self._algebra_function_right(other=other, function=numpy.true_divide)
+        return self._algebra_function_right(other=other, function=numpy.true_divide, other_pivot=1.0, label="Quotient")
 
     def __pow__(self, other):
         """Operator overload for computing the power of this to another data set, an array or number."""
@@ -129,7 +134,7 @@ class SampledData:
 
     def __rpow__(self, other):
         """Operator overload for computing the power of an array or number to this."""
-        return self._algebra_function_right(other=other, function=numpy.power)
+        return self._algebra_function_right(other=other, function=numpy.power, other_pivot=None, label="Power")
 
     #######################################################
     # parameters, that have been set with the constructor #

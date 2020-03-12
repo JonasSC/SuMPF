@@ -203,6 +203,8 @@ class Spectrum(SampledData):
                 function(self._channels[0:len(other)], other.channels(), out=channels[0:len(other)])
                 channels[len(other):] = self._channels[len(other):]
             return Spectrum(channels=channels, resolution=self.__resolution, labels=(label,) * len(channels))
+        elif isinstance(other, SampledData):
+            return NotImplemented
         else:   # other is an array or a number
             try:
                 return Spectrum(channels=function(self._channels,
@@ -213,11 +215,16 @@ class Spectrum(SampledData):
             except TypeError:
                 return NotImplemented
 
-    def _algebra_function_right(self, other, function):
+    def _algebra_function_right(self, other, function, other_pivot, label):
         """Protected helper function for overloading the right hand side operators.
 
         :param other: the object "on the left side of the operator"
         :param function: a function, that implements the computation for arrays (e.g. numpy.add)
+        :param other_pivot: a default value, that is used as first operand for samples, where
+                            only the other object has data (e.g. when the two spectrums don't
+                            overlap due to different lengths). If ``other_pivot`` is ``None``,
+                            the data from the other object is copied.
+        :param label: the string label for the computed channels
         :returns: a :class:`~sumpf.Spectrum` instance
         """
         return Spectrum(channels=function(other,

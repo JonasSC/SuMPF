@@ -340,6 +340,21 @@ def test_multiply_with_signal_or_spectrum(filter_, signal):
 
 
 @pytest.mark.filterwarnings("ignore:overflow", "ignore:invalid value", "ignore:divide by zero")
+@hypothesis.given(filter_=tests.strategies.filters(),
+                  spectrogram=tests.strategies.spectrograms())
+def test_multiply_with_spectrogram(filter_, spectrogram):
+    """Tests the multiplication of a filter with a spectrogram."""
+    spectrum = filter_.spectrum(resolution=spectrogram.resolution(), length=spectrogram.number_of_frequencies())
+    reference = spectrogram * spectrum
+    for result in (filter_ * spectrogram, spectrogram * filter_):
+        assert numpy.array_equal(numpy.nan_to_num(result.channels(), -93.4), numpy.nan_to_num(reference.channels(), -93.4))
+        assert result.resolution() == reference.resolution()
+        assert result.sampling_rate() == reference.sampling_rate()
+        assert result.offset() == reference.offset()
+        assert result.labels() == reference.labels()
+
+
+@pytest.mark.filterwarnings("ignore:overflow", "ignore:invalid value", "ignore:divide by zero")
 @hypothesis.given(filter1=tests.strategies.filters(),
                   filter2=tests.strategies.filters(),
                   frequency=tests.strategies.non_zero_frequencies)

@@ -220,7 +220,7 @@ class Signal(SampledData):
         :param other: a :class:`~sumpf.Signal`, an array or a number
         :returns: a :class:`~sumpf.Signal` instance
         """
-        return self._algebra_function_right(other=other, function=numpy.mod)
+        return self._algebra_function_right(other=other, function=numpy.mod, other_pivot=None, label="Modulo")
 
     #########################################
     # overloaded and misused math operators #
@@ -868,14 +868,21 @@ class Signal(SampledData):
             else:
                 # the signals have different lengths or offsets, which makes things complicated
                 return self.__algebra_function_different_shapes(other, function, other_pivot, label)
+        elif isinstance(other, SampledData):
+            return NotImplemented
         else:   # other is an array or a number
             return self.__algebra_function_different_type(other, function)
 
-    def _algebra_function_right(self, other, function):
+    def _algebra_function_right(self, other, function, other_pivot, label):
         """Protected helper function for overloading the right hand side operators.
 
         :param other: the object "on the left side of the operator"
         :param function: a function, that implements the computation for arrays (e.g. numpy.add)
+        :param other_pivot: a default value, that is used as first operand for samples, where
+                            only the other object has data (e.g. when the two data sets don't
+                            overlap due to different lengths). If ``other_pivot`` is ``None``,
+                            the data from the other object is copied.
+        :param label: the string label for the computed channels
         :returns: a :class:`~sumpf.Signal` instance
         """
         return Signal(channels=function(other, self._channels, out=sumpf_internal.allocate_array(self.shape())),

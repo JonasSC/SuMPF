@@ -314,10 +314,12 @@ class Filter:
             return filter_ * other
         elif isinstance(other, sumpf.Signal):
             spectrum = other.fourier_transform()
-            filter_ = self.spectrum(resolution=spectrum.resolution(),
-                                    length=spectrum.length())
-            filtered = filter_ * spectrum
+            filtered = self * spectrum
             return filtered.inverse_fourier_transform()
+        elif isinstance(other, sumpf.Spectrogram):
+            filter_ = self.spectrum(resolution=other.resolution(),
+                                    length=other.number_of_frequencies())
+            return other * filter_
         else:
             return NotImplemented
 

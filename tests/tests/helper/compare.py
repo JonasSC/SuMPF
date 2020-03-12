@@ -16,9 +16,16 @@
 
 """Contains helper functions for the comparison of SuMPF's data classes"""
 
+import numpy
 import pytest
 
-__all__ = ("compare_signals_approx",)
+__all__ = ("compare_signals_approx", "compare_spectrograms_approx")
+
+
+def fix_nan(array):
+    result = array.copy()
+    result[~numpy.isfinite(array)] = 2 ** 31
+    return result
 
 
 def compare_signals_approx(signal1, signal2):
@@ -27,3 +34,14 @@ def compare_signals_approx(signal1, signal2):
             signal1.sampling_rate() == signal2.sampling_rate() and
             signal1.offset() == signal2.offset() and
             signal1.labels() == signal2.labels())
+
+
+def compare_spectrograms_approx(spectrogram1, spectrogram2):
+    """compares two spectrograms, with using pytest's approx function for the channel comparison.
+    It also avoids issues with inf and nan values.
+    """
+    return (fix_nan(spectrogram1.channels()) == pytest.approx(fix_nan(spectrogram2.channels())) and
+            spectrogram1.resolution() == spectrogram2.resolution() and
+            spectrogram1.sampling_rate() == spectrogram2.sampling_rate() and
+            spectrogram1.offset() == spectrogram2.offset() and
+            spectrogram1.labels() == spectrogram2.labels())
