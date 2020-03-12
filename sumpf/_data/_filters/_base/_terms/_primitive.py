@@ -438,18 +438,26 @@ class Bands(Term):
         :returns: the computed transfer function as an array of complex values
         """
         f = s.frequencies()
-        if out is None:
-            out = numpy.empty(shape=f.shape, dtype=numpy.complex128)
-        if self.xs.size:
-            mask = (f < self.xs[0]) | (self.xs[-1] < f)
-            extrapolation = sumpf_internal.interpolation.get(self.extrapolation)
-            out[mask] = extrapolation(x=f[mask], xs=self.xs, ys=self.ys)
-            mask = ~mask
-            interpolation = sumpf_internal.interpolation.get(self.interpolation)
-            out[mask] = interpolation(x=f[mask], xs=self.xs, ys=self.ys)
+        if isinstance(f, float):
+            if f < self.xs[0] or self.xs[-1] < f:
+                extrapolation = sumpf_internal.interpolation.get(self.extrapolation)
+                return extrapolation(x=f, xs=self.xs, ys=self.ys)
+            else:
+                interpolation = sumpf_internal.interpolation.get(self.interpolation)
+                return interpolation(x=f, xs=self.xs, ys=self.ys)
         else:
-            out[:] = 0.0
-        return out
+            if out is None:
+                out = numpy.empty(shape=f.shape, dtype=numpy.complex128)
+            if self.xs.size:
+                mask = (f < self.xs[0]) | (self.xs[-1] < f)
+                extrapolation = sumpf_internal.interpolation.get(self.extrapolation)
+                out[mask] = extrapolation(x=f[mask], xs=self.xs, ys=self.ys)
+                mask = ~mask
+                interpolation = sumpf_internal.interpolation.get(self.interpolation)
+                out[mask] = interpolation(x=f[mask], xs=self.xs, ys=self.ys)
+            else:
+                out[:] = 0.0
+            return out
 
     def invert_transform(self):
         """Creates a copy of the term, with the lowpass-to-highpass-transform inverted.
