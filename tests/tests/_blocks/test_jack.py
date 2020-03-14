@@ -18,9 +18,9 @@
 
 import os
 import logging
-import connectors
 import numpy
 import pytest
+import connectors
 import sumpf
 
 
@@ -69,7 +69,7 @@ def test_availability():
     jack client package is available.
     """
     try:
-        import jack     # noqa; pylint: disable=unused-import; this shall raise an ImportError, if the JACK library cannot be imported
+        import jack     # noqa; pylint: disable=unused-import,import-outside-toplevel; this shall raise an ImportError, if the JACK library cannot be imported
     except ImportError:
         assert not hasattr(sumpf, "Jack")
     else:
@@ -188,7 +188,7 @@ def test_port_creation_connectors():
 def test_automatic_deactivation():
     """Tests the functionality for activating and deactivating the JACK client automatically."""
     with _create_client() as client:
-        import jack
+        import jack  # pylint: disable=import-outside-toplevel; this test is skipped, if the JACK client library is not available
         signal = sumpf.SineWave(length=2 ** 12)
         xruns = _XRunHandler()
         sumpf_jack = sumpf.Jack("auto", input_signal=signal, input_ports=["capture"])     # auto_deactivate should be enabled by default
@@ -208,7 +208,7 @@ def test_automatic_deactivation():
 def test_manual_activation():
     """Tests the methods for activating and deactivating the JACK client manually."""
     with _create_client() as client:
-        import jack
+        import jack  # pylint: disable=import-outside-toplevel; this test is skipped, if the JACK client library is not available
         signal = sumpf.SineWave(length=2 ** 12)
         xruns = _XRunHandler()
         sumpf_jack = sumpf.Jack("manual", input_signal=signal, input_ports=["capture"], auto_deactivate=False)

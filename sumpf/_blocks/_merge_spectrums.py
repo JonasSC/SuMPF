@@ -16,8 +16,8 @@
 
 """Contains the :class:`~sumpf.MergeSpectrums` class"""
 
-import connectors
 import numpy
+import connectors
 import sumpf
 import sumpf._internal as sumpf_internal
 

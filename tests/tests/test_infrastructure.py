@@ -21,8 +21,8 @@ import enum
 import inspect
 import os
 import re
-import connectors
 import pytest
+import connectors
 import sumpf
 import tests
 
@@ -54,11 +54,10 @@ def test_license():
                         line = f.readline()
                         if line == "":
                             continue    # an empty file does not need a license header
-                        else:
-                            for h in header:
-                                if line != h:
-                                    pytest.fail(msg=f"{path} is missing the license header", pytrace=False)
-                                line = f.readline()
+                        for h in header:
+                            if line != h:
+                                pytest.fail(msg=f"{path} is missing the license header", pytrace=False)
+                            line = f.readline()
 
 
 def test_sphinx_documentation():    # noqa: C901; pylint: disable=too-many-locals,too-many-branches,too-many-statements; alright, this is complex...

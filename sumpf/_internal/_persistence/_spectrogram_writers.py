@@ -16,6 +16,8 @@
 
 """Contains classes and helper functions to save spectrograms to a file."""
 
+import json
+import pickle
 import enum
 import numpy
 from ._auto_writer import AutoWriter
@@ -99,7 +101,6 @@ class JsonWriter(Writer):
         :param data: the :class:`~sumpf.Spectrogram` instance
         :param path: the path of the file, in which the spectrogram shall be saved
         """
-        import json
         with open(path, "w") as f:
             json.dump(as_dict(spectrum), f, indent=4)
 
@@ -142,6 +143,5 @@ class PickleWriter(Writer):
         :param data: the :class:`~sumpf.Spectrogram` instance
         :param path: the path of the file, in which the spectrogram shall be saved
         """
-        import pickle
         with open(path, "wb") as f:
             pickle.dump(spectrogram, f)

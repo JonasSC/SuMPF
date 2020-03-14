@@ -16,7 +16,14 @@
 
 """Contains classes and helper functions to save signals to a file."""
 
+import aifc
+import csv
 import enum
+import json
+import math
+import pickle
+import struct
+import wave
 import numpy
 from ._auto_writer import AutoWriter
 
@@ -114,7 +121,7 @@ writers[Formats.AUTO] = AutoWriter(file_extension_mapping=file_extension_mapping
 
 def as_dict(signal):
     """Serializes a signal to a dictionary."""
-    return {"channels": [[s for s in c] for c in signal.channels()],
+    return {"channels": [tuple(c) for c in signal.channels()],
             "sampling_rate": signal.sampling_rate(),
             "offset": signal.offset(),
             "labels": signal.labels()}
@@ -132,7 +139,6 @@ class CsvWriter(Writer):
         :param data: the :class:`~sumpf.Signal` instance
         :param path: the path of the file, in which the signal shall be saved
         """
-        import csv
         with open(path, "w", newline="") as f:
             columns = ["time"]
             columns.extend(signal.labels())
@@ -152,7 +158,6 @@ class JsonWriter(Writer):
         :param data: the :class:`~sumpf.Signal` instance
         :param path: the path of the file, in which the signal shall be saved
         """
-        import json
         with open(path, "w") as f:
             json.dump(as_dict(signal), f, indent=4)
 
@@ -213,7 +218,6 @@ class PickleWriter(Writer):
         :param data: the :class:`~sumpf.Signal` instance
         :param path: the path of the file, in which the signal shall be saved
         """
-        import pickle
         with open(path, "wb") as f:
             pickle.dump(signal, f)
 
@@ -231,7 +235,6 @@ class StandardLibraryWriter:
         :param signed: True if the samples in the output files are signed, False otherwise.
         :param endianness: "<" for little endian, ">" for big endian
         """
-        import math
         self.__module = module
         self.__bytes_per_sample = int(math.ceil(bits / 8))
         self.__sample_mask = {32: "i", 16: "h", 8: "b"}[bits]
@@ -247,7 +250,6 @@ class StandardLibraryWriter:
         :param data: the :class:`~sumpf.Signal` instance
         :param path: the path of the file, in which the signal shall be saved
         """
-        import struct
         number_of_channels, number_of_samples = signal.shape()
         chunk_size = 2048
         total_chunk_size = (number_of_channels * chunk_size)
@@ -294,7 +296,6 @@ class WaveWriter(StandardLibraryWriter, Writer):
                             enumeration, which specifies the file format, that
                             shall be loaded with this writer.
         """
-        import wave
         Writer.__init__(self, file_format)
         if file_format == Formats.WAV_INT32:
             StandardLibraryWriter.__init__(self, module=wave, bits=32, signed=True, endianness="<")
@@ -314,7 +315,6 @@ class AifcWriter(StandardLibraryWriter, Writer):
                             enumeration, which specifies the file format, that
                             shall be loaded with this writer.
         """
-        import aifc
         Writer.__init__(self, file_format)
         if file_format == Formats.AIFF_INT32:
             StandardLibraryWriter.__init__(self, module=aifc, bits=32, signed=True, endianness=">")
@@ -340,7 +340,7 @@ class SoundfileWriter(Writer):
                             shall be loaded with this writer.
         :raises ImportError: if the library :mod:`soundfile` is not available
         """
-        import soundfile  # noqa; pylint: disable=unused-import; this shall raise an ImportError, if the soundfile library cannot be imported
+        import soundfile  # noqa; pylint: disable=unused-import,import-outside-toplevel; this shall raise an ImportError, if the soundfile library cannot be imported
         super().__init__(file_format)
         settings = {Formats.WAV_UINT8: ("WAV", "PCM_U8", self.__int_greater_zero),
                     Formats.WAV_INT16: ("WAV", "PCM_16", self.__int_greater_zero),
@@ -374,7 +374,7 @@ class SoundfileWriter(Writer):
         :param data: the :class:`~sumpf.Signal` instance
         :param path: the path of the file, in which the signal shall be saved
         """
-        import soundfile
+        import soundfile  # pylint: disable=import-outside-toplevel; having this as a top-level import would make all writers unavailable, if the soundfile library is not installed
         soundfile.write(file=path,
                         data=signal.channels().transpose(),
                         samplerate=self.__sampling_rate_conversion(signal.sampling_rate()),

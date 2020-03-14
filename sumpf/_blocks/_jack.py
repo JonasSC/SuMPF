@@ -22,9 +22,9 @@ import functools
 import threading
 import time
 import weakref
-import connectors
 import jack
 import numpy
+import connectors
 import sumpf
 import sumpf._internal as sumpf_internal
 
@@ -457,7 +457,7 @@ def on_process(frames, instance):
                 channel[index:] = port.get_array()[0:stop_index]
         else:
             instance._event.set()
-            if instance._auto_deactivate:
+            if instance._auto_deactivate:  # pylint: disable=no-else-raise
                 instance._store_connections()
                 raise jack.CallbackExit
             else:

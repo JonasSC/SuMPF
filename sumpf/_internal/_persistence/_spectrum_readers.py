@@ -16,7 +16,10 @@
 
 """Contains classes and helper functions to load spectrums from a file."""
 
+import csv
+import json
 import os
+import pickle
 import numpy
 import sumpf
 from .._functions import allocate_array
@@ -108,7 +111,6 @@ class CsvReader(Reader):
         :param path: the path of the file, from which the spectrum shall be loaded
         :returns: a :class:`~sumpf.Spectrum` instance
         """
-        import csv
         with open(path, newline="") as f:
             reader = csv.reader(f)
             rows = []
@@ -140,7 +142,6 @@ class JsonReader(Reader):
         :param path: the path of the file, from which the spectrum shall be loaded
         :returns: a :class:`~sumpf.Spectrum` instance
         """
-        import json
         with open(path) as f:
             data = json.load(f)
             if "channels" in data:
@@ -202,7 +203,6 @@ class PickleReader(Reader):
         :param path: the path of the file, from which the spectrum shall be loaded
         :returns: a :class:`~sumpf.Spectrum` instance
         """
-        import pickle
         with open(path, "rb") as f:
             result = pickle.load(f)
             assert isinstance(result, sumpf.Spectrum)

@@ -22,7 +22,8 @@ import pytest
 __all__ = ("compare_signals_approx", "compare_spectrograms_approx")
 
 
-def fix_nan(array):
+def _fix_nan(array):
+    """Replaces infinite and NaN values in a NumPy array with a number."""
     result = array.copy()
     result[~numpy.isfinite(array)] = 2 ** 31
     return result
@@ -38,9 +39,9 @@ def compare_signals_approx(signal1, signal2):
 
 def compare_spectrograms_approx(spectrogram1, spectrogram2):
     """compares two spectrograms, with using pytest's approx function for the channel comparison.
-    It also avoids issues with inf and nan values.
+    It also avoids issues with infinite and NaN values.
     """
-    return (fix_nan(spectrogram1.channels()) == pytest.approx(fix_nan(spectrogram2.channels())) and
+    return (_fix_nan(spectrogram1.channels()) == pytest.approx(_fix_nan(spectrogram2.channels())) and
             spectrogram1.resolution() == spectrogram2.resolution() and
             spectrogram1.sampling_rate() == spectrogram2.sampling_rate() and
             spectrogram1.offset() == spectrogram2.offset() and

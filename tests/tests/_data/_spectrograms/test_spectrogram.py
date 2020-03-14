@@ -572,7 +572,7 @@ def test_power():
 
 
 @pytest.mark.filterwarnings("ignore:overflow", "ignore:invalid value", "ignore:divide by zero")
-@hypothesis.given(spectrogram=tests.strategies.spectrograms(max_magnitude=1e15, max_channels=9, max_number_of_frequencies=33, max_length=33),
+@hypothesis.given(spectrogram=tests.strategies.spectrograms(max_magnitude=1e15, max_channels=9, max_number_of_frequencies=33, max_length=33),  # pylint: disable=line-too-long
                   signal=tests.strategies.signals(min_value=-1e15, max_value=1e15, max_channels=9, max_length=33))
 def test_algebra_with_signal(spectrogram, signal):
     """Tests computations, that combine a spectrogram with a signal."""
@@ -582,7 +582,8 @@ def test_algebra_with_signal(spectrogram, signal):
     elif signal.offset() > spectrogram.offset():
         signal = signal.shift(None).shift(spectrogram.offset() + (signal.offset() - spectrogram.offset()) % 10)
     # create a spectrogram. which has the signal's samples in each frequency bin for the reference computations
-    channels = numpy.empty(shape=(len(signal), spectrogram.number_of_frequencies(), signal.length()), dtype=numpy.complex128)
+    shape = (len(signal), spectrogram.number_of_frequencies(), signal.length())
+    channels = numpy.empty(shape=shape, dtype=numpy.complex128)
     for s, c in zip(signal.channels(), channels):
         for b in c:
             b[:] = s
@@ -621,11 +622,12 @@ def test_algebra_with_signal(spectrogram, signal):
 
 
 @pytest.mark.filterwarnings("ignore:overflow", "ignore:invalid value", "ignore:divide by zero")
-@hypothesis.given(spectrogram=tests.strategies.spectrograms(max_magnitude=1e15, max_channels=9, max_number_of_frequencies=33, max_length=33),
+@hypothesis.given(spectrogram=tests.strategies.spectrograms(max_magnitude=1e15, max_channels=9, max_number_of_frequencies=33, max_length=33),  # pylint: disable=line-too-long
                   spectrum=tests.strategies.spectrums(max_magnitude=1e15, max_channels=9, max_length=33))
 def test_algebra_with_spectrum(spectrogram, spectrum):
     """Tests computations, that combine a spectrogram with a spectrum."""
     # if the numbers of frequency values are different for the spectrogram and the spectrum, a ValueError must be raised
+    # pylint: disable=pointless-statement; all these computations, whose result is discarded, are expected to raise errors
     if spectrum.length() != spectrogram.number_of_frequencies():
         with pytest.raises(ValueError):
             spectrogram + spectrum
@@ -844,7 +846,7 @@ def test_inverse_short_time_fourier_transform(signal):
     :meth:`sumpf.Spectrogram.inverse_short_time_fourier_transform` method.
     """
     try:
-        import scipy.signal     # noqa; pylint: disable=unused-import; check if SciPy is available
+        import scipy.signal     # noqa; pylint: disable=unused-import,import-outside-toplevel; check if SciPy is available
     except ImportError:
         with pytest.raises(ImportError):
             signal.short_time_fourier_transform()
@@ -910,7 +912,7 @@ def test_loading_and_saving(spectrogram):
 def test_autodetect_format_on_reading():
     """Tests if auto-detecting the file format, when reading a file works."""
     try:
-        import scipy.signal     # noqa; pylint: disable=unused-import; check if SciPy is available
+        import scipy.signal     # noqa; pylint: disable=unused-import,import-outside-toplevel; check if SciPy is available
     except ImportError:
         with pytest.raises(ImportError):
             sumpf.SineWave().short_time_fourier_transform()
@@ -934,7 +936,7 @@ def test_autodetect_format_on_reading():
 def test_autodetect_format_on_saving():
     """Tests if auto-detecting the file format from the file extension, when writing a file works."""
     try:
-        import scipy.signal     # noqa; pylint: disable=unused-import; check if SciPy is available
+        import scipy.signal     # noqa; pylint: disable=unused-import,import-outside-toplevel; check if SciPy is available
     except ImportError:
         with pytest.raises(ImportError):
             sumpf.SineWave().short_time_fourier_transform()

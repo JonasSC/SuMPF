@@ -16,6 +16,9 @@
 
 """Contains classes and helper functions to save spectrums to a file."""
 
+import csv
+import json
+import pickle
 import enum
 import numpy
 from ._auto_writer import AutoWriter
@@ -81,12 +84,9 @@ writers[Formats.AUTO] = AutoWriter(file_extension_mapping=file_extension_mapping
 
 def as_dict(spectrum):
     """Serializes a spectrum to a dictionary."""
-    channels = []
-    for c in spectrum.channels():
-        channel = {"real": [s for s in numpy.real(c)],
-                   "imaginary": [s for s in numpy.imag(c)]}
-        channels.append(channel)
-    return {"channels": channels,
+    return {"channels": [{"real": tuple(numpy.real(c)),
+                          "imaginary": tuple(numpy.imag(c))}
+                         for c in spectrum.channels()],
             "resolution": spectrum.resolution(),
             "labels": spectrum.labels()}
 
@@ -103,7 +103,6 @@ class CsvWriter(Writer):
         :param data: the :class:`~sumpf.Spectrum` instance
         :param path: the path of the file, in which the spectrum shall be saved
         """
-        import csv
         with open(path, "w", newline="") as f:
             columns = ["frequency"]
             columns.extend(spectrum.labels())
@@ -123,7 +122,6 @@ class JsonWriter(Writer):
         :param data: the :class:`~sumpf.Spectrum` instance
         :param path: the path of the file, in which the spectrum shall be saved
         """
-        import json
         with open(path, "w") as f:
             json.dump(as_dict(spectrum), f, indent=4)
 
@@ -183,6 +181,5 @@ class PickleWriter(Writer):
         :param data: the :class:`~sumpf.Spectrum` instance
         :param path: the path of the file, in which the spectrum shall be saved
         """
-        import pickle
         with open(path, "wb") as f:
             pickle.dump(spectrum, f)

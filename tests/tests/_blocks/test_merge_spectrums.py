@@ -16,9 +16,9 @@
 
 """Tests for the MergeSpectrums class"""
 
-import connectors
 import hypothesis
 import numpy
+import connectors
 import sumpf
 import tests
 

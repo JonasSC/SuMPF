@@ -17,8 +17,11 @@
 """Contains classes and helper functions to load filters from a file."""
 
 import collections
+import csv
 import itertools
+import json
 import os
+import pickle
 import re
 import numpy
 import sumpf
@@ -129,7 +132,6 @@ class JsonReader(Reader):
         :param path: the path of the file, from which the filter shall be loaded
         :returns: a :class:`~sumpf.Filter` instance
         """
-        import json
         with open(path) as f:
             data = json.load(f)
             transfer_functions = [term_from_dict(tf) for tf in data["transfer_functions"]]
@@ -155,7 +157,6 @@ class PickleReader(Reader):
         :param path: the path of the file, from which the filter shall be loaded
         :returns: a :class:`~sumpf.Filter` instance
         """
-        import pickle
         with open(path, "rb") as f:
             result = pickle.load(f)
             assert isinstance(result, sumpf.Filter)
@@ -250,7 +251,6 @@ class CsvReader(Reader):
         :param path: the path of the file, from which the spectrum shall be loaded
         :returns: a :class:`~sumpf.Spectrum` instance
         """
-        import csv
         with open(path, newline="") as f:
             reader = csv.reader(f)
             bands = []

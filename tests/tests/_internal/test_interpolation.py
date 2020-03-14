@@ -77,12 +77,13 @@ def test_x_as_scalar_and_vector(interpolation, data, x):
     assert scalar == pytest.approx(vector, nan_ok=True)
 
 
-@pytest.mark.filterwarnings("ignore:divide by zero")    # noqa: C901; the method is not complex, it's just a long switch case
+@pytest.mark.filterwarnings("ignore:divide by zero")
 @hypothesis.given(interpolation=hypothesis.strategies.sampled_from(sumpf_internal.Interpolations),
                   xs=hypothesis.extra.numpy.arrays(dtype=numpy.float64, shape=2, elements=hypothesis.strategies.floats(min_value=-1e15, max_value=1e15), unique=True),          # pylint: disable=line-too-long
                   ys=hypothesis.extra.numpy.arrays(dtype=numpy.complex128, shape=2, elements=hypothesis.strategies.complex_numbers(min_magnitude=0.0, max_magnitude=1e15)),     # pylint: disable=line-too-long
                   k=hypothesis.strategies.floats(min_value=1e-15, max_value=1.0 - 1e-15))
-def test_interpolation(interpolation, xs, ys, k):       # pylint: disable=too-many-branches
+def test_interpolation(interpolation, xs, ys, k):  # noqa: C901; the function is not complex, it's just a long switch case
+    # pylint: disable=too-many-branches
     """Tests the computation of an interpolated value."""
     func = sumpf_internal.interpolation.get(interpolation)
     xs = numpy.array(sorted(xs))
@@ -130,7 +131,8 @@ def test_interpolation(interpolation, xs, ys, k):       # pylint: disable=too-ma
                   ys=hypothesis.extra.numpy.arrays(dtype=numpy.complex128, shape=2, elements=hypothesis.strategies.complex_numbers(min_magnitude=0.0, max_magnitude=1e15)),     # pylint: disable=line-too-long
                   interpolation=hypothesis.strategies.sampled_from(sumpf_internal.Interpolations),
                   delta_x=hypothesis.strategies.floats(min_value=1e-15, max_value=1e15))
-def test_extrapolation(xs, ys, interpolation, delta_x):
+def test_extrapolation(xs, ys, interpolation, delta_x):  # noqa: C901; the function is not complex, it's just a long switch case
+    # pylint: disable=too-many-branches,too-many-statements
     """Tests the computation of an extrapolated value."""
     func = sumpf_internal.interpolation.get(interpolation)
     xs = numpy.array(sorted(xs))

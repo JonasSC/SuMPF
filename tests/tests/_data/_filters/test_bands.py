@@ -64,15 +64,16 @@ def test_equality_with_filter(bands):
     assert bands == filter_
 
 
-@pytest.mark.filterwarnings("ignore:invalid value", "ignore:divide by zero")    # noqa: C901; the method is not complex, it's just a long switch case
+@pytest.mark.filterwarnings("ignore:invalid value", "ignore:divide by zero")
 @hypothesis.given(xs=hypothesis.extra.numpy.arrays(dtype=numpy.float64, shape=2, elements=hypothesis.strategies.floats(min_value=0.0, max_value=1e10), unique=True),            # pylint: disable=line-too-long
                   ys=hypothesis.extra.numpy.arrays(dtype=numpy.complex128, shape=2, elements=hypothesis.strategies.complex_numbers(min_magnitude=0.0, max_magnitude=1e15)),     # pylint: disable=line-too-long
                   interpolation=hypothesis.strategies.sampled_from(sumpf.Bands.interpolations),
                   k=hypothesis.strategies.floats(min_value=0.0, max_value=1.0))
-def test_interpolations(xs, ys, interpolation, k):  # pylint: disable=too-many-branches
+def test_interpolations(xs, ys, interpolation, k):  # noqa: C901; the method is not complex, it's just a long switch case
+    # pylint: disable=too-many-branches
     """Tests the functionality of the interpolation functions."""
     xs = sorted(xs)
-    bands = sumpf.Bands(bands={x: y for x, y in zip(xs, ys)}, interpolations=interpolation)
+    bands = sumpf.Bands(bands=dict(zip(xs, ys)), interpolations=interpolation)
     x = xs[0] + k * (xs[1] - xs[0])
     if x == xs[0]:
         assert bands(x)[0] == ys[0]
@@ -116,11 +117,11 @@ def test_interpolations(xs, ys, interpolation, k):  # pylint: disable=too-many-b
                   ys=hypothesis.extra.numpy.arrays(dtype=numpy.complex128, shape=2, elements=hypothesis.strategies.complex_numbers(min_magnitude=0.0, max_magnitude=1e15)),     # pylint: disable=line-too-long
                   extrapolation=hypothesis.strategies.sampled_from(sumpf.Bands.interpolations),
                   delta_x=hypothesis.strategies.floats(min_value=0.0, max_value=1e15))
-def test_extrapolations(xs, ys, extrapolation, delta_x):
+def test_extrapolations(xs, ys, extrapolation, delta_x):  # pylint: disable=too-many-statements
     """Tests the functionality of the extrapolation functions."""
     xs = sorted(xs)
     assert xs[1] - xs[0]
-    bands = sumpf.Bands(bands={x: y for x, y in zip(xs, ys)}, extrapolations=extrapolation)
+    bands = sumpf.Bands(bands=dict(zip(xs, ys)), extrapolations=extrapolation)
     if delta_x == 0.0:
         assert bands(xs[0])[0] == ys[0]
         assert bands(xs[1])[0] == ys[1]

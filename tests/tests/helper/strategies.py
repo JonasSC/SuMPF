@@ -45,7 +45,7 @@ indices = st.builds(index.Index,
                     mode=st.sampled_from(index.IndexMode))
 
 
-def labels(min_channels=None, max_channels=None):
+def labels(min_channels=0, max_channels=None):
     """A strategy that creates tuples of labels for SuMPF data sets."""
     texts = st.text(alphabet=st.characters(blacklist_categories=("Cs",), blacklist_characters=("\x00",)))
     return st.lists(texts, min_size=min_channels, max_size=max_channels)

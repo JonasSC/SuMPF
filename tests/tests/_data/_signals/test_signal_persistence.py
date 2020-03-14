@@ -109,13 +109,14 @@ def test_exact_formats_without_metadata(signal):
                     os.remove(path)
 
 
-@hypothesis.given(tests.strategies.signals(max_channels=9, min_value=-255 / 256, max_value=254 / 256))  # noqa;
+@hypothesis.given(tests.strategies.signals(max_channels=9, min_value=-255 / 256, max_value=254 / 256))
 @hypothesis.settings(deadline=None)
-def test_lossless_formats(signal):                                                                      # pylint: disable=too-many-branches
+def test_lossless_formats(signal):  # noqa: C901
+    # pylint: disable=too-many-branches
     """Tests lossless file formats."""
     # create a dictionary: file format -> [reader classes, writer classes, bits per sample, maximum number of channels]
     try:
-        import soundfile    # noqa; pylint: disable=unused-import; this shall raise an ImportError, if the soundfile library cannot be imported
+        import soundfile    # noqa; pylint: disable=unused-import,import-outside-toplevel; this shall raise an ImportError, if the soundfile library cannot be imported
     except ImportError:
         formats = {sumpf.Signal.file_formats.WAV_UINT8: ([signal_readers.WaveReader], [signal_writers.WaveWriter], 8, 65535),
                    sumpf.Signal.file_formats.WAV_INT16: ([signal_readers.WaveReader], [signal_writers.WaveWriter], 16, 65535),
@@ -240,7 +241,7 @@ def test_autodetect_format_on_reading():
 def test_autodetect_format_on_saving():
     """Tests if auto-detecting the file format from the file extension, when writing a file works."""
     try:
-        import soundfile    # noqa; pylint: disable=unused-import; this shall raise an ImportError, if the soundfile library cannot be imported
+        import soundfile    # noqa; pylint: disable=unused-import,import-outside-toplevel; this shall raise an ImportError, if the soundfile library cannot be imported
     except ImportError:
         file_formats = [(sumpf.Signal.file_formats.TEXT_CSV, ".csv", signal_readers.CsvReader),
                         (sumpf.Signal.file_formats.TEXT_JSON, ".json", signal_readers.JsonReader),

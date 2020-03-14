@@ -801,7 +801,7 @@ def test_short_time_fourier_transform_results():
     maximums in the spectrogram of an exponential sweep
     """
     try:
-        import scipy.signal     # noqa; pylint: disable=unused-import; check if SciPy is available
+        import scipy.signal     # noqa; pylint: disable=unused-import,import-outside-toplevel; check if SciPy is available
     except ImportError:
         with pytest.raises(ImportError):
             sumpf.ExponentialSweep().short_time_fourier_transform()
@@ -815,17 +815,17 @@ def test_short_time_fourier_transform_results():
             assert (diff[0:-1] <= spectrogram.resolution() * 1.2).all()
 
 
-@hypothesis.given(signal=tests.strategies.signals(),    # noqa: C901; ignore the complexity warning
+@hypothesis.given(signal=tests.strategies.signals(),
                   window_length=hypothesis.strategies.integers(min_value=1, max_value=8192),
                   overlap=hypothesis.strategies.floats(min_value=0.0, max_value=0.8),
                   pad=hypothesis.strategies.booleans())
-def test_short_time_fourier_transform_calculation(signal, window_length, overlap, pad):
+def test_short_time_fourier_transform_calculation(signal, window_length, overlap, pad):  # noqa: C901; ignore the complexity warning
+    # pylint: disable=too-many-branches
     """Does some generic tests if the short time Fourier transform can be computed
     for a variety of signals and with a variety of parameters
     """
-    # pylint: disable=too-many-branches
     try:
-        import scipy.signal     # noqa; pylint: disable=unused-import; check if SciPy is available
+        import scipy.signal     # noqa; pylint: disable=unused-import,import-outside-toplevel; check if SciPy is available
     except ImportError:
         with pytest.raises(ImportError):
             signal.short_time_fourier_transform()
@@ -982,7 +982,7 @@ def test_variance(signal):
 def test_skewness(signal):
     """Tests the computation the skewness from the Signal class."""
     try:
-        import scipy.stats
+        import scipy.stats  # noqa; pylint: disable=unused-import,import-outside-toplevel; check if SciPy is available
     except ImportError:
         with pytest.raises(ImportError):
             signal.skewness()
@@ -1000,7 +1000,7 @@ def test_skewness(signal):
 def test_kurtosis(signal):
     """Tests the computation the kurtosis from the Signal class."""
     try:
-        import scipy.stats
+        import scipy.stats  # noqa; pylint: disable=unused-import,import-outside-toplevel; check if SciPy is available
     except ImportError:
         with pytest.raises(ImportError):
             signal.kurtosis()

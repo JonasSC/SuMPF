@@ -11,9 +11,9 @@ test_without_optional_dependencies:
 
 lint:
 	python3 -m flake8 --config=tests/flake8 sumpf
-	pylint3 --rcfile=tests/pylintrc_sumpf sumpf
+	pylint --rcfile=tests/pylintrc_sumpf sumpf
 	python3 -m flake8 --config=tests/flake8 tests/tests
-	pylint3 --rcfile=tests/pylintrc_tests tests/tests
+	pylint --rcfile=tests/pylintrc_tests tests/tests
 
 docs:
 	sphinx-build -b html documentation docs

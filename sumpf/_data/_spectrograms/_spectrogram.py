@@ -23,6 +23,8 @@ from .._sampled_data import SampledData
 
 __all__ = ("Spectrogram",)
 
+# pylint: disable=too-many-lines; this is one of the main classes in SuMPF
+
 
 class Spectrogram(SampledData):
     """A base class for storing data, that is equidistantly sampled over time
@@ -421,7 +423,7 @@ class Spectrogram(SampledData):
                     signal, that did not fit a full segment, were ignored.
                     The results when setting this to False may be unexpected...
         """
-        import scipy.signal
+        import scipy.signal  # pylint: disable=import-outside-toplevel; having this as a top-level import would make this whole class unavailable, if the scipy library is not installed
         # create some necessary objects
         window = sumpf_internal.get_window(window=window,
                                            overlap=overlap,
@@ -507,54 +509,16 @@ class Spectrogram(SampledData):
         :returns: a :class:`~sumpf.Spectrogram` instance
         """
         if isinstance(other, Spectrogram):
-            if self.__frequencies == other.number_of_frequencies() and \
-               self._length == other.length() and \
-               self.__offset == other.offset():
-                if len(self) == 1:
-                    return self.__algebra_function_overlaps(self._channels[0], other.channels(), other.shape(), function, label)
-                elif len(other) == 1:
-                    return self.__algebra_function_overlaps(self._channels, other.channels()[0], self.shape(), function, label)
-                elif len(self) == len(other):
-                    return self.__algebra_function_overlaps(self._channels, other.channels(), self.shape(), function, label)
-                else:
-                    return self.__algebra_function_spectrogram_different_number_of_channels(other, function, other_pivot, label)
-            else:
-                return self.__algebra_function_spectrogram_different_shapes(other, function, other_pivot, label)
+            return self.__algebra_function_spectrogram(other, function, other_pivot, label)
         elif isinstance(other, sumpf.Signal):
-            if self._length == other.length() and self.__offset == other.offset():
-                if len(self) == 1:
-                    def channelwise_function(a, b, out):
-                        for c, o in zip(b, out):
-                            function(a, c, out=o)
-                    return self.__algebra_function_overlaps(self._channels[0], other.channels(), (len(other), self.__frequencies, self._length), channelwise_function, label)
-                elif len(other) == 1:
-                    return self.__algebra_function_signal_spectrum_overlaps(self._channels.transpose((1, 0, 2)), other.channels()[0], self.shape(), (1, 0, 2), function, label)
-                elif len(self) == len(other):
-                    return self.__algebra_function_signal_spectrum_overlaps(self._channels.transpose((1, 0, 2)), other.channels(), self.shape(), (1, 0, 2), function, label)
-                else:
-                    return self.__algebra_function_signal_spectrum_different_number_of_channels(other, function, other_pivot, (1, 0, 2), label)
-            else:
-                return self.__algebra_function_signal_different_shapes(other, function, other_pivot, label)
+            return self.__algebra_function_signal(other, function, other_pivot, label)
         elif isinstance(other, sumpf.Spectrum):
-            if other.length() != self.__frequencies:
-                raise ValueError(f"Spectrogram and spectrum must have the same number of frequency values (got {self.__frequencies} and {other.length()} respectively)")
-            if len(self) == 1:
-                def channelwise_function(a, b, out):
-                    t = a.transpose()
-                    for c, o in zip(b, out.transpose((0, 2, 1))):
-                        function(t, c, out=o)
-                return self.__algebra_function_overlaps(self._channels[0], other.channels(), (len(other), self.__frequencies, self._length), channelwise_function, label)
-            elif len(other) == 1:
-                return self.__algebra_function_signal_spectrum_overlaps(self._channels.transpose((2, 0, 1)), other.channels()[0], self.shape(), (2, 0, 1), function, label)
-            elif len(self) == len(other):
-                return self.__algebra_function_signal_spectrum_overlaps(self._channels.transpose((2, 0, 1)), other.channels(), self.shape(), (2, 0, 1), function, label)
-            else:
-                return self.__algebra_function_signal_spectrum_different_number_of_channels(other, function, other_pivot, (2, 0, 1), label)
+            return self.__algebra_function_spectrum(other, function, other_pivot, label)
         else:
             # other is an array or a number
             return self.__algebra_function_different_type(other, function)
 
-    def _algebra_function_right(self, other, function, other_pivot, label):
+    def _algebra_function_right(self, other, function, other_pivot, label):  # noqa: C901; the method is not very complex, it's mostly a long switch case
         """Protected helper function for overloading the right hand side operators.
 
         :param other: the object "on the left side of the operator"
@@ -568,35 +532,9 @@ class Spectrogram(SampledData):
         :returns: a :class:`~sumpf.Spectrogram` instance
         """
         if isinstance(other, sumpf.Signal):
-            if self._length == other.length() and self.__offset == other.offset():
-                if len(self) == 1:
-                    def channelwise_function(a, b, out):
-                        for c, o in zip(a, out):
-                            function(c, b, out=o)
-                    return self.__algebra_function_overlaps(other.channels(), self._channels[0], (len(other), self.__frequencies, self._length), channelwise_function, label)
-                elif len(other) == 1:
-                    return self.__algebra_function_signal_spectrum_overlaps(other.channels()[0], self._channels.transpose((1, 0, 2)), self.shape(), (1, 0, 2), function, label)
-                elif len(self) == len(other):
-                    return self.__algebra_function_signal_spectrum_overlaps(other.channels(), self._channels.transpose((1, 0, 2)), self.shape(), (1, 0, 2), function, label)
-                else:
-                    return self.__algebra_function_signal_spectrum_different_number_of_channels_right(other, function, other_pivot, (1, 0, 2), label)
-            else:
-                return self.__algebra_function_signal_different_shapes_right(other, function, other_pivot, label)
+            return self.__algebra_function_signal_right(other, function, other_pivot, label)
         elif isinstance(other, sumpf.Spectrum):
-            if other.length() != self.__frequencies:
-                raise ValueError(f"Spectrogram and spectrum must have the same number of frequency values (got {self.__frequencies} and {other.length()} respectively)")
-            if len(self) == 1:
-                def channelwise_function(a, b, out):
-                    t = b.transpose()
-                    for c, o in zip(a, out.transpose((0, 2, 1))):
-                        function(c, t, out=o)
-                return self.__algebra_function_overlaps(other.channels(), self._channels[0], (len(other), self.__frequencies, self._length), channelwise_function, label)
-            elif len(other) == 1:
-                return self.__algebra_function_signal_spectrum_overlaps(other.channels()[0], self._channels.transpose((2, 0, 1)), self.shape(), (2, 0, 1), function, label)
-            elif len(self) == len(other):
-                return self.__algebra_function_signal_spectrum_overlaps(other.channels(), self._channels.transpose((2, 0, 1)), self.shape(), (2, 0, 1), function, label)
-            else:
-                return self.__algebra_function_signal_spectrum_different_number_of_channels_right(other, function, other_pivot, (2, 0, 1), label)
+            return self.__algebra_function_spectrum_right(other, function, other_pivot, label)
         else:
             channels = sumpf_internal.allocate_array(shape=self.shape(), dtype=numpy.complex128)
             try:
@@ -610,18 +548,44 @@ class Spectrogram(SampledData):
                                    offset=self.__offset,
                                    labels=self._labels)
 
+    # algebra with other spectrograms
+
+    def __algebra_function_spectrogram(self, other, function, other_pivot, label):
+        if self.__frequencies == other.number_of_frequencies() and \
+           self._length == other.length() and \
+           self.__offset == other.offset():
+            if len(self) == 1:
+                return self.__algebra_function_overlaps(self._channels[0],
+                                                        other.channels(),
+                                                        other.shape(),
+                                                        function,
+                                                        label)
+            elif len(other) == 1:
+                return self.__algebra_function_overlaps(self._channels,
+                                                        other.channels()[0],
+                                                        self.shape(),
+                                                        function,
+                                                        label)
+            elif len(self) == len(other):
+                return self.__algebra_function_overlaps(self._channels,
+                                                        other.channels(),
+                                                        self.shape(),
+                                                        function,
+                                                        label)
+            else:
+                return self.__algebra_function_spectrogram_different_number_of_channels(other,
+                                                                                        function,
+                                                                                        other_pivot,
+                                                                                        label)
+        else:
+            return self.__algebra_function_spectrogram_different_shapes(other,
+                                                                        function,
+                                                                        other_pivot,
+                                                                        label)
+
     def __algebra_function_overlaps(self, self_channels, other_channels, shape, function, label):
         channels = sumpf_internal.allocate_array(shape=shape, dtype=numpy.complex128)
         function(self_channels, other_channels, out=channels)
-        return Spectrogram(channels=channels,
-                           resolution=self.__resolution,
-                           sampling_rate=self.__sampling_rate,
-                           offset=self.__offset,
-                           labels=(label,) * len(channels))
-
-    def __algebra_function_signal_spectrum_overlaps(self, a_channels, b_channels, shape, transpose, function, label):
-        channels = sumpf_internal.allocate_array(shape=shape, dtype=numpy.complex128)
-        function(a_channels, b_channels, out=channels.transpose(transpose))
         return Spectrogram(channels=channels,
                            resolution=self.__resolution,
                            sampling_rate=self.__sampling_rate,
@@ -646,56 +610,6 @@ class Spectrogram(SampledData):
                 channels[self_length:] = other.channels()[self_length:]
             else:
                 function(other_pivot, other.channels()[self_length:], out=channels[self_length:])
-            labels = (label,) * other_length
-        return Spectrogram(channels=channels,
-                           resolution=self.__resolution,
-                           sampling_rate=self.__sampling_rate,
-                           offset=self.__offset,
-                           labels=labels)
-
-    def __algebra_function_signal_spectrum_different_number_of_channels(self, other, function, other_pivot, transpose, label):
-        self_length = len(self)
-        other_length = len(other)
-        if self_length > other_length:
-            channels = sumpf_internal.allocate_array(shape=self.shape(), dtype=numpy.complex128)
-            function(self.channels()[0:other_length].transpose(transpose), other.channels(), out=channels[0:other_length].transpose(transpose))
-            if other_pivot is None:
-                channels[other_length:] = self.channels()[other_length:]
-            else:
-                function(self.channels()[other_length:], other_pivot, out=channels[other_length:])
-            labels = (label,) * self_length
-        else:
-            channels = sumpf_internal.allocate_array(shape=(len(other), self.__frequencies, self._length), dtype=numpy.complex128)
-            function(self.channels().transpose(transpose), other.channels()[0:self_length], out=channels[0:self_length].transpose(transpose))
-            if other_pivot is None:
-                channels.transpose(transpose)[:, self_length:, :] = other.channels()[self_length:]
-            else:
-                function(other_pivot, other.channels()[self_length:], out=channels[self_length:].transpose(transpose))
-            labels = (label,) * other_length
-        return Spectrogram(channels=channels,
-                           resolution=self.__resolution,
-                           sampling_rate=self.__sampling_rate,
-                           offset=self.__offset,
-                           labels=labels)
-
-    def __algebra_function_signal_spectrum_different_number_of_channels_right(self, other, function, other_pivot, transpose, label):
-        self_length = len(self)
-        other_length = len(other)
-        if self_length > other_length:
-            channels = sumpf_internal.allocate_array(shape=self.shape(), dtype=numpy.complex128)
-            function(other.channels(), self.channels()[0:other_length].transpose(transpose), out=channels[0:other_length].transpose(transpose))
-            if other_pivot is None:
-                channels[other_length:] = self.channels()[other_length:]
-            else:
-                function(other_pivot, self.channels()[other_length:], out=channels[other_length:])
-            labels = (label,) * self_length
-        else:
-            channels = sumpf_internal.allocate_array(shape=(len(other), self.__frequencies, self._length), dtype=numpy.complex128)
-            function(other.channels()[0:self_length], self.channels().transpose(transpose), out=channels[0:self_length].transpose(transpose))
-            if other_pivot is None:
-                channels.transpose(transpose)[:, self_length:, :] = other.channels()[self_length:]
-            else:
-                function(other.channels()[self_length:], other_pivot, out=channels[self_length:].transpose(transpose))
             labels = (label,) * other_length
         return Spectrogram(channels=channels,
                            resolution=self.__resolution,
@@ -766,7 +680,246 @@ class Spectrogram(SampledData):
                            offset=start,
                            labels=(label,) * channel_count)
 
-    def __algebra_function_signal_different_shapes(self, other, function, other_pivot, label):  # pylint: disable=too-many-locals; having all those index variables is more readable than computing them inside the []-braces
+    # algebra with signals and spectrums
+
+    def __algebra_function_signal(self, other, function, other_pivot, label):
+        if self._length == other.length() and self.__offset == other.offset():
+            if len(self) == 1:
+
+                def channelwise_function(a, b, out):
+                    for c, o in zip(b, out):
+                        function(a, c, out=o)
+
+                return self.__algebra_function_overlaps(self._channels[0],
+                                                        other.channels(),
+                                                        (len(other), self.__frequencies, self._length),
+                                                        channelwise_function,
+                                                        label)
+            elif len(other) == 1:
+                return self.__algebra_function_signal_spectrum_overlaps(self._channels.transpose((1, 0, 2)),
+                                                                        other.channels()[0],
+                                                                        self.shape(),
+                                                                        (1, 0, 2),
+                                                                        function,
+                                                                        label)
+            elif len(self) == len(other):
+                return self.__algebra_function_signal_spectrum_overlaps(self._channels.transpose((1, 0, 2)),
+                                                                        other.channels(),
+                                                                        self.shape(),
+                                                                        (1, 0, 2),
+                                                                        function,
+                                                                        label)
+            else:
+                return self.__algebra_function_signal_spectrum_different_number_of_channels(other,
+                                                                                            function,
+                                                                                            other_pivot,
+                                                                                            (1, 0, 2),
+                                                                                            label)
+        else:
+            return self.__algebra_function_signal_different_shapes(other, function, other_pivot, label)
+
+    def __algebra_function_spectrum(self, other, function, other_pivot, label):
+        if other.length() != self.__frequencies:
+            raise ValueError(f"Spectrogram and spectrum must have the same number of frequency"
+                             f"values (got {self.__frequencies} and {other.length()} respectively)")
+        if len(self) == 1:
+
+            def channelwise_function(a, b, out):
+                t = a.transpose()
+                for c, o in zip(b, out.transpose((0, 2, 1))):
+                    function(t, c, out=o)
+
+            return self.__algebra_function_overlaps(self._channels[0],
+                                                    other.channels(),
+                                                    (len(other), self.__frequencies, self._length),
+                                                    channelwise_function,
+                                                    label)
+        elif len(other) == 1:
+            return self.__algebra_function_signal_spectrum_overlaps(self._channels.transpose((2, 0, 1)),
+                                                                    other.channels()[0],
+                                                                    self.shape(),
+                                                                    (2, 0, 1),
+                                                                    function,
+                                                                    label)
+        elif len(self) == len(other):
+            return self.__algebra_function_signal_spectrum_overlaps(self._channels.transpose((2, 0, 1)),
+                                                                    other.channels(),
+                                                                    self.shape(),
+                                                                    (2, 0, 1),
+                                                                    function,
+                                                                    label)
+        else:
+            return self.__algebra_function_signal_spectrum_different_number_of_channels(other,
+                                                                                        function,
+                                                                                        other_pivot,
+                                                                                        (2, 0, 1),
+                                                                                        label)
+
+    def __algebra_function_signal_right(self, other, function, other_pivot, label):
+        if self._length == other.length() and self.__offset == other.offset():
+            if len(self) == 1:
+
+                def channelwise_function(a, b, out):
+                    for c, o in zip(a, out):
+                        function(c, b, out=o)
+
+                return self.__algebra_function_overlaps(other.channels(),
+                                                        self._channels[0],
+                                                        (len(other),
+                                                         self.__frequencies,
+                                                         self._length),
+                                                        channelwise_function,
+                                                        label)
+            elif len(other) == 1:
+                return self.__algebra_function_signal_spectrum_overlaps(other.channels()[0],
+                                                                        self._channels.transpose((1, 0, 2)),
+                                                                        self.shape(),
+                                                                        (1, 0, 2),
+                                                                        function,
+                                                                        label)
+            elif len(self) == len(other):
+                return self.__algebra_function_signal_spectrum_overlaps(other.channels(),
+                                                                        self._channels.transpose((1, 0, 2)),
+                                                                        self.shape(),
+                                                                        (1, 0, 2),
+                                                                        function,
+                                                                        label)
+            else:
+                return self.__algebra_function_signal_spectrum_different_number_of_channels_right(other,
+                                                                                                  function,
+                                                                                                  other_pivot,
+                                                                                                  (1, 0, 2),
+                                                                                                  label)
+        else:
+            return self.__algebra_function_signal_different_shapes_right(other,
+                                                                         function,
+                                                                         other_pivot,
+                                                                         label)
+
+    def __algebra_function_spectrum_right(self, other, function, other_pivot, label):
+        if other.length() != self.__frequencies:
+            raise ValueError(f"Spectrogram and spectrum must have the same number of frequency"
+                             f"values (got {self.__frequencies} and {other.length()} respectively)")
+        if len(self) == 1:
+
+            def channelwise_function(a, b, out):
+                t = b.transpose()
+                for c, o in zip(a, out.transpose((0, 2, 1))):
+                    function(c, t, out=o)
+
+            return self.__algebra_function_overlaps(other.channels(),
+                                                    self._channels[0],
+                                                    (len(other), self.__frequencies, self._length),
+                                                    channelwise_function,
+                                                    label)
+        elif len(other) == 1:
+            return self.__algebra_function_signal_spectrum_overlaps(other.channels()[0],
+                                                                    self._channels.transpose((2, 0, 1)),
+                                                                    self.shape(),
+                                                                    (2, 0, 1),
+                                                                    function,
+                                                                    label)
+        elif len(self) == len(other):
+            return self.__algebra_function_signal_spectrum_overlaps(other.channels(),
+                                                                    self._channels.transpose((2, 0, 1)),
+                                                                    self.shape(),
+                                                                    (2, 0, 1),
+                                                                    function,
+                                                                    label)
+        else:
+            return self.__algebra_function_signal_spectrum_different_number_of_channels_right(other,
+                                                                                              function,
+                                                                                              other_pivot,
+                                                                                              (2, 0, 1),
+                                                                                              label)
+
+    def __algebra_function_signal_spectrum_overlaps(self, a_channels, b_channels, shape, transpose, function, label):
+        channels = sumpf_internal.allocate_array(shape=shape, dtype=numpy.complex128)
+        function(a_channels, b_channels, out=channels.transpose(transpose))
+        return Spectrogram(channels=channels,
+                           resolution=self.__resolution,
+                           sampling_rate=self.__sampling_rate,
+                           offset=self.__offset,
+                           labels=(label,) * len(channels))
+
+    def __algebra_function_signal_spectrum_different_number_of_channels(self,
+                                                                        other,
+                                                                        function,
+                                                                        other_pivot,
+                                                                        transpose,
+                                                                        label):
+        self_length = len(self)
+        other_length = len(other)
+        if self_length > other_length:
+            channels = sumpf_internal.allocate_array(shape=self.shape(), dtype=numpy.complex128)
+            function(self.channels()[0:other_length].transpose(transpose),
+                     other.channels(),
+                     out=channels[0:other_length].transpose(transpose))
+            if other_pivot is None:
+                channels[other_length:] = self.channels()[other_length:]
+            else:
+                function(self.channels()[other_length:], other_pivot, out=channels[other_length:])
+            labels = (label,) * self_length
+        else:
+            shape = (len(other), self.__frequencies, self._length)
+            channels = sumpf_internal.allocate_array(shape=shape, dtype=numpy.complex128)
+            function(self.channels().transpose(transpose),
+                     other.channels()[0:self_length],
+                     out=channels[0:self_length].transpose(transpose))
+            if other_pivot is None:
+                channels.transpose(transpose)[:, self_length:, :] = other.channels()[self_length:]
+            else:
+                function(other_pivot,
+                         other.channels()[self_length:],
+                         out=channels[self_length:].transpose(transpose))
+            labels = (label,) * other_length
+        return Spectrogram(channels=channels,
+                           resolution=self.__resolution,
+                           sampling_rate=self.__sampling_rate,
+                           offset=self.__offset,
+                           labels=labels)
+
+    def __algebra_function_signal_spectrum_different_number_of_channels_right(self,
+                                                                              other,
+                                                                              function,
+                                                                              other_pivot,
+                                                                              transpose,
+                                                                              label):
+        self_length = len(self)
+        other_length = len(other)
+        if self_length > other_length:
+            channels = sumpf_internal.allocate_array(shape=self.shape(), dtype=numpy.complex128)
+            function(other.channels(),
+                     self.channels()[0:other_length].transpose(transpose),
+                     out=channels[0:other_length].transpose(transpose))
+            if other_pivot is None:
+                channels[other_length:] = self.channels()[other_length:]
+            else:
+                function(other_pivot,
+                         self.channels()[other_length:],
+                         out=channels[other_length:])
+            labels = (label,) * self_length
+        else:
+            shape = (len(other), self.__frequencies, self._length)
+            channels = sumpf_internal.allocate_array(shape=shape, dtype=numpy.complex128)
+            function(other.channels()[0:self_length],
+                     self.channels().transpose(transpose),
+                     out=channels[0:self_length].transpose(transpose))
+            if other_pivot is None:
+                channels.transpose(transpose)[:, self_length:, :] = other.channels()[self_length:]
+            else:
+                function(other.channels()[self_length:],
+                         other_pivot,
+                         out=channels[self_length:].transpose(transpose))
+            labels = (label,) * other_length
+        return Spectrogram(channels=channels,
+                           resolution=self.__resolution,
+                           sampling_rate=self.__sampling_rate,
+                           offset=self.__offset,
+                           labels=labels)
+
+    def __algebra_function_signal_different_shapes(self, other, function, other_pivot, label):  # noqa: C901; the method is not very complex, it's mostly a long switch case
+        # pylint: disable=too-many-locals,too-many-branches; having all those index variables is more readable than computing them inside the []-braces
         # allocate the channels array
         start = min(self.__offset, other.offset())
         stop = max(self.__offset + self._length, other.offset() + other.length())
@@ -825,7 +978,8 @@ class Spectrogram(SampledData):
                            offset=start,
                            labels=(label,) * channel_count)
 
-    def __algebra_function_signal_different_shapes_right(self, other, function, other_pivot, label):  # pylint: disable=too-many-locals; having all those index variables is more readable than computing them inside the []-braces
+    def __algebra_function_signal_different_shapes_right(self, other, function, other_pivot, label):  # noqa: C901; the method is not very complex, it's mostly a long switch case
+        # pylint: disable=too-many-locals,too-many-branches; having all those index variables is more readable than computing them inside the []-braces
         # allocate the channels array
         start = min(self.__offset, other.offset())
         stop = max(self.__offset + self._length, other.offset() + other.length())
@@ -883,6 +1037,8 @@ class Spectrogram(SampledData):
                            sampling_rate=self.__sampling_rate,
                            offset=start,
                            labels=(label,) * channel_count)
+
+    # algebra with other types of data
 
     def __algebra_function_different_type(self, other, function):
         channels = sumpf_internal.allocate_array(shape=self.shape(), dtype=numpy.complex128)

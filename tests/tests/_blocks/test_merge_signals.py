@@ -17,9 +17,9 @@
 """Tests for the MergeSignals class"""
 
 import random
-import connectors
 import hypothesis
 import numpy
+import connectors
 import sumpf
 import tests
 

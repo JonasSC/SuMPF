@@ -290,7 +290,7 @@ class Filter:
         return Filter(transfer_functions=tuple(number - tf for tf in self.__transfer_functions),
                       labels=self.__labels)
 
-    def __mul__(self, other):
+    def __mul__(self, other):  # pylint: disable=too-many-return-statements; this is basically a switch statement
         """Operator overload for multiplying this filter with another filter or
         for applying this filter to a :class:`~sumpf.Signal` or a :class:`~sumpf.Spectrum` instance.
 

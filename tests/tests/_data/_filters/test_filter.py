@@ -195,7 +195,7 @@ def test_add(filter1, filter2, frequency):
         assert sum_.labels() == ("Sum",) * channel_count
 
 
-@pytest.mark.filterwarnings("ignore:overflow", "ignore:invalid value")
+@pytest.mark.filterwarnings("ignore:overflow", "ignore:invalid value", "ignore:divide by zero")
 @hypothesis.given(filter_=tests.strategies.filters(),
                   number=hypothesis.strategies.one_of(hypothesis.strategies.integers(),
                                                       hypothesis.strategies.floats(allow_infinity=False,
@@ -347,7 +347,8 @@ def test_multiply_with_spectrogram(filter_, spectrogram):
     spectrum = filter_.spectrum(resolution=spectrogram.resolution(), length=spectrogram.number_of_frequencies())
     reference = spectrogram * spectrum
     for result in (filter_ * spectrogram, spectrogram * filter_):
-        assert numpy.array_equal(numpy.nan_to_num(result.channels(), -93.4), numpy.nan_to_num(reference.channels(), -93.4))
+        assert numpy.array_equal(numpy.nan_to_num(result.channels()),
+                                 numpy.nan_to_num(reference.channels()))
         assert result.resolution() == reference.resolution()
         assert result.sampling_rate() == reference.sampling_rate()
         assert result.offset() == reference.offset()

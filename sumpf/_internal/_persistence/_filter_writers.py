@@ -16,7 +16,10 @@
 
 """Contains classes and helper functions to write signals to a file."""
 
+import csv
 import enum
+import json
+import pickle
 import numpy
 import sumpf._internal as sumpf_internal
 from ._auto_writer import AutoWriter
@@ -393,7 +396,6 @@ class CsvWriter(TableWriter, Writer):
         :param path: the path of the file, in which the filter shall be stored
         :param transfer_functions: the transfer functions of the filter's channels
         """
-        import csv
         with open(path, "w", newline="") as f:
             columns = ["frequency"]
             columns.extend(labels)
@@ -434,7 +436,6 @@ class JsonWriter(Writer):
         :param data: the :class:`~sumpf.Filter` instance
         :param path: the path of the file, in which the filter shall be saved
         """
-        import json
         dictionary = {"transfer_functions": [tf.as_dict() for tf in filter_.transfer_functions()],
                       "labels": filter_.labels()}
         with open(path, "w") as f:
@@ -522,6 +523,5 @@ class PickleWriter(Writer):
         :param data: the :class:`~sumpf.Filter` instance
         :param path: the path of the file, in which the filter shall be saved
         """
-        import pickle
         with open(path, "wb") as f:
             pickle.dump(filter_, f)

@@ -118,8 +118,8 @@ class Term:
 
         :returns: an instance of a subclass of :class:`~sumpf._data._filters._base._terms._base.Term`
         """
-        from ._primitive import Constant  # pylint: disable=cyclic-import
-        from ._binary import Quotient     # pylint: disable=cyclic-import
+        from ._primitive import Constant  # pylint: disable=cyclic-import,import-outside-toplevel
+        from ._binary import Quotient     # pylint: disable=cyclic-import,import-outside-toplevel
         return Quotient(numerator=Constant(1.0), denominator=self)
 
     def __abs__(self):
@@ -128,7 +128,7 @@ class Term:
 
         :returns: an instance of a subclass of :class:`~sumpf._data._filters._base._terms._base.Term`
         """
-        from ._unary import Absolute      # pylint: disable=cyclic-import
+        from ._unary import Absolute      # pylint: disable=cyclic-import,import-outside-toplevel
         return Absolute(self)
 
     def __neg__(self):
@@ -136,25 +136,25 @@ class Term:
 
         :returns: an instance of a subclass of :class:`~sumpf._data._filters._base._terms._base.Term`
         """
-        from ._unary import Negative      # pylint: disable=cyclic-import
+        from ._unary import Negative      # pylint: disable=cyclic-import,import-outside-toplevel
         return Negative(self)
 
     def __add__(self, other):
         """An operator overload for adding two terms with ``+``."""
-        from ._binary import Sum          # pylint: disable=cyclic-import
+        from ._binary import Sum          # pylint: disable=cyclic-import,import-outside-toplevel
         return Sum((self, other))
 
     def __sub__(self, other):
         """An operator overload for subtracting two terms with ``-``."""
-        from ._binary import Difference   # pylint: disable=cyclic-import
+        from ._binary import Difference   # pylint: disable=cyclic-import,import-outside-toplevel
         return Difference(self, other)
 
     def __mul__(self, other):
         """An operator overload for multiplying two terms with ``*``."""
-        from ._binary import Product      # pylint: disable=cyclic-import
+        from ._binary import Product      # pylint: disable=cyclic-import,import-outside-toplevel
         return Product((self, other))
 
     def __truediv__(self, other):
         """An operator overload for dividing two terms with ``/``."""
-        from ._binary import Quotient     # pylint: disable=cyclic-import
+        from ._binary import Quotient     # pylint: disable=cyclic-import,import-outside-toplevel
         return Quotient(self, other)

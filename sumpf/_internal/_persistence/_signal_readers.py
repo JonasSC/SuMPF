@@ -16,7 +16,13 @@
 
 """Contains classes and helper functions to load signals from a file."""
 
+import aifc
+import csv
+import json
 import os
+import pickle
+import struct
+import wave
 import numpy
 import sumpf
 from .._functions import allocate_array
@@ -97,7 +103,6 @@ class CsvReader(Reader):
         :param path: the path of the file, from which the signal shall be loaded
         :returns: a :class:`~sumpf.Signal` instance
         """
-        import csv
         with open(path, newline="") as f:
             reader = csv.reader(f)
             rows = []
@@ -128,7 +133,6 @@ class JsonReader(Reader):
         :param path: the path of the file, from which the signal shall be loaded
         :returns: a :class:`~sumpf.Signal` instance
         """
-        import json
         with open(path) as f:
             return from_dict(json.load(f))
 
@@ -172,7 +176,6 @@ class PickleReader(Reader):
         :param path: the path of the file, from which the signal shall be loaded
         :returns: a :class:`~sumpf.Signal` instance
         """
-        import pickle
         with open(path, "rb") as f:
             result = pickle.load(f)
             assert isinstance(result, sumpf.Signal)
@@ -201,7 +204,6 @@ class StandardLibraryReader:
         :param path: the path of the file, from which the signal shall be loaded
         :returns: a :class:`~sumpf.Signal` instance
         """
-        import struct
         chunk_size = 2048
         with self.__module.open(path, mode="rb") as f:
             number_of_channels = f.getnchannels()
@@ -241,7 +243,6 @@ class WaveReader(StandardLibraryReader, Reader):
     extensions = (".wav",)
 
     def __init__(self):
-        import wave
         StandardLibraryReader.__init__(self,
                                        module=wave,
                                        sample_width_mapping={1: "B", 2: "h", 4: "i"},
@@ -253,7 +254,6 @@ class AifcReader(StandardLibraryReader, Reader):
     extensions = (".wav",)
 
     def __init__(self):
-        import aifc
         StandardLibraryReader.__init__(self,
                                        module=aifc,
                                        sample_width_mapping={1: "b", 2: "h", 4: "i"},
@@ -266,7 +266,7 @@ class SoundfileReader(Reader):
     extensions = (".wav", ".aiff", ".aifc", ".aif", ".flac", ".ogg", ".oga")
 
     def __init__(self):
-        import soundfile  # noqa; pylint: disable=unused-import; this shall raise an ImportError, if the soundfile library cannot be imported
+        import soundfile  # noqa; pylint: disable=unused-import,import-outside-toplevel; this shall raise an ImportError, if the soundfile library cannot be imported
 
     def __call__(self, path):
         """Attempts to load a :class:`~sumpf.Signal` from the given path.
@@ -274,7 +274,7 @@ class SoundfileReader(Reader):
         :param path: the path of the file, from which the signal shall be loaded
         :returns: a :class:`~sumpf.Signal` instance
         """
-        import soundfile
+        import soundfile  # pylint: disable=import-outside-toplevel; having this as a top-level import would make all writers unavailable, if the soundfile library is not installed
         with soundfile.SoundFile(path) as f:
             channels = allocate_array(shape=(f.channels, f.frames))
             channels.transpose()[:] = f.read().reshape((f.frames, f.channels))

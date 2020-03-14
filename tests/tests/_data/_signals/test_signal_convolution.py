@@ -202,11 +202,11 @@ def test_correlate_with_single_channel(signal1, signal2, mode):
     assert signal_correlation == signal1.correlate(multi_signal, mode=mode)
 
 
-@hypothesis.given(signal1=tests.strategies.signals(),               # noqa; this function is long, but not too complex
+@hypothesis.given(signal1=tests.strategies.signals(),
                   signal2=tests.strategies.signals(),
                   mode=hypothesis.strategies.sampled_from(sumpf.Signal.convolution_modes))
-def test_correlate_with_multiple_channels(signal1, signal2, mode):  # pylint: disable=too-many-branches,too-many-statements
-    # pylint: disable=line-too-long
+def test_correlate_with_multiple_channels(signal1, signal2, mode):  # noqa: C901; this function is long, but not too complex
+    # pylint: disable=too-many-branches,too-many-statements,line-too-long
     """Tests the correlation of two multi-channel signals and the correlation of
     a multi-channel signal with a two dimensional array."""
     # make sure, the signals have multiple channels

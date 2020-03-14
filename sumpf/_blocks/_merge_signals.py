@@ -17,7 +17,6 @@
 """Contains the :class:`~sumpf.MergeSignals` class."""
 
 import connectors
-import numpy
 import sumpf
 import sumpf._internal as sumpf_internal
 
@@ -60,7 +59,7 @@ class MergeSignals:
             offset = min(s.offset() for s in self.__signals.values())
             number_of_channels = sum(len(s) for s in self.__signals.values())
             length = max(s.offset() + s.length() for s in self.__signals.values()) - offset
-            channels = sumpf_internal.allocate_array(shape=(number_of_channels, length), dtype=numpy.float64)
+            channels = sumpf_internal.allocate_array(shape=(number_of_channels, length))
             labels = [""] * number_of_channels
             # fill in the data
             if self.__mode == MergeSignals.modes.FIRST_DATASET_FIRST:

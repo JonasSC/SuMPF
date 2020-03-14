@@ -24,6 +24,8 @@ from .._sampled_data import SampledData
 
 __all__ = ("Signal",)
 
+# pylint: disable=too-many-lines; this is one of the main classes in SuMPF
+
 
 class Signal(SampledData):
     """A base class for storing equidistantly sampled time data.
@@ -519,7 +521,7 @@ class Signal(SampledData):
                     number of segments. False, if the samples at the end of the
                     signal, that do not fit a full segment, shall be ignored.
         """
-        import scipy.signal
+        import scipy.signal  # pylint: disable=import-outside-toplevel; having this as a top-level import would make this whole class unavailable, if the scipy library is not installed
         # create some necessary objects
         window = sumpf_internal.get_window(window=window,
                                            overlap=overlap,
@@ -776,7 +778,7 @@ class Signal(SampledData):
                              samples is computed as a single value
         :returns: a :func:`numpy.array` or a float
         """
-        import scipy.stats
+        import scipy.stats  # pylint: disable=import-outside-toplevel; having this as a top-level import would make this whole class unavailable, if the scipy library is not installed
         if single_value:
             return scipy.stats.skew(self._channels, axis=None)
         else:
@@ -792,7 +794,7 @@ class Signal(SampledData):
                              samples is computed as a single value
         :returns: a :func:`numpy.array` or a float
         """
-        import scipy.stats
+        import scipy.stats  # pylint: disable=import-outside-toplevel; having this as a top-level import would make this whole class unavailable, if the scipy library is not installed
         if single_value:
             return scipy.stats.kurtosis(self._channels, axis=None)
         else:

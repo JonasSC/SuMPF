@@ -17,7 +17,6 @@
 """Contains the :class:`~sumpf.ConcatenateSignals` class."""
 
 import connectors
-import numpy
 import sumpf
 import sumpf._internal as sumpf_internal
 
@@ -70,7 +69,7 @@ class ConcatenateSignals:
             # allocate an array for the concatenated channels
             offset = min(i[0] for i in indices)
             length = max(i[1] for i in indices) - offset
-            channels = sumpf_internal.allocate_array(shape=(number_of_channels, length), dtype=numpy.float64)
+            channels = sumpf_internal.allocate_array(shape=(number_of_channels, length))
             # copy the first signal
             start, stop, signal_channels = indices[0]
             start -= offset
@@ -86,7 +85,7 @@ class ConcatenateSignals:
                 stop -= offset
                 last_index = max(last_index, previous[1] - offset)
                 if start < last_index:  # the current signal overlaps with the previous one, add the signals in the overlapping region
-                    if last_index >= stop:
+                    if last_index >= stop:  # pylint: disable=no-else-continue
                         stop = start + len(signal_channels[0])
                         channels[0:len(signal_channels), start:stop] += signal_channels[:, 0:]
                         continue
