@@ -83,7 +83,7 @@ class UniformNoise(Noise):
         """
         self.__lower_boundary = lower_boundary
         self.__upper_boundary = upper_boundary
-        self.__random = numpy.random.RandomState(seed)
+        self.__random = numpy.random.default_rng(seed)
         Noise.__init__(self, seed, sampling_rate, length, "Uniform noise")
 
     def _function(self, length):
@@ -106,7 +106,7 @@ class GaussianNoise(Noise):
         """
         self.__mean = mean
         self.__standard_deviation = standard_deviation
-        self.__random = numpy.random.RandomState(seed)
+        self.__random = numpy.random.default_rng(seed)
         Noise.__init__(self, seed, sampling_rate, length, "Gaussian noise")
 
     def _function(self, length):
@@ -128,7 +128,7 @@ class PoissonNoise(Noise):
         :param length: the number of samples of the noise signal
         """
         self.__lambda = lambda_
-        self.__random = numpy.random.RandomState(seed)
+        self.__random = numpy.random.default_rng(seed)
         Noise.__init__(self, seed, sampling_rate, length, "Poisson noise")
 
     def _function(self, length):
@@ -152,7 +152,7 @@ class LaplaceNoise(Noise):
         """
         self.__mean = mean
         self.__decay = decay
-        self.__random = numpy.random.RandomState(seed)
+        self.__random = numpy.random.default_rng(seed)
         Noise.__init__(self, seed, sampling_rate, length, "Laplace noise")
 
     def _function(self, length):
@@ -175,7 +175,7 @@ class VonMisesNoise(Noise):
         """
         self.__mode = mode
         self.__dispersion = dispersion
-        self.__random = numpy.random.RandomState(seed)
+        self.__random = numpy.random.default_rng(seed)
         Noise.__init__(self, seed, sampling_rate, length, "von Mises noise")
 
     def _function(self, length):
@@ -205,7 +205,7 @@ class TriangularNoise(Noise):
             self.__mode = (lower_boundary + upper_boundary) / 2.0
         else:
             self.__mode = mode
-        self.__random = numpy.random.RandomState(seed)
+        self.__random = numpy.random.default_rng(seed)
         Noise.__init__(self, seed, sampling_rate, length, "Triangular noise")
 
     def _function(self, length):
@@ -229,7 +229,7 @@ class GeometricNoise(Noise):
         :param length: the number of samples of the noise signal
         """
         self.__p = p
-        self.__random = numpy.random.RandomState(seed)
+        self.__random = numpy.random.default_rng(seed)
         Noise.__init__(self, seed, sampling_rate, length, "Geometric noise")
 
     def _function(self, length):
@@ -259,7 +259,7 @@ class HypergeometricNoise(Noise):
         self.__acceptable = acceptable
         self.__non_acceptable = non_acceptable
         self.__draws = draws
-        self.__random = numpy.random.RandomState(seed)
+        self.__random = numpy.random.default_rng(seed)
         Noise.__init__(self, seed, sampling_rate, length, "Hypergeometric noise")
 
     def _function(self, length):
@@ -285,7 +285,7 @@ class BinomialNoise(Noise):
         """
         self.__p = p
         self.__draws = draws
-        self.__random = numpy.random.RandomState(seed)
+        self.__random = numpy.random.default_rng(seed)
         Noise.__init__(self, seed, sampling_rate, length, "Binomial noise")
 
     def _function(self, length):
@@ -308,7 +308,7 @@ class BetaNoise(Noise):
         """
         self.__alpha = alpha
         self.__beta = beta
-        self.__random = numpy.random.RandomState(seed)
+        self.__random = numpy.random.default_rng(seed)
         Noise.__init__(self, seed, sampling_rate, length, "Beta noise")
 
     def _function(self, length):
@@ -331,7 +331,7 @@ class GammaNoise(Noise):
         """
         self.__shape = shape
         self.__scale = scale
-        self.__random = numpy.random.RandomState(seed)
+        self.__random = numpy.random.default_rng(seed)
         Noise.__init__(self, seed, sampling_rate, length, "Gamma noise")
 
     def _function(self, length):
@@ -352,7 +352,7 @@ class LogarithmicNoise(Noise):
         :param length: the number of samples of the noise signal
         """
         self.__p = p
-        self.__random = numpy.random.RandomState(seed)
+        self.__random = numpy.random.default_rng(seed)
         Noise.__init__(self, seed, sampling_rate, length, "Logarithmic noise")
 
     def _function(self, length):
@@ -375,7 +375,7 @@ class LogisticNoise(Noise):
         """
         self.__mean = mean
         self.__scale = scale
-        self.__random = numpy.random.RandomState(seed)
+        self.__random = numpy.random.default_rng(seed)
         Noise.__init__(self, seed, sampling_rate, length, "Logistic noise")
 
     def _function(self, length):
@@ -396,7 +396,7 @@ class LomaxNoise(Noise):
         :param length: the number of samples of the noise signal
         """
         self.__shape = shape
-        self.__random = numpy.random.RandomState(seed)
+        self.__random = numpy.random.default_rng(seed)
         Noise.__init__(self, seed, sampling_rate, length, "Lomax noise")
 
     def _function(self, length):
@@ -419,7 +419,7 @@ class WaldNoise(Noise):
         """
         self.__mean = mean
         self.__scale = scale
-        self.__random = numpy.random.RandomState(seed)
+        self.__random = numpy.random.default_rng(seed)
         Noise.__init__(self, seed, sampling_rate, length, "Wald noise")
 
     def _function(self, length):
@@ -442,7 +442,7 @@ class ChiSquareNoise(Noise):
         :param length: the number of samples of the noise signal
         """
         self.__degrees_of_freedom = degrees_of_freedom
-        self.__random = numpy.random.RandomState(seed)
+        self.__random = numpy.random.default_rng(seed)
         Noise.__init__(self, seed, sampling_rate, length, "Chi-square noise")
 
     def _function(self, length):

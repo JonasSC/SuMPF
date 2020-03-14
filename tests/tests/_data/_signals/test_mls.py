@@ -41,7 +41,7 @@ def test_constructor_defaults():
     assert mls.length() == 2 ** 10 - 1
 
 
-@hypothesis.given(seed=hypothesis.strategies.integers(),
+@hypothesis.given(seed=hypothesis.strategies.integers(min_value=0.0),
                   sampling_rate=tests.strategies.sampling_rates,
                   length=hypothesis.strategies.integers(min_value=3, max_value=2 ** 16))
 def test_default_bits(seed, sampling_rate, length):
@@ -54,7 +54,7 @@ def test_default_bits(seed, sampling_rate, length):
 
 
 @hypothesis.given(bits=hypothesis.strategies.integers(min_value=2, max_value=16),
-                  seed=hypothesis.strategies.integers(),
+                  seed=hypothesis.strategies.integers(min_value=0.0),
                   sampling_rate=tests.strategies.sampling_rates)
 def test_seed(bits, seed, sampling_rate):
     """Tests if seeding the initial state of the MLS generator works as expected."""
@@ -69,7 +69,7 @@ def test_seed(bits, seed, sampling_rate):
 
 
 @hypothesis.given(bits=hypothesis.strategies.integers(min_value=2, max_value=16),
-                  seed=hypothesis.strategies.integers(),
+                  seed=hypothesis.strategies.integers(min_value=0.0),
                   sampling_rate=tests.strategies.sampling_rates,
                   length=hypothesis.strategies.integers(min_value=0, max_value=2 ** 16))
 def test_properties(bits, seed, sampling_rate, length):
@@ -83,7 +83,7 @@ def test_properties(bits, seed, sampling_rate, length):
 
 
 @hypothesis.given(bits=hypothesis.strategies.integers(min_value=2, max_value=12),
-                  seed=hypothesis.strategies.integers(),
+                  seed=hypothesis.strategies.integers(min_value=0.0),
                   sampling_rate=tests.strategies.sampling_rates)
 def test_auto_correlation(bits, seed, sampling_rate):
     """Tests if the auto-correlation of the MLS is an impulse."""
@@ -101,7 +101,7 @@ def test_auto_correlation(bits, seed, sampling_rate):
 
 
 @hypothesis.given(bits=hypothesis.strategies.integers(min_value=2, max_value=15),
-                  seed=hypothesis.strategies.integers(),
+                  seed=hypothesis.strategies.integers(min_value=0.0),
                   sampling_rate=tests.strategies.sampling_rates)
 def test_magnitude(bits, seed, sampling_rate):
     """Tests if the magnitude of the MLS' spectrum is constant except for f=0."""
@@ -116,7 +116,7 @@ def test_magnitude(bits, seed, sampling_rate):
 
 
 @hypothesis.given(bits=hypothesis.strategies.integers(min_value=2, max_value=11),
-                  seed=hypothesis.strategies.integers(),
+                  seed=hypothesis.strategies.integers(min_value=0.0),
                   sampling_rate=tests.strategies.sampling_rates,
                   length=hypothesis.strategies.integers(min_value=0, max_value=2 ** 16))
 def test_periodicity(bits, seed, sampling_rate, length):

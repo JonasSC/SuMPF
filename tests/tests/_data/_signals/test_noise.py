@@ -38,7 +38,7 @@ def check_numpy_noise(noise, function, seed, sampling_rate, length, label):
     assert noise.labels() == (label,)
     assert noise.seed() == seed
     # check the channels
-    generator = numpy.random.RandomState(seed)
+    generator = numpy.random.default_rng(seed)
     reference = function(generator)
     assert (noise.channels()[0] == reference).all()
 
@@ -68,7 +68,7 @@ def test_default_parameters():
 
 @hypothesis.given(lower_boundary=hypothesis.strategies.floats(min_value=-1e300, max_value=1e300),
                   upper_boundary=hypothesis.strategies.floats(min_value=-1e300, max_value=1e300),
-                  seed=hypothesis.strategies.integers(min_value=0, max_value=2 ** 32 - 1),
+                  seed=hypothesis.strategies.integers(min_value=0.0),
                   sampling_rate=tests.strategies.sampling_rates,
                   length=tests.strategies.short_lengths)
 def test_uniform_noise(lower_boundary, upper_boundary, seed, sampling_rate, length):
@@ -86,7 +86,7 @@ def test_uniform_noise(lower_boundary, upper_boundary, seed, sampling_rate, leng
 
 @hypothesis.given(mean=hypothesis.strategies.floats(allow_nan=False, allow_infinity=False),
                   standard_deviation=hypothesis.strategies.floats(min_value=0.0, allow_nan=False, allow_infinity=False),
-                  seed=hypothesis.strategies.integers(min_value=0, max_value=2 ** 32 - 1),
+                  seed=hypothesis.strategies.integers(min_value=0.0),
                   sampling_rate=tests.strategies.sampling_rates,
                   length=tests.strategies.short_lengths)
 def test_gaussian_noise(mean, standard_deviation, seed, sampling_rate, length):
@@ -101,7 +101,7 @@ def test_gaussian_noise(mean, standard_deviation, seed, sampling_rate, length):
 
 
 @hypothesis.given(lambda_=hypothesis.strategies.floats(min_value=0.0, max_value=1e17, allow_nan=False, allow_infinity=False),
-                  seed=hypothesis.strategies.integers(min_value=0, max_value=2 ** 32 - 1),
+                  seed=hypothesis.strategies.integers(min_value=0.0),
                   sampling_rate=tests.strategies.sampling_rates,
                   length=tests.strategies.short_lengths)
 def test_poisson_noise(lambda_, seed, sampling_rate, length):
@@ -117,7 +117,7 @@ def test_poisson_noise(lambda_, seed, sampling_rate, length):
 
 @hypothesis.given(mean=hypothesis.strategies.floats(allow_nan=False, allow_infinity=False),
                   decay=hypothesis.strategies.floats(min_value=0.0, allow_nan=False, allow_infinity=False),
-                  seed=hypothesis.strategies.integers(min_value=0, max_value=2 ** 32 - 1),
+                  seed=hypothesis.strategies.integers(min_value=0.0),
                   sampling_rate=tests.strategies.sampling_rates,
                   length=tests.strategies.short_lengths)
 def test_laplace_noise(mean, decay, seed, sampling_rate, length):
@@ -133,7 +133,7 @@ def test_laplace_noise(mean, decay, seed, sampling_rate, length):
 
 @hypothesis.given(mode=hypothesis.strategies.floats(allow_nan=False, allow_infinity=False),
                   dispersion=hypothesis.strategies.floats(min_value=0.0, max_value=1e15, allow_nan=False, allow_infinity=False),    # for values larger than 1e15, the test takes forever
-                  seed=hypothesis.strategies.integers(min_value=0, max_value=2 ** 32 - 1),
+                  seed=hypothesis.strategies.integers(min_value=0.0),
                   sampling_rate=tests.strategies.sampling_rates,
                   length=tests.strategies.short_lengths)
 def test_von_mises_noise(mode, dispersion, seed, sampling_rate, length):
@@ -150,7 +150,7 @@ def test_von_mises_noise(mode, dispersion, seed, sampling_rate, length):
 @hypothesis.given(lower_boundary=hypothesis.strategies.floats(min_value=-1e300, max_value=1e300),
                   upper_boundary=hypothesis.strategies.floats(min_value=-1e300, max_value=1e300),
                   mode=hypothesis.strategies.floats(min_value=-1e300, max_value=1e300),
-                  seed=hypothesis.strategies.integers(min_value=0, max_value=2 ** 32 - 1),
+                  seed=hypothesis.strategies.integers(min_value=0.0),
                   sampling_rate=tests.strategies.sampling_rates,
                   length=tests.strategies.short_lengths)
 def test_triangular_noise(lower_boundary, upper_boundary, mode, seed, sampling_rate, length):
@@ -177,7 +177,7 @@ def test_triangular_noise(lower_boundary, upper_boundary, mode, seed, sampling_r
 
 
 @hypothesis.given(p=hypothesis.strategies.floats(min_value=1e-15, max_value=1.0),
-                  seed=hypothesis.strategies.integers(min_value=0, max_value=2 ** 32 - 1),
+                  seed=hypothesis.strategies.integers(min_value=0.0),
                   sampling_rate=tests.strategies.sampling_rates,
                   length=tests.strategies.short_lengths)
 def test_geometric_noise(p, seed, sampling_rate, length):
@@ -194,7 +194,7 @@ def test_geometric_noise(p, seed, sampling_rate, length):
 @hypothesis.given(acceptable=hypothesis.strategies.integers(min_value=0, max_value=2 ** 15),
                   non_acceptable=hypothesis.strategies.integers(min_value=0, max_value=2 ** 15),
                   draws=hypothesis.strategies.integers(min_value=1, max_value=2 ** 15),
-                  seed=hypothesis.strategies.integers(min_value=0, max_value=2 ** 32 - 1),
+                  seed=hypothesis.strategies.integers(min_value=0.0),
                   sampling_rate=tests.strategies.sampling_rates,
                   length=tests.strategies.short_lengths)
 def test_hypergeometric_noise(acceptable, non_acceptable, draws, seed, sampling_rate, length):
@@ -214,7 +214,7 @@ def test_hypergeometric_noise(acceptable, non_acceptable, draws, seed, sampling_
 
 @hypothesis.given(p=hypothesis.strategies.floats(min_value=0.0, max_value=1.0),
                   draws=hypothesis.strategies.integers(min_value=0, max_value=2 ** 32 - 1),
-                  seed=hypothesis.strategies.integers(min_value=0, max_value=2 ** 32 - 1),
+                  seed=hypothesis.strategies.integers(min_value=0.0),
                   sampling_rate=tests.strategies.sampling_rates,
                   length=tests.strategies.short_lengths)
 def test_binomial_noise(p, draws, seed, sampling_rate, length):
@@ -228,9 +228,9 @@ def test_binomial_noise(p, draws, seed, sampling_rate, length):
                       label="Binomial noise")
 
 
-@hypothesis.given(alpha=hypothesis.strategies.floats(min_value=1e-15, allow_nan=False, allow_infinity=False),
+@hypothesis.given(alpha=hypothesis.strategies.floats(min_value=1e-15, max_value=1e308, allow_nan=False, allow_infinity=False),
                   beta=hypothesis.strategies.floats(min_value=1e-15, allow_nan=False, allow_infinity=False),
-                  seed=hypothesis.strategies.integers(min_value=0, max_value=2 ** 32 - 1),
+                  seed=hypothesis.strategies.integers(min_value=0.0),
                   sampling_rate=tests.strategies.sampling_rates,
                   length=tests.strategies.short_lengths)
 def test_beta_noise(alpha, beta, seed, sampling_rate, length):
@@ -246,7 +246,7 @@ def test_beta_noise(alpha, beta, seed, sampling_rate, length):
 
 @hypothesis.given(shape=hypothesis.strategies.floats(min_value=0.0, allow_nan=False, allow_infinity=False),
                   scale=hypothesis.strategies.floats(min_value=0.0, allow_nan=False, allow_infinity=False),
-                  seed=hypothesis.strategies.integers(min_value=0, max_value=2 ** 32 - 1),
+                  seed=hypothesis.strategies.integers(min_value=0.0),
                   sampling_rate=tests.strategies.sampling_rates,
                   length=tests.strategies.short_lengths)
 def test_gamma_noise(shape, scale, seed, sampling_rate, length):
@@ -261,7 +261,7 @@ def test_gamma_noise(shape, scale, seed, sampling_rate, length):
 
 
 @hypothesis.given(p=hypothesis.strategies.floats(min_value=1e-15, max_value=1.0 - 1e-15),
-                  seed=hypothesis.strategies.integers(min_value=0, max_value=2 ** 32 - 1),
+                  seed=hypothesis.strategies.integers(min_value=0.0),
                   sampling_rate=tests.strategies.sampling_rates,
                   length=tests.strategies.short_lengths)
 def test_logarithmic_noise(p, seed, sampling_rate, length):
@@ -277,7 +277,7 @@ def test_logarithmic_noise(p, seed, sampling_rate, length):
 
 @hypothesis.given(mean=hypothesis.strategies.floats(allow_nan=False, allow_infinity=False),
                   scale=hypothesis.strategies.floats(min_value=0.0, allow_nan=False, allow_infinity=False),
-                  seed=hypothesis.strategies.integers(min_value=0, max_value=2 ** 32 - 1),
+                  seed=hypothesis.strategies.integers(min_value=0.0),
                   sampling_rate=tests.strategies.sampling_rates,
                   length=tests.strategies.short_lengths)
 def test_logistic_noise(mean, scale, seed, sampling_rate, length):
@@ -292,7 +292,7 @@ def test_logistic_noise(mean, scale, seed, sampling_rate, length):
 
 
 @hypothesis.given(shape=hypothesis.strategies.floats(min_value=1e-15, allow_nan=False, allow_infinity=False),
-                  seed=hypothesis.strategies.integers(min_value=0, max_value=2 ** 32 - 1),
+                  seed=hypothesis.strategies.integers(min_value=0.0),
                   sampling_rate=tests.strategies.sampling_rates,
                   length=tests.strategies.short_lengths)
 def test_lomax_noise(shape, seed, sampling_rate, length):
@@ -308,7 +308,7 @@ def test_lomax_noise(shape, seed, sampling_rate, length):
 
 @hypothesis.given(mean=hypothesis.strategies.floats(min_value=1e-15, max_value=1e100, allow_nan=False, allow_infinity=False),
                   scale=hypothesis.strategies.floats(min_value=1e-15, max_value=1e300, allow_nan=False, allow_infinity=False),
-                  seed=hypothesis.strategies.integers(min_value=0, max_value=2 ** 32 - 1),
+                  seed=hypothesis.strategies.integers(min_value=0.0),
                   sampling_rate=tests.strategies.sampling_rates,
                   length=tests.strategies.short_lengths)
 def test_wald_noise(mean, scale, seed, sampling_rate, length):
@@ -323,7 +323,7 @@ def test_wald_noise(mean, scale, seed, sampling_rate, length):
 
 
 @hypothesis.given(degrees_of_freedom=hypothesis.strategies.floats(min_value=1e-10, allow_nan=False, allow_infinity=False),
-                  seed=hypothesis.strategies.integers(min_value=0, max_value=2 ** 32 - 1),
+                  seed=hypothesis.strategies.integers(min_value=0.0),
                   sampling_rate=tests.strategies.sampling_rates,
                   length=tests.strategies.short_lengths)
 def test_chi_square_noise(degrees_of_freedom, seed, sampling_rate, length):

@@ -17,7 +17,6 @@
 """Contains the :class:`~sumpf.MaximumLengthSequence` class."""
 
 import math
-import random
 import numpy
 import scipy.signal
 import sumpf._internal as sumpf_internal
@@ -59,13 +58,12 @@ class MaximumLengthSequence(Signal):
             length = 2 ** bits - 1
         elif bits is None:
             bits = int(math.ceil(math.log2(length + 1)))
-        random_ = random.Random()
-        random_.seed(seed)
-        state = [random_.choice((False, True)) for _ in range(bits)]
+        random = numpy.random.default_rng(seed)
+        state = random.choice((False, True), size=bits)
         if True not in state:
-            state[random_.randint(0, len(state) - 1)] = True
+            state[random.integers(low=0, high=len(state) - 1)] = True
         sequence = scipy.signal.max_len_seq(bits, state, length)[0]
-        channels = sumpf_internal.allocate_array(shape=(1, len(sequence)), dtype=numpy.float64)
+        channels = sumpf_internal.allocate_array(shape=(1, len(sequence)))
         channels[0, :] = sequence
         channels *= 2.0
         channels -= 1.0
