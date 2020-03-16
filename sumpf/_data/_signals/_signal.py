@@ -870,7 +870,7 @@ class Signal(SampledData):
             else:
                 # the signals have different lengths or offsets, which makes things complicated
                 return self.__algebra_function_different_shapes(other, function, other_pivot, label)
-        elif isinstance(other, SampledData):
+        elif isinstance(other, (SampledData, sumpf.Filter)):
             return NotImplemented
         else:   # other is an array or a number
             return self.__algebra_function_different_type(other, function)

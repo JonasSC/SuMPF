@@ -514,6 +514,8 @@ class Spectrogram(SampledData):
             return self.__algebra_function_signal(other, function, other_pivot, label)
         elif isinstance(other, sumpf.Spectrum):
             return self.__algebra_function_spectrum(other, function, other_pivot, label)
+        elif isinstance(other, sumpf.Filter):
+            return NotImplemented
         else:
             # other is an array or a number
             return self.__algebra_function_different_type(other, function)

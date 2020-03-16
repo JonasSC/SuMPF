@@ -203,7 +203,7 @@ class Spectrum(SampledData):
                 function(self._channels[0:len(other)], other.channels(), out=channels[0:len(other)])
                 channels[len(other):] = self._channels[len(other):]
             return Spectrum(channels=channels, resolution=self.__resolution, labels=(label,) * len(channels))
-        elif isinstance(other, SampledData):
+        elif isinstance(other, (SampledData, sumpf.Filter)):
             return NotImplemented
         else:   # other is an array or a number
             try:

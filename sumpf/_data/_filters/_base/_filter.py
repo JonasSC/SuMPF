@@ -131,6 +131,17 @@ class Filter:
     # overloaded operators (non math-related) #
     ###########################################
 
+    def __getitem__(self, key):
+        """Operator overload for slicing the filter.
+
+        :param key: an index, a slice or a tuple of indices or slices. Indices may
+                    be integers or floats between 0.0 and 1.0.
+        :returns: a :class:`~sumpf.Filter` instance
+        """
+        slices = sumpf_internal.key_to_slices(key, (len(self.__transfer_functions),))
+        return Filter(transfer_functions=self.__transfer_functions[slices],
+                      labels=self.__labels[slices])
+
     def __call__(self, frequencies):
         """Samples the transfer function of the filter at the given frequencies.
 

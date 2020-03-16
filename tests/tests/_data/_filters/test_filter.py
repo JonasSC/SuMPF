@@ -30,6 +30,47 @@ import tests
 ###########################################
 
 
+def test_getitem():
+    """Tests the slicing of a filter's transfer function with the ``[]`` overload"""
+    filter_ = sumpf.Filter(transfer_functions=(sumpf.Filter.Constant(1.0),
+                                               sumpf.Filter.Constant(2.0),
+                                               sumpf.Filter.Constant(3.0)),
+                           labels=("one", "two", "three"))
+    # integer
+    sliced = filter_[1]
+    assert sliced.transfer_functions() == (sumpf.Filter.Constant(2.0),)
+    assert sliced.labels() == ("two",)
+    # float
+    assert filter_[0.5] == filter_[1]
+    # integer slice
+    sliced = filter_[1:3]
+    assert sliced.transfer_functions() == (sumpf.Filter.Constant(2.0),
+                                           sumpf.Filter.Constant(3.0))
+    assert sliced.labels() == ("two", "three")
+    # integer slice with step
+    sliced = filter_[0:3:2]
+    assert sliced.transfer_functions() == (sumpf.Filter.Constant(1.0),
+                                           sumpf.Filter.Constant(3.0))
+    assert sliced.labels() == ("one", "three")
+    # incomplete slices
+    assert filter_[:] == filter_
+    assert filter_[:2] == filter_[0:2]
+    assert filter_[1:] == filter_[1:3]
+    assert filter_[0::2] == filter_[0:3:2]
+    # float slices
+    assert filter_[0.33:1.0] == filter_[1:3]
+    assert filter_[0:3:0.66] == filter_[0:3:2]
+    # negative slices
+    assert filter_[0:-1] == filter_[0:2]
+    assert filter_[-2:] == filter_[1:3]
+    sliced = filter_[::-1]
+    assert sliced.transfer_functions() == (sumpf.Filter.Constant(3.0),
+                                           sumpf.Filter.Constant(2.0),
+                                           sumpf.Filter.Constant(1.0))
+    assert sliced.labels() == ("three", "two", "one")
+    assert filter_[-0.99:-0.01:-0.66] == filter_[0:3:-2]
+
+
 @pytest.mark.filterwarnings("ignore:overflow", "ignore:invalid value", "ignore:divide by zero")
 @hypothesis.given(filter_=tests.strategies.filters(),
                   resolution=tests.strategies.resolutions,
