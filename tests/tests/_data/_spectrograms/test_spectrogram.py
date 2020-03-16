@@ -867,7 +867,7 @@ def test_inverse_short_time_fourier_transform(signal):
         assert restored.labels() == signal.labels()
         # test different window definitions
         window1 = sumpf.HannWindow(length=256, symmetric=False)
-        window2 = sumpf.MergeSignals([window1] * len(signal)).output()
+        window2 = sumpf.Merge([window1] * len(signal)).output()
         window3 = window1.channels()
         window4 = window1.channels()[0]
         window5 = window2.channels()

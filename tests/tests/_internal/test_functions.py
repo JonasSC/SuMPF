@@ -40,6 +40,6 @@ def test_scaling_factor(window_classes, plateau, sampling_rate, length, symmetri
                  sampling_rate=sampling_rate,
                  length=length,
                  symmetric=symmetric) for c in window_classes]
-    signal = sumpf.MergeSignals(windows).output()
+    signal = sumpf.Merge(windows).output()
     reference = numpy.array([w.scaling_factor(overlap) for w in windows])
     assert numpy.array_equal(sumpf_internal.scaling_factor(signal, overlap), reference)

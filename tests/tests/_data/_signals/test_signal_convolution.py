@@ -67,8 +67,8 @@ def test_convolve_with_multiple_channels(signal1, signal2, mode):   # pylint: di
     """Tests the convolution of two multi-channel signals and the convolution of
     a multi-channel signal with a two dimensional array."""
     # make sure, the signals have multiple channels
-    signal1 = sumpf.MergeSignals([signal1, signal1]).output()
-    signal2 = sumpf.MergeSignals([signal2, signal2]).output()
+    signal1 = sumpf.Merge([signal1, signal1]).output()
+    signal2 = sumpf.Merge([signal2, signal2]).output()
     number_of_channels = min(len(signal1), len(signal2))
     # test general properties of the convolution with a signal
     signal_convolution = signal1.convolve(signal2, mode=mode)
@@ -210,8 +210,8 @@ def test_correlate_with_multiple_channels(signal1, signal2, mode):  # noqa: C901
     """Tests the correlation of two multi-channel signals and the correlation of
     a multi-channel signal with a two dimensional array."""
     # make sure, the signals have multiple channels
-    signal1 = sumpf.MergeSignals([signal1, signal1]).output()
-    signal2 = sumpf.MergeSignals([signal2, signal2]).output()
+    signal1 = sumpf.Merge([signal1, signal1]).output()
+    signal2 = sumpf.Merge([signal2, signal2]).output()
     number_of_channels = min(len(signal1), len(signal2))
     # test general properties of the correlation with a signal
     signal_correlation = signal1.correlate(signal2, mode=mode)

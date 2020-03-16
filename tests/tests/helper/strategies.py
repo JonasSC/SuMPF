@@ -183,10 +183,10 @@ def spectrogram_parameters(min_channels=1, max_channels=5,
 
 
 _polynomial = st.builds(sumpf.Filter.Polynomial,
-                        coefficients=st.lists(elements=st.floats(min_value=-1e10, max_value=1e10), max_size=6),
+                        coefficients=st.lists(elements=st.floats(min_value=-1e6, max_value=1e6), max_size=6),
                         transform=st.booleans())
 _exp = st.builds(sumpf.Filter.Exp,
-                 coefficient=st.floats(min_value=-1e5, max_value=1e5),  # it is necessary to set a lower bound to avoid a value of -inf
+                 coefficient=st.floats(min_value=-1e3, max_value=1e3),  # it is necessary to set a lower bound to avoid a value of -inf
                  transform=st.booleans())
 _bands0 = st.builds(sumpf.Filter.Bands,
                     xs=stn.arrays(dtype=numpy.float64, shape=(0,), elements=non_zero_frequencies, unique=True),

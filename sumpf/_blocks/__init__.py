@@ -20,8 +20,7 @@ network.
 """
 
 from ._concatenate import *
-from ._merge_signals import *
-from ._merge_spectrums import *
+from ._merge import *
 
 try:
     from ._jack import *

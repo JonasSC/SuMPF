@@ -245,10 +245,10 @@ Merging the impulse responses into one multi-channel signal
 
 For convenience (and to demonstrate that feature), the harmonics are merged into a single :class:`~sumpf.Signal` instance with one channel per harmonic.
 
->>> harmonics = sumpf.MergeSignals([harmonic1, harmonic2, harmonic3]).output()
+>>> harmonics = sumpf.Merge([harmonic1, harmonic2, harmonic3]).output()
 
 In a scripting application, like this tutorial, the API for merging signals is inconvenient.
-Rather than being a function, it requires instantiating the :class:`~sumpf.MergeSignals` class and calling its :meth:`~sumpf.MergeSignals.output` method.
+Rather than being a function, it requires instantiating the :class:`~sumpf.Merge` class and calling its :meth:`~sumpf.Merge.output` method.
 This is due to a :ref:`design decision<concepts>` in *SuMPF*, that all functionalities, that do not fit in the data container classes, are implemented in classes for signal processing blocks, that can be connected to form complex signal processing networks, in which value changes are automatically propagated.
 
 Thanks to the :func:`zip` function, plotting the merged signal is a bit more convenient, than plotting the individual harmonics before.
@@ -283,7 +283,7 @@ Thanks to the :func:`zip` function, plotting the merged signal is a bit more con
                                                harmonic=2)
    harmonic3 = sweep.harmonic_impulse_response(impulse_response=impulse_response,
                                                harmonic=3)
-   harmonics = sumpf.MergeSignals([harmonic1, harmonic2, harmonic3]).output()
+   harmonics = sumpf.Merge([harmonic1, harmonic2, harmonic3]).output()
    for channel, label in zip(harmonics.channels(), harmonics.labels()):    # doctest: +SKIP
        pyplot.plot(harmonics.time_samples(), channel, label=label)         # doctest: +SKIP
    pyplot.xlabel("time")                                                   # doctest: +SKIP
@@ -293,7 +293,7 @@ Thanks to the :func:`zip` function, plotting the merged signal is a bit more con
 
 Note, that now, all impulse responses have the same length.
 Internally, the :class:`~sumpf.Signal` class uses a two-dimensional :func:`numpy.array`, that cannot store channels with different lengths.
-Therefore, the :class:`~sumpf.MergeSignals` class fills missing samples with zeros.
+Therefore, the :class:`~sumpf.Merge` class fills missing samples with zeros.
 
 
 Visualizing the transfer function
@@ -356,7 +356,7 @@ And with that done, it's only a few lines of code to fine tune and display the p
                                                harmonic=2)
    harmonic3 = sweep.harmonic_impulse_response(impulse_response=impulse_response,
                                                harmonic=3)
-   harmonics = sumpf.MergeSignals([harmonic1, harmonic2, harmonic3]).output()
+   harmonics = sumpf.Merge([harmonic1, harmonic2, harmonic3]).output()
    transfer_function = harmonics.fourier_transform()
    for magnitude, label in zip(transfer_function.magnitude(), transfer_function.labels()):   # doctest: +SKIP
        pyplot.plot(transfer_function.frequency_samples(), magnitude, label=label)            # doctest: +SKIP

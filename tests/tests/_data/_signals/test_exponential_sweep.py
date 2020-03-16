@@ -127,7 +127,7 @@ def test_harmonic_impulse_response():
     h3 = sweep.harmonic_impulse_response(impulse_response=impulse_response, harmonic=3)
     assert h1.length() == h2.length()   # check if the length parameter has worked
     assert h3.length() < h2.length()    # the impulse responses of the higher order harmonics are shorter
-    harmonics = sumpf.MergeSignals([h1, h2, h3]).output()
+    harmonics = sumpf.Merge([h1, h2, h3]).output()
     spectrum = harmonics.fourier_transform()
     magnitude = spectrum.magnitude()
     max_indices = magnitude.argmax(axis=1)
@@ -141,7 +141,7 @@ def test_harmonic_impulse_response():
     assert h1.length() == 2048
     assert h2.length() == 2048
     assert h3.length() == 2048
-    harmonics = sumpf.MergeSignals([h1, h2, h3]).output()
+    harmonics = sumpf.Merge([h1, h2, h3]).output()
     spectrum = harmonics.fourier_transform()
     magnitude = spectrum.magnitude()
     max_indices = magnitude.argmax(axis=1)

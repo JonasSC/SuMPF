@@ -718,8 +718,8 @@ def test_block_wise_fourier_transform_with_known_signals():
     """tests the block-wise Fourier transform with signals, where it results in
     a down-sampled spectrum of the full Fourier transform."""
     l = 2 ** 16 - 2 ** 13
-    for signal in (sumpf.MergeSignals([sumpf.ExponentialSweep(length=l),
-                                       sumpf.GaussianNoise(length=l)]).output(),
+    for signal in (sumpf.Merge([sumpf.ExponentialSweep(length=l),
+                                sumpf.GaussianNoise(length=l)]).output(),
                    sumpf.UniformNoise(length=2 ** 18) * sumpf.BlackmanWindow(length=2 ** 18)):
         for overlap in (0, 0.5):
             full_spectrum = signal.fourier_transform()
@@ -780,7 +780,7 @@ def test_block_wise_fourier_transform_window_functions(signal):
                                sumpf.HannWindow(length=2048),
                                sumpf.HammingWindow(length=2048),
                                sumpf.BlackmanWindow(length=2048)])
-    window = sumpf.MergeSignals([next(windows) for _ in range(len(signal))]).output()
+    window = sumpf.Merge([next(windows) for _ in range(len(signal))]).output()
     spectrum = signal.fourier_transform(window=window, overlap=0.3)
     assert len(spectrum) == len(signal)
     for i in range(len(spectrum)):  # pylint: disable=consider-using-enumerate; these are SuMPF classes, for which the zip function will not work
@@ -868,7 +868,7 @@ def test_short_time_fourier_transform_calculation(signal, window_length, overlap
                       overlap / window_length - 1.0):
                 assert signal.short_time_fourier_transform(w, o, pad) == reference
         if len(signal):     # pylint: disable=len-as-condition; signal is a sumpf.Signal and not a built in container
-            multichannel = sumpf.MergeSignals([window] * len(signal)).output()
+            multichannel = sumpf.Merge([window] * len(signal)).output()
             for w in (multichannel,
                       multichannel.channels(),
                       [tuple(c) for c in multichannel.channels()]):
