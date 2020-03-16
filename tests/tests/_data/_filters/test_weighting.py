@@ -271,7 +271,6 @@ def test_d_weighting_table():
     weighting = sumpf.DWeighting()
     tolerance = 0.05
     for frequency, decibels in table.items():
-        print(frequency)
         upper_tolerance = 10 ** ((decibels + tolerance) / 20)
         lower_tolerance = 10 ** ((decibels - tolerance) / 20)
         assert lower_tolerance < abs(weighting(frequency)[0]) < upper_tolerance
