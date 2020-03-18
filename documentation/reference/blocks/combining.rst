@@ -3,12 +3,12 @@ Combining data sets
 
 This section documents classes, that combine multiple data sets into one.
 
-.. autoclass:: sumpf.ConcatenateSignals
+.. autoclass:: sumpf.Concatenate
 
    .. automethod:: output()
-   .. automethod:: add(signal)
-   .. automethod:: remove(signal_id)
-   .. automethod:: replace(signal_id, signal)
+   .. automethod:: add(data)
+   .. automethod:: remove(data_id)
+   .. automethod:: replace(data_id, data)
 
 
 .. autoclass:: sumpf.Merge
