@@ -404,7 +404,7 @@ class Filter:
     # convenience methods #
     #######################
 
-    def spectrum(self, resolution, length):
+    def spectrum(self, resolution=48000.0 / 4096, length=2049):
         """Samples the transfer functions with the given resolution and given number
         of samples and returns the result as a spectrum.
 
