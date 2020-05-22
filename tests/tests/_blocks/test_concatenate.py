@@ -99,9 +99,9 @@ def test_connectors_with_signals(signal1, signal2, signal3):
     concatenate1.remove(signal_id)
     assert concatenate2.output() == signal12
 
-#####################
-# test with signals #
-#####################
+##########################
+# test with spectrograms #
+##########################
 
 
 def test_manually_generated_spectrograms():

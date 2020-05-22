@@ -1,5 +1,5 @@
-IIR filters
-===========
+Weighting filters
+=================
 
 This section contains the API reference for classes, that implement frequency weighting filters.
 

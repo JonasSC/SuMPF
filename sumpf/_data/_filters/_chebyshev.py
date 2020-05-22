@@ -27,14 +27,14 @@ def chebyshev1(cutoff_frequency, ripple, order, highpass):
     """A helper function for creating the transfer function of a Chebyshev Type 1 filter.
 
     :param cutoff_frequency: the cutoff frequency of the filter in Hz
-    :param ripple: the allowed passband ripple in dB
+    :param ripple: the allowed pass band ripple in dB
     :param order: the filter order as an integer
     :param highpass: True, if a lowpass-to-highpass-transformation shall be done, False otherwise
     """
     k = frequency_scaling(cutoff_frequency=cutoff_frequency, highpass=highpass)
     k2 = k ** 2
     factors = []
-    # precompute coefficients
+    # pre-compute coefficients
     g = math.asinh(1.0 / math.sqrt(10.0 ** (abs(ripple) / 10.0) - 1.0)) / order
     sinhg = math.sinh(g)
     cosh2g = math.cosh(g) ** 2
@@ -58,23 +58,29 @@ def chebyshev1(cutoff_frequency, ripple, order, highpass):
 
 class Chebyshev1Filter(RolloffFilter):
     """Implementation of a Chebyshev Type 1 filter.
+    Chebyshev filters are optimized for a fast transition between the pass band
+    and the stop band. Chebyshev Type 1 filters show a ripple in the pass band,
+    that is strongest near the filter's transition to the stop band. The magnitude
+    of this maximum can be controlled with the ``ripple`` parameter. In even order
+    filters, the ripple amplifies the affected frequencies, while it is an
+    attenuation in odd order filters.
 
     Be aware, that the definition of the cutoff frequency is different for Butterworth
     and Chebyshev filters. While with a Butterworth filter, the cutoff frequency
     is the frequency, where the magnitude of the filter's transfer function falls
-    below -3dB, the transfer function of a Chebyshev falls below 1.0 (for even order
-    filters) or below the passband ripple (for odd order filters).
+    below -3dB, the transfer function of a Chebyshev filter falls below 1.0 (for
+    even order filters) or below the pass band ripple (for odd order filters).
 
-    If the passband ripple is set to 0.0dB, a Butterworth filter will be generated.
+    If the pass band ripple is set to 0.0dB, a Butterworth filter will be generated.
     This might cause a jump in the cutoff frequency compared to a Chebyshev filter
-    with a very small passband ripple, because of the difference in the definition
+    with a very small pass band ripple, because of the difference in the definition
     of the cutoff frequency.
     """
 
     def __init__(self, cutoff_frequency=1000.0, ripple=3.0, order=1, highpass=False):
         """
         :param cutoff_frequency: the cutoff frequency of the filter in Hz
-        :param ripple: the allowed passband ripple in dB
+        :param ripple: the allowed pass band ripple in dB
         :param order: the filter order as an integer
         :param highpass: True, if a lowpass-to-highpass-transformation shall be done, False otherwise
         """
@@ -96,7 +102,7 @@ class Chebyshev1Filter(RolloffFilter):
         self.__ripple = ripple
 
     def ripple(self):
-        """Returns the passband ripple of the filter.
+        """Returns the pass band ripple of the filter in dB.
 
         :returns: a float
         """

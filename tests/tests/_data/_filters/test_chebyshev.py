@@ -41,7 +41,7 @@ def test_lowpass1_properties(cutoff_frequency, order, ripple):
         assert abs(f(cutoff_frequency)[0]) == pytest.approx(0.5 ** 0.5)                         # Butterworth filters have a magnitude of 1/sqrt(2) at the cutoff frequency
     else:
         if order % 2:
-            assert abs(f(cutoff_frequency)[0]) == pytest.approx(10 ** (-abs(ripple) / 20.0))    # uneven order filters have the minimum of the ripple at the cutoff frequency
+            assert abs(f(cutoff_frequency)[0]) == pytest.approx(10 ** (-abs(ripple) / 20.0))    # odd order filters have the minimum of the ripple at the cutoff frequency
         else:
             assert abs(f(cutoff_frequency)[0]) == pytest.approx(1.0)                            # even order filters have a magnitude of one at the cutoff frequency
     # check the unity gain at zero frequency
@@ -53,7 +53,7 @@ def test_lowpass1_properties(cutoff_frequency, order, ripple):
         db_attenuation = math.log10(frequency_factor) * 20 * order
         assert abs(f(margin * frequency_factor * cutoff_frequency)[0]) < 10.0 ** (-db_attenuation / 20.0)
     # check the magnitude of the ripple
-    if ripple and order % 2 == 0:   # only check for even order filters, since the ripple of uneven order filters is checked with the cutoff frequency
+    if ripple and order % 2 == 0:   # only check for even order filters, since the ripple of odd order filters is checked with the cutoff frequency
         spectrum = f.spectrum(resolution=cutoff_frequency / 50.0, length=100)
         assert max(spectrum.magnitude()[0]) == pytest.approx(10 ** (abs(ripple) / 20.0), rel=0.005 * order)
     # check the spectrum generation
@@ -80,13 +80,13 @@ def test_highpass1_properties(cutoff_frequency, order, ripple):
         assert abs(f(cutoff_frequency)[0]) == pytest.approx(0.5 ** 0.5)                        # Butterworth filters have a magnitude of 1/sqrt(2) at the cutoff frequency
     else:
         if order % 2:
-            assert abs(f(cutoff_frequency)[0]) == pytest.approx(10 ** (-abs(ripple) / 20.0))    # uneven order filters have the minimum of the ripple at the cutoff frequency
+            assert abs(f(cutoff_frequency)[0]) == pytest.approx(10 ** (-abs(ripple) / 20.0))    # odd order filters have the minimum of the ripple at the cutoff frequency
         else:
             assert abs(f(cutoff_frequency)[0]) == pytest.approx(1.0)                            # even order filters have a magnitude of one at the cutoff frequency
     # check the zero gain at zero frequency
     assert f(0.0)[0] == 0.0
     # check the magnitude of the ripple
-    if ripple and order % 2 == 0:   # only check for even order filters, since the ripple of uneven order filters is checked with the cutoff frequency
+    if ripple and order % 2 == 0:   # only check for even order filters, since the ripple of odd order filters is checked with the cutoff frequency
         spectrum = f.spectrum(resolution=cutoff_frequency / 50.0, length=100)
         assert max(spectrum.magnitude()[0]) == pytest.approx(10 ** (abs(ripple) / 20.0), rel=0.005 * order)
     # check the spectrum generation

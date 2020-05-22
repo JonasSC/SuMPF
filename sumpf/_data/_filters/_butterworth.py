@@ -45,7 +45,10 @@ def butterworth(cutoff_frequency, order, highpass):
 
 
 class ButterworthFilter(RolloffFilter):
-    """Implementation of a Butterworth filter."""
+    """Implementation of a Butterworth filter.
+    Butterworth filters are optimized for a fast transition between the pass band
+    and the stop band, while maintaining a monotonic magnitude response.
+    """
 
     def __init__(self, cutoff_frequency=1000.0, order=1, highpass=False):
         """
