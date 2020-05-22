@@ -10,3 +10,6 @@ The inherited methods of the :class:`~sumpf.Filter` class are not documented her
 
 .. autoclass:: sumpf.Chebyshev1Filter
    :members:
+
+.. autoclass:: sumpf.Chebyshev2Filter
+   :members:
