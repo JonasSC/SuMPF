@@ -95,7 +95,8 @@ def test_connectors_with_signals(signal1, signal2, signal3):
     signal12 = _concatenate_signals([signal1, signal2])
     assert concatenate2.output() == signal12
     signal_id = concatenate1.add(signal3)
-    assert concatenate2.output() == _concatenate_signals([signal1, signal2, signal3])
+    assert tests.compare_signals_approx(concatenate2.output(),
+                                        _concatenate_signals([signal1, signal2, signal3]))
     concatenate1.remove(signal_id)
     assert concatenate2.output() == signal12
 
