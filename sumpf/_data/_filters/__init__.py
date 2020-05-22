@@ -19,6 +19,7 @@
 from ._base import Filter
 
 from ._bands import *
+from ._bessel import *
 from ._butterworth import *
 from ._chebyshev import *
 from ._delay import *

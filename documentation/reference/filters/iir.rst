@@ -5,6 +5,9 @@ This section contains the API reference for classes, that implement common IIR f
 
 The inherited methods of the :class:`~sumpf.Filter` class are not documented here.
 
+.. autoclass:: sumpf.BesselFilter
+   :members:
+
 .. autoclass:: sumpf.ButterworthFilter
    :members:
 
