@@ -62,7 +62,7 @@ master_doc = "index"
 
 # General information about the project.
 project = "SuMPF"
-copyright = "2018-2020, Jonas Schulte-Coerne"
+copyright = "2018-2021, Jonas Schulte-Coerne"
 author = "Jonas Schulte-Coerne"
 
 # The version info for the project you're documenting, acts as replacement for
