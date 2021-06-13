@@ -250,6 +250,7 @@ class StandardLibraryWriter:
         :param data: the :class:`~sumpf.Signal` instance
         :param path: the path of the file, in which the signal shall be saved
         """
+        path = str(path)  # the wave and aifc modules cannot deal with pathlib objects (at least not in Python 3.9)
         number_of_channels, number_of_samples = signal.shape()
         chunk_size = 2048
         total_chunk_size = (number_of_channels * chunk_size)

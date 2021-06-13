@@ -17,6 +17,7 @@
 """Tests for reading and writing :class:`~sumpf.Filter` instances from/to a file."""
 
 import os
+import pathlib
 import tempfile
 import hypothesis
 import numpy
@@ -25,13 +26,16 @@ import sumpf._internal as sumpf_internal
 import tests
 
 
-@hypothesis.given(tests.strategies.filters())
-def test_autodetect_format_on_reading(filter_):
+@hypothesis.given(filter_=tests.strategies.filters(),
+                  path_object=hypothesis.strategies.booleans())
+def test_autodetect_format_on_reading(filter_, path_object):
     """Tests if auto-detecting the file format, when reading a file works."""
     with tempfile.TemporaryDirectory() as d:
         for file_format in sumpf.Filter.file_formats:
             if file_format != sumpf.Filter.file_formats.AUTO:
                 path = os.path.join(d, "test_file")
+                if path_object:
+                    path = pathlib.Path(path)
                 assert not os.path.exists(path)
                 filter_.save(path, file_format)
                 loaded = sumpf.Filter.load(path)
@@ -39,8 +43,9 @@ def test_autodetect_format_on_reading(filter_):
                 os.remove(path)
 
 
-@hypothesis.given(tests.strategies.filters())
-def test_autodetect_format_on_saving(filter_):
+@hypothesis.given(filter_=tests.strategies.filters(),
+                  path_object=hypothesis.strategies.booleans())
+def test_autodetect_format_on_saving(filter_, path_object):
     """Tests if auto-detecting the file format from the file extension, when writing a file works."""
     file_formats = [(".txt", sumpf_internal.filter_readers.ReprReader),
                     (".json", sumpf_internal.filter_readers.JsonReader),
@@ -50,6 +55,8 @@ def test_autodetect_format_on_saving(filter_):
         for ending, Reader in file_formats:
             reader = Reader()
             path = os.path.join(d, "test_file" + ending)
+            if path_object:
+                path = pathlib.Path(path)
             assert not os.path.exists(path)
             filter_.save(path)
             loaded = reader(path)
@@ -60,11 +67,14 @@ def test_autodetect_format_on_saving(filter_):
             os.remove(path)
 
 
-@hypothesis.given(tests.strategies.bands())
-def test_bands_as_table(bands):
+@hypothesis.given(bands=tests.strategies.bands(),
+                  path_object=hypothesis.strategies.booleans())
+def test_bands_as_table(bands, path_object):
     """Tests loading and saving bands filters in tabular text files."""
     with tempfile.TemporaryDirectory() as d:
         path = os.path.join(d, "test_file")
+        if path_object:
+            path = pathlib.Path(path)
         for Reader, Writer in [(sumpf_internal.filter_readers.TableReader, sumpf_internal.filter_writers.TextTabIWriter),       # pylint: disable=line-too-long
                                (sumpf_internal.filter_readers.TableReader, sumpf_internal.filter_writers.TextTabJWriter),       # pylint: disable=line-too-long
                                (sumpf_internal.filter_readers.TableReader, sumpf_internal.filter_writers.TextPipeIWriter),      # pylint: disable=line-too-long
@@ -84,11 +94,14 @@ def test_bands_as_table(bands):
                     os.remove(path)
 
 
-@hypothesis.given(tests.strategies.bands())
-def test_bands_as_csv(bands):
+@hypothesis.given(bands=tests.strategies.bands(),
+                  path_object=hypothesis.strategies.booleans())
+def test_bands_as_csv(bands, path_object):
     """Tests loading and saving bands filters in CSV files."""
     with tempfile.TemporaryDirectory() as d:
         path = os.path.join(d, "test_file")
+        if path_object:
+            path = pathlib.Path(path)
         assert not os.path.exists(path)
         reader = sumpf_internal.filter_readers.CsvReader()
         writer = sumpf_internal.filter_writers.CsvWriter(sumpf.Bands.file_formats.TEXT_CSV)
@@ -102,11 +115,14 @@ def test_bands_as_csv(bands):
         os.remove(path)
 
 
-@hypothesis.given(tests.strategies.bands())
-def test_bands_as_repr(bands):
+@hypothesis.given(bands=tests.strategies.bands(),
+                  path_object=hypothesis.strategies.booleans())
+def test_bands_as_repr(bands, path_object):
     """Tests loading and saving bands filters' string representations in text files."""
     with tempfile.TemporaryDirectory() as d:
         path = os.path.join(d, "test_file")
+        if path_object:
+            path = pathlib.Path(path)
         assert not os.path.exists(path)
         reader = sumpf_internal.filter_readers.ReprReader()
         writer = sumpf_internal.filter_writers.ReprWriter(sumpf.Bands.file_formats.TEXT_REPR)
@@ -122,11 +138,14 @@ def test_bands_as_repr(bands):
         os.remove(path)
 
 
-@hypothesis.given(tests.strategies.bands())
-def test_bands_as_serialization(bands):
+@hypothesis.given(bands=tests.strategies.bands(),
+                  path_object=hypothesis.strategies.booleans())
+def test_bands_as_serialization(bands, path_object):
     """Tests loading and saving bands filters in common serializations."""
     with tempfile.TemporaryDirectory() as d:
         path = os.path.join(d, "test_file")
+        if path_object:
+            path = pathlib.Path(path)
         for Reader, Writer in [(sumpf_internal.filter_readers.JsonReader, sumpf_internal.filter_writers.JsonWriter),
                                (sumpf_internal.filter_readers.PickleReader, sumpf_internal.filter_writers.PickleWriter)]:   # pylint: disable=line-too-long
             reader = Reader()
@@ -140,11 +159,14 @@ def test_bands_as_serialization(bands):
                     os.remove(path)
 
 
-@hypothesis.given(tests.strategies.bands())
-def test_bands_as_numpy(bands):
+@hypothesis.given(bands=tests.strategies.bands(),
+                  path_object=hypothesis.strategies.booleans())
+def test_bands_as_numpy(bands, path_object):
     """Tests loading and saving bands filters in numpy files."""
     with tempfile.TemporaryDirectory() as d:
         path = os.path.join(d, "test_file")
+        if path_object:
+            path = pathlib.Path(path)
         for Reader, Writer in [(sumpf_internal.filter_readers.NumpyReader, sumpf_internal.filter_writers.NumpyNpyWriter),   # pylint: disable=line-too-long
                                (sumpf_internal.filter_readers.NumpyReader, sumpf_internal.filter_writers.NumpyNpzWriter)]:  # pylint: disable=line-too-long
             reader = Reader()
@@ -164,11 +186,14 @@ def test_bands_as_numpy(bands):
                     os.remove(path)
 
 
-@hypothesis.given(tests.strategies.bands())
-def test_autodetect_format_on_reading_bands(bands):
+@hypothesis.given(bands=tests.strategies.bands(),
+                  path_object=hypothesis.strategies.booleans())
+def test_autodetect_format_on_reading_bands(bands, path_object):
     """Tests if auto-detecting the file format, when reading a file works."""
     with tempfile.TemporaryDirectory() as d:
         path = os.path.join(d, "test_file")
+        if path_object:
+            path = pathlib.Path(path)
         for file_format in sumpf.Bands.file_formats:
             if file_format != sumpf.Bands.file_formats.AUTO:
                 assert not os.path.exists(path)
@@ -198,8 +223,9 @@ def test_autodetect_format_on_reading_bands(bands):
                 os.remove(path)
 
 
-@hypothesis.given(tests.strategies.bands())
-def test_autodetect_format_on_saving_bands(bands):
+@hypothesis.given(bands=tests.strategies.bands(),
+                  path_object=hypothesis.strategies.booleans())
+def test_autodetect_format_on_saving_bands(bands, path_object):
     """Tests if auto-detecting the file format from the file extension, when writing a file works."""
     file_formats = [(".txt", sumpf_internal.filter_readers.TableReader),
                     (".dat", sumpf_internal.filter_readers.TableReader),
@@ -215,6 +241,8 @@ def test_autodetect_format_on_saving_bands(bands):
         for ending, Reader in file_formats:
             reader = Reader()
             path = os.path.join(d, "test_file" + ending)
+            if path_object:
+                path = pathlib.Path(path)
             assert not os.path.exists(path)
             bands.save(path)
             loaded = reader(path)

@@ -19,6 +19,7 @@
 import copy
 import logging
 import os
+import pathlib
 import tempfile
 import numpy
 import hypothesis
@@ -889,11 +890,14 @@ def test_inverse_short_time_fourier_transform(signal):
 #######################
 
 
-@hypothesis.given(tests.strategies.spectrograms())
-def test_loading_and_saving(spectrogram):
+@hypothesis.given(spectrogram=tests.strategies.spectrograms(),
+                  path_object=hypothesis.strategies.booleans())
+def test_loading_and_saving(spectrogram, path_object):
     """Tests writing a spectrogram to a file and loading it again."""
     with tempfile.TemporaryDirectory() as d:
         path = os.path.join(d, "test_file")
+        if path_object:
+            path = pathlib.Path(path)
         for Reader, Writer in [(spectrogram_readers.JsonReader, spectrogram_writers.JsonWriter),
                                (spectrogram_readers.NumpyReader, spectrogram_writers.NumpyNpzWriter),
                                (spectrogram_readers.PickleReader, spectrogram_writers.PickleWriter)]:
@@ -910,7 +914,9 @@ def test_loading_and_saving(spectrogram):
             os.remove(path)
 
 
-def test_autodetect_format_on_reading():
+@hypothesis.given(path_object=hypothesis.strategies.booleans())
+@hypothesis.settings(deadline=None)
+def test_autodetect_format_on_reading(path_object):
     """Tests if auto-detecting the file format, when reading a file works."""
     try:
         import scipy.signal     # noqa; pylint: disable=unused-import,import-outside-toplevel; check if SciPy is available
@@ -923,6 +929,8 @@ def test_autodetect_format_on_reading():
             for file_format in sumpf.Spectrogram.file_formats:
                 if file_format != sumpf.Spectrogram.file_formats.AUTO:
                     path = os.path.join(d, "test_file")
+                    if path_object:
+                        path = pathlib.Path(path)
                     assert not os.path.exists(path)
                     spectrogram.save(path, file_format)
                     loaded = sumpf.Spectrogram.load(path)
@@ -934,7 +942,9 @@ def test_autodetect_format_on_reading():
                     os.remove(path)
 
 
-def test_autodetect_format_on_saving():
+@hypothesis.given(path_object=hypothesis.strategies.booleans())
+@hypothesis.settings(deadline=None)
+def test_autodetect_format_on_saving(path_object):
     """Tests if auto-detecting the file format from the file extension, when writing a file works."""
     try:
         import scipy.signal     # noqa; pylint: disable=unused-import,import-outside-toplevel; check if SciPy is available
@@ -952,6 +962,9 @@ def test_autodetect_format_on_saving():
                 reader = Reader()
                 auto_path = os.path.join(d, "test_file" + ending)
                 reference_path = os.path.join(d, "test_file")
+                if path_object:
+                    auto_path = pathlib.Path(auto_path)
+                    reference_path = pathlib.Path(reference_path)
                 assert not os.path.exists(auto_path)
                 assert not os.path.exists(reference_path)
                 spectrogram.save(auto_path)

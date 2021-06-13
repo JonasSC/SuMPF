@@ -17,6 +17,7 @@
 """Tests for reading and writing :class:`~sumpf.Signal` instances from/to a file."""
 
 import os
+import pathlib
 import tempfile
 import hypothesis
 import pytest
@@ -27,11 +28,14 @@ import tests
 # pylint: disable=line-too-long; this file contains many table-like dictionaries, that would be harder to read, if the rows were broken into multiple lines
 
 
-@hypothesis.given(tests.strategies.signals(max_channels=9))
-def test_exact_formats_with_metadata(signal):
+@hypothesis.given(signal=tests.strategies.signals(max_channels=9),
+                  path_object=hypothesis.strategies.booleans())
+def test_exact_formats_with_metadata(signal, path_object):
     """Tests formats, from which a signal can be restored exactly."""
     with tempfile.TemporaryDirectory() as d:
         path = os.path.join(d, "test_file")
+        if path_object:
+            path = pathlib.Path(path)
         for Reader, Writer in [(signal_readers.JsonReader, signal_writers.JsonWriter),
                                (signal_readers.NumpyReader, signal_writers.NumpyNpzWriter),
                                (signal_readers.PickleReader, signal_writers.PickleWriter)]:
@@ -48,13 +52,16 @@ def test_exact_formats_with_metadata(signal):
                 os.remove(path)
 
 
-@hypothesis.given(tests.strategies.signals(max_channels=9))
-def test_exact_with_time_column(signal):
+@hypothesis.given(signal=tests.strategies.signals(max_channels=9),
+                  path_object=hypothesis.strategies.booleans())
+def test_exact_with_time_column(signal, path_object):
     """Tests formats, from which a signal can be restored almost exactly with
     the exception of the sampling rate and the offset, if the signal is shorter
     than two samples."""
     with tempfile.TemporaryDirectory() as d:
         path = os.path.join(d, "test_file")
+        if path_object:
+            path = pathlib.Path(path)
         for Reader, Writer, supports_labels in [(signal_readers.CsvReader, signal_writers.CsvWriter, True),
                                                 (signal_readers.NumpyReader, signal_writers.NumpyNpyWriter, False)]:
             reader = Reader()
@@ -83,14 +90,17 @@ def test_exact_with_time_column(signal):
                 os.remove(path)
 
 
-@hypothesis.given(tests.strategies.signals(max_channels=9, min_value=-255 / 256, max_value=254 / 256))
-def test_exact_formats_without_metadata(signal):
+@hypothesis.given(signal=tests.strategies.signals(max_channels=9, min_value=-255 / 256, max_value=254 / 256),
+                  path_object=hypothesis.strategies.booleans())
+def test_exact_formats_without_metadata(signal, path_object):
     """Tests formats, from which a signal's samples can be restored exactly."""
     pytest.importorskip("soundfile")
     formats = {sumpf.Signal.file_formats.WAV_FLOAT64: ([signal_readers.SoundfileReader], [signal_writers.SoundfileWriter]),
                sumpf.Signal.file_formats.AIFF_FLOAT64: ([signal_readers.SoundfileReader], [signal_writers.SoundfileWriter])}
     with tempfile.TemporaryDirectory() as d:
         path = os.path.join(d, "test_file")
+        if path_object:
+            path = pathlib.Path(path)
         for file_format in formats:
             for Reader in formats[file_format][0]:
                 reader = Reader()
@@ -109,9 +119,10 @@ def test_exact_formats_without_metadata(signal):
                     os.remove(path)
 
 
-@hypothesis.given(tests.strategies.signals(max_channels=9, min_value=-255 / 256, max_value=254 / 256))
+@hypothesis.given(signal=tests.strategies.signals(max_channels=9, min_value=-255 / 256, max_value=254 / 256),
+                  path_object=hypothesis.strategies.booleans())
 @hypothesis.settings(deadline=None)
-def test_lossless_formats(signal):  # noqa: C901
+def test_lossless_formats(signal, path_object):  # noqa: C901
     # pylint: disable=too-many-branches
     """Tests lossless file formats."""
     # create a dictionary: file format -> [reader classes, writer classes, bits per sample, maximum number of channels]
@@ -145,6 +156,8 @@ def test_lossless_formats(signal):  # noqa: C901
                    sumpf.Signal.file_formats.FLAC_INT24: ([signal_readers.SoundfileReader], [signal_writers.SoundfileWriter], 24, 8)}
     with tempfile.TemporaryDirectory() as d:
         path = os.path.join(d, "test_file")
+        if path_object:
+            path = pathlib.Path(path)
         for file_format in formats:
             bits, max_channels = formats[file_format][2:]
             if signal.length() < 3:
@@ -189,13 +202,16 @@ def test_lossless_formats(signal):  # noqa: C901
                     os.remove(path)
 
 
-@hypothesis.given(tests.strategies.signals(max_channels=9, min_value=-255 / 256, max_value=254 / 256))
-def test_lossy_formats(signal):
+@hypothesis.given(signal=tests.strategies.signals(max_channels=9, min_value=-255 / 256, max_value=254 / 256),
+                  path_object=hypothesis.strategies.booleans())
+def test_lossy_formats(signal, path_object):
     """Tests lossy file formats."""
     pytest.importorskip("soundfile")
     formats = {sumpf.Signal.file_formats.OGG_VORBIS: ([signal_readers.SoundfileReader], [signal_writers.SoundfileWriter], 255)}
     with tempfile.TemporaryDirectory() as d:
         path = os.path.join(d, "test_file")
+        if path_object:
+            path = pathlib.Path(path)
         for file_format in formats:
             max_channels = formats[file_format][2]
             if len(signal) <= max_channels:
@@ -220,13 +236,17 @@ def test_lossy_formats(signal):
                     os.remove(path)
 
 
-def test_autodetect_format_on_reading():
+@hypothesis.given(path_object=hypothesis.strategies.booleans())
+@hypothesis.settings(deadline=None)
+def test_autodetect_format_on_reading(path_object):
     """Tests if auto-detecting the file format, when reading a file works."""
     signal = sumpf.ExponentialSweep() * 0.9
     with tempfile.TemporaryDirectory() as d:
         for file_format in sumpf.Signal.file_formats:
             if file_format != sumpf.Signal.file_formats.AUTO:
                 path = os.path.join(d, "test_file")
+                if path_object:
+                    path = pathlib.Path(path)
                 assert not os.path.exists(path)
                 try:
                     signal.save(path, file_format)
@@ -238,7 +258,9 @@ def test_autodetect_format_on_reading():
                     os.remove(path)
 
 
-def test_autodetect_format_on_saving():
+@hypothesis.given(path_object=hypothesis.strategies.booleans())
+@hypothesis.settings(deadline=None)
+def test_autodetect_format_on_saving(path_object):
     """Tests if auto-detecting the file format from the file extension, when writing a file works."""
     try:
         import soundfile    # noqa; pylint: disable=unused-import,import-outside-toplevel; this shall raise an ImportError, if the soundfile library cannot be imported
@@ -273,6 +295,9 @@ def test_autodetect_format_on_saving():
             reader = Reader()
             auto_path = os.path.join(d, "test_file" + ending)
             reference_path = os.path.join(d, "test_file")
+            if path_object:
+                auto_path = pathlib.Path(auto_path)
+                reference_path = pathlib.Path(reference_path)
             assert not os.path.exists(auto_path)
             assert not os.path.exists(reference_path)
             signal.save(auto_path)

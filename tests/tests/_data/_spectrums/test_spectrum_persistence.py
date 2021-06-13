@@ -17,6 +17,7 @@
 """Tests for reading and writing :class:`~sumpf.Spectrum` instances from/to a file."""
 
 import os
+import pathlib
 import tempfile
 import hypothesis
 import pytest
@@ -25,11 +26,14 @@ from sumpf._internal import spectrum_readers, spectrum_writers
 import tests
 
 
-@hypothesis.given(tests.strategies.spectrums())
-def test_exact_formats_with_metadata(spectrum):
+@hypothesis.given(spectrum=tests.strategies.spectrums(),
+                  path_object=hypothesis.strategies.booleans())
+def test_exact_formats_with_metadata(spectrum, path_object):
     """Tests formats, from which a spectrum can be restored exactly."""
     with tempfile.TemporaryDirectory() as d:
         path = os.path.join(d, "test_file")
+        if path_object:
+            path = pathlib.Path(path)
         for Reader, Writer in [(spectrum_readers.JsonReader, spectrum_writers.JsonWriter),
                                (spectrum_readers.NumpyReader, spectrum_writers.NumpyNpzWriter),
                                (spectrum_readers.PickleReader, spectrum_writers.PickleWriter)]:
@@ -44,12 +48,15 @@ def test_exact_formats_with_metadata(spectrum):
             os.remove(path)
 
 
-@hypothesis.given(tests.strategies.spectrums())
-def test_exact_with_frequency_column(spectrum):
+@hypothesis.given(spectrum=tests.strategies.spectrums(),
+                  path_object=hypothesis.strategies.booleans())
+def test_exact_with_frequency_column(spectrum, path_object):
     """Tests formats, from which a spectrum can be restored almost exactly with
     the exception of the resolution."""
     with tempfile.TemporaryDirectory() as d:
         path = os.path.join(d, "test_file")
+        if path_object:
+            path = pathlib.Path(path)
         for Reader, Writer, supports_labels in [(spectrum_readers.CsvReader, spectrum_writers.CsvWriter, True),
                                                 (spectrum_readers.NumpyReader, spectrum_writers.NumpyNpyWriter, False)]:
             reader = Reader()
@@ -69,13 +76,17 @@ def test_exact_with_frequency_column(spectrum):
             os.remove(path)
 
 
-def test_autodetect_format_on_reading():
+@hypothesis.given(path_object=hypothesis.strategies.booleans())
+@hypothesis.settings(deadline=None)
+def test_autodetect_format_on_reading(path_object):
     """Tests if auto-detecting the file format, when reading a file works."""
     spectrum = sumpf.RudinShapiroNoiseSpectrum()
     with tempfile.TemporaryDirectory() as d:
         for file_format in sumpf.Spectrum.file_formats:
             if file_format != sumpf.Spectrum.file_formats.AUTO:
                 path = os.path.join(d, "test_file")
+                if path_object:
+                    path = pathlib.Path(path)
                 assert not os.path.exists(path)
                 spectrum.save(path, file_format)
                 loaded = sumpf.Spectrum.load(path)
@@ -83,7 +94,9 @@ def test_autodetect_format_on_reading():
                 os.remove(path)
 
 
-def test_autodetect_format_on_saving():
+@hypothesis.given(path_object=hypothesis.strategies.booleans())
+@hypothesis.settings(deadline=None)
+def test_autodetect_format_on_saving(path_object):
     """Tests if auto-detecting the file format from the file extension, when writing a file works."""
     file_formats = [(sumpf.Spectrum.file_formats.TEXT_CSV, ".csv", spectrum_readers.CsvReader),
                     (sumpf.Spectrum.file_formats.TEXT_JSON, ".json", spectrum_readers.JsonReader),
@@ -97,6 +110,9 @@ def test_autodetect_format_on_saving():
             reader = Reader()
             auto_path = os.path.join(d, "test_file" + ending)
             reference_path = os.path.join(d, "test_file")
+            if path_object:
+                auto_path = pathlib.Path(auto_path)
+                reference_path = pathlib.Path(reference_path)
             assert not os.path.exists(auto_path)
             assert not os.path.exists(reference_path)
             spectrum.save(auto_path)

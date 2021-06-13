@@ -204,6 +204,7 @@ class StandardLibraryReader:
         :param path: the path of the file, from which the signal shall be loaded
         :returns: a :class:`~sumpf.Signal` instance
         """
+        path = str(path)  # the wave and aifc modules cannot deal with pathlib objects (at least not in Python 3.9)
         chunk_size = 2048
         with self.__module.open(path, mode="rb") as f:
             number_of_channels = f.getnchannels()
