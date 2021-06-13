@@ -4,7 +4,7 @@ with open("README.rst") as f:
     long_description = f.read()
 
 setup(name="sumpf",
-      version="0.17 snapshot",
+      version="0.17",
       description="A signal processing package with a focus on acoustics",
       long_description=long_description,
       url="https://github.com/JonasSC/SuMPF",
