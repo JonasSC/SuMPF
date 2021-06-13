@@ -171,8 +171,8 @@ def test_sphinx_documentation():    # noqa: C901; pylint: disable=too-many-local
                                     f"found {documented_methods[current_class][method]}",
                                     pytrace=False)
                     if not documented_methods[current_class][method][index:]:
-                        pytest.fail(f"Expected more parameters of the method "
-                                    "{current_class}.{method} to be documented",
+                        pytest.fail("Expected more parameters of the method "
+                                    f"{current_class}.{method} to be documented",
                                     pytrace=False)
                 else:
                     if implemented_methods[current_class][method] != documented_methods[current_class][method]:

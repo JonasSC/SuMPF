@@ -70,6 +70,7 @@ def test_merge_signals_manually():
     assert sumpf.Merge([signal2, signal1], mode=FIRST_CHANNELS_FIRST).output() == signal21c
 
 
+@hypothesis.settings(suppress_health_check=(hypothesis.HealthCheck.too_slow,))
 @hypothesis.given(signals=hypothesis.strategies.lists(elements=tests.strategies.signals(), min_size=2, max_size=5),
                   index=hypothesis.strategies.integers(min_value=0, max_value=5))
 def test_merge_first_signal_first(signals, index):
@@ -95,6 +96,7 @@ def test_merge_first_signal_first(signals, index):
                                       merged=merger.output())
 
 
+@hypothesis.settings(suppress_health_check=(hypothesis.HealthCheck.too_slow,))
 @hypothesis.given(signals=hypothesis.strategies.lists(elements=tests.strategies.signals(), min_size=2, max_size=5),
                   index=hypothesis.strategies.integers(min_value=0, max_value=5))
 def test_merge_signals_first_channel_first(signals, index):
@@ -174,6 +176,7 @@ def test_merge_spectrums_manually():
     assert sumpf.Merge([spectrum2, spectrum1], mode=FIRST_CHANNELS_FIRST).output() == spectrum21c
 
 
+@hypothesis.settings(suppress_health_check=(hypothesis.HealthCheck.too_slow,))
 @hypothesis.given(spectrums=hypothesis.strategies.lists(elements=tests.strategies.spectrums(), min_size=2, max_size=5),
                   index=hypothesis.strategies.integers(min_value=0, max_value=5))
 def test_merge_first_spectrum_first(spectrums, index):
@@ -198,6 +201,7 @@ def test_merge_first_spectrum_first(spectrums, index):
                                         merged=merger.output())
 
 
+@hypothesis.settings(suppress_health_check=(hypothesis.HealthCheck.too_slow,))
 @hypothesis.given(spectrums=hypothesis.strategies.lists(elements=tests.strategies.spectrums(), min_size=2, max_size=5),
                   index=hypothesis.strategies.integers(min_value=0, max_value=5))
 def test_merge_spectrums_first_channel_first(spectrums, index):
@@ -310,6 +314,7 @@ def test_merge_spectrograms_manually():
     assert sumpf.Merge([spectrogram2, spectrogram1], mode=FIRST_CHANNELS_FIRST).output() == spectrogram21c
 
 
+@hypothesis.settings(suppress_health_check=(hypothesis.HealthCheck.too_slow,))
 @hypothesis.given(spectrograms=hypothesis.strategies.lists(elements=tests.strategies.spectrograms(),
                                                            min_size=2, max_size=5),
                   index=hypothesis.strategies.integers(min_value=0, max_value=5))
@@ -338,6 +343,7 @@ def test_merge_first_spectrogram_first(spectrograms, index):
                                            merged=merger.output())
 
 
+@hypothesis.settings(suppress_health_check=(hypothesis.HealthCheck.too_slow,))
 @hypothesis.given(spectrograms=hypothesis.strategies.lists(elements=tests.strategies.spectrograms(),
                                                            min_size=2, max_size=5),
                   index=hypothesis.strategies.integers(min_value=0, max_value=5))
@@ -415,6 +421,7 @@ def test_merge_filters_manually():
     assert sumpf.Merge([filter2, filter1], mode=FIRST_CHANNELS_FIRST).output() == filter21c
 
 
+@hypothesis.settings(suppress_health_check=(hypothesis.HealthCheck.too_slow,))
 @hypothesis.given(filters=hypothesis.strategies.lists(elements=tests.strategies.filters(), min_size=2, max_size=5),
                   index=hypothesis.strategies.integers(min_value=0, max_value=5))
 def test_merge_first_filter_first(filters, index):
@@ -439,6 +446,7 @@ def test_merge_first_filter_first(filters, index):
                                       merged=merger.output())
 
 
+@hypothesis.settings(suppress_health_check=(hypothesis.HealthCheck.too_slow,))
 @hypothesis.given(filters=hypothesis.strategies.lists(elements=tests.strategies.filters(), min_size=2, max_size=5),
                   index=hypothesis.strategies.integers(min_value=0, max_value=5))
 def test_merge_filter_first_channel_first(filters, index):

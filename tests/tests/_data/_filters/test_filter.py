@@ -16,6 +16,7 @@
 
 """Tests for the Filter class"""
 
+import itertools
 import logging
 import hypothesis
 import hypothesis.strategies as st
@@ -23,6 +24,7 @@ import numpy
 import pytest
 import sumpf
 import sumpf._internal as sumpf_internal
+import sumpf._data._filters._base._terms as terms
 import tests
 
 ###########################################
@@ -228,9 +230,25 @@ def test_add(filter1, filter2, frequency):
     except ValueError:  # the filters have a different channel count, while none has only one channel
         filter1, filter2 = _check_channel_count(filter1, filter2)
         sum_ = filter1 + filter2
-    result = sum_(frequency)
-    reference = numpy.add(filter1(frequency), filter2(frequency))
-    _compare_results(result, reference)
+    resultd = sum_(frequency)
+    resultr = []
+    for i, tf1, tf2, r1, r2 in zip(range(len(resultd)),
+                                   itertools.cycle(filter1.transfer_functions()),
+                                   itertools.cycle(filter2.transfer_functions()),
+                                   itertools.cycle(filter1(frequency)),
+                                   itertools.cycle(filter2(frequency))):
+        if isinstance(tf1, terms.Bands) and isinstance(tf2, terms.Bands) and \
+           numpy.array_equal(tf1.xs, tf2.xs) and \
+           tf1.interpolation == tf2.interpolation and \
+           tf1.extrapolation == tf2.extrapolation:
+            tf = sumpf.Filter.Bands(xs=tf1.xs,
+                                    ys=tf1.ys + tf2.ys,
+                                    interpolation=tf1.interpolation,
+                                    extrapolation=tf1.extrapolation)
+            resultr.extend(sumpf.Filter(transfer_functions=[tf])(frequency))
+        else:
+            resultr.append(numpy.add(r1, r2))
+    _compare_results(resultd, resultr)
     channel_count = max(len(filter1), len(filter2))
     if channel_count:
         assert sum_.labels() == ("Sum",) * channel_count
@@ -266,9 +284,25 @@ def test_subtract(filter1, filter2, frequency):
     except ValueError:  # the filters have a different channel count, while none has only one channel
         filter1, filter2 = _check_channel_count(filter1, filter2)
         difference = filter1 - filter2
-    result1 = difference(frequency)
-    result2 = numpy.subtract(filter1(frequency), filter2(frequency))
-    _compare_results(result1, result2)
+    resultd = difference(frequency)
+    resultr = []
+    for i, tf1, tf2, r1, r2 in zip(range(len(resultd)),
+                                   itertools.cycle(filter1.transfer_functions()),
+                                   itertools.cycle(filter2.transfer_functions()),
+                                   itertools.cycle(filter1(frequency)),
+                                   itertools.cycle(filter2(frequency))):
+        if isinstance(tf1, terms.Bands) and isinstance(tf2, terms.Bands) and \
+           numpy.array_equal(tf1.xs, tf2.xs) and \
+           tf1.interpolation == tf2.interpolation and \
+           tf1.extrapolation == tf2.extrapolation:
+            tf = sumpf.Filter.Bands(xs=tf1.xs,
+                                    ys=tf1.ys - tf2.ys,
+                                    interpolation=tf1.interpolation,
+                                    extrapolation=tf1.extrapolation)
+            resultr.extend(sumpf.Filter(transfer_functions=[tf])(frequency))
+        else:
+            resultr.append(numpy.subtract(r1, r2))
+    _compare_results(resultd, resultr)
     channel_count = max(len(filter1), len(filter2))
     if channel_count:
         assert difference.labels() == ("Difference",) * channel_count
@@ -305,9 +339,25 @@ def test_multiply(filter1, filter2, frequency):
     except ValueError:  # the filters have a different channel count, while none has only one channel
         filter1, filter2 = _check_channel_count(filter1, filter2)
         product = filter1 * filter2
-    result1 = product(frequency)
-    result2 = numpy.multiply(filter1(frequency), filter2(frequency))
-    _compare_results(result1, result2)
+    resultd = product(frequency)
+    resultr = []
+    for i, tf1, tf2, r1, r2 in zip(range(len(resultd)),
+                                   itertools.cycle(filter1.transfer_functions()),
+                                   itertools.cycle(filter2.transfer_functions()),
+                                   itertools.cycle(filter1(frequency)),
+                                   itertools.cycle(filter2(frequency))):
+        if isinstance(tf1, terms.Bands) and isinstance(tf2, terms.Bands) and \
+           numpy.array_equal(tf1.xs, tf2.xs) and \
+           tf1.interpolation == tf2.interpolation and \
+           tf1.extrapolation == tf2.extrapolation:
+            tf = sumpf.Filter.Bands(xs=tf1.xs,
+                                    ys=tf1.ys * tf2.ys,
+                                    interpolation=tf1.interpolation,
+                                    extrapolation=tf1.extrapolation)
+            resultr.extend(sumpf.Filter(transfer_functions=[tf])(frequency))
+        else:
+            resultr.append(numpy.multiply(r1, r2))
+    _compare_results(resultd, resultr)
     channel_count = max(len(filter1), len(filter2))
     if channel_count:
         assert product.labels() == ("Product",) * channel_count
@@ -410,9 +460,25 @@ def test_divide(filter1, filter2, frequency):
     except ValueError:  # the filters have a different channel count, while none has only one channel
         filter1, filter2 = _check_channel_count(filter1, filter2)
         quotient = filter1 / filter2
-    result1 = quotient(frequency)
-    result2 = numpy.divide(filter1(frequency), filter2(frequency))
-    _compare_results(result1, result2)
+    resultd = quotient(frequency)
+    resultr = []
+    for i, tf1, tf2, r1, r2 in zip(range(len(resultd)),
+                                   itertools.cycle(filter1.transfer_functions()),
+                                   itertools.cycle(filter2.transfer_functions()),
+                                   itertools.cycle(filter1(frequency)),
+                                   itertools.cycle(filter2(frequency))):
+        if isinstance(tf1, terms.Bands) and isinstance(tf2, terms.Bands) and \
+           numpy.array_equal(tf1.xs, tf2.xs) and \
+           tf1.interpolation == tf2.interpolation and \
+           tf1.extrapolation == tf2.extrapolation:
+            tf = sumpf.Filter.Bands(xs=tf1.xs,
+                                    ys=tf1.ys / tf2.ys,
+                                    interpolation=tf1.interpolation,
+                                    extrapolation=tf1.extrapolation)
+            resultr.extend(sumpf.Filter(transfer_functions=[tf])(frequency))
+        else:
+            resultr.append(numpy.divide(r1, r2))
+    _compare_results(resultd, resultr)
     channel_count = max(len(filter1), len(filter2))
     if channel_count:
         assert quotient.labels() == ("Quotient",) * channel_count

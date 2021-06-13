@@ -23,6 +23,13 @@ import pytest
 import sumpf
 import tests
 
+try:
+    import scipy
+except ImportError:
+    scipy_unavailable = True
+else:
+    scipy_unavailable = False
+
 
 def test_empty():
     """Tests the behavior when no data is added."""
@@ -179,6 +186,7 @@ def test_concatenate_spectrograms(spectrograms, index):
                                                                        spectrograms[index + 1:]))
 
 
+@pytest.mark.skipif(scipy_unavailable, reason="SciPy is needed to create spectrograms")
 @hypothesis.given(spectrogram1=tests.strategies.spectrograms(),
                   spectrogram2=tests.strategies.spectrograms(),
                   spectrogram3=tests.strategies.spectrograms())

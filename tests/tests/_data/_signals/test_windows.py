@@ -712,7 +712,7 @@ def test_slepian_window(beta, plateau, sampling_rate, length, symmetric, overlap
     """Tests the implementation of the Slepian window."""
     pytest.importorskip("scipy")
     half_window_length = (length - int(round(length * plateau))) // 2
-    if 2 * half_window_length + (0 if symmetric else 1) > 2:
+    if 2 * half_window_length + (0 if symmetric else 1) >= 2:
         alpha = beta / math.pi
         if alpha >= half_window_length:     # make sure NW is smaller than half the window length
             alpha = 0.99 * (alpha % half_window_length)

@@ -441,20 +441,20 @@ class Bands(Term):
         if isinstance(f, float):
             if f < self.xs[0] or self.xs[-1] < f:
                 extrapolation = sumpf_internal.interpolation.get(self.extrapolation)
-                return extrapolation(x=f, xs=self.xs, ys=self.ys)
+                return extrapolation(x=f, xs=self.xs, ys=self.ys)  # pylint: disable=no-value-for-parameter; this function is modified by a decorator
             else:
                 interpolation = sumpf_internal.interpolation.get(self.interpolation)
-                return interpolation(x=f, xs=self.xs, ys=self.ys)
+                return interpolation(x=f, xs=self.xs, ys=self.ys)  # pylint: disable=no-value-for-parameter; this function is modified by a decorator
         else:
             if out is None:
                 out = numpy.empty(shape=f.shape, dtype=numpy.complex128)
             if self.xs.size:
                 mask = (f < self.xs[0]) | (self.xs[-1] < f)
                 extrapolation = sumpf_internal.interpolation.get(self.extrapolation)
-                out[mask] = extrapolation(x=f[mask], xs=self.xs, ys=self.ys)
+                out[mask] = extrapolation(x=f[mask], xs=self.xs, ys=self.ys)  # pylint: disable=no-value-for-parameter; this function is modified by a decorator
                 mask = ~mask
                 interpolation = sumpf_internal.interpolation.get(self.interpolation)
-                out[mask] = interpolation(x=f[mask], xs=self.xs, ys=self.ys)
+                out[mask] = interpolation(x=f[mask], xs=self.xs, ys=self.ys)  # pylint: disable=no-value-for-parameter; this function is modified by a decorator
             else:
                 out[:] = 0.0
             return out

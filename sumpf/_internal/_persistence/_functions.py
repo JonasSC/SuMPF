@@ -58,7 +58,7 @@ def read_file(path, readers, reader_base_class):  # noqa; pylint: disable=too-ma
             return result
     # try to open the file with a reader, that is associated with the file type
     for cls in reader_base_class.__subclasses__():
-        if extension in cls.extensions and not any([isinstance(r, cls) for r in readers_list]):
+        if extension in cls.extensions and not any((isinstance(r, cls) for r in readers_list)):
             try:
                 reader = cls()
             except ImportError:
@@ -73,7 +73,7 @@ def read_file(path, readers, reader_base_class):  # noqa; pylint: disable=too-ma
                     return result
     # try to open the file with a reader, that is not associated with the file type
     for cls in reader_base_class.__subclasses__():
-        if extension not in cls.extensions and not any([isinstance(r, cls) for r in readers_list]):
+        if extension not in cls.extensions and not any((isinstance(r, cls) for r in readers_list)):
             try:
                 reader = cls()
             except ImportError:

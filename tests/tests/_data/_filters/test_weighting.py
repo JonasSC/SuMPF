@@ -17,6 +17,7 @@
 """Contains the tests for the frequency weighting filters."""
 
 import math
+import numpy
 import sumpf
 from sumpf._data._filters._base import Quotient, Polynomial
 
@@ -88,7 +89,7 @@ def test_a_weighting_poles():
             else:
                 raise NotImplementedError("Evaluating filter terms with more than one pole is not implemented")
     for pole, expected in zip(sorted(poles), expected_poles):
-        assert round(pole, 1) == expected
+        assert numpy.round(pole, 1) == expected
 
 
 def test_b_weighting_table():
@@ -157,7 +158,7 @@ def test_b_weighting_poles():
             else:
                 raise NotImplementedError("Evaluating filter terms with more than one pole is not implemented")
     for pole, expected in zip(sorted(poles), expected_poles):
-        assert round(pole, 1) == expected
+        assert numpy.round(pole, 1) == expected
 
 
 def test_c_weighting_table():
@@ -225,7 +226,7 @@ def test_c_weighting_poles():
             else:
                 raise NotImplementedError("Evaluating filter terms with more than one pole is not implemented")
     for pole, expected in zip(sorted(poles), expected_poles):
-        assert round(pole, 1) == expected
+        assert numpy.round(pole, 1) == expected
 
 
 def test_d_weighting_table():
@@ -291,10 +292,10 @@ def test_d_weighting_polynomials():
     for term in weighting.transfer_functions()[0].factors:
         if isinstance(term, Quotient):
             if isinstance(term.numerator, Polynomial):
-                n = tuple(round(c, 1) for c in term.numerator.coefficients)
+                n = tuple(numpy.round(c, 1) for c in term.numerator.coefficients)
                 assert n in numerators
                 numerators.remove(n)
-            d = tuple(round(c, 1) for c in term.denominator.coefficients)
+            d = tuple(numpy.round(c, 1) for c in term.denominator.coefficients)
             assert d in denominators
             denominators.remove(d)
     assert not numerators
@@ -372,4 +373,4 @@ def test_u_weighting_poles():
             else:
                 raise NotImplementedError("Evaluating filter terms with more than one pole is not implemented")
     for pole, expected in zip(poles, expected_poles):
-        assert round(pole, 1) == expected
+        assert numpy.round(pole, 1) == expected

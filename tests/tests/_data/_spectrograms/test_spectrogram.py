@@ -572,6 +572,7 @@ def test_power():
 
 
 @pytest.mark.filterwarnings("ignore:overflow", "ignore:invalid value", "ignore:divide by zero")
+@hypothesis.settings(deadline=None)
 @hypothesis.given(spectrogram=tests.strategies.spectrograms(max_magnitude=1e15, max_channels=9, max_number_of_frequencies=33, max_length=33),  # pylint: disable=line-too-long
                   signal=tests.strategies.signals(min_value=-1e15, max_value=1e15, max_channels=9, max_length=33))
 def test_algebra_with_signal(spectrogram, signal):

@@ -24,7 +24,7 @@ import connectors
 import sumpf
 
 
-def _create_client():
+def _create_client():  # pylint: disable=inconsistent-return-statements; it seems, pylint misinterprets the try-except-else statement
     """A helper function, that checks if the jack client package is available and
     the JACK server is running. If so, it creates a :class:`jack.Client` instance
     and returns it. Otherwise, it skips the test, from which this function was called.
@@ -79,9 +79,9 @@ def test_availability():
 def test_playback_and_recording():
     """Tests connecting ports in JACK, playing back and recording a signal."""
     with _create_client():  # skip this test if the JACK server is not running or the JACK client library is not available
-        excitation = sumpf.MergeSignals([sumpf.GaussianNoise(length=2 ** 15).shift(-5),
-                                         sumpf.SineWave(length=2 ** 15),
-                                         sumpf.HannWindow(length=2 ** 15)]).output()
+        excitation = sumpf.Merge([sumpf.GaussianNoise(length=2 ** 15).shift(-5),
+                                  sumpf.SineWave(length=2 ** 15),
+                                  sumpf.HannWindow(length=2 ** 15)]).output()
         assert excitation.offset() % 2 != 0     # check that the offset and length are odd values, that
         assert excitation.length() % 2 != 0     # do not coincide with the blocks of the JACK server
         xruns = _XRunHandler()
@@ -130,7 +130,7 @@ def test_output_ports():
         # check the output port for the empty default input signal
         assert ["CUT:output_1"] == [p.name for p in client.get_ports(is_output=True) if p.name.startswith("CUT:")]
         # check adding and renaming output ports
-        jack.input(sumpf.MergeSignals([sumpf.BetaNoise(), sumpf.SquareWave()]).output())
+        jack.input(sumpf.Merge([sumpf.BetaNoise(), sumpf.SquareWave()]).output())
         assert ["CUT:Beta noise", "CUT:Square wave"] == [p.name for p in client.get_ports(is_output=True) if p.name.startswith("CUT:")]             # pylint: disable=line-too-long
         # check removing and renaming output ports
         jack.input(sumpf.ExponentialSweep())
@@ -233,9 +233,9 @@ def test_ports_and_connections_when_deactivated():
         client.inports.register("input")
         client.outports.register("output")
         # test creating and connecting ports, when the client is deactivated
-        signal1 = sumpf.MergeSignals([sumpf.SineWave(length=2 ** 12),
-                                      sumpf.HannWindow(length=2 ** 12),
-                                      sumpf.ExponentialSweep(length=2 ** 12)]).output()
+        signal1 = sumpf.Merge([sumpf.SineWave(length=2 ** 12),
+                               sumpf.HannWindow(length=2 ** 12),
+                               sumpf.ExponentialSweep(length=2 ** 12)]).output()
         xruns = _XRunHandler()
         sumpf_jack = sumpf.Jack(name="port_creation", input_signal=signal1)
         sumpf_jack.xruns.connect(xruns.xrun)
@@ -249,17 +249,17 @@ def test_ports_and_connections_when_deactivated():
         sumpf_jack.connect(0, "Testclient:input")
         sumpf_jack.connect("Testclient:output", 3)
         sumpf_jack.start()
-        reference = sumpf.MergeSignals([signal1,
-                                        signal1[0, 0:-client.blocksize].shift(client.blocksize)]).output()
+        reference = sumpf.Merge([signal1,
+                                 signal1[0, 0:-client.blocksize].shift(client.blocksize)]).output()
         assert sumpf_jack.output().channels() == pytest.approx(reference.channels())
         # test that the connections remain established, when the output ports change
-        signal2 = sumpf.MergeSignals([sumpf.BartlettWindow(length=2 ** 12),
-                                      sumpf.ExponentialSweep(length=2 ** 12),
-                                      sumpf.SineWave(length=2 ** 12)]).output()
+        signal2 = sumpf.Merge([sumpf.BartlettWindow(length=2 ** 12),
+                               sumpf.ExponentialSweep(length=2 ** 12),
+                               sumpf.SineWave(length=2 ** 12)]).output()
         sumpf_jack.input(signal2)
         sumpf_jack.start()
-        reference = sumpf.MergeSignals([signal2,
-                                        signal2[0, 0:-client.blocksize].shift(client.blocksize)]).output()
+        reference = sumpf.Merge([signal2,
+                                 signal2[0, 0:-client.blocksize].shift(client.blocksize)]).output()
         assert sumpf_jack.output().channels() == pytest.approx(reference.channels())
         # test that the connections are broken, when the input ports are changed
         sumpf_jack.remove_input_port("index1")
@@ -280,9 +280,9 @@ def test_ports_and_connections_when_activated():
         client.inports.register("input")
         client.outports.register("output")
         # test creating and connecting ports, when the client is deactivated
-        signal1 = sumpf.MergeSignals([sumpf.SineWave(length=2 ** 12),
-                                      sumpf.HannWindow(length=2 ** 12),
-                                      sumpf.ExponentialSweep(length=2 ** 12)]).output()
+        signal1 = sumpf.Merge([sumpf.SineWave(length=2 ** 12),
+                               sumpf.HannWindow(length=2 ** 12),
+                               sumpf.ExponentialSweep(length=2 ** 12)]).output()
         xruns = _XRunHandler()
         sumpf_jack = sumpf.Jack(name="port_creation", input_signal=signal1, auto_deactivate=False)
         sumpf_jack.xruns.connect(xruns.xrun)
@@ -299,9 +299,9 @@ def test_ports_and_connections_when_activated():
         sumpf_jack.start()
         assert sumpf_jack.output().channels()[0:3] == pytest.approx(signal1.channels())
         # test that the connections remain established, when the output ports change
-        signal2 = sumpf.MergeSignals([sumpf.HannWindow(length=2 ** 12),
-                                      sumpf.ExponentialSweep(length=2 ** 12),
-                                      sumpf.SineWave(length=2 ** 12)]).output()
+        signal2 = sumpf.Merge([sumpf.HannWindow(length=2 ** 12),
+                               sumpf.ExponentialSweep(length=2 ** 12),
+                               sumpf.SineWave(length=2 ** 12)]).output()
         sumpf_jack.input(signal2)
         sumpf_jack.start()
         assert sumpf_jack.output().channels()[0:3] == pytest.approx(signal2.channels())
